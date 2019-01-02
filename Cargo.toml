@@ -1,0 +1,17 @@
+[package]
+name = "garden"
+description = "Garden Weaves Git Trees"
+license = "MIT"
+readme = "README.rst"
+keywords = ["command-line", "cli", "command", "argument"]
+categories = ["command-line-interface"]
+homepage = "http://github.com/davvid/garden"
+version = "0.0.1"
+authors = ["David Aguilar <davvid@gmail.com>"]
+
+[[bin]]
+name = "garden"
+
+[dependencies]
+argparse = "*"
+subprocess = "*"
