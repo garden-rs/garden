@@ -1,5 +1,8 @@
 extern crate argparse;
+extern crate garden;
 extern crate subprocess;
+
+use garden::cmd::debug;
 
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
@@ -19,8 +22,8 @@ impl std::fmt::Display for Command {
 }
 
 impl std::str::FromStr for Command {
-    type Err = String;
-    fn from_str(src: &str) -> Result<Command, String> {
+    type Err = ();
+    fn from_str(src: &str) -> Result<Command, ()> {
         return match src {
             "add" => Ok(Command::add),
             "ex" => Ok(Command::exec),
@@ -30,62 +33,39 @@ impl std::str::FromStr for Command {
             "sh" => Ok(Command::shell),
             "shell" => Ok(Command::shell),
             "st" => Ok(Command::status),
+            "stat" => Ok(Command::status),
             "status" => Ok(Command::status),
-            _ => Err(format!("invalid command: {}", src)),
+            _ => Err(()),
         }
     }
 }
-
-
-fn error(args: std::fmt::Arguments) {
-    eprintln!("error: {}", args);
-    std::process::exit(1);
-}
-
-fn debug(args: std::fmt::Arguments) {
-    eprintln!("debug: {}", args);
-}
-
 
 fn garden_help(verbose: bool, args: Vec<String>) {
 
-    let mut cmd_name = String::from("garden");
-
-    match std::env::current_exe() {
-        Ok(exe) => {
-            cmd_name = exe.to_string_lossy().to_string();
-        }
-        Err(err) => {
-            error(format_args!("failed to get current exe: {}", err));
-        }
-    }
-
-    let mut help_cmd = Vec::new();
-    help_cmd.push(cmd_name.to_string());
+    let cmd_path = match std::env::current_exe() {
+        Err(_) => std::path::PathBuf::from("garden"),
+        Ok(path) => path,
+    };
+    let mut help_cmd = vec!(cmd_path);
 
     // garden help foo -> garden foo --help
     if args.len() > 0 {
-        help_cmd.push(args[0].to_string());
+        help_cmd.push(std::path::PathBuf::from(args[0].to_string()));
     }
 
-    help_cmd.push("--help".to_string());
+    help_cmd.push(std::path::PathBuf::from("--help"));
 
     if verbose {
         debug(format_args!("help command"));
         let mut i: i32 = 0;
         for arg in &help_cmd {
-            debug(format_args!("help_cmd[{:02}] = {}", i, arg));
+            debug(format_args!("help_cmd[{:02}] = {}",
+                               i, arg.to_string_lossy()));
             i += 1;
         }
     }
 
-    let mut p = subprocess::Popen::create(
-        &help_cmd, subprocess::PopenConfig::default()).unwrap();
-
-    match p.wait() {
-        Ok(_) => { }
-        Err(_) => { std::process::exit(1); }
-    }
+    std::process::exit(garden::cmd::get_status(&help_cmd));
 }
 
 fn garden_exec(verbose: bool, mut args: Vec<String>) {
@@ -101,7 +81,7 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
     }
 
     let mut name = String::new();
-    let mut command: Vec<String> = Vec::new();
+    let mut command: Vec<String> = vec!();
 
     // Parse arguments
     {
@@ -115,11 +95,10 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
             .add_argument("command", argparse::List, r#"Command to run"#);
 
         ap.stop_on_first_argument(true);
-        match ap.parse(args, &mut std::io::stdout(), &mut std::io::stderr()) {
-            Ok(()) => {}
-            Err(err) => {
-                std::process::exit(err);
-            }
+        if let Err(err) = ap.parse(args,
+                                   &mut std::io::stdout(),
+                                   &mut std::io::stderr()) {
+            std::process::exit(err);
         }
     }
 
