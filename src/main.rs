@@ -40,17 +40,32 @@ impl std::str::FromStr for Command {
     }
 }
 
-fn garden_help(verbose: bool, args: Vec<String>) {
-
+fn garden_help(verbose: bool, mut args: Vec<String>) {
     let cmd_path = match std::env::current_exe() {
         Err(_) => std::path::PathBuf::from("garden"),
         Ok(path) => path,
     };
     let mut help_cmd = vec!(cmd_path);
 
+    let mut command = String::new();
+    {
+        let mut ap = argparse::ArgumentParser::new();
+        ap.set_description("garden help - command documentation");
+        ap.stop_on_first_argument(true);
+
+        ap.refer(&mut command)
+            .add_argument("command", argparse::Store,
+                          "Command help to display");
+
+        args.insert(0, String::from("garden help"));
+        ap.parse(args, &mut std::io::stdout(), &mut std::io::stderr())
+            .map_err(|c| std::process::exit(c))
+            .ok();
+    }
+
     // garden help foo -> garden foo --help
-    if args.len() > 0 {
-        help_cmd.push(std::path::PathBuf::from(args[0].to_string()));
+    if !command.is_empty() {
+        help_cmd.push(std::path::PathBuf::from(command));
     }
 
     help_cmd.push(std::path::PathBuf::from("--help"));
@@ -89,10 +104,10 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
         ap.set_description("garden exec - execute commands inside gardens");
 
         ap.refer(&mut name).required()
-            .add_argument("name", argparse::Store, r#"Garden to enter"#);
+            .add_argument("name", argparse::Store, "Garden to enter");
 
         ap.refer(&mut command).required()
-            .add_argument("command", argparse::List, r#"Command to run"#);
+            .add_argument("command", argparse::List, "Command to run");
 
         ap.stop_on_first_argument(true);
         if let Err(err) = ap.parse(args,
@@ -119,10 +134,10 @@ fn main() {
                         argparse::StoreTrue, "Be verbose");
         ap.refer(&mut subcommand).required()
             .add_argument("command", argparse::Store,
-                r#"Command to run {add, exec, help, init, shell, status}"#);
+                "Command to run {add, exec, help, init, shell, status}");
         ap.refer(&mut args)
             .add_argument("arguments", argparse::List,
-                r#"Arguments for sub-command"#);
+                "Arguments for sub-command");
         ap.stop_on_first_argument(true);
         ap.parse_args_or_exit();
     }
