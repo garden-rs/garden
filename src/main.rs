@@ -86,17 +86,8 @@ fn garden_help(verbose: bool, mut args: Vec<String>) {
 fn garden_exec(verbose: bool, mut args: Vec<String>) {
     args.insert(0, "garden exec".to_string());
 
-    if verbose {
-        debug(format_args!("exec arguments"));
-        let mut i: i32 = 0;
-        for arg in &args {
-            debug(format_args!("args[{:02}] = {}", i, arg));
-            i += 1;
-        }
-    }
-
     let mut name = String::new();
-    let mut command: Vec<String> = vec!();
+    let mut command: Vec<String> = Vec::new();
 
     // Parse arguments
     {
@@ -120,12 +111,20 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
     // Resolve garden and tree names into a set of trees
 
     // Execute commands for each tree
+    if verbose {
+        debug(format_args!("exec arguments"));
+        let mut i: i32 = 0;
+        for arg in &command {
+            debug(format_args!("args[{:02}] = {}", i, arg));
+            i += 1;
+        }
+    }
 }
 
 fn main() {
     let mut verbose = false;
     let mut subcommand = Command::help;
-    let mut args = vec!();
+    let mut args = Vec::new();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden - git tree organizer");
