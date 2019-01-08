@@ -109,6 +109,7 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
     }
 
     // Resolve garden and tree names into a set of trees
+    let config = garden::config::new(verbose);
 
     // Execute commands for each tree
     if verbose {
