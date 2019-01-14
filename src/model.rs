@@ -30,15 +30,24 @@ pub struct Tree {
     path: std::path::PathBuf,
     remotes: Vec<Remote>,
     variables: Vec<Variable>,
-    environ: Vec<NameValue>,
+    environment: Vec<NameValue>,
+    commands: Vec<NameValue>,
+    templates: Vec<String>,
     gitconfig: Vec<NameValue>,
+}
+
+pub struct Group {
+    name: String,
+    members: Vec<String>,
 }
 
 // Gardens aggregate trees
 pub struct Garden {
     name: String,
+    variables: Vec<Variable>,
+    templates: Vec<Tree>,
     trees: Vec<Tree>,
-    variables: Vec<NameValue>,
-    environ: Vec<NameValue>,
+    environment: Vec<NameValue>,
+    commands: Vec<NameValue>,
     gitconfig: Vec<NameValue>,
 }

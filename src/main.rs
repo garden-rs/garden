@@ -1,8 +1,7 @@
-extern crate argparse;
+#[macro_use]
 extern crate garden;
+extern crate argparse;
 extern crate subprocess;
-
-use garden::cmd::debug;
 
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
@@ -71,11 +70,10 @@ fn garden_help(verbose: bool, mut args: Vec<String>) {
     help_cmd.push(std::path::PathBuf::from("--help"));
 
     if verbose {
-        debug(format_args!("help command"));
+        debug!("help command");
         let mut i: i32 = 0;
         for arg in &help_cmd {
-            debug(format_args!("help_cmd[{:02}] = {}",
-                               i, arg.to_string_lossy()));
+            debug!("help_cmd[{:02}] = {:?}", i, arg);
             i += 1;
         }
     }
@@ -113,10 +111,11 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
 
     // Execute commands for each tree
     if verbose {
-        debug(format_args!("exec arguments"));
+        debug!("name: {}", name);
+        debug!("exec arguments");
         let mut i: i32 = 0;
         for arg in &command {
-            debug(format_args!("args[{:02}] = {}", i, arg));
+            debug!("args[{:02}] = {}", i, arg);
             i += 1;
         }
     }

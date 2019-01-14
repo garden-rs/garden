@@ -1,12 +1,3 @@
-pub fn error(args: std::fmt::Arguments) {
-    eprintln!("error: {}", args);
-    std::process::exit(1);
-}
-
-pub fn debug(args: std::fmt::Arguments) {
-    eprintln!("debug: {}", args);
-}
-
 pub fn get_status(cmd: &Vec<std::path::PathBuf>) -> i32 {
     let mut result: i32 = 1;
 

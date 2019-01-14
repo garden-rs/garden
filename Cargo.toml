@@ -14,4 +14,6 @@ name = "garden"
 
 [dependencies]
 argparse = "*"
+dirs = "*"
 subprocess = "*"
+yaml-rust = "*"
