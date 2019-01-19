@@ -1,10 +1,10 @@
 extern crate dirs;
-extern crate yaml_rust;
 
 use super::model;
+use super::config_yaml;
 
 #[derive(Clone, Copy)]
-pub enum FileFormat {
+enum FileFormat {
     JSON,
     YAML,
     UNKNOWN,
@@ -13,7 +13,6 @@ pub enum FileFormat {
 // Configuration contains multiple gardens
 pub struct Configuration {
     pub path: std::path::PathBuf,
-    pub file_format: FileFormat,
     pub variables: Vec<model::Variable>,
     pub shell: std::path::PathBuf,
     pub environment: Vec<model::NameValue>,
@@ -125,7 +124,6 @@ pub fn new(verbose: bool) -> Configuration {
 
     let config = Configuration {
         path: path,
-        file_format: file_format,
         shell: shell,
         variables: variables,
         environment: environment,
@@ -144,12 +142,13 @@ pub fn new(verbose: bool) -> Configuration {
                 if verbose {
                     debug!("file format: yaml");
                 }
-                read_yaml_config(&config, verbose);
+                config_yaml::read(&config, verbose);
             }
             FileFormat::JSON => {
                 if verbose {
                     debug!("file format: json");
                 }
+                error!("json support is currently unimplemented");
             }
             _ => {
                 error!("unsupported config file format");
@@ -157,59 +156,4 @@ pub fn new(verbose: bool) -> Configuration {
         }
     }
     return config;
-}
-
-
-fn print_indent(indent: usize) {
-    for _ in 0..indent {
-        print!("    ");
-    }
-}
-
-
-fn dump_node(doc: &yaml_rust::yaml::Yaml, indent: usize) {
-    match *doc {
-        yaml_rust::yaml::Yaml::Array(ref v) => {
-            for x in v {
-                dump_node(x, indent + 1);
-            }
-        }
-        yaml_rust::yaml::Yaml::Hash(ref h) => {
-            for (k, v) in h {
-                print_indent(indent);
-                println!("{:?}:", k);
-                dump_node(v, indent + 1);
-            }
-        }
-        _ => {
-            print_indent(indent);
-            println!("{:?}", doc);
-        }
-    }
-}
-
-
-fn read_yaml_config(mut config: &Configuration, verbose: bool) {
-    let config_string = unwrap_or_err!(
-        std::fs::read_to_string(&config.path),
-        "unable to read {:?}: {}", config.path);
-
-    let docs = unwrap_or_err!(
-        yaml_rust::YamlLoader::load_from_str(&config_string),
-        "{:?}: {}", config.path);
-
-    read_yaml_docs(config, &docs);
-}
-
-fn read_yaml_docs(mut config: &Configuration, docs: &Vec<yaml_rust::Yaml>) {
-    if docs.len() < 1 {
-        error!("empty yaml configuration: {:?}", config.path);
-    }
-
-    // Multi document support, doc is a yaml::Yaml
-    let doc = &docs[0];
-
-    // Debug support
-    //println!("{:?}", doc);
-    dump_node(doc, 0);
 }
