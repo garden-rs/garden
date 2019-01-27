@@ -104,7 +104,7 @@ pub struct Garden {
 make_display!(Garden);
 
 // Configuration represents an instantiated garden configuration
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Configuration {
     pub path: Option<std::path::PathBuf>,
     pub variables: Vec<NamedVariable>,
