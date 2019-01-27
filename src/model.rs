@@ -116,6 +116,7 @@ pub struct Configuration {
     pub gardens: Vec<Garden>,
     pub groups: Vec<String>,
     pub trees: Vec<Tree>,
+    pub environment_variables: bool,
     pub verbose: bool,
 }
 

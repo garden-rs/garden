@@ -149,6 +149,7 @@ pub fn new(config: Option<std::path::PathBuf>,
         groups: groups,
         root_path: root_path,
         tree_search_path: tree_search_path,
+        environment_variables: true,
         verbose: verbose,
     };
 

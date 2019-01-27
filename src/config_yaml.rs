@@ -27,6 +27,12 @@ pub fn parse(string: &String, verbose: bool,
         dump_node(doc, 1, "");
     }
 
+    // garden.environment_variables
+    if get_bool(&doc["garden"]["environment_variables"],
+                &mut config.environment_variables) {
+        debug!("yaml: garden.environment_variables = {}",
+               config.environment_variables);
+    }
 
     // garden.root
     if get_path(&doc["garden"]["root"], &mut config.root_path) {
