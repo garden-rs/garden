@@ -155,17 +155,9 @@ pub fn new(config: Option<std::path::PathBuf>,
 
     if found {
         // Read file contents
-        let mut config_string = String::new();
-        match std::fs::read_to_string(cfg.path.as_ref().unwrap()) {
-            Ok(string) => {
-                config_string = string;
-            }
-            Err(err) => {
-                error!("unable to read {:?}: {}", cfg.path, err);
-                return cfg;
-            }
-        }
-
+        let mut config_string = unwrap_or_err_return!(
+            std::fs::read_to_string(cfg.path.as_ref().unwrap()),
+            cfg, "unable to read {:?}: {}", cfg.path);
         parse(&config_string, file_format, verbose, &mut cfg);
     }
 

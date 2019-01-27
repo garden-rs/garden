@@ -40,18 +40,40 @@ macro_rules! error {
 }
 
 /// Unwrap an Option<T> and return the result; terminate if unwrappable.
+/// This variant assumes a void function and returns.
 ///
 /// Parameters:
 /// - `expr`: An expression that results to an Option<T>.
+/// - `message`: Error message format arguments.
 #[macro_export]
-macro_rules! unwrap_or_err (
-    ($expr:expr $(, $err:expr )* ) => (
+macro_rules! unwrap_or_err {
+    ($expr:expr $(, $message:expr )* ) => {
         match $expr {
             Ok(value) => value,
             Err(err) => {
-                error!($( $err ),*, err);
+                error!($( $message ),*, err);
                 return;
             }
         }
-    )
-);
+    }
+}
+
+/// Unwrap an Option<T> and return the result; terminate if unwrappable.
+/// This variant returns the specified value from the function on error.
+///
+/// Parameters:
+/// - `expr`: An expression that results to an Option<T>.
+/// - `retval`: The value to return from the current function on error.
+/// - `message`: Error message format arguments.
+#[macro_export]
+macro_rules! unwrap_or_err_return {
+    ($expr:expr, $retval:ident $(, $message:expr )* ) => {
+        match $expr {
+            Ok(value) => value,
+            Err(err) => {
+                error!($( $message ),*, err);
+                return $retval;
+            }
+        }
+    }
+}
