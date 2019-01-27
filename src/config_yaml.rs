@@ -1,4 +1,3 @@
-use std::convert::AsRef;
 use std::string::ToString;
 
 extern crate yaml_rust;
@@ -6,6 +5,48 @@ use self::yaml_rust::yaml::Yaml;
 use self::yaml_rust::YamlLoader;
 
 use super::model;
+
+
+// Apply YAML Configuration from a string.
+pub fn parse(string: &String, verbose: bool,
+             config: &mut model::Configuration) {
+
+    let docs = unwrap_or_err!(
+        YamlLoader::load_from_str(string.as_ref()),
+        "{:?}: {}", config.path);
+
+    if docs.len() < 1 {
+        error!("empty yaml configuration: {:?}", config.path);
+    }
+
+    // Multi document support, doc is a yaml::Yaml
+    let doc = &docs[0];
+
+    // Debug support
+    if verbose {
+        dump_node(doc, 1, "");
+    }
+
+
+    // garden.root
+    if get_path(&doc["garden"]["root"], &mut config.root_path) {
+        debug!("yaml: garden.root = {}", config.root_path.to_str().unwrap());
+    }
+
+    // garden.shell
+    if get_path(&doc["garden"]["shell"], &mut config.root_path) {
+        debug!("yaml: garden.shell = {}", config.shell.to_str().unwrap());
+    }
+
+    // variables
+    if !get_variables(&doc["variables"], &mut config.variables) {
+        debug!("yaml: no variables");
+    }
+
+    // commands
+    if !get_multivariables(&doc["commands"], &mut config.commands) {
+    }
+}
 
 
 fn print_indent(indent: usize) {
@@ -48,53 +89,12 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
 }
 
 
-// Read configuration from a path.
-pub fn read(config: &mut model::Configuration, verbose: bool) {
-    let config_string = unwrap_or_err!(
-        std::fs::read_to_string(config.path.as_ref().unwrap()),
-        "unable to read {:?}: {}", config.path);
-
-    parse_yaml_string(&config_string, verbose, config);
-}
-
-
-// Create Configuration from a string.
-pub fn parse_yaml_string(string: &String, verbose: bool,
-                         config: &mut model::Configuration) {
-
-    let docs = unwrap_or_err!(
-        YamlLoader::load_from_str(string.as_ref()),
-        "{:?}: {}", config.path);
-
-    if docs.len() < 1 {
-        error!("empty yaml configuration: {:?}", config.path);
+fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
+    if let Yaml::Boolean(boolean) = yaml {
+        *value = *boolean;
+        return true;
     }
-
-    // Multi document support, doc is a yaml::Yaml
-    let doc = &docs[0];
-
-    // Debug support
-    if verbose {
-        dump_node(doc, 1, "");
-    }
-
-    // garden.root
-    if get_path(&doc["garden"]["root"], &mut config.root_path) {
-        debug!("yaml: garden.root = {}", config.root_path.to_str().unwrap());
-    }
-
-    if get_path(&doc["garden"]["shell"], &mut config.root_path) {
-        debug!("yaml: garden.shell = {}", config.shell.to_str().unwrap());
-    }
-
-    // variables
-    if !get_variables(&doc["variables"], &mut config.variables) {
-        debug!("yaml: no variables");
-    }
-
-    // commands
-    if !get_multivariables(&doc["commands"], &mut config.commands) {
-    }
+    return false;
 }
 
 

@@ -5,7 +5,7 @@ use super::model;
 use super::config_yaml;
 
 #[derive(Clone, Copy)]
-enum FileFormat {
+pub enum FileFormat {
     JSON,
     YAML,
     UNKNOWN,
@@ -129,7 +129,6 @@ pub fn new(config: Option<std::path::PathBuf>,
             }
         }
     }
-
     if verbose {
         debug!("config path is {}{}",
                path.as_ref().unwrap().to_str().unwrap(),
@@ -154,29 +153,46 @@ pub fn new(config: Option<std::path::PathBuf>,
     };
 
     if found {
-        // parse yaml
-        match file_format {
-            FileFormat::YAML => {
-                if verbose {
-                    debug!("file format: yaml");
-                }
-                config_yaml::read(&mut cfg, verbose);
+        // Read file contents
+        let mut config_string = String::new();
+        match std::fs::read_to_string(cfg.path.as_ref().unwrap()) {
+            Ok(string) => {
+                config_string = string;
             }
-            FileFormat::JSON => {
-                if verbose {
-                    debug!("file format: json");
-                }
-                error!("json support is currently unimplemented");
-            }
-            _ => {
-                error!("unsupported config file format");
+            Err(err) => {
+                error!("unable to read {:?}: {}", cfg.path, err);
+                return cfg;
             }
         }
+
+        parse(&config_string, file_format, verbose, &mut cfg);
     }
 
-    // Execute commands for each tree
     if verbose {
         debug!("configuration:\n{}", cfg);
     }
     return cfg;
+}
+
+
+pub fn parse(config_string: &String, file_format: FileFormat,
+             verbose: bool, mut cfg: &mut model::Configuration) {
+    // Parse and apply configuration
+    match file_format {
+        FileFormat::YAML => {
+            if verbose {
+                debug!("file format: yaml");
+            }
+            config_yaml::parse(&config_string, verbose, &mut cfg);
+        }
+        FileFormat::JSON => {
+            if verbose {
+                debug!("file format: json");
+            }
+            error!("json support is currently unimplemented");
+        }
+        _ => {
+            error!("unsupported config file format");
+        }
+    }
 }
