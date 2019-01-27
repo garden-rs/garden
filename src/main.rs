@@ -1,7 +1,8 @@
-#[macro_use]
-extern crate garden;
 extern crate argparse;
 extern crate subprocess;
+
+#[macro_use]
+extern crate garden;
 
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
@@ -81,7 +82,8 @@ fn garden_help(verbose: bool, mut args: Vec<String>) {
     std::process::exit(garden::cmd::get_status(&help_cmd));
 }
 
-fn garden_exec(verbose: bool, mut args: Vec<String>) {
+fn garden_exec(config_file: Option<std::path::PathBuf>,
+               verbose: bool, mut args: Vec<String>) {
     args.insert(0, "garden exec".to_string());
 
     let mut name = String::new();
@@ -107,15 +109,16 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
     }
 
     // Resolve garden and tree names into a set of trees
-    let config = garden::config::new(verbose);
+    let config = garden::config::new(config_file, verbose);
 
     // Execute commands for each tree
     if verbose {
+        debug!("subcommand: exec");
         debug!("name: {}", name);
-        debug!("exec arguments");
+        debug!("exec arguments:");
         let mut i: i32 = 0;
         for arg in &command {
-            debug!("args[{:02}] = {}", i, arg);
+            debug!("\targs[{:02}] = {}", i, arg);
             i += 1;
         }
     }
@@ -124,27 +127,41 @@ fn garden_exec(verbose: bool, mut args: Vec<String>) {
 fn main() {
     let mut verbose = false;
     let mut subcommand = Command::help;
+    let mut config_file_str = String::new();
     let mut args = Vec::new();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden - git tree organizer");
+
         ap.refer(&mut verbose)
             .add_option(&["-v", "--verbose"],
                         argparse::StoreTrue, "Be verbose");
+
+        ap.refer(&mut config_file_str)
+            .add_option(&["-c", "--config"], argparse::Store, "Be verbose");
+
         ap.refer(&mut subcommand).required()
             .add_argument("command", argparse::Store,
                 "Command to run {add, exec, help, init, shell, status}");
+
         ap.refer(&mut args)
             .add_argument("arguments", argparse::List,
                 "Arguments for sub-command");
+
         ap.stop_on_first_argument(true);
         ap.parse_args_or_exit();
+    }
+
+    // Process arguments
+    let mut config_file: Option<std::path::PathBuf> = None;
+    if config_file_str.len() > 1 {
+        config_file = Some(std::path::PathBuf::from(config_file_str));
     }
 
     match subcommand {
         Command::add => garden_help(verbose, args),
         Command::help => garden_help(verbose, args),
-        Command::exec => garden_exec(verbose, args),
+        Command::exec => garden_exec(config_file, verbose, args),
         Command::init => garden_help(verbose, args),
         Command::status => garden_help(verbose, args),
         Command::shell => garden_help(verbose, args),

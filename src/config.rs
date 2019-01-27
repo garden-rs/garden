@@ -1,4 +1,5 @@
 extern crate dirs;
+use std::convert::AsRef;
 
 use super::model;
 use super::config_yaml;
@@ -8,20 +9,6 @@ enum FileFormat {
     JSON,
     YAML,
     UNKNOWN,
-}
-
-// Configuration contains multiple gardens
-pub struct Configuration {
-    pub path: std::path::PathBuf,
-    pub variables: Vec<model::Variable>,
-    pub shell: std::path::PathBuf,
-    pub environment: Vec<model::NameValue>,
-    pub commands: Vec<model::NameValue>,
-    pub tree_search_path: Vec<std::path::PathBuf>,
-    pub root_path: std::path::PathBuf,
-    pub gardens: Vec<model::Garden>,
-    pub groups: Vec<String>,
-    pub verbose: bool,
 }
 
 // Search for configuration in the following locations:
@@ -82,56 +69,84 @@ fn search_path() -> Vec<std::path::PathBuf> {
     return paths;
 }
 
-pub fn new(verbose: bool) -> Configuration {
+
+pub fn new(config: Option<std::path::PathBuf>,
+           verbose: bool) -> model::Configuration
+{
     let mut file_format = FileFormat::UNKNOWN;
-    let mut path = std::path::PathBuf::new();
-    let shell = std::path::PathBuf::new();
-    let search_path = search_path();
+    let mut path: Option<std::path::PathBuf> = None;
+    let shell = std::path::PathBuf::from("/bin/sh");
     let variables = Vec::new();
     let environment = Vec::new();
     let commands = Vec::new();
     let gardens = Vec::new();
     let groups = Vec::new();
     let tree_search_path = Vec::new();
+    let trees = Vec::new();
     let root_path = std::path::PathBuf::new();
 
     // Find garden.yaml in the search path
     let mut found = false;
-    for entry in &search_path {
-        let mut yaml_candidate = entry.to_path_buf();
-        yaml_candidate.push("garden.yaml");
-        if yaml_candidate.exists() {
-            path = yaml_candidate.to_path_buf();
-            file_format = FileFormat::YAML;
-            found = true;
-            break;
+    if let Some(config_path) = config {
+        if config_path.is_file() && config_path.extension().is_some() {
+            let ref ext = config_path.extension().unwrap()
+                .to_string_lossy().to_lowercase();
+            match ext.as_ref() {
+                "json" => {
+                    path = Some(config_path);
+                    file_format = FileFormat::JSON;
+                    found = true;
+                }
+                "yaml" => {
+                    path = Some(config_path);
+                    file_format = FileFormat::YAML;
+                    found = true;
+                }
+                _ => { error!("unrecognized config file format: {}", ext); }
+            }
         }
+    }
 
-        let mut json_candidate  = entry.to_path_buf();
-        json_candidate.push("garden.json");
-        if json_candidate.exists() {
-            path = json_candidate.to_path_buf();
-            file_format = FileFormat::JSON;
-            found = true;
-            break;
+    if !found {
+        for entry in search_path() {
+            let formats = vec!(
+                (FileFormat::JSON, "json"),
+                (FileFormat::YAML, "yaml"),
+            );
+            for fmt in formats {
+                let (fmt_format, fmt_ext) = fmt;
+                let mut candidate = entry.to_path_buf();
+                candidate.push(String::from("garden.") + &fmt_ext);
+                if candidate.exists() {
+                    file_format = fmt_format;
+                    path = Some(candidate);
+                    found = true;
+                    break;
+                }
+            }
+            if found {
+                break;
+            }
         }
     }
 
     if verbose {
-        debug!("config path is {:?} {}", path,
+        debug!("config path is {}{}",
+               path.as_ref().unwrap().to_str().unwrap(),
                match found {
                    true => "",
                    false => " (NOT FOUND)",
                });
     }
 
-    let config = Configuration {
+    let mut cfg = model::Configuration{
         path: path,
         shell: shell,
         variables: variables,
         environment: environment,
         commands: commands,
         gardens: gardens,
+        trees: trees,
         groups: groups,
         root_path: root_path,
         tree_search_path: tree_search_path,
@@ -145,7 +160,7 @@ pub fn new(verbose: bool) -> Configuration {
                 if verbose {
                     debug!("file format: yaml");
                 }
-                config_yaml::read(&config, verbose);
+                config_yaml::read(&mut cfg, verbose);
             }
             FileFormat::JSON => {
                 if verbose {
@@ -158,5 +173,10 @@ pub fn new(verbose: bool) -> Configuration {
             }
         }
     }
-    return config;
+
+    // Execute commands for each tree
+    if verbose {
+        debug!("configuration:\n{}", cfg);
+    }
+    return cfg;
 }

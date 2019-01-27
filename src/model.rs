@@ -102,3 +102,21 @@ pub struct Garden {
 }
 
 make_display!(Garden);
+
+// Configuration represents an instantiated garden configuration
+#[derive(Debug)]
+pub struct Configuration {
+    pub path: Option<std::path::PathBuf>,
+    pub variables: Vec<NamedVariable>,
+    pub shell: std::path::PathBuf,
+    pub environment: Vec<MultiVariable>,
+    pub commands: Vec<MultiVariable>,
+    pub tree_search_path: Vec<std::path::PathBuf>,
+    pub root_path: std::path::PathBuf,
+    pub gardens: Vec<Garden>,
+    pub groups: Vec<String>,
+    pub trees: Vec<Tree>,
+    pub verbose: bool,
+}
+
+make_display!(Configuration);
