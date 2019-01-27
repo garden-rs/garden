@@ -68,6 +68,7 @@ Example `garden.yaml`:
             environment:
                 PATH: ~/apps/gitdev/bin
             trees: git, gitk
+
     templates:
         rust:
             environment:
@@ -192,10 +193,10 @@ Execute a command on all of the trees matched by `<tree-expression>`.
 
 ### custom commands
 
-    garden cmd <custom-command> <tree-expression> <arguments>*
+    garden cmd <custom-command> <tree-expression>*
 
 Run a configured command over the trees matching `<tree-expression>`.
-For example, to build Git, `garden build git`.
+For example, to build Git, `garden cmd build git`.
 
 Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level override commands defined on a tree.
