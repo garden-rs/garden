@@ -1,27 +1,5 @@
 use std::collections::HashSet;
 
-macro_rules! impl_display_fmt {
-    ($x:ident, $fmt:expr) => (
-        impl std::fmt::Display for $x {
-            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                return write!(f, $fmt, self);
-            }
-        }
-    )
-}
-
-macro_rules! impl_display {
-    ($x:ident) => {
-        impl_display_fmt!($x, "{:#?}");
-    }
-}
-
-macro_rules! impl_display_brief {
-    ($x:ident) => {
-        impl_display_fmt!($x, "{:?}");
-    }
-}
-
 // Remotes an minimum have a name and a URL
 #[derive(Debug)]
 pub struct Remote {
