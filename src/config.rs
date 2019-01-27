@@ -74,16 +74,8 @@ pub fn new(config: Option<std::path::PathBuf>,
            verbose: bool) -> model::Configuration
 {
     let mut file_format = FileFormat::UNKNOWN;
-    let mut path: Option<std::path::PathBuf> = None;
-    let shell = std::path::PathBuf::from("/bin/sh");
-    let variables = Vec::new();
-    let environment = Vec::new();
-    let commands = Vec::new();
-    let gardens = Vec::new();
-    let groups = Vec::new();
-    let tree_search_path = Vec::new();
-    let trees = Vec::new();
-    let root_path = std::path::PathBuf::new();
+    let mut cfg = model::Configuration::new();
+    cfg.verbose = verbose;
 
     // Find garden.yaml in the search path
     let mut found = false;
@@ -93,16 +85,19 @@ pub fn new(config: Option<std::path::PathBuf>,
                 .to_string_lossy().to_lowercase();
             match ext.as_ref() {
                 "json" => {
-                    path = Some(config_path);
+                    cfg.path = Some(config_path);
                     file_format = FileFormat::JSON;
                     found = true;
                 }
                 "yaml" => {
-                    path = Some(config_path);
+                    cfg.path = Some(config_path);
                     file_format = FileFormat::YAML;
                     found = true;
                 }
-                _ => { error!("unrecognized config file format: {}", ext); }
+                _ => {
+                    error!("unrecognized config file format: {}", ext);
+                    return cfg;
+                }
             }
         }
     }
@@ -119,7 +114,7 @@ pub fn new(config: Option<std::path::PathBuf>,
                 candidate.push(String::from("garden.") + &fmt_ext);
                 if candidate.exists() {
                     file_format = fmt_format;
-                    path = Some(candidate);
+                    cfg.path = Some(candidate);
                     found = true;
                     break;
                 }
@@ -130,28 +125,12 @@ pub fn new(config: Option<std::path::PathBuf>,
         }
     }
     if verbose {
-        debug!("config path is {}{}",
-               path.as_ref().unwrap().to_str().unwrap(),
+        debug!("config path is {:?}{}", cfg.path,
                match found {
                    true => "",
                    false => " (NOT FOUND)",
                });
     }
-
-    let mut cfg = model::Configuration{
-        path: path,
-        shell: shell,
-        variables: variables,
-        environment: environment,
-        commands: commands,
-        gardens: gardens,
-        trees: trees,
-        groups: groups,
-        root_path: root_path,
-        tree_search_path: tree_search_path,
-        environment_variables: true,
-        verbose: verbose,
-    };
 
     if found {
         // Read file contents
@@ -162,7 +141,7 @@ pub fn new(config: Option<std::path::PathBuf>,
     }
 
     if verbose {
-        debug!("configuration:\n{}", cfg);
+        debug!("{}", cfg);
     }
     return cfg;
 }

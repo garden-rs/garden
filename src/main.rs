@@ -154,7 +154,7 @@ fn main() {
 
     // Process arguments
     let mut config_file: Option<std::path::PathBuf> = None;
-    if config_file_str.len() > 1 {
+    if config_file_str.len() > 0 {
         config_file = Some(std::path::PathBuf::from(config_file_str));
     }
 

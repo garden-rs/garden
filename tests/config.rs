@@ -2,9 +2,7 @@ extern crate garden;
 
 
 fn from_yaml_string(string: &String) -> garden::model::Configuration {
-    let mut config: garden::model::Configuration =
-        std::default::Default::default();
-
+    let mut config = garden::model::Configuration::new();
     let file_format = garden::config::FileFormat::YAML;
     garden::config::parse(string, file_format, false, &mut config);
 
@@ -12,9 +10,18 @@ fn from_yaml_string(string: &String) -> garden::model::Configuration {
 }
 
 
+/// Test defaults
+fn config_default() {
+    let config = garden::model::Configuration::new();
+    assert_eq!(config.shell.to_string_lossy(), "zsh");
+    assert_eq!(config.environment_variables, true);
+    assert_eq!(config.verbose, false);
+}
+
+
 /// Test core garden settings
 #[test]
-fn garden_core() {
+fn core() {
     let string = r#"
 garden:
     root: /tmp

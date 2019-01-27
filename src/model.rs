@@ -1,11 +1,25 @@
-macro_rules! make_display {
-    ($x:ident) => (
+use std::collections::HashSet;
+
+macro_rules! impl_display_fmt {
+    ($x:ident, $fmt:expr) => (
         impl std::fmt::Display for $x {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                return write!(f, "{:#?}", self);
+                return write!(f, $fmt, self);
             }
         }
     )
+}
+
+macro_rules! impl_display {
+    ($x:ident) => {
+        impl_display_fmt!($x, "{:#?}");
+    }
+}
+
+macro_rules! impl_display_brief {
+    ($x:ident) => {
+        impl_display_fmt!($x, "{:?}");
+    }
 }
 
 // Remotes an minimum have a name and a URL
@@ -15,7 +29,7 @@ pub struct Remote {
     pub url: String,
 }
 
-make_display!(Remote);
+impl_display_brief!(Remote);
 
 /* Config files can define a sequence of variables that are
  * iteratively calculated.  Variables can reference other
@@ -38,7 +52,7 @@ pub struct Variable {
     pub value: Option<String>,
 }
 
-make_display!(Variable);
+impl_display_brief!(Variable);
 
 // Named variables with a single value
 #[derive(Debug)]
@@ -46,7 +60,8 @@ pub struct NamedVariable  {
     pub name: String,
     pub var: Variable,
 }
-make_display!(NamedVariable);
+
+impl_display_brief!(NamedVariable);
 
 // Simple Name/Value pairs
 #[derive(Debug)]
@@ -55,7 +70,7 @@ pub struct NamedValue {
     pub value: String,
 }
 
-make_display!(NamedValue);
+impl_display_brief!(NamedValue);
 
 // Named variables with multiple values
 #[derive(Debug)]
@@ -64,7 +79,7 @@ pub struct MultiVariable {
     pub values: Vec<Variable>,
 }
 
-make_display!(MultiVariable);
+impl_display!(MultiVariable);
 
 // Trees represent a single worktree
 #[derive(Debug)]
@@ -79,7 +94,7 @@ pub struct Tree {
     pub gitconfig: Vec<NamedValue>,
 }
 
-make_display!(Tree);
+impl_display!(Tree);
 
 #[derive(Debug)]
 pub struct Group {
@@ -87,7 +102,7 @@ pub struct Group {
     pub members: Vec<String>,
 }
 
-make_display!(Group);
+impl_display!(Group);
 
 // Gardens aggregate trees
 #[derive(Debug)]
@@ -101,23 +116,37 @@ pub struct Garden {
     pub gitconfig: Vec<NamedValue>,
 }
 
-make_display!(Garden);
+impl_display!(Garden);
 
 // Configuration represents an instantiated garden configuration
 #[derive(Debug, Default)]
 pub struct Configuration {
-    pub path: Option<std::path::PathBuf>,
-    pub variables: Vec<NamedVariable>,
-    pub shell: std::path::PathBuf,
-    pub environment: Vec<MultiVariable>,
     pub commands: Vec<MultiVariable>,
-    pub tree_search_path: Vec<std::path::PathBuf>,
-    pub root_path: std::path::PathBuf,
+    pub debug: HashSet<String>,
+    pub environment: Vec<MultiVariable>,
+    pub environment_variables: bool,
     pub gardens: Vec<Garden>,
     pub groups: Vec<String>,
+    pub path: Option<std::path::PathBuf>,
+    pub root_path: std::path::PathBuf,
+    pub shell: std::path::PathBuf,
+    pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: Vec<Tree>,
-    pub environment_variables: bool,
+    pub variables: Vec<NamedVariable>,
     pub verbose: bool,
 }
 
-make_display!(Configuration);
+
+impl_display!(Configuration);
+
+
+/// Create a default Configuration
+impl Configuration {
+    pub fn new() -> Self {
+        return Configuration {
+            environment_variables: true,
+            shell: std::path::PathBuf::from("zsh"),
+            ..std::default::Default::default()
+        }
+    }
+}

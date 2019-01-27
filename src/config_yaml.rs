@@ -29,14 +29,14 @@ pub fn parse(string: &String, verbose: bool,
 
     // garden.environment_variables
     if get_bool(&doc["garden"]["environment_variables"],
-                &mut config.environment_variables) {
+                &mut config.environment_variables) && verbose {
         debug!("yaml: garden.environment_variables = {}",
                config.environment_variables);
     }
 
     // garden.root
-    if get_path(&doc["garden"]["root"], &mut config.root_path) {
-        debug!("yaml: garden.root = {}", config.root_path.to_str().unwrap());
+    if get_path(&doc["garden"]["root"], &mut config.root_path) && verbose {
+        debug!("yaml: garden.root = {:?}", config.root_path);
     }
 
     // garden.shell
@@ -45,12 +45,19 @@ pub fn parse(string: &String, verbose: bool,
     }
 
     // variables
-    if !get_variables(&doc["variables"], &mut config.variables) {
+    if verbose {
+        debug!("yaml: read variables");
+    }
+    if !get_variables(&doc["variables"], &mut config.variables) && verbose {
         debug!("yaml: no variables");
     }
 
     // commands
-    if !get_multivariables(&doc["commands"], &mut config.commands) {
+    if verbose {
+        debug!("yaml: read command multivariables");
+    }
+    if !get_multivariables(&doc["commands"], &mut config.commands) && verbose {
+        debug!("yaml: no commands");
     }
 }
 
@@ -142,7 +149,6 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
 
 
 fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
-    debug!("yaml: read variables");
     if let Yaml::Hash(ref hash) = yaml {
         for (k, v) in hash {
             match v {
@@ -185,7 +191,6 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
 
 fn get_multivariables(yaml: &Yaml,
                       vec: &mut Vec<model::MultiVariable>) -> bool {
-    debug!("yaml: read multivariables");
     if let Yaml::Hash(ref hash) = yaml {
         for (k, v) in hash {
             match v {
