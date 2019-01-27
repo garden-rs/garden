@@ -36,18 +36,21 @@ fn search_path() -> Vec<std::path::PathBuf> {
     // Result: Vec<PathBufs> in priority order
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
 
+    let current_dir = std::env::current_dir().unwrap();
+    let home_dir = dirs::home_dir().unwrap();
+
     // . Current directory
-    paths.push(std::env::current_dir().unwrap());
+    paths.push(current_dir.to_path_buf());
 
     // ./garden
-    let mut current_garden_dir  = std::env::current_dir().unwrap();
+    let mut current_garden_dir  = current_dir.to_path_buf();
     current_garden_dir.push("garden");
     if current_garden_dir.exists() {
         paths.push(current_garden_dir);
     }
 
     // ./etc/garden
-    let mut current_etc_garden_dir  = std::env::current_dir().unwrap();
+    let mut current_etc_garden_dir = current_dir.to_path_buf();
     current_etc_garden_dir.push("etc");
     current_etc_garden_dir.push("garden");
     if current_etc_garden_dir.exists() {
@@ -55,7 +58,7 @@ fn search_path() -> Vec<std::path::PathBuf> {
     }
 
     // ~/.config/garden
-    let mut home_config_dir = dirs::home_dir().unwrap();
+    let mut home_config_dir = home_dir.to_path_buf();
     home_config_dir.push(".config");
     home_config_dir.push("garden");
     if home_config_dir.exists() {
@@ -63,7 +66,7 @@ fn search_path() -> Vec<std::path::PathBuf> {
     }
 
     // ~/etc/garden
-    let mut home_etc_dir = dirs::home_dir().unwrap();
+    let mut home_etc_dir = home_dir.to_path_buf();
     home_etc_dir.push("etc");
     home_etc_dir.push("garden");
     if home_etc_dir.exists() {
