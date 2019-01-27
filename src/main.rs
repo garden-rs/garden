@@ -4,6 +4,7 @@ extern crate subprocess;
 #[macro_use]
 extern crate garden;
 
+
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
 enum Command {
@@ -15,14 +16,21 @@ enum Command {
     status,
 }
 
-impl std::fmt::Display for Command {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{:?}", self)
-    }
+impl_display_brief!(Command);
+
+
+#[derive(Default)]
+struct CommandOptions {
+    args: Vec<String>,
+    config_filename: std::option::Option<String>,
+    debug: String,
+    verbose: bool,
 }
 
+
 impl std::str::FromStr for Command {
-    type Err = ();
+    type Err = ();  // For the FromStr trait
+
     fn from_str(src: &str) -> Result<Command, ()> {
         return match src {
             "add" => Ok(Command::add),
