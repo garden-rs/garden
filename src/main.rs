@@ -5,15 +5,20 @@ extern crate subprocess;
 extern crate garden;
 
 
-#[allow(non_camel_case_types)]
 #[derive(Debug)]
 enum Command {
-    add,
-    exec,
-    help,
-    init,
-    shell,
-    status,
+    Add,
+    Exec,
+    Help,
+    Init,
+    Shell,
+    Status,
+}
+
+impl std::default::Default for Command {
+    fn default() -> Self {
+        return Command::Help;
+    }
 }
 
 impl_display_brief!(Command);
@@ -22,9 +27,28 @@ impl_display_brief!(Command);
 #[derive(Default)]
 struct CommandOptions {
     args: Vec<String>,
-    config_filename: std::option::Option<String>,
-    debug: String,
+    debug: std::collections::HashSet<String>,
+    debug_str: String,
+    filename: Option<std::path::PathBuf>,
+    filename_str: String,
+    subcommand: Command,
     verbose: bool,
+}
+
+impl CommandOptions {
+    fn update(&mut self) {
+        if self.filename_str.len() > 0 {
+            self.filename = Some(std::path::PathBuf::from(&self.filename_str));
+        }
+
+        for debug_name in self.debug_str.split(",") {
+            self.debug.insert(debug_name.to_string());
+        }
+    }
+
+    fn is_debug(&self, name: &str) -> bool {
+        return self.debug.contains(name);
+    }
 }
 
 
@@ -33,22 +57,22 @@ impl std::str::FromStr for Command {
 
     fn from_str(src: &str) -> Result<Command, ()> {
         return match src {
-            "add" => Ok(Command::add),
-            "ex" => Ok(Command::exec),
-            "exec" => Ok(Command::exec),
-            "help" => Ok(Command::help),
-            "init" => Ok(Command::init),
-            "sh" => Ok(Command::shell),
-            "shell" => Ok(Command::shell),
-            "st" => Ok(Command::status),
-            "stat" => Ok(Command::status),
-            "status" => Ok(Command::status),
+            "add" => Ok(Command::Add),
+            "ex" => Ok(Command::Exec),
+            "exec" => Ok(Command::Exec),
+            "help" => Ok(Command::Help),
+            "init" => Ok(Command::Init),
+            "sh" => Ok(Command::Shell),
+            "shell" => Ok(Command::Shell),
+            "st" => Ok(Command::Status),
+            "stat" => Ok(Command::Status),
+            "status" => Ok(Command::Status),
             _ => Err(()),
         }
     }
 }
 
-fn garden_help(verbose: bool, args: &mut Vec<String>) {
+fn garden_help(options: &mut CommandOptions) {
     let cmd_path = match std::env::current_exe() {
         Err(_) => std::path::PathBuf::from("garden"),
         Ok(path) => path,
@@ -65,10 +89,10 @@ fn garden_help(verbose: bool, args: &mut Vec<String>) {
             .add_argument("command", argparse::Store,
                           "Command help to display");
 
-        args.insert(0, "garden help".to_string());
-        ap.parse(args.to_vec(), &mut std::io::stdout(), &mut std::io::stderr())
-            .map_err(|c| std::process::exit(c))
-            .ok();
+        options.args.insert(0, "garden help".to_string());
+        ap.parse(options.args.to_vec(),
+                 &mut std::io::stdout(), &mut std::io::stderr())
+            .map_err(|c| std::process::exit(c)).ok();
     }
 
     // garden help foo -> garden foo --help
@@ -78,7 +102,7 @@ fn garden_help(verbose: bool, args: &mut Vec<String>) {
 
     help_cmd.push(std::path::PathBuf::from("--help"));
 
-    if verbose {
+    if options.verbose {
         debug!("help command");
         let mut i: i32 = 0;
         for arg in &help_cmd {
@@ -90,9 +114,8 @@ fn garden_help(verbose: bool, args: &mut Vec<String>) {
     std::process::exit(garden::cmd::get_status(&help_cmd));
 }
 
-fn garden_exec(config_file: Option<std::path::PathBuf>,
-               verbose: bool, debug: &String, args: &mut Vec<String>) {
-    args.insert(0, "garden exec".to_string());
+fn garden_exec(options: &mut CommandOptions) {
+    options.args.insert(0, "garden exec".to_string());
 
     let mut trees = String::new();
     let mut command: Vec<String> = Vec::new();
@@ -111,7 +134,7 @@ fn garden_exec(config_file: Option<std::path::PathBuf>,
                           "Command to over resolved trees");
 
         ap.stop_on_first_argument(true);
-        if let Err(err) = ap.parse(args.to_vec(),
+        if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
             std::process::exit(err);
@@ -119,10 +142,11 @@ fn garden_exec(config_file: Option<std::path::PathBuf>,
     }
 
     // Resolve garden and tree names into a set of trees
-    let config = garden::config::new(config_file, verbose);
+    let config_verbose = options.is_debug("config");
+    let config = garden::config::new(&options.filename, config_verbose);
 
     // Execute commands for each tree
-    if verbose {
+    if options.is_debug("exec") {
         debug!("subcommand: exec");
         debug!("trees: {}", trees);
         debug!("exec arguments:");
@@ -135,33 +159,29 @@ fn garden_exec(config_file: Option<std::path::PathBuf>,
 }
 
 fn main() {
-    let mut verbose = false;
-    let mut subcommand = Command::help;
-    let mut config_file_str = String::new();
-    let mut debug = String::new();
-    let mut args = Vec::new();
+    let mut options = CommandOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden - git tree organizer");
 
-        ap.refer(&mut config_file_str)
+        ap.refer(&mut options.filename_str)
             .add_option(&["-c", "--config"], argparse::Store,
-                        "Specify a config file");
+                        "Specify the garden configuration filename");
 
-        ap.refer(&mut debug)
+        ap.refer(&mut options.debug_str)
             .add_option(&["-d", "--debug"], argparse::Store,
-                        "Debug the set of comma-seperated categories");
+                        "Debug categories to enable (comma-separated)");
 
-        ap.refer(&mut verbose)
+        ap.refer(&mut options.verbose)
             .add_option(&["-v", "--verbose"],
                         argparse::StoreTrue, "Be verbose");
 
 
-        ap.refer(&mut subcommand).required()
+        ap.refer(&mut options.subcommand).required()
             .add_argument("command", argparse::Store,
                 "Command to run {add, exec, help, init, shell, status}");
 
-        ap.refer(&mut args)
+        ap.refer(&mut options.args)
             .add_argument("arguments", argparse::List,
                 "Arguments for sub-command");
 
@@ -169,18 +189,14 @@ fn main() {
         ap.parse_args_or_exit();
     }
 
-    // Process arguments
-    let mut config_file: Option<std::path::PathBuf> = None;
-    if config_file_str.len() > 0 {
-        config_file = Some(std::path::PathBuf::from(config_file_str));
-    }
+    options.update();
 
-    match subcommand {
-        Command::add => garden_help(verbose, &mut args),
-        Command::help => garden_help(verbose, &mut args),
-        Command::exec => garden_exec(config_file, verbose, &debug, &mut args),
-        Command::init => garden_help(verbose, &mut args),
-        Command::status => garden_help(verbose, &mut args),
-        Command::shell => garden_help(verbose, &mut args),
+    match options.subcommand {
+        Command::Add => garden_help(&mut options),
+        Command::Help => garden_help(&mut options),
+        Command::Exec => garden_exec(&mut options),
+        Command::Init => garden_help(&mut options),
+        Command::Status => garden_help(&mut options),
+        Command::Shell => garden_help(&mut options),
     }
 }

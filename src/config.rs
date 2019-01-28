@@ -70,9 +70,9 @@ fn search_path() -> Vec<std::path::PathBuf> {
 }
 
 
-pub fn new(config: Option<std::path::PathBuf>,
-           verbose: bool) -> model::Configuration
-{
+pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
+    -> model::Configuration {
+
     let mut file_format = FileFormat::UNKNOWN;
     let mut cfg = model::Configuration::new();
     cfg.verbose = verbose;
@@ -85,12 +85,12 @@ pub fn new(config: Option<std::path::PathBuf>,
                 .to_string_lossy().to_lowercase();
             match ext.as_ref() {
                 "json" => {
-                    cfg.path = Some(config_path);
+                    cfg.path = Some(config_path.to_path_buf());
                     file_format = FileFormat::JSON;
                     found = true;
                 }
                 "yaml" => {
-                    cfg.path = Some(config_path);
+                    cfg.path = Some(config_path.to_path_buf());
                     file_format = FileFormat::YAML;
                     found = true;
                 }
@@ -134,7 +134,7 @@ pub fn new(config: Option<std::path::PathBuf>,
 
     if found {
         // Read file contents
-        let mut config_string = unwrap_or_err_return!(
+        let config_string = unwrap_or_err_return!(
             std::fs::read_to_string(cfg.path.as_ref().unwrap()),
             cfg, "unable to read {:?}: {}", cfg.path);
         parse(&config_string, file_format, verbose, &mut cfg);

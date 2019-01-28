@@ -40,7 +40,7 @@ pub fn parse(string: &String, verbose: bool,
     }
 
     // garden.shell
-    if get_path(&doc["garden"]["shell"], &mut config.root_path) {
+    if get_path(&doc["garden"]["shell"], &mut config.root_path) && verbose {
         debug!("yaml: garden.shell = {}", config.shell.to_str().unwrap());
     }
 
