@@ -282,7 +282,8 @@ fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
         for (name, value) in hash {
             let mut group = model::Group::default();
             get_str(&name, &mut group.name);
-            get_vec_str(&value["members"], &mut group.members);
+            get_vec_str(&value, &mut group.members);
+            groups.push(group);
         }
         return true;
     }

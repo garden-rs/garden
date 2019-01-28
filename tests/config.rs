@@ -104,3 +104,22 @@ templates:
     assert_eq!(config.templates[1].variables[0].name, "baz");
     assert_eq!(config.templates[1].variables[0].var.expr, "zax");
 }
+
+
+/// Test Groups
+#[test]
+fn groups() {
+    let string = r#"
+groups:
+    cola: [git, qtpy, cola]
+    test: [a, b, c]
+    "#.to_string();
+
+    let config = from_yaml_string(&string);
+    assert_eq!(config.groups.len(), 2);
+    assert_eq!(config.groups[0].name, "cola");
+    assert_eq!(config.groups[0].members, ["git", "qtpy", "cola"]);
+
+    assert_eq!(config.groups[1].name, "test");
+    assert_eq!(config.groups[1].members, ["a", "b", "c"]);
+}
