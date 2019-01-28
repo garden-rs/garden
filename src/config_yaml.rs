@@ -46,7 +46,7 @@ pub fn parse(string: &String, verbose: bool,
 
     // variables
     if verbose {
-        debug!("yaml: read variables");
+        debug!("yaml: variables");
     }
     if !get_variables(&doc["variables"], &mut config.variables) && verbose {
         debug!("yaml: no variables");
@@ -54,10 +54,26 @@ pub fn parse(string: &String, verbose: bool,
 
     // commands
     if verbose {
-        debug!("yaml: read command multivariables");
+        debug!("yaml: commands");
     }
     if !get_multivariables(&doc["commands"], &mut config.commands) && verbose {
         debug!("yaml: no commands");
+    }
+
+    // templates
+    if verbose {
+        debug!("yaml: templates");
+    }
+    if !get_templates(&doc["templates"], &mut config.templates) && verbose {
+        debug!("yaml: no templates");
+    }
+
+    // groups
+    if verbose {
+        debug!("yaml: groups");
+    }
+    if !get_groups(&doc["groups"], &mut config.groups) && verbose {
+        debug!("yaml: no groups");
     }
 }
 
@@ -231,6 +247,42 @@ fn get_multivariables(yaml: &Yaml,
                     error!("invalid variables");
                 }
             }
+        }
+        return true;
+    }
+    return false;
+}
+
+
+fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
+    if let Yaml::Hash(ref hash) = yaml {
+        for (name, value) in hash {
+            templates.push(get_template(name, value));
+        }
+        return true;
+    }
+    return false;
+}
+
+
+fn get_template(name: &Yaml, value: &Yaml) -> model::Template {
+    let mut template = model::Template::default();
+    get_str(&name, &mut template.name);
+    get_vec_str(&value["extend"], &mut template.extend);
+    get_variables(&value["variables"], &mut template.variables);
+    get_multivariables(&value["environment"], &mut template.environment);
+    get_multivariables(&value["commands"], &mut template.commands);
+
+    return template;
+}
+
+
+fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
+    if let Yaml::Hash(ref hash) = yaml {
+        for (name, value) in hash {
+            let mut group = model::Group::default();
+            get_str(&name, &mut group.name);
+            get_vec_str(&value["members"], &mut group.members);
         }
         return true;
     }

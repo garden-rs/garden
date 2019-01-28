@@ -75,3 +75,32 @@ commands:
     assert_eq!(config.commands[1].values[0].expr, "echo first");
     assert_eq!(config.commands[1].values[1].expr, "echo second");
 }
+
+
+/// Test templates
+#[test]
+fn templates() {
+    let string = r#"
+templates:
+    template1:
+        variables:
+            foo: bar
+    template2:
+        extend: template1
+        variables:
+            baz: zax
+    "#.to_string();
+
+    let config = from_yaml_string(&string);
+    assert_eq!(config.templates.len(), 2);
+    assert_eq!(config.templates[0].name, "template1");
+    assert_eq!(config.templates[0].variables.len(), 1);
+    assert_eq!(config.templates[0].variables[0].name, "foo");
+    assert_eq!(config.templates[0].variables[0].var.expr, "bar");
+
+    assert_eq!(config.templates[1].name, "template2");
+    assert_eq!(config.templates[1].extend, ["template1"]);
+    assert_eq!(config.templates[1].variables.len(), 1);
+    assert_eq!(config.templates[1].variables[0].name, "baz");
+    assert_eq!(config.templates[1].variables[0].var.expr, "zax");
+}

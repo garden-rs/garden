@@ -63,7 +63,7 @@ impl_display!(MultiVariable);
 #[derive(Debug)]
 pub struct Tree {
     pub name: String,
-    pub path: std::path::PathBuf,
+    pub path: String,
     pub remotes: Vec<Remote>,
     pub variables: Vec<Variable>,
     pub environment: Vec<MultiVariable>,
@@ -74,7 +74,7 @@ pub struct Tree {
 
 impl_display!(Tree);
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Group {
     pub name: String,
     pub members: Vec<String>,
@@ -82,16 +82,29 @@ pub struct Group {
 
 impl_display!(Group);
 
-// Gardens aggregate trees
-#[derive(Debug)]
-pub struct Garden {
+
+#[derive(Debug, Default)]
+pub struct Template {
     pub name: String,
+    pub extend: Vec<String>,
     pub variables: Vec<NamedVariable>,
-    pub templates: Vec<Tree>,
-    pub trees: Vec<Tree>,
     pub environment: Vec<MultiVariable>,
     pub commands: Vec<MultiVariable>,
+}
+
+impl_display!(Template);
+
+
+// Gardens aggregate trees
+#[derive(Debug, Default)]
+pub struct Garden {
+    pub name: String,
+    pub commands: Vec<MultiVariable>,
+    pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedValue>,
+    pub groups: Vec<String>,
+    pub trees: Vec<String>,
+    pub variables: Vec<NamedVariable>,
 }
 
 impl_display!(Garden);
@@ -104,10 +117,11 @@ pub struct Configuration {
     pub environment: Vec<MultiVariable>,
     pub environment_variables: bool,
     pub gardens: Vec<Garden>,
-    pub groups: Vec<String>,
+    pub groups: Vec<Group>,
     pub path: Option<std::path::PathBuf>,
     pub root_path: std::path::PathBuf,
     pub shell: std::path::PathBuf,
+    pub templates: Vec<Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: Vec<Tree>,
     pub variables: Vec<NamedVariable>,
