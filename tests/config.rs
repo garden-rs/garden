@@ -23,9 +23,9 @@ fn config_default() {
 #[test]
 fn core() {
     let string = r#"
-garden:
-    root: /tmp
-    environment_variables: false
+    garden:
+        root: /tmp
+        environment_variables: false
     "#.to_string();
 
     let config = from_yaml_string(&string);
@@ -37,9 +37,9 @@ garden:
 #[test]
 fn variables() {
     let string = r#"
-variables:
-    foo: foo_value
-    bar: ${foo}
+    variables:
+        foo: foo_value
+        bar: ${foo}
     "#.to_string();
 
     let config = from_yaml_string(&string);
@@ -58,11 +58,11 @@ variables:
 #[test]
 fn commands() {
     let string = r#"
-commands:
-    test_cmd: echo cmd
-    test_cmd_vec:
-        - echo first
-        - echo second
+    commands:
+        test_cmd: echo cmd
+        test_cmd_vec:
+            - echo first
+            - echo second
     "#.to_string();
 
     let config = from_yaml_string(&string);
@@ -81,28 +81,56 @@ commands:
 #[test]
 fn templates() {
     let string = r#"
-templates:
-    template1:
-        variables:
-            foo: bar
-    template2:
-        extend: template1
-        variables:
-            baz: zax
+    templates:
+        template1:
+            variables:
+                foo: bar
+            environment:
+                ENV=: ${foo}env
+                THEPATH:
+                    - ${foo}
+                    - ${ENV}
+        template2:
+            extend: template1
+            variables:
+                baz: zax
+                zee: ${foo}
+        template3:
+            extend: [template1, template2]
+            variables:
+                foo: boo
     "#.to_string();
 
     let config = from_yaml_string(&string);
-    assert_eq!(config.templates.len(), 2);
+    assert_eq!(config.templates.len(), 3);
     assert_eq!(config.templates[0].name, "template1");
     assert_eq!(config.templates[0].variables.len(), 1);
     assert_eq!(config.templates[0].variables[0].name, "foo");
     assert_eq!(config.templates[0].variables[0].var.expr, "bar");
 
+    assert_eq!(config.templates[0].environment.len(), 2);
+    assert_eq!(config.templates[0].environment[0].name, "ENV=");
+    assert_eq!(config.templates[0].environment[0].values.len(), 1);
+    assert_eq!(config.templates[0].environment[0].values[0].expr, "${foo}env");
+
+    assert_eq!(config.templates[0].environment[1].name, "THEPATH");
+    assert_eq!(config.templates[0].environment[1].values.len(), 2);
+    assert_eq!(config.templates[0].environment[1].values[0].expr, "${foo}");
+    assert_eq!(config.templates[0].environment[1].values[1].expr, "${ENV}");
+
     assert_eq!(config.templates[1].name, "template2");
     assert_eq!(config.templates[1].extend, ["template1"]);
-    assert_eq!(config.templates[1].variables.len(), 1);
+    assert_eq!(config.templates[1].variables.len(), 2);
     assert_eq!(config.templates[1].variables[0].name, "baz");
     assert_eq!(config.templates[1].variables[0].var.expr, "zax");
+    assert_eq!(config.templates[1].variables[1].name, "zee");
+    assert_eq!(config.templates[1].variables[1].var.expr, "${foo}");
+
+    assert_eq!(config.templates[2].name, "template3");
+    assert_eq!(config.templates[2].extend, ["template1", "template2"]);
+    assert_eq!(config.templates[2].variables.len(), 1);
+    assert_eq!(config.templates[2].variables[0].name, "foo");
+    assert_eq!(config.templates[2].variables[0].var.expr, "boo");
 }
 
 
@@ -110,9 +138,9 @@ templates:
 #[test]
 fn groups() {
     let string = r#"
-groups:
-    cola: [git, qtpy, cola]
-    test: [a, b, c]
+    groups:
+        cola: [git, qtpy, cola]
+        test: [a, b, c]
     "#.to_string();
 
     let config = from_yaml_string(&string);
