@@ -68,6 +68,14 @@ pub fn parse(string: &String, verbose: bool,
         debug!("yaml: no templates");
     }
 
+    // trees
+    if verbose {
+        debug!("yaml: trees");
+    }
+    if !get_trees(&doc["trees"], &mut config.trees) && verbose {
+        debug!("yaml: no trees");
+    }
+
     // groups
     if verbose {
         debug!("yaml: groups");
@@ -190,9 +198,9 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
                             vec.push(
-                                model::NamedVariable{
+                                model::NamedVariable {
                                     name: k.as_str().unwrap().to_string(),
-                                    var: model::Variable{
+                                    var: model::Variable {
                                         expr: yaml_str.to_string(),
                                         value: None,
                                     },
@@ -201,8 +209,19 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                         }
                     }
                 }
+                Yaml::Integer(yaml_int) => {
+                    vec.push(
+                        model::NamedVariable {
+                            name: k.as_str().unwrap().to_string(),
+                            var: model::Variable {
+                                expr: yaml_int.to_string(),
+                                value: Some(yaml_int.to_string()),
+                            }
+                        }
+                    );
+                }
                 _ => {
-                    dump_node(yaml, 0, "");
+                    dump_node(v, 1, "");
                     error!("invalid variables");
                 }
             }
@@ -250,8 +269,21 @@ fn get_multivariables(yaml: &Yaml,
                         }
                     );
                 }
+                Yaml::Integer(yaml_int) => {
+                    vec.push(
+                        model::MultiVariable {
+                            name: k.as_str().unwrap().to_string(),
+                            values: vec!(
+                                model::Variable {
+                                    expr: yaml_int.to_string(),
+                                    value: Some(yaml_int.to_string()),
+                                }
+                            ),
+                        }
+                    );
+                }
                 _ => {
-                    dump_node(yaml, 0, "");
+                    dump_node(v, 1, "");
                     error!("invalid variables");
                 }
             }
@@ -283,6 +315,41 @@ fn get_template(name: &Yaml, value: &Yaml) -> model::Template {
     get_multivariables(&value["commands"], &mut template.commands);
 
     return template;
+}
+
+
+fn get_trees(yaml: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
+    if let Yaml::Hash(ref hash) = yaml {
+        for (name, value) in hash {
+            trees.push(get_tree(name, value));
+        }
+        return true;
+    }
+    return false;
+}
+
+
+fn get_tree(name: &Yaml, value: &Yaml) -> model::Tree {
+    let mut tree = model::Tree::default();
+    get_str(&name, &mut tree.name);
+    get_str(&value["path"], &mut tree.path);
+    {
+        let mut url = String::new();
+        if get_str(&value["url"], &mut url) {
+            tree.remotes.push(
+                model::Remote {
+                    name: "origin".to_string(),
+                    url: url.to_string(),
+                });
+        }
+    }
+    get_vec_str(&value["templates"], &mut tree.templates);
+    get_variables(&value["variables"], &mut tree.variables);
+    get_variables(&value["gitconfig"], &mut tree.gitconfig);
+    get_multivariables(&value["environment"], &mut tree.environment);
+    get_multivariables(&value["commands"], &mut tree.commands);
+
+    return tree;
 }
 
 
