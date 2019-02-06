@@ -142,8 +142,12 @@ fn garden_exec(options: &mut CommandOptions) {
     }
 
     // Resolve garden and tree names into a set of trees
-    let config_verbose = options.is_debug("config");
-    let config = garden::config::new(&options.filename, config_verbose);
+    let verbose = options.is_debug("config::new");
+    let config = garden::config::new(&options.filename, verbose);
+
+    if options.is_debug("config") {
+        debug!("{}", config);
+    }
 
     // Execute commands for each tree
     if options.is_debug("exec") {

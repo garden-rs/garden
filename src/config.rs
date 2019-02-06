@@ -140,9 +140,6 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
         parse(&config_string, file_format, verbose, &mut cfg);
     }
 
-    if verbose {
-        debug!("{}", cfg);
-    }
     return cfg;
 }
 
