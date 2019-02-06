@@ -75,6 +75,14 @@ pub fn parse(string: &String, verbose: bool,
     if !get_groups(&doc["groups"], &mut config.groups) && verbose {
         debug!("yaml: no groups");
     }
+
+    // gardens
+    if verbose {
+        debug!("yaml: gardens");
+    }
+    if !get_gardens(&doc["gardens"], &mut config.gardens) && verbose {
+        debug!("yaml: no gardens");
+    }
 }
 
 
@@ -270,6 +278,7 @@ fn get_template(name: &Yaml, value: &Yaml) -> model::Template {
     get_str(&name, &mut template.name);
     get_vec_str(&value["extend"], &mut template.extend);
     get_variables(&value["variables"], &mut template.variables);
+    get_variables(&value["gitconfig"], &mut template.gitconfig);
     get_multivariables(&value["environment"], &mut template.environment);
     get_multivariables(&value["commands"], &mut template.commands);
 
@@ -284,6 +293,25 @@ fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
             get_str(&name, &mut group.name);
             get_vec_str(&value, &mut group.members);
             groups.push(group);
+        }
+        return true;
+    }
+    return false;
+}
+
+
+fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
+    if let Yaml::Hash(ref hash) = yaml {
+        for (name, value) in hash {
+            let mut garden = model::Garden::default();
+            get_str(&name, &mut garden.name);
+            get_vec_str(&value["groups"], &mut garden.groups);
+            get_vec_str(&value["trees"], &mut garden.trees);
+            get_variables(&value["variables"], &mut garden.variables);
+            get_multivariables(&value["environment"], &mut garden.environment);
+            get_multivariables(&value["commands"], &mut garden.commands);
+            get_variables(&value["gitconfig"], &mut garden.gitconfig);
+            gardens.push(garden);
         }
         return true;
     }

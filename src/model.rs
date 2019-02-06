@@ -69,7 +69,7 @@ pub struct Tree {
     pub environment: Vec<MultiVariable>,
     pub commands: Vec<MultiVariable>,
     pub templates: Vec<String>,
-    pub gitconfig: Vec<NamedValue>,
+    pub gitconfig: Vec<NamedVariable>,
 }
 
 impl_display!(Tree);
@@ -90,6 +90,7 @@ pub struct Template {
     pub variables: Vec<NamedVariable>,
     pub environment: Vec<MultiVariable>,
     pub commands: Vec<MultiVariable>,
+    pub gitconfig: Vec<NamedVariable>,
 }
 
 impl_display!(Template);
@@ -101,7 +102,7 @@ pub struct Garden {
     pub name: String,
     pub commands: Vec<MultiVariable>,
     pub environment: Vec<MultiVariable>,
-    pub gitconfig: Vec<NamedValue>,
+    pub gitconfig: Vec<NamedVariable>,
     pub groups: Vec<String>,
     pub trees: Vec<String>,
     pub variables: Vec<NamedVariable>,

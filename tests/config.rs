@@ -151,3 +151,79 @@ fn groups() {
     assert_eq!(config.groups[1].name, "test");
     assert_eq!(config.groups[1].members, ["a", "b", "c"]);
 }
+
+
+/// Test gardens
+#[test]
+fn gardens() {
+    let string = r#"
+    gardens:
+        cola:
+            groups: cola
+            variables:
+                prefix: ~/src/git-cola/local/git-cola
+            environment:
+                GIT_COLA_TRACE=: full
+                PATH+: ${prefix}
+            commands:
+                summary:
+                    - git branch -vv
+                    - git status --short
+        git:
+            groups: cola
+            trees: gitk
+            gitconfig:
+                user.name: A U Thor
+                user.email: email@example.com
+    "#.to_string();
+
+    let config = from_yaml_string(&string);
+    assert_eq!(config.gardens.len(), 2);
+
+    // "cola" garden
+    assert_eq!(config.gardens[0].name, "cola");
+
+    assert!(config.gardens[0].trees.is_empty());
+    assert!(config.gardens[0].gitconfig.is_empty());
+
+    assert_eq!(config.gardens[0].groups.len(), 1);
+    assert_eq!(config.gardens[0].groups[0], "cola");
+
+    assert_eq!(config.gardens[0].commands.len(), 1);
+    assert_eq!(config.gardens[0].commands[0].name, "summary");
+    assert_eq!(config.gardens[0].commands[0].values.len(), 2);
+    assert_eq!(config.gardens[0].commands[0].values[0].expr,
+               "git branch -vv");
+    assert_eq!(config.gardens[0].commands[0].values[1].expr,
+               "git status --short");
+
+    assert_eq!(config.gardens[0].variables.len(), 1);
+    assert_eq!(config.gardens[0].variables[0].name, "prefix");
+    assert_eq!(config.gardens[0].variables[0].var.expr,
+               "~/src/git-cola/local/git-cola");
+
+    assert_eq!(config.gardens[0].environment.len(), 2);
+    assert_eq!(config.gardens[0].environment[0].name, "GIT_COLA_TRACE=");
+    assert_eq!(config.gardens[0].environment[0].values.len(), 1);
+    assert_eq!(config.gardens[0].environment[0].values[0].expr, "full");
+
+    assert_eq!(config.gardens[0].environment[1].name, "PATH+");
+    assert_eq!(config.gardens[0].environment[1].values.len(), 1);
+    assert_eq!(config.gardens[0].environment[1].values[0].expr, "${prefix}");
+
+    // "git" garden
+    assert_eq!(config.gardens[1].name, "git");
+
+    assert!(config.gardens[1].environment.is_empty());
+    assert!(config.gardens[1].variables.is_empty());
+    assert!(config.gardens[1].commands.is_empty());
+
+    assert_eq!(config.gardens[1].groups, ["cola"]);
+    assert_eq!(config.gardens[1].trees, ["gitk"]);
+
+    assert_eq!(config.gardens[1].gitconfig.len(), 2);
+    assert_eq!(config.gardens[1].gitconfig[0].name, "user.name");
+    assert_eq!(config.gardens[1].gitconfig[0].var.expr, "A U Thor");
+    assert_eq!(config.gardens[1].gitconfig[1].name, "user.email");
+    assert_eq!(config.gardens[1].gitconfig[1].var.expr, "email@example.com");
+}
