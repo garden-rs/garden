@@ -11,6 +11,7 @@ fn from_yaml_string(string: &String) -> garden::model::Configuration {
 
 
 /// Test defaults
+#[test]
 fn config_default() {
     let config = garden::model::Configuration::new();
     assert_eq!(config.shell.to_string_lossy(), "zsh");
