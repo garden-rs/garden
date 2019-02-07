@@ -10,7 +10,7 @@ fn from_yaml_string(string: &String) -> garden::model::Configuration {
 }
 
 
-/// Test defaults
+/// Defaults
 #[test]
 fn config_default() {
     let config = garden::model::Configuration::new();
@@ -20,7 +20,7 @@ fn config_default() {
 }
 
 
-/// Test core garden settings
+/// Core garden settings
 #[test]
 fn core() {
     let string = r#"
@@ -34,7 +34,7 @@ fn core() {
     assert_eq!(config.environment_variables, false);
 }
 
-/// Test variables
+/// Variables
 #[test]
 fn variables() {
     let string = r#"
@@ -55,7 +55,7 @@ fn variables() {
     assert_eq!(config.variables[1].value, None);
 }
 
-/// Test commands
+/// Commands
 #[test]
 fn commands() {
     let string = r#"
@@ -78,7 +78,7 @@ fn commands() {
 }
 
 
-/// Test templates
+/// Templates
 #[test]
 fn templates() {
     let string = r#"
@@ -135,7 +135,7 @@ fn templates() {
 }
 
 
-/// Test Groups
+/// Groups
 #[test]
 fn groups() {
     let string = r#"
@@ -154,7 +154,7 @@ fn groups() {
 }
 
 
-/// Test gardens
+/// Gardens
 #[test]
 fn gardens() {
     let string = r#"
