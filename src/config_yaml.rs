@@ -188,10 +188,8 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     vec.push(
                         model::NamedVariable{
                             name: k.as_str().unwrap().to_string(),
-                            var: model::Variable{
-                                expr: yaml_str.to_string(),
-                                value: None,
-                            },
+                            expr: yaml_str.to_string(),
+                            value: None,
                         });
                 }
                 Yaml::Array(ref yaml_array) => {
@@ -200,10 +198,8 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                             vec.push(
                                 model::NamedVariable {
                                     name: k.as_str().unwrap().to_string(),
-                                    var: model::Variable {
-                                        expr: yaml_str.to_string(),
-                                        value: None,
-                                    },
+                                    expr: yaml_str.to_string(),
+                                    value: None,
                                 }
                             );
                         }
@@ -213,10 +209,8 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     vec.push(
                         model::NamedVariable {
                             name: k.as_str().unwrap().to_string(),
-                            var: model::Variable {
-                                expr: yaml_int.to_string(),
-                                value: Some(yaml_int.to_string()),
-                            }
+                            expr: yaml_int.to_string(),
+                            value: Some(yaml_int.to_string()),
                         }
                     );
                 }
@@ -339,7 +333,7 @@ fn get_tree(name: &Yaml, value: &Yaml) -> model::Tree {
             tree.remotes.push(
                 model::Remote {
                     name: "origin".to_string(),
-                    url: url.to_string(),
+                    url: url,
                 });
         }
     }

@@ -47,12 +47,12 @@ fn variables() {
     assert_eq!(config.variables.len(), 2);
 
     assert_eq!(config.variables[0].name, "foo");
-    assert_eq!(config.variables[0].var.expr, "foo_value");
-    assert_eq!(config.variables[0].var.value, None);
+    assert_eq!(config.variables[0].expr, "foo_value");
+    assert_eq!(config.variables[0].value, None);
 
     assert_eq!(config.variables[1].name, "bar");
-    assert_eq!(config.variables[1].var.expr, "${foo}");
-    assert_eq!(config.variables[1].var.value, None);
+    assert_eq!(config.variables[1].expr, "${foo}");
+    assert_eq!(config.variables[1].value, None);
 }
 
 /// Test commands
@@ -107,7 +107,7 @@ fn templates() {
     assert_eq!(config.templates[0].name, "template1");
     assert_eq!(config.templates[0].variables.len(), 1);
     assert_eq!(config.templates[0].variables[0].name, "foo");
-    assert_eq!(config.templates[0].variables[0].var.expr, "bar");
+    assert_eq!(config.templates[0].variables[0].expr, "bar");
 
     assert_eq!(config.templates[0].environment.len(), 2);
     assert_eq!(config.templates[0].environment[0].name, "ENV=");
@@ -123,15 +123,15 @@ fn templates() {
     assert_eq!(config.templates[1].extend, ["template1"]);
     assert_eq!(config.templates[1].variables.len(), 2);
     assert_eq!(config.templates[1].variables[0].name, "baz");
-    assert_eq!(config.templates[1].variables[0].var.expr, "zax");
+    assert_eq!(config.templates[1].variables[0].expr, "zax");
     assert_eq!(config.templates[1].variables[1].name, "zee");
-    assert_eq!(config.templates[1].variables[1].var.expr, "${foo}");
+    assert_eq!(config.templates[1].variables[1].expr, "${foo}");
 
     assert_eq!(config.templates[2].name, "template3");
     assert_eq!(config.templates[2].extend, ["template1", "template2"]);
     assert_eq!(config.templates[2].variables.len(), 1);
     assert_eq!(config.templates[2].variables[0].name, "foo");
-    assert_eq!(config.templates[2].variables[0].var.expr, "boo");
+    assert_eq!(config.templates[2].variables[0].expr, "boo");
 }
 
 
@@ -175,7 +175,7 @@ fn gardens() {
             trees: gitk
             gitconfig:
                 user.name: A U Thor
-                user.email: email@example.com
+                user.email: author@example.com
     "#.to_string();
 
     let config = from_yaml_string(&string);
@@ -200,7 +200,7 @@ fn gardens() {
 
     assert_eq!(config.gardens[0].variables.len(), 1);
     assert_eq!(config.gardens[0].variables[0].name, "prefix");
-    assert_eq!(config.gardens[0].variables[0].var.expr,
+    assert_eq!(config.gardens[0].variables[0].expr,
                "~/src/git-cola/local/git-cola");
 
     assert_eq!(config.gardens[0].environment.len(), 2);
@@ -224,7 +224,7 @@ fn gardens() {
 
     assert_eq!(config.gardens[1].gitconfig.len(), 2);
     assert_eq!(config.gardens[1].gitconfig[0].name, "user.name");
-    assert_eq!(config.gardens[1].gitconfig[0].var.expr, "A U Thor");
+    assert_eq!(config.gardens[1].gitconfig[0].expr, "A U Thor");
     assert_eq!(config.gardens[1].gitconfig[1].name, "user.email");
-    assert_eq!(config.gardens[1].gitconfig[1].var.expr, "email@example.com");
+    assert_eq!(config.gardens[1].gitconfig[1].expr, "author@example.com");
 }

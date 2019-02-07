@@ -36,7 +36,8 @@ impl_display_brief!(Variable);
 #[derive(Debug)]
 pub struct NamedVariable  {
     pub name: String,
-    pub var: Variable,
+    pub expr: String,
+    pub value: Option<String>,
 }
 
 impl_display_brief!(NamedVariable);
