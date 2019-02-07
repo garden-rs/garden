@@ -158,7 +158,7 @@ pub fn parse(config_string: &String, file_format: FileFormat,
             if verbose {
                 debug!("file format: json");
             }
-            error!("json support is currently unimplemented");
+            config_yaml::parse(&config_string, verbose, &mut cfg);
         }
         _ => {
             error!("unsupported config file format");

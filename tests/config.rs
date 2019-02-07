@@ -10,6 +10,15 @@ fn from_yaml_string(string: &String) -> garden::model::Configuration {
 }
 
 
+fn from_json_string(string: &String) -> garden::model::Configuration {
+    let mut config = garden::model::Configuration::new();
+    let file_format = garden::config::FileFormat::JSON;
+    garden::config::parse(string, file_format, false, &mut config);
+
+    return config;
+}
+
+
 /// Defaults
 #[test]
 fn config_default() {
@@ -278,6 +287,47 @@ fn gardens() {
     "#.to_string();
 
     let config = from_yaml_string(&string);
+    test_gardens(&config);
+}
+
+#[test]
+fn gardens_json() {
+    let string = r#"
+{
+    "gardens": {
+        "cola": {
+            "groups": "cola",
+            "variables": {
+                "prefix": "~/src/git-cola/local/git-cola"
+            },
+            "environment": {
+                "GIT_COLA_TRACE=": "full",
+                "PATH+": "${prefix}"
+            },
+            "commands": {
+                "summary": [
+                    "git branch -vv",
+                    "git status --short"
+                ]
+            }
+        },
+        "git": {
+            "groups": "cola",
+            "trees": "gitk",
+            "gitconfig": {
+                "user.name": "A U Thor",
+                "user.email": "author@example.com"
+            }
+        }
+    }
+}
+    "#.to_string();
+
+    let config = from_json_string(&string);
+    test_gardens(&config);
+}
+
+fn test_gardens(config: &garden::model::Configuration) {
     assert_eq!(config.gardens.len(), 2);
 
     // "cola" garden
