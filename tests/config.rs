@@ -153,6 +153,65 @@ fn groups() {
     assert_eq!(config.groups[1].members, ["a", "b", "c"]);
 }
 
+/// Trees
+#[test]
+fn trees() {
+    let string = r#"
+    templates:
+        makefile:
+            commands:
+                install: make -j prefix=${prefix} install
+                test: make test
+        python:
+            environment:
+                PYTHONPATH: ${TREE_PATH}
+    trees:
+        git:
+            url: https://github.com/git/git
+            templates: makefile
+            variables:
+                prefix: ~/.local
+            gitconfig:
+                user.name: A U Thor
+                user.email: author@example.com
+        cola:
+            url: https://github.com/git-cola/git-cola
+            path: git-cola
+            templates: [makefile, python]
+            variables:
+                prefix: ${TREE_PATH}/local
+            environment:
+                PATH:
+                    - ${TREE_PATH}/bin
+                    - ${prefix}
+                PYTHONPATH: ${TREE_PATH}
+            commands:
+                test:
+                    - git status --short
+                    - make test
+            remotes:
+                davvid: git@github.com:davvid/git-cola.git
+    "#.to_string();
+
+    let config = from_yaml_string(&string);
+    assert_eq!(config.trees.len(), 2);
+
+    // git
+    let ref tree0 = config.trees[0];
+    assert_eq!(tree0.remotes.len(), 1);
+    assert_eq!(tree0.remotes[0].name, "origin");
+    assert_eq!(tree0.remotes[0].url, "https://github.com/git/git");
+
+    // cola
+    let ref tree1 = config.trees[1];
+
+    assert_eq!(tree1.remotes.len(), 2);
+    assert_eq!(tree1.remotes[0].name, "origin");
+    assert_eq!(tree1.remotes[0].url, "https://github.com/git-cola/git-cola");
+    assert_eq!(tree1.remotes[1].name, "davvid");
+    assert_eq!(tree1.remotes[1].url, "git@github.com:davvid/git-cola.git");
+}
+
 
 /// Gardens
 #[test]

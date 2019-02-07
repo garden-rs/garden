@@ -326,7 +326,10 @@ fn get_trees(yaml: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
 fn get_tree(name: &Yaml, value: &Yaml) -> model::Tree {
     let mut tree = model::Tree::default();
     get_str(&name, &mut tree.name);
-    get_str(&value["path"], &mut tree.path);
+    if !get_str(&value["path"], &mut tree.path) {
+        // default to the name when "path" is unspecified
+        tree.path = tree.name.to_string();
+    }
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
@@ -342,8 +345,26 @@ fn get_tree(name: &Yaml, value: &Yaml) -> model::Tree {
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables(&value["commands"], &mut tree.commands);
+    get_remotes(&value["remotes"], &mut tree.remotes);
 
     return tree;
+}
+
+
+fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::Remote>) {
+    if let Yaml::Hash(ref hash) = yaml {
+        for (name, value) in hash {
+            if !name.as_str().is_some() || !value.as_str().is_some() {
+                continue;
+            }
+            remotes.push(
+                model::Remote {
+                    name: name.as_str().unwrap().to_string(),
+                    url: value.as_str().unwrap().to_string(),
+                }
+            );
+        }
+    }
 }
 
 
