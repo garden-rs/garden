@@ -16,9 +16,7 @@ enum Command {
 }
 
 impl std::default::Default for Command {
-    fn default() -> Self {
-        return Command::Help;
-    }
+    fn default() -> Self { Command::Help }
 }
 
 impl_display_brief!(Command);
@@ -127,11 +125,11 @@ fn garden_exec(options: &mut CommandOptions) {
 
         ap.refer(&mut expr).required()
             .add_argument("tree-expr", argparse::Store,
-                          "Gardens/trees to exec (tree expression)");
+                          "gardens/trees to exec (tree expression)");
 
         ap.refer(&mut command).required()
             .add_argument("command", argparse::List,
-                          "Command to run over resolved trees");
+                          "command to run over resolved trees");
 
         ap.stop_on_first_argument(true);
         if let Err(err) = ap.parse(options.args.to_vec(),
@@ -149,12 +147,7 @@ fn garden_exec(options: &mut CommandOptions) {
     if options.is_debug("exec") {
         debug!("subcommand: exec");
         debug!("expr: {}", expr);
-        debug!("exec arguments:");
-        let mut i: i32 = 0;
-        for arg in &command {
-            debug!("\targs[{:02}] = {}", i, arg);
-            i += 1;
-        }
+        debug!("command: {:?}", command);
     }
 
     garden::exec::main(&mut config, &expr, &command);
@@ -168,11 +161,11 @@ fn main() {
 
         ap.refer(&mut options.filename_str)
             .add_option(&["-c", "--config"], argparse::Store,
-                        "Specify the garden configuration filename");
+                        "specify the config file to use");
 
         ap.refer(&mut options.debug_str)
             .add_option(&["-d", "--debug"], argparse::Store,
-                        "Debug categories to enable (comma-separated)");
+                        "debug categories to enable (comma-separated)");
 
         ap.refer(&mut options.verbose)
             .add_option(&["-v", "--verbose"],
@@ -181,11 +174,11 @@ fn main() {
 
         ap.refer(&mut options.subcommand).required()
             .add_argument("command", argparse::Store,
-                "Command to run {add, exec, help, init, shell, status}");
+                "command to run {add, exec, help, init, shell, status}");
 
         ap.refer(&mut options.args)
             .add_argument("arguments", argparse::List,
-                "Arguments for sub-command");
+                "sub-command arguments");
 
         ap.stop_on_first_argument(true);
         ap.parse_args_or_exit();

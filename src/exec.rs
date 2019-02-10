@@ -18,6 +18,4 @@ pub fn main(config: &mut model::Configuration,
             expr: &String, command: &Vec<String>) {
 
     let contexts = query::resolve_trees(config, expr);
-    debug!("contexts: {:?}", contexts);
-    debug!("command: {:?}", command);
 }
