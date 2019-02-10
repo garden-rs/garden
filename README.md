@@ -145,25 +145,27 @@ Enable verbose debugging output.
 
 Garden commands take command-line arguments that specify a subset of
 trees to operate on.  When a name is mentioned on the command-line, garden
-will use the first matching tree, garden, or group, in that order, when
+will use the first matching garden, group, or tree, in that order, when
 determining which trees to operate on.  When a garden or group is matched,
 all of its associated trees are included in the operation.
 
-When matching names, trees have the highest precedence, followed by gardens,
-and finally groups.
+When matching names, gardens have the highest precedence, followed by groups,
+and finally trees.
 
 If you have groups, gardens, and trees with the same name then you can use the
-`@garden` and `%group` syntax to disambiguate the name.  For example,
-`garden init @garden` initializes the garden called "garden", and
-`garden init %group` initializes the group called "group".
+`@tree`, `%group`, and `:garden` syntax to disambiguate the name.
+
+    garden init @tree  # initialize the tree called "tree"
+    garden init %group  # initialize the group called "group"
+    garden init :garden  # initialize the garden called "garden"
 
 Garden understands shell wildcards, so multiple trees, gardens, or
 groups can be matched by using wildcards.  For example, `garden init '@x*'`
-initializes all gardens that start with "x".
+initializes all trees that start with "x".
 
 #### Tree Expressions
 
-Command arguments with explicit tree names, @garden references, %group syntax,
+Command arguments with explicit garden names, @tree references, %group syntax,
 and wildcards are all referred to as "tree expressions".  Tree expressions
 are strings that resolve to a set of trees.
 
