@@ -1,22 +1,6 @@
 extern crate garden;
 
-
-fn from_yaml_string(string: &String) -> garden::model::Configuration {
-    let mut config = garden::model::Configuration::new();
-    let file_format = garden::config::FileFormat::YAML;
-    garden::config::parse(string, file_format, false, &mut config);
-
-    return config;
-}
-
-
-fn from_json_string(string: &String) -> garden::model::Configuration {
-    let mut config = garden::model::Configuration::new();
-    let file_format = garden::config::FileFormat::JSON;
-    garden::config::parse(string, file_format, false, &mut config);
-
-    return config;
-}
+mod common;
 
 
 /// Defaults
@@ -38,7 +22,7 @@ fn core() {
         environment_variables: false
     "#.to_string();
 
-    let config = from_yaml_string(&string);
+    let config = common::from_yaml_string(&string);
     assert_eq!(config.root_path, std::path::PathBuf::from("/tmp"));
     assert_eq!(config.environment_variables, false);
 }
@@ -52,7 +36,7 @@ fn variables() {
         bar: ${foo}
     "#.to_string();
 
-    let config = from_yaml_string(&string);
+    let config = common::from_yaml_string(&string);
     assert_eq!(config.variables.len(), 2);
 
     assert_eq!(config.variables[0].name, "foo");
@@ -75,7 +59,7 @@ fn commands() {
             - echo second
     "#.to_string();
 
-    let config = from_yaml_string(&string);
+    let config = common::from_yaml_string(&string);
     assert_eq!(config.commands.len(), 2);
 
     assert_eq!(config.commands[0].name, "test_cmd");
@@ -111,7 +95,7 @@ fn templates() {
                 foo: boo
     "#.to_string();
 
-    let config = from_yaml_string(&string);
+    let config = common::from_yaml_string(&string);
     assert_eq!(config.templates.len(), 3);
     assert_eq!(config.templates[0].name, "template1");
     assert_eq!(config.templates[0].variables.len(), 1);
@@ -147,13 +131,7 @@ fn templates() {
 /// Groups
 #[test]
 fn groups() {
-    let string = r#"
-    groups:
-        cola: [git, qtpy, cola]
-        test: [a, b, c]
-    "#.to_string();
-
-    let config = from_yaml_string(&string);
+    let config = common::garden_config();
     assert_eq!(config.groups.len(), 2);
     assert_eq!(config.groups[0].name, "cola");
     assert_eq!(config.groups[0].members, ["git", "qtpy", "cola"]);
@@ -165,44 +143,7 @@ fn groups() {
 /// Trees
 #[test]
 fn trees() {
-    let string = r#"
-    templates:
-        makefile:
-            commands:
-                install: make -j prefix=${prefix} install
-                test: make test
-        python:
-            environment:
-                PYTHONPATH: ${TREE_PATH}
-    trees:
-        git:
-            url: https://github.com/git/git
-            templates: makefile
-            variables:
-                prefix: ~/.local
-            gitconfig:
-                user.name: A U Thor
-                user.email: author@example.com
-        cola:
-            url: https://github.com/git-cola/git-cola
-            path: git-cola
-            templates: [makefile, python]
-            variables:
-                prefix: ${TREE_PATH}/local
-            environment:
-                PATH:
-                    - ${TREE_PATH}/bin
-                    - ${prefix}
-                PYTHONPATH: ${TREE_PATH}
-            commands:
-                test:
-                    - git status --short
-                    - make test
-            remotes:
-                davvid: git@github.com:davvid/git-cola.git
-    "#.to_string();
-
-    let config = from_yaml_string(&string);
+    let config = common::garden_config();
     assert_eq!(config.trees.len(), 2);
 
     // git
@@ -265,28 +206,7 @@ fn trees() {
 /// Gardens
 #[test]
 fn gardens() {
-    let string = r#"
-    gardens:
-        cola:
-            groups: cola
-            variables:
-                prefix: ~/src/git-cola/local/git-cola
-            environment:
-                GIT_COLA_TRACE=: full
-                PATH+: ${prefix}
-            commands:
-                summary:
-                    - git branch -vv
-                    - git status --short
-        git:
-            groups: cola
-            trees: gitk
-            gitconfig:
-                user.name: A U Thor
-                user.email: author@example.com
-    "#.to_string();
-
-    let config = from_yaml_string(&string);
+    let config = common::garden_config();
     test_gardens(&config);
 }
 
@@ -323,7 +243,7 @@ fn gardens_json() {
 }
     "#.to_string();
 
-    let config = from_json_string(&string);
+    let config = common::from_json_string(&string);
     test_gardens(&config);
 }
 
