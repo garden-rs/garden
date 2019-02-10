@@ -14,8 +14,8 @@ use super::query;
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn main(config: &mut model::Configuration,
-            expr: &String, command: &Vec<String>) {
+pub fn main<S: Into<String>>(
+    config: &mut model::Configuration, expr: S, command: &Vec<String>) {
 
     let contexts = query::resolve_trees(config, expr);
 }

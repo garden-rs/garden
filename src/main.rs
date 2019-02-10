@@ -150,7 +150,7 @@ fn garden_exec(options: &mut CommandOptions) {
         debug!("command: {:?}", command);
     }
 
-    garden::exec::main(&mut config, &expr, &command);
+    garden::exec::main(&mut config, expr, &command);
 }
 
 fn main() {

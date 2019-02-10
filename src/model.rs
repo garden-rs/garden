@@ -181,8 +181,8 @@ impl_display_brief!(TreeExpression);
 
 impl TreeExpression {
 
-    pub fn new(expr: &String) -> Self {
-        let mut glob_pattern = expr.to_string();
+    pub fn new<S: Into<String>>(expr: S) -> Self {
+        let mut glob_pattern = expr.into();
         let mut is_default = false;
         let mut is_tree = false;
         let mut is_garden = false;
@@ -192,17 +192,17 @@ impl TreeExpression {
         let mut include_trees = true;
         let mut trim = false;
 
-        if syntax::is_garden(expr) {
+        if syntax::is_garden(&glob_pattern) {
             is_garden = true;
             include_groups = false;
             include_trees = false;
             trim = true;
-        } else if syntax::is_group(expr) {
+        } else if syntax::is_group(&glob_pattern) {
             is_group = true;
             include_gardens = false;
             include_trees = false;
             trim = true;
-        } else if syntax::is_tree(expr) {
+        } else if syntax::is_tree(&glob_pattern) {
             is_tree = true;
             include_gardens = false;
             include_groups = false;
