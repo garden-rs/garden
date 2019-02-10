@@ -60,6 +60,7 @@ pub fn garden_config() -> garden::model::Configuration {
     groups:
         cola: [git, qtpy, cola]
         test: [a, b, c]
+        reverse: [cola, git]
 
     gardens:
         cola:

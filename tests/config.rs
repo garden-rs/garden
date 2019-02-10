@@ -132,7 +132,7 @@ fn templates() {
 #[test]
 fn groups() {
     let config = common::garden_config();
-    assert_eq!(config.groups.len(), 2);
+    assert!(config.groups.len() >= 2);
     assert_eq!(config.groups[0].name, "cola");
     assert_eq!(config.groups[0].members, ["git", "qtpy", "cola"]);
 
