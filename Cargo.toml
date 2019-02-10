@@ -14,6 +14,7 @@ name = "garden"
 
 [dependencies]
 argparse = "*"
+glob = "*"
 dirs = "*"
 subprocess = "*"
 yaml-rust = "*"

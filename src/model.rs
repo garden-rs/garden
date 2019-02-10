@@ -1,4 +1,7 @@
-use std::collections::HashSet;
+extern crate glob;
+
+use super::syntax;
+
 
 // Remotes an minimum have a name and a URL
 #[derive(Debug)]
@@ -115,7 +118,7 @@ impl_display!(Garden);
 #[derive(Debug, Default)]
 pub struct Configuration {
     pub commands: Vec<MultiVariable>,
-    pub debug: HashSet<String>,
+    pub debug: std::collections::HashSet<String>,
     pub environment: Vec<MultiVariable>,
     pub environment_variables: bool,
     pub gardens: Vec<Garden>,
@@ -141,6 +144,87 @@ impl Configuration {
             environment_variables: true,
             shell: std::path::PathBuf::from("zsh"),
             ..std::default::Default::default()
+        }
+    }
+}
+
+
+/// Tree index into config.trees
+pub type TreeIndex = u64;
+
+/// Garden index into config.gardens
+pub type GardenIndex = u64;
+
+
+#[derive(Debug)]
+pub struct TreeContext {
+    pub tree: TreeIndex,
+    pub garden: Option<GardenIndex>,
+}
+
+impl_display_brief!(TreeContext);
+
+
+#[derive(Debug, Default)]
+pub struct TreeExpression {
+    pub pattern: glob::Pattern,
+    pub is_default: bool,
+    pub is_garden: bool,
+    pub is_group: bool,
+    pub is_tree: bool,
+    pub include_gardens: bool,
+    pub include_groups: bool,
+    pub include_trees: bool,
+}
+
+impl_display_brief!(TreeExpression);
+
+impl TreeExpression {
+
+    pub fn new(expr: &String) -> Self {
+        let mut glob_pattern = expr.to_string();
+        let mut is_default = false;
+        let mut is_tree = false;
+        let mut is_garden = false;
+        let mut is_group = false;
+        let mut include_gardens = true;
+        let mut include_groups = true;
+        let mut include_trees = true;
+        let mut trim = false;
+
+        if syntax::is_garden(expr) {
+            is_garden = true;
+            include_groups = false;
+            include_trees = false;
+            trim = true;
+        } else if syntax::is_group(expr) {
+            is_group = true;
+            include_gardens = false;
+            include_trees = false;
+            trim = true;
+        } else if syntax::is_tree(expr) {
+            is_tree = true;
+            include_gardens = false;
+            include_groups = false;
+            trim = true;
+        } else {
+            is_default = true;
+        }
+        if trim {
+            glob_pattern.remove(0);
+        }
+
+        let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
+
+        return TreeExpression {
+            is_default: is_default,
+            is_garden: is_garden,
+            is_group: is_group,
+            is_tree: is_tree,
+            include_gardens: include_gardens,
+            include_groups: include_groups,
+            include_trees: include_trees,
+            pattern: pattern,
         }
     }
 }

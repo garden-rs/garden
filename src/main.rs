@@ -117,7 +117,7 @@ fn garden_help(options: &mut CommandOptions) {
 fn garden_exec(options: &mut CommandOptions) {
     options.args.insert(0, "garden exec".to_string());
 
-    let mut trees = String::new();
+    let mut expr = String::new();
     let mut command: Vec<String> = Vec::new();
 
     // Parse arguments
@@ -125,13 +125,13 @@ fn garden_exec(options: &mut CommandOptions) {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden exec - run commands inside gardens");
 
-        ap.refer(&mut trees).required()
-            .add_argument("trees", argparse::Store,
-                          "Gardens/trees to run inside (tree expression)");
+        ap.refer(&mut expr).required()
+            .add_argument("tree-expr", argparse::Store,
+                          "Gardens/trees to exec (tree expression)");
 
         ap.refer(&mut command).required()
             .add_argument("command", argparse::List,
-                          "Command to over resolved trees");
+                          "Command to run over resolved trees");
 
         ap.stop_on_first_argument(true);
         if let Err(err) = ap.parse(options.args.to_vec(),
@@ -141,18 +141,14 @@ fn garden_exec(options: &mut CommandOptions) {
         }
     }
 
-    // Resolve garden and tree names into a set of trees
     let verbose = options.is_debug("config::new");
-    let config = garden::config::new(&options.filename, verbose);
-
+    let mut config = garden::config::new(&options.filename, verbose);
     if options.is_debug("config") {
         debug!("{}", config);
     }
-
-    // Execute commands for each tree
     if options.is_debug("exec") {
         debug!("subcommand: exec");
-        debug!("trees: {}", trees);
+        debug!("expr: {}", expr);
         debug!("exec arguments:");
         let mut i: i32 = 0;
         for arg in &command {
@@ -160,6 +156,8 @@ fn garden_exec(options: &mut CommandOptions) {
             i += 1;
         }
     }
+
+    garden::exec::main(&mut config, &expr, &command);
 }
 
 fn main() {
