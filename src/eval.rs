@@ -13,6 +13,8 @@ fn expandvars(config: &mut model::Configuration,
     let mut var_idx: usize = 0;
     let mut found = false;
 
+    // First check for the variable at the garden scope.
+    // Garden scope overrides tree and global scope.
     if garden_idx.is_some() {
         for var in &config.gardens[garden_idx.unwrap()].variables {
             if var.name == name {
@@ -41,6 +43,7 @@ fn expandvars(config: &mut model::Configuration,
         }
     }
 
+    // Nothing was found -- check for the variable in tree scope.
     found = false;
     var_idx = 0;
 
@@ -65,6 +68,29 @@ fn expandvars(config: &mut model::Configuration,
         return Ok(Some(result.to_string()));
     }
 
+    // Last try, check for the variable in global/config scope.
+    found = false;
+    var_idx = 0;
+
+    for var in &config.variables {
+        if var.name == name {
+            if var.value.is_some() {
+                return Ok(Some(var.value.as_ref().unwrap().to_string()));
+            }
+            found = true;
+            break;
+        }
+        var_idx += 1;
+    }
+
+    if found {
+        let expr = config.variables[var_idx].expr.to_string();
+        let result = value(config, expr, tree_idx, garden_idx);
+        config.variables[var_idx].value = Some(result.to_string());
+        return Ok(Some(result.to_string()));
+    }
+
+    // Nothing was found -> empty value
     return Ok(Some("".to_string()));
 }
 

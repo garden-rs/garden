@@ -16,3 +16,15 @@ fn tree_variable() {
     assert!(result.starts_with(home_dir.as_ref()));
     assert!(result.ends_with("/.local"));
 }
+
+#[test]
+fn config_variable() {
+    let mut config = common::garden_config();
+    let tree_idx: garden::model::TreeIndex = 0;
+
+    let test = garden::eval::value(&mut config, "${test}", tree_idx, None);
+    assert_eq!("TEST", test);
+
+    let local = garden::eval::value(&mut config, "${local}", tree_idx, None);
+    assert_eq!("TEST/local", local);
+}
