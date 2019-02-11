@@ -4,7 +4,7 @@ use super::syntax;
 
 
 // Remotes an minimum have a name and a URL
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Remote {
     pub name: String,
     pub url: String,
@@ -27,7 +27,7 @@ impl_display_brief!(Remote);
  * (dollar-sign followed by space) before the value.  For example,
  * using "$ echo foo" will place the value "foo" in the variable.
  */
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Variable {
     pub expr: String,
     pub value: Option<String>,
@@ -36,7 +36,7 @@ pub struct Variable {
 impl_display_brief!(Variable);
 
 // Named variables with a single value
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct NamedVariable  {
     pub name: String,
     pub expr: String,
@@ -46,7 +46,7 @@ pub struct NamedVariable  {
 impl_display_brief!(NamedVariable);
 
 // Simple Name/Value pairs
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct NamedValue {
     pub name: String,
     pub value: String,
@@ -55,7 +55,7 @@ pub struct NamedValue {
 impl_display_brief!(NamedValue);
 
 // Named variables with multiple values
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MultiVariable {
     pub name: String,
     pub values: Vec<Variable>,
@@ -64,7 +64,7 @@ pub struct MultiVariable {
 impl_display!(MultiVariable);
 
 // Trees represent a single worktree
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Tree {
     pub name: String,
     pub path: String,
@@ -78,7 +78,7 @@ pub struct Tree {
 
 impl_display!(Tree);
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Group {
     pub name: String,
     pub members: Vec<String>,
@@ -87,7 +87,7 @@ pub struct Group {
 impl_display!(Group);
 
 
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Template {
     pub name: String,
     pub extend: Vec<String>,
@@ -101,7 +101,7 @@ impl_display!(Template);
 
 
 // Gardens aggregate trees
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Garden {
     pub name: String,
     pub commands: Vec<MultiVariable>,
@@ -115,7 +115,7 @@ pub struct Garden {
 impl_display!(Garden);
 
 // Configuration represents an instantiated garden configuration
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Configuration {
     pub commands: Vec<MultiVariable>,
     pub debug: std::collections::HashSet<String>,
@@ -150,10 +150,10 @@ impl Configuration {
 
 
 /// Tree index into config.trees
-pub type TreeIndex = u64;
+pub type TreeIndex = usize;
 
 /// Garden index into config.gardens
-pub type GardenIndex = u64;
+pub type GardenIndex = usize;
 
 
 #[derive(Debug)]

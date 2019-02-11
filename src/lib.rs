@@ -8,6 +8,9 @@ pub mod cmd;
 /// Garden configuration
 pub mod config;
 
+/// Garden evaluation
+pub mod eval;
+
 /// Garden model objects
 pub mod model;
 

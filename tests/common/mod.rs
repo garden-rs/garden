@@ -22,6 +22,10 @@ pub fn from_json_string(string: &String) -> garden::model::Configuration {
 pub fn garden_config() -> garden::model::Configuration {
     let string = r#"
 
+    variables:
+        test: TEST
+        local: ${test}/local
+
     templates:
         makefile:
             commands:
