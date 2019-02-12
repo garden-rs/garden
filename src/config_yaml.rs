@@ -72,7 +72,7 @@ pub fn parse(string: &String, verbose: bool,
     if verbose {
         debug!("yaml: trees");
     }
-    if !get_trees(&doc["trees"], &mut config.trees) && verbose {
+    if !get_trees(&doc["trees"], &doc["templates"], &mut config.trees) && verbose {
         debug!("yaml: no trees");
     }
 
@@ -282,7 +282,7 @@ fn get_multivariables(yaml: &Yaml,
 fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
-            templates.push(get_template(name, value));
+            templates.push(get_template(name, value, yaml));
         }
         return true;
     }
@@ -290,23 +290,62 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
 }
 
 
-fn get_template(name: &Yaml, value: &Yaml) -> model::Template {
+fn get_template(
+    name: &Yaml,
+    value: &Yaml,
+    templates: &Yaml,
+) -> model::Template {
     let mut template = model::Template::default();
     get_str(&name, &mut template.name);
     get_vec_str(&value["extend"], &mut template.extend);
+
+
+    // "environment" follow last-set-wins semantics.
+    // Process the base templates in the specified order before processing
+    // the template itself.
+    for template_name in &template.extend {
+        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+            let mut base = get_template(
+                &Yaml::String(template_name.to_string()),
+                &templates[template_name.as_ref()],
+                templates);
+
+            template.environment.append(&mut base.environment);
+            template.gitconfig.append(&mut base.gitconfig);
+        }
+    }
+
     get_variables(&value["variables"], &mut template.variables);
     get_variables(&value["gitconfig"], &mut template.gitconfig);
     get_multivariables(&value["environment"], &mut template.environment);
     get_multivariables(&value["commands"], &mut template.commands);
 
+    // These follow first-found semantics; process the base templates in
+    // reverse order.
+    for template_name in template.extend.iter().rev() {
+        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+            let mut base = get_template(
+                &Yaml::String(template_name.to_string()),
+                &templates[template_name.as_ref()],
+                templates);
+
+            template.variables.append(&mut base.variables);
+            template.commands.append(&mut base.commands);
+        }
+    }
+
     return template;
 }
 
 
-fn get_trees(yaml: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
+fn get_trees(
+    yaml: &Yaml,
+    templates: &Yaml,
+    trees: &mut Vec<model::Tree>,
+) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
-            trees.push(get_tree(name, value));
+            trees.push(get_tree(name, value, templates));
         }
         return true;
     }
@@ -314,7 +353,11 @@ fn get_trees(yaml: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
 }
 
 
-fn get_tree(name: &Yaml, value: &Yaml) -> model::Tree {
+fn get_tree(
+    name: &Yaml,
+    value: &Yaml,
+    templates: &Yaml,
+) -> model::Tree {
     let mut tree = model::Tree::default();
     get_str(&name, &mut tree.name);
     if !get_str(&value["path"], &mut tree.path.expr) {
@@ -333,11 +376,42 @@ fn get_tree(name: &Yaml, value: &Yaml) -> model::Tree {
         }
     }
     get_vec_str(&value["templates"], &mut tree.templates);
+
+    // "environment" follow last-set-wins semantics.
+    // Process the base templates in the specified order before processing
+    // the template itself.
+    for template_name in &tree.templates {
+        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+            let mut base = get_template(
+                &Yaml::String(template_name.to_string()),
+                &templates[template_name.as_ref()],
+                templates);
+
+            tree.environment.append(&mut base.environment);
+            tree.gitconfig.append(&mut base.gitconfig);
+        }
+    }
+
+
     get_variables(&value["variables"], &mut tree.variables);
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables(&value["commands"], &mut tree.commands);
     get_remotes(&value["remotes"], &mut tree.remotes);
+
+    // These follow first-found semantics; process templates in
+    // reverse order.
+    for template_name in tree.templates.iter().rev() {
+        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+            let mut base = get_template(
+                &Yaml::String(template_name.to_string()),
+                &templates[template_name.as_ref()],
+                templates);
+
+            tree.variables.append(&mut base.variables);
+            tree.commands.append(&mut base.commands);
+        }
+    }
 
     return tree;
 }

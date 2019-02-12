@@ -24,6 +24,8 @@ pub fn garden_config() -> garden::model::Configuration {
 
     templates:
         makefile:
+            variables:
+                prefix: ${TREE_PATH}/local
             commands:
                 install: make -j prefix=${prefix} install
                 test: make test

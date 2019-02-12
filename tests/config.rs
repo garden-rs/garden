@@ -114,15 +114,17 @@ fn templates() {
 
     assert_eq!(config.templates[1].name, "template2");
     assert_eq!(config.templates[1].extend, ["template1"]);
-    assert_eq!(config.templates[1].variables.len(), 2);
+    assert_eq!(config.templates[1].variables.len(), 3);
     assert_eq!(config.templates[1].variables[0].name, "baz");
     assert_eq!(config.templates[1].variables[0].expr, "zax");
     assert_eq!(config.templates[1].variables[1].name, "zee");
     assert_eq!(config.templates[1].variables[1].expr, "${foo}");
+    assert_eq!(config.templates[1].variables[2].name, "foo");
+    assert_eq!(config.templates[1].variables[2].expr, "bar");
 
     assert_eq!(config.templates[2].name, "template3");
     assert_eq!(config.templates[2].extend, ["template1", "template2"]);
-    assert_eq!(config.templates[2].variables.len(), 1);
+    assert_eq!(config.templates[2].variables.len(), 5);
     assert_eq!(config.templates[2].variables[0].name, "foo");
     assert_eq!(config.templates[2].variables[0].expr, "boo");
 }
@@ -149,17 +151,17 @@ fn trees() {
     // git
     let ref tree0 = config.trees[0];
     assert!(tree0.environment.is_empty());
-    assert!(tree0.commands.is_empty());
+    assert_eq!(tree0.commands.len(), 2);
 
     assert_eq!(tree0.name, "git");
-    assert_eq!(tree0.path, "git");  // picks up default value
+    assert_eq!(tree0.path.expr, "git");  // picks up default value
     assert_eq!(tree0.templates, ["makefile"]);
 
     assert_eq!(tree0.remotes.len(), 1);
     assert_eq!(tree0.remotes[0].name, "origin");
     assert_eq!(tree0.remotes[0].url, "https://github.com/git/git");
 
-    assert_eq!(tree0.variables.len(), 1);
+    assert_eq!(tree0.variables.len(), 2);
     assert_eq!(tree0.variables[0].name, "prefix");
     assert_eq!(tree0.variables[0].expr, "~/.local");
 
@@ -176,7 +178,7 @@ fn trees() {
     assert!(tree1.gitconfig.is_empty());
 
     assert_eq!(tree1.name, "cola");
-    assert_eq!(tree1.path, "git-cola");
+    assert_eq!(tree1.path.expr, "git-cola");
     assert_eq!(tree1.templates, ["makefile", "python"]);
 
     assert_eq!(tree1.remotes.len(), 2);
@@ -185,21 +187,29 @@ fn trees() {
     assert_eq!(tree1.remotes[1].name, "davvid");
     assert_eq!(tree1.remotes[1].url, "git@github.com:davvid/git-cola.git");
 
-    assert_eq!(tree1.environment.len(), 2);
-    assert_eq!(tree1.environment[0].name, "PATH");
-    assert_eq!(tree1.environment[0].values.len(), 2);
-    assert_eq!(tree1.environment[0].values[0].expr, "${TREE_PATH}/bin");
-    assert_eq!(tree1.environment[0].values[1].expr, "${prefix}");
+    assert_eq!(tree1.environment.len(), 3);
+    // From "python" template
+    assert_eq!(tree1.environment[0].name, "PYTHONPATH");
+    assert_eq!(tree1.environment[0].values.len(), 1);
+    assert_eq!(tree1.environment[0].values[0].expr, "${TREE_PATH}");
+    // From tree
+    assert_eq!(tree1.environment[1].name, "PATH");
+    assert_eq!(tree1.environment[1].values.len(), 2);
+    assert_eq!(tree1.environment[1].values[0].expr, "${TREE_PATH}/bin");
+    assert_eq!(tree1.environment[1].values[1].expr, "${prefix}");
 
-    assert_eq!(tree1.environment[1].name, "PYTHONPATH");
-    assert_eq!(tree1.environment[1].values.len(), 1);
-    assert_eq!(tree1.environment[1].values[0].expr, "${TREE_PATH}");
+    assert_eq!(tree1.environment[2].name, "PYTHONPATH");
+    assert_eq!(tree1.environment[2].values.len(), 1);
+    assert_eq!(tree1.environment[2].values[0].expr, "${TREE_PATH}");
 
-    assert_eq!(tree1.commands.len(), 1);
+    assert_eq!(tree1.commands.len(), 3);
+    // From the tree
     assert_eq!(tree1.commands[0].name, "test");
     assert_eq!(tree1.commands[0].values.len(), 2);
     assert_eq!(tree1.commands[0].values[0].expr, "git status --short");
     assert_eq!(tree1.commands[0].values[1].expr, "make test");
+    // From the template
+    assert_eq!(tree1.commands[1].name, "install");
 }
 
 
