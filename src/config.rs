@@ -127,6 +127,10 @@ pub fn parse(config_string: &String,
     // Store the resolved garden.root
     cfg.root_path = std::path::PathBuf::from(value.to_string());
     cfg.root.value = Some(value);
+
+    // Resolve tree paths
+    cfg.update_tree_paths();
+
     // Reset variables to allow for tree-scope evaluation
     cfg.reset_variables();
 }

@@ -1,5 +1,6 @@
 extern crate glob;
 
+use super::eval;
 use super::syntax;
 
 
@@ -192,6 +193,33 @@ impl Configuration {
             environment_variables: true,
             shell: "zsh".to_string(),
             ..std::default::Default::default()
+        }
+    }
+
+    // Calculate the "path" field for each tree.
+    // If specified as a relative path, it will be relative to garden.root.
+    // If specified as an asbolute path, it will be left as-is.
+    pub fn update_tree_paths(&mut self) {
+        let mut values = vec!();
+        for tree in &self.trees {
+            values.push(tree.path.expr.to_string());
+        }
+
+        let mut idx: usize = 0;
+        for value in &values {
+            let result = eval::value(self, value.to_string());
+            let tree = &mut self.trees[idx];
+            idx += 1;
+
+            if result.starts_with("/") {
+                // Absolute path, nothing to do
+                tree.path.value = Some(result);
+            } else {
+                // Make path relative to root_path
+                let mut path_buf = self.root_path.to_path_buf();
+                path_buf.push(result);
+                tree.path.value = Some(path_buf.to_string_lossy().to_string());
+            }
         }
     }
 }

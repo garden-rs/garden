@@ -58,6 +58,8 @@ pub fn garden_config() -> garden::model::Configuration {
                     - make test
             remotes:
                 davvid: git@github.com:davvid/git-cola.git
+        tmp:
+            path: /tmp
 
     groups:
         cola: [git, qtpy, cola]
