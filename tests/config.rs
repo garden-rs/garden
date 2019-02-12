@@ -22,7 +22,7 @@ fn core() {
         environment_variables: false
     "#.to_string();
 
-    let config = common::from_yaml_string(&string);
+    let config = common::from_string(&string);
     assert_eq!(config.root_path, std::path::PathBuf::from("/tmp"));
     assert_eq!(config.environment_variables, false);
 }
@@ -36,7 +36,7 @@ fn variables() {
         bar: ${foo}
     "#.to_string();
 
-    let config = common::from_yaml_string(&string);
+    let config = common::from_string(&string);
     assert_eq!(config.variables.len(), 2);
 
     assert_eq!(config.variables[0].name, "foo");
@@ -59,7 +59,7 @@ fn commands() {
             - echo second
     "#.to_string();
 
-    let config = common::from_yaml_string(&string);
+    let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
 
     assert_eq!(config.commands[0].name, "test_cmd");
@@ -95,7 +95,7 @@ fn templates() {
                 foo: boo
     "#.to_string();
 
-    let config = common::from_yaml_string(&string);
+    let config = common::from_string(&string);
     assert_eq!(config.templates.len(), 3);
     assert_eq!(config.templates[0].name, "template1");
     assert_eq!(config.templates[0].variables.len(), 1);
@@ -243,7 +243,7 @@ fn gardens_json() {
 }
     "#.to_string();
 
-    let config = common::from_json_string(&string);
+    let config = common::from_string(&string);
     test_gardens(&config);
 }
 

@@ -65,7 +65,7 @@ fn expandvars(config: &mut model::Configuration,
             .trees[tree_idx]
             .variables[var_idx]
             .value = Some(result.to_string());
-        return Ok(Some(result.to_string()));
+        return Ok(Some(result));
     }
 
     // Last try, check for the variable in global/config scope.

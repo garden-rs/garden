@@ -1,19 +1,9 @@
 extern crate garden;
 
 
-pub fn from_yaml_string(string: &String) -> garden::model::Configuration {
+pub fn from_string(string: &String) -> garden::model::Configuration {
     let mut config = garden::model::Configuration::new();
-    let file_format = garden::config::FileFormat::YAML;
-    garden::config::parse(string, file_format, false, &mut config);
-
-    return config;
-}
-
-
-pub fn from_json_string(string: &String) -> garden::model::Configuration {
-    let mut config = garden::model::Configuration::new();
-    let file_format = garden::config::FileFormat::JSON;
-    garden::config::parse(string, file_format, false, &mut config);
+    garden::config::parse(string, false, &mut config);
 
     return config;
 }
@@ -86,5 +76,5 @@ pub fn garden_config() -> garden::model::Configuration {
                 user.email: author@example.com
     "#.to_string();
 
-    return from_yaml_string(&string);
+    return from_string(&string);
 }
