@@ -11,10 +11,14 @@ pub fn from_string(string: &String) -> garden::model::Configuration {
 
 pub fn garden_config() -> garden::model::Configuration {
     let string = r#"
+    garden:
+        root: ${root}
 
     variables:
         test: TEST
         local: ${test}/local
+        src: src
+        root: ~/${src}
 
     templates:
         makefile:

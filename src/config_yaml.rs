@@ -35,13 +35,13 @@ pub fn parse(string: &String, verbose: bool,
     }
 
     // garden.root
-    if get_path(&doc["garden"]["root"], &mut config.root_path) && verbose {
-        debug!("yaml: garden.root = {:?}", config.root_path);
+    if get_str(&doc["garden"]["root"], &mut config.root.expr) && verbose {
+        debug!("yaml: garden.root = {}", config.root.expr);
     }
 
     // garden.shell
-    if get_path(&doc["garden"]["shell"], &mut config.root_path) && verbose {
-        debug!("yaml: garden.shell = {}", config.shell.to_str().unwrap());
+    if get_str(&doc["garden"]["shell"], &mut config.shell) && verbose {
+        debug!("yaml: garden.shell = {}", config.shell);
     }
 
     // variables

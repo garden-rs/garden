@@ -27,7 +27,7 @@ impl_display_brief!(Remote);
  * (dollar-sign followed by space) before the value.  For example,
  * using "$ echo foo" will place the value "foo" in the variable.
  */
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Variable {
     pub expr: String,
     pub value: Option<String>,
@@ -124,8 +124,9 @@ pub struct Configuration {
     pub gardens: Vec<Garden>,
     pub groups: Vec<Group>,
     pub path: Option<std::path::PathBuf>,
+    pub root: Variable,
     pub root_path: std::path::PathBuf,
-    pub shell: std::path::PathBuf,
+    pub shell: String,
     pub templates: Vec<Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: Vec<Tree>,
@@ -137,12 +138,35 @@ pub struct Configuration {
 impl_display!(Configuration);
 
 
+impl Configuration {
+    /// Reset resolved variables
+    pub fn reset_all_variables(&mut self) {
+        self.reset_variables();
+        self.reset_tree_variables();
+    }
+
+    pub fn reset_variables(&mut self) {
+        for var in &mut self.variables {
+            var.value = None;
+        }
+    }
+
+    pub fn reset_tree_variables(&mut self) {
+        for tree in &mut self.trees {
+            for var in &mut tree.variables {
+                var.value = None;
+            }
+        }
+    }
+}
+
+
 /// Create a default Configuration
 impl Configuration {
     pub fn new() -> Self {
         return Configuration {
             environment_variables: true,
-            shell: std::path::PathBuf::from("zsh"),
+            shell: "zsh".to_string(),
             ..std::default::Default::default()
         }
     }

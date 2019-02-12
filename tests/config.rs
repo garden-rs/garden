@@ -7,7 +7,7 @@ mod common;
 #[test]
 fn config_default() {
     let config = garden::model::Configuration::new();
-    assert_eq!(config.shell.to_string_lossy(), "zsh");
+    assert_eq!(config.shell, "zsh");
     assert_eq!(config.environment_variables, true);
     assert_eq!(config.verbose, false);
 }

@@ -1,6 +1,6 @@
 extern crate dirs;
-use std::convert::AsRef;
 
+use super::eval;
 use super::model;
 use super::config_yaml;
 
@@ -64,7 +64,7 @@ fn search_path() -> Vec<std::path::PathBuf> {
 
 
 pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
-    -> model::Configuration {
+-> model::Configuration {
 
     let mut cfg = model::Configuration::new();
     cfg.verbose = verbose;
@@ -81,9 +81,9 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
     if !found {
         for entry in search_path() {
             let formats = vec!("yaml", "json");
-            for fmt in formats {
+            for fmt in &formats {
                 let mut candidate = entry.to_path_buf();
-                candidate.push(String::from("garden.") + &fmt);
+                candidate.push(String::from("garden.") + fmt);
                 if candidate.exists() {
                     cfg.path = Some(candidate);
                     found = true;
@@ -115,8 +115,18 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
 }
 
 
+/// Parse and apply configuration from a YAML/JSON string
 pub fn parse(config_string: &String,
              verbose: bool, mut cfg: &mut model::Configuration) {
-    // Parse and apply configuration
+
     config_yaml::parse(&config_string, verbose, &mut cfg);
+
+    // Evaluate garden.root
+    let expr = cfg.root.expr.to_string();
+    let value = eval::value(&mut cfg, expr);
+    // Store the resolved garden.root
+    cfg.root_path = std::path::PathBuf::from(value.to_string());
+    cfg.root.value = Some(value);
+    // Reset variables to allow for tree-scope evaluation
+    cfg.reset_variables();
 }
