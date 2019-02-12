@@ -174,8 +174,9 @@ pub fn exec_expression(string: String) -> String {
         cmd.remove(0);
         cmd.remove(0);
 
-        let mut proc = subprocess::Exec::shell(cmd);
-        let capture = proc.stdout(subprocess::Redirection::Pipe).capture();
+        let capture = subprocess::Exec::shell(cmd)
+            .stdout(subprocess::Redirection::Pipe)
+            .capture();
         if let Ok(x) = capture {
             return x.stdout_str().trim_end().to_string();
         }

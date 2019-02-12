@@ -152,15 +152,6 @@ fn get_str(yaml: &Yaml, string: &mut String) -> bool {
 }
 
 
-fn get_path(yaml: &Yaml, pathbuf: &mut std::path::PathBuf) -> bool {
-    if let Yaml::String(yaml_string) = yaml {
-        *pathbuf = std::path::PathBuf::from(yaml_string.to_string());
-        return true;
-    }
-    return false;
-}
-
-
 fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
 
     if let Yaml::String(yaml_string) = yaml {
