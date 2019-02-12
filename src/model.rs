@@ -220,6 +220,17 @@ impl Configuration {
                 path_buf.push(result);
                 tree.path.value = Some(path_buf.to_string_lossy().to_string());
             }
+
+            let tree_path = tree.path.value.as_ref().unwrap().to_string();
+
+            // ${TREE_PATH} is automatically available in each tree
+            tree.variables.push(
+                NamedVariable {
+                    name: "TREE_PATH".to_string(),
+                    expr: tree_path.to_string(),
+                    value: Some(tree_path.to_string()),
+                }
+            );
         }
     }
 }

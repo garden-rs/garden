@@ -161,9 +161,14 @@ fn trees() {
     assert_eq!(tree0.remotes[0].name, "origin");
     assert_eq!(tree0.remotes[0].url, "https://github.com/git/git");
 
-    assert_eq!(tree0.variables.len(), 2);
+    assert_eq!(tree0.variables.len(), 3);
     assert_eq!(tree0.variables[0].name, "prefix");
     assert_eq!(tree0.variables[0].expr, "~/.local");
+    // From the template, effectively "hidden"
+    assert_eq!(tree0.variables[1].name, "prefix");
+    // TREE_PATH
+    assert_eq!(tree0.variables[2].name, "TREE_PATH");
+    assert!(tree0.variables[2].value.is_some());
 
     assert_eq!(tree0.gitconfig.len(), 2);
     assert_eq!(tree0.gitconfig[0].name, "user.name");

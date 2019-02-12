@@ -47,6 +47,23 @@ fn config_variable() {
     assert_eq!("TEST/local", local);
 }
 
+#[test]
+fn tree_path_variable() {
+    let mut config = common::garden_config();
+    let tree_idx: garden::model::TreeIndex = 0;
+
+    // We expect to get $HOME/src/git (expanded)
+    let mut path_buf = dirs::home_dir().unwrap();
+    path_buf.push("src");
+    path_buf.push("git");
+    let expect = path_buf.to_string_lossy();
+
+    let actual = garden::eval::tree_value(
+        &mut config, "${TREE_PATH}", tree_idx, None);
+
+    assert_eq!(expect, actual);
+}
+
 
 #[test]
 fn exec_expression() {
