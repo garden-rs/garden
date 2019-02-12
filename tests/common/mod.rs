@@ -15,6 +15,8 @@ pub fn garden_config() -> garden::model::Configuration {
         root: ${root}
 
     variables:
+        echo_cmd: echo cmd
+        echo_cmd_exec: $ ${echo_cmd}
         test: TEST
         local: ${test}/local
         src: src

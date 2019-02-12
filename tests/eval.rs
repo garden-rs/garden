@@ -46,3 +46,22 @@ fn config_variable() {
         &mut config, "${local}", tree_idx, None);
     assert_eq!("TEST/local", local);
 }
+
+
+#[test]
+fn exec_expression() {
+    let mut config = common::garden_config();
+
+    // Simple exec expression
+    let mut value = garden::eval::value(&mut config, "$ echo test");
+    assert_eq!(value, "test");
+
+    // Exec expression found through variable indirection:
+    //  ${echo_cmd} = "echo cmd"
+    //  ${echo_cmd_exec} = "$ ${echo_cmd}"
+    // Evaluation of ${echo_cmd_exec} produces "$ ${echo_cmd}"
+    // which is further evaluated to "$ echo cmd" before getting
+    // run through a shell to produce the final result.
+    value = garden::eval::value(&mut config, "${echo_cmd_exec}");
+    assert_eq!(value, "cmd");
+}

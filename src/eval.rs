@@ -1,4 +1,5 @@
 extern crate shellexpand;
+extern crate subprocess;
 extern crate dirs;
 
 use super::model;
@@ -145,7 +146,7 @@ pub fn tree_value<S: Into<String>>(
         |x| { return expand_tree_vars(config, tree_idx, garden_idx, x); }
         ).unwrap().to_string();
 
-    return expanded;
+    return exec_expression(expanded);
 }
 
 
@@ -161,5 +162,26 @@ pub fn value<S: Into<String>>(
         |x| { return expand_vars(config, x); }
         ).unwrap().to_string();
 
-    return expanded;
+    return exec_expression(expanded);
+}
+
+
+/// Evaluate "$ <command>" command strings, AKA "exec expressions".
+/// The result of the expression is the stdout output from the command.
+pub fn exec_expression(string: String) -> String {
+    if string.starts_with("$ ") {
+        let mut cmd = string.to_string();
+        cmd.remove(0);
+        cmd.remove(0);
+
+        let mut proc = subprocess::Exec::shell(cmd);
+        let capture = proc.stdout(subprocess::Redirection::Pipe).capture();
+        if let Ok(x) = capture {
+            return x.stdout_str().trim_end().to_string();
+        }
+        // An error occurred running the command -- empty output by design
+        return "".to_string();
+    }
+
+    return string;
 }
