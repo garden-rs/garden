@@ -67,7 +67,7 @@ impl_display!(MultiVariable);
 #[derive(Clone, Debug, Default)]
 pub struct Tree {
     pub name: String,
-    pub path: String,
+    pub path: Variable,
     pub templates: Vec<String>,
     pub remotes: Vec<Remote>,
     pub gitconfig: Vec<NamedVariable>,
@@ -77,6 +77,32 @@ pub struct Tree {
 }
 
 impl_display!(Tree);
+
+impl Tree {
+    pub fn reset_variables(&mut self) {
+        // self.path is a variable but it is not reset because
+        // the tree path is evaluated once when the configuration
+        // is first read, and never again.
+        for var in &mut self.variables {
+            var.value = None;
+        }
+
+        for var in &mut self.gitconfig {
+            var.value = None;
+        }
+
+        for env in &mut self.environment {
+            for var in &mut env.values {
+                var.value = None;
+            }
+        }
+        for cmd in &mut self.commands {
+            for var in &mut cmd.values {
+                var.value = None;
+            }
+        }
+    }
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct Group {
@@ -153,9 +179,7 @@ impl Configuration {
 
     pub fn reset_tree_variables(&mut self) {
         for tree in &mut self.trees {
-            for var in &mut tree.variables {
-                var.value = None;
-            }
+            tree.reset_variables();
         }
     }
 }

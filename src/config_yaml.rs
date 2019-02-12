@@ -317,9 +317,10 @@ fn get_trees(yaml: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
 fn get_tree(name: &Yaml, value: &Yaml) -> model::Tree {
     let mut tree = model::Tree::default();
     get_str(&name, &mut tree.name);
-    if !get_str(&value["path"], &mut tree.path) {
+    if !get_str(&value["path"], &mut tree.path.expr) {
         // default to the name when "path" is unspecified
-        tree.path = tree.name.to_string();
+        tree.path.expr = tree.name.to_string();
+        tree.path.value = Some(tree.name.to_string());
     }
     {
         let mut url = String::new();
