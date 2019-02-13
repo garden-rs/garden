@@ -19,15 +19,16 @@ fn expand_tree_vars(
     // First check for the variable at the garden scope.
     // Garden scope overrides tree and global scope.
     if garden_idx.is_some() {
-        for var in &config.gardens[garden_idx.unwrap()].variables {
+        for (idx, var) in
+        config.gardens[garden_idx.unwrap()].variables.iter().enumerate() {
             if var.name == name {
                 if var.value.is_some() {
                     return Ok(Some(var.value.as_ref().unwrap().to_string()));
                 }
+                var_idx = idx;
                 found = true;
                 break;
             }
-            var_idx += 1;
         }
 
         if found {
@@ -50,15 +51,15 @@ fn expand_tree_vars(
     found = false;
     var_idx = 0;
 
-    for var in &config.trees[tree_idx].variables {
+    for (idx, var) in config.trees[tree_idx].variables.iter().enumerate() {
         if var.name == name {
             if var.value.is_some() {
                 return Ok(Some(var.value.as_ref().unwrap().to_string()));
             }
             found = true;
+            var_idx = idx;
             break;
         }
-        var_idx += 1;
     }
 
     if found {
@@ -75,15 +76,15 @@ fn expand_tree_vars(
     found = false;
     var_idx = 0;
 
-    for var in &mut config.variables {
+    for (idx, var) in config.variables.iter().enumerate() {
         if var.name == name {
             if var.value.is_some() {
                 return Ok(Some(var.value.as_ref().unwrap().to_string()));
             }
             found = true;
+            var_idx = idx;
             break;
         }
-        var_idx += 1;
     }
 
     if found {
@@ -108,15 +109,15 @@ fn expand_vars(
     let mut var_idx: usize = 0;
     let mut found = false;
 
-    for var in &mut config.variables {
+    for (idx, var) in config.variables.iter().enumerate() {
         if var.name == name {
             if var.value.is_some() {
                 return Ok(Some(var.value.as_ref().unwrap().to_string()));
             }
+            var_idx = idx;
             found = true;
             break;
         }
-        var_idx += 1;
     }
 
     if found {

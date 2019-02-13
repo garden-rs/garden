@@ -1,5 +1,3 @@
-extern crate glob;
-
 use super::model;
 use super::query;
 
