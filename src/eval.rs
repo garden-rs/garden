@@ -132,6 +132,14 @@ fn expand_vars(
 }
 
 
+fn home_dir() -> Option<std::path::PathBuf> {
+    if let Ok(home) = std::env::var("HOME") {
+        return Some(std::path::PathBuf::from(home));
+    }
+    return dirs::home_dir();
+}
+
+
 /// Resolve a variable in a garden/tree/global scope
 pub fn tree_value<S: Into<String>>(
     config: &mut model::Configuration,
@@ -142,7 +150,7 @@ pub fn tree_value<S: Into<String>>(
     let expr_str: String = expr.into();
 
     let expanded = shellexpand::full_with_context(
-        &expr_str, dirs::home_dir,
+        &expr_str, home_dir,
         |x| { return expand_tree_vars(config, tree_idx, garden_idx, x); }
         ).unwrap().to_string();
 
@@ -158,7 +166,7 @@ pub fn value<S: Into<String>>(
     let expr_str: String = expr.into();
 
     let expanded = shellexpand::full_with_context(
-        &expr_str, dirs::home_dir,
+        &expr_str, home_dir,
         |x| { return expand_vars(config, x); }
         ).unwrap().to_string();
 

@@ -2,6 +2,9 @@ extern crate garden;
 
 
 pub fn from_string(string: &String) -> garden::model::Configuration {
+    // Use /home/test for all tests
+    std::env::set_var("HOME", "/home/test");
+
     let mut config = garden::model::Configuration::new();
     garden::config::parse(string, false, &mut config);
 

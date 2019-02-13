@@ -9,11 +9,8 @@ fn garden_root () {
     // The test has garden.root = ${root}
     // with variables: src = src, and root = ~/${src}
     // This should expand to $HOME/src.
-    let mut path_buf = dirs::home_dir().unwrap();
-    path_buf.push("src");
-    let expect_src_dir = path_buf.to_string_lossy();
-
     let mut config = common::garden_config();
+    let expect_src_dir = "/home/test/src";
     assert_eq!(config.root.expr, "${root}");
     assert_eq!(config.root.value.unwrap(), expect_src_dir);
     assert_eq!(config.root_path.to_string_lossy(), expect_src_dir);
@@ -25,12 +22,7 @@ fn tree_variable() {
     let tree_idx: garden::model::TreeIndex = 0;
     let result = garden::eval::tree_value(
         &mut config, "${prefix}", tree_idx, None);
-
-    let path_buf = dirs::home_dir().unwrap();
-    let home_dir= path_buf.to_string_lossy();
-
-    assert!(result.starts_with(home_dir.as_ref()));
-    assert!(result.ends_with("/.local"));
+    assert_eq!(result, "/home/test/.local");
 }
 
 #[test]
@@ -51,16 +43,9 @@ fn config_variable() {
 fn tree_path_variable() {
     let mut config = common::garden_config();
     let tree_idx: garden::model::TreeIndex = 0;
-
-    // We expect to get $HOME/src/git (expanded)
-    let mut path_buf = dirs::home_dir().unwrap();
-    path_buf.push("src");
-    path_buf.push("git");
-    let expect = path_buf.to_string_lossy();
-
+    let expect = "/home/test/src/git";
     let actual = garden::eval::tree_value(
         &mut config, "${TREE_PATH}", tree_idx, None);
-
     assert_eq!(expect, actual);
 }
 

@@ -316,32 +316,17 @@ fn test_gardens(config: &garden::model::Configuration) {
 
 #[test]
 fn tree_path() {
-    // The test has garden.root = ${root}
-    // with variables: src = src, and root = ~/${src}
-    // This should expand to $HOME/src.
-    let mut src_path = dirs::home_dir().unwrap();
-    src_path.push("src");
-
-    // git is in the "git" subdirectory
-    let mut git_path = src_path.to_path_buf();
-    git_path.push("git");
-    let git_path_str = git_path.to_string_lossy().to_string();
-
     let config = common::garden_config();
     assert!(config.trees.len() >= 3);
 
     assert_eq!(config.trees[0].path.value.as_ref().unwrap().to_string(),
-               git_path_str);
+               "/home/test/src/git");
 
     // cola is in the "git-cola" subdirectory
-    let mut cola_path = src_path.to_path_buf();
-    cola_path.push("git-cola");
-    let cola_path_str = cola_path.to_string_lossy().to_string();
     assert_eq!(config.trees[1].path.value.as_ref().unwrap().to_string(),
-               cola_path_str);
+               "/home/test/src/git-cola");
 
     // tmp is in "/tmp"
-    let tmp_path_str = "/tmp".to_string();
     assert_eq!(config.trees[2].path.value.as_ref().unwrap().to_string(),
-               tmp_path_str);
+               "/tmp");
 }
