@@ -4,7 +4,7 @@ use super::eval;
 use super::syntax;
 
 
-// Remotes an minimum have a name and a URL
+/// Remotes at minimum have a name and a URL
 #[derive(Clone, Debug)]
 pub struct Remote {
     pub name: String,
@@ -13,21 +13,22 @@ pub struct Remote {
 
 impl_display_brief!(Remote);
 
-/* Config files can define a sequence of variables that are
- * iteratively calculated.  Variables can reference other
- * variables in their Tree, Garden, and Configuration scopes.
- *
- * The config values can contain either plain values,
- * string ${expressions} that resolve against other Variables,
- * or exec expressions that evaluate to a command whose stdout is
- * captured and placed into the value of the variable.
- *
- * An exec expression can use shell-like ${variable} references as which
- * are substituted when evaluating the command, just like a regular
- * string expression.  An exec expression is denoted by using a "$ "
- * (dollar-sign followed by space) before the value.  For example,
- * using "$ echo foo" will place the value "foo" in the variable.
- */
+
+/// Config files can define a sequence of variables that are
+/// iteratively calculated.  Variables can reference other
+/// variables in their Tree, Garden, and Configuration scopes.
+///
+/// The config values can contain either plain values,
+/// string ${expressions} that resolve against other Variables,
+/// or exec expressions that evaluate to a command whose stdout is
+/// captured and placed into the value of the variable.
+///
+/// An exec expression can use shell-like ${variable} references as which
+/// are substituted when evaluating the command, just like a regular
+/// string expression.  An exec expression is denoted by using a "$ "
+/// (dollar-sign followed by space) before the value.  For example,
+/// using "$ echo foo" will place the value "foo" in the variable.
+
 #[derive(Clone, Debug, Default)]
 pub struct Variable {
     pub expr: String,
@@ -105,6 +106,7 @@ impl Tree {
     }
 }
 
+
 #[derive(Clone, Debug, Default)]
 pub struct Group {
     pub name: String,
@@ -161,11 +163,69 @@ pub struct Configuration {
     pub verbose: bool,
 }
 
-
 impl_display!(Configuration);
 
-
 impl Configuration {
+
+    /// Create a default Configuration
+    pub fn new() -> Self {
+        return Configuration {
+            environment_variables: true,
+            shell: "zsh".to_string(),
+            ..std::default::Default::default()
+        }
+    }
+
+    pub fn initialize(&mut self) {
+        // Evaluate garden.root
+        let expr = self.root.expr.to_string();
+        let value = eval::value(self, expr);
+        // Store the resolved garden.root
+        self.root_path = std::path::PathBuf::from(value.to_string());
+        self.root.value = Some(value);
+
+        // Resolve tree paths
+        self.update_tree_paths();
+    }
+
+    // Calculate the "path" field for each tree.
+    // If specified as a relative path, it will be relative to garden.root.
+    // If specified as an asbolute path, it will be left as-is.
+    pub fn update_tree_paths(&mut self) {
+        let mut values = vec!();
+        for tree in &self.trees {
+            values.push(tree.path.expr.to_string());
+        }
+
+        for (idx, value) in values.iter().enumerate() {
+            let result = eval::value(self, value.to_string());
+            let tree = &mut self.trees[idx];
+
+            if result.starts_with("/") {
+                // Absolute path, nothing to do
+                tree.path.value = Some(result);
+            } else {
+                // Make path relative to root_path
+                let mut path_buf = self.root_path.to_path_buf();
+                path_buf.push(result);
+                tree.path.value = Some(path_buf.to_string_lossy().to_string());
+            }
+
+            // ${TREE_PATH} is automatically available in each tree
+            let tree_path = tree.path.value.as_ref().unwrap().to_string();
+            tree.variables.push(
+                NamedVariable {
+                    name: "TREE_PATH".to_string(),
+                    expr: tree_path.to_string(),
+                    value: Some(tree_path.to_string()),
+                }
+            );
+        }
+
+        // Reset variables to allow for tree-scope evaluation
+        self.reset_variables();
+    }
+
     /// Reset resolved variables
     pub fn reset_all_variables(&mut self) {
         self.reset_variables();
@@ -181,56 +241,6 @@ impl Configuration {
     pub fn reset_tree_variables(&mut self) {
         for tree in &mut self.trees {
             tree.reset_variables();
-        }
-    }
-}
-
-
-/// Create a default Configuration
-impl Configuration {
-    pub fn new() -> Self {
-        return Configuration {
-            environment_variables: true,
-            shell: "zsh".to_string(),
-            ..std::default::Default::default()
-        }
-    }
-
-    // Calculate the "path" field for each tree.
-    // If specified as a relative path, it will be relative to garden.root.
-    // If specified as an asbolute path, it will be left as-is.
-    pub fn update_tree_paths(&mut self) {
-        let mut values = vec!();
-        for tree in &self.trees {
-            values.push(tree.path.expr.to_string());
-        }
-
-        let mut idx: usize = 0;
-        for value in &values {
-            let result = eval::value(self, value.to_string());
-            let tree = &mut self.trees[idx];
-            idx += 1;
-
-            if result.starts_with("/") {
-                // Absolute path, nothing to do
-                tree.path.value = Some(result);
-            } else {
-                // Make path relative to root_path
-                let mut path_buf = self.root_path.to_path_buf();
-                path_buf.push(result);
-                tree.path.value = Some(path_buf.to_string_lossy().to_string());
-            }
-
-            let tree_path = tree.path.value.as_ref().unwrap().to_string();
-
-            // ${TREE_PATH} is automatically available in each tree
-            tree.variables.push(
-                NamedVariable {
-                    name: "TREE_PATH".to_string(),
-                    expr: tree_path.to_string(),
-                    value: Some(tree_path.to_string()),
-                }
-            );
         }
     }
 }

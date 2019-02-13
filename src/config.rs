@@ -120,17 +120,6 @@ pub fn parse(config_string: &String,
              verbose: bool, mut cfg: &mut model::Configuration) {
 
     config_yaml::parse(&config_string, verbose, &mut cfg);
-
-    // Evaluate garden.root
-    let expr = cfg.root.expr.to_string();
-    let value = eval::value(&mut cfg, expr);
-    // Store the resolved garden.root
-    cfg.root_path = std::path::PathBuf::from(value.to_string());
-    cfg.root.value = Some(value);
-
-    // Resolve tree paths
-    cfg.update_tree_paths();
-
-    // Reset variables to allow for tree-scope evaluation
-    cfg.reset_variables();
+    // Initialize the configuration now that the values have been read.
+    cfg.initialize();
 }
