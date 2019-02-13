@@ -132,7 +132,9 @@ fn expand_vars(
 }
 
 
+/// Resolve ~ to the current user's home directory
 fn home_dir() -> Option<std::path::PathBuf> {
+    // Honor $HOME when set in the environment.
     if let Ok(home) = std::env::var("HOME") {
         return Some(std::path::PathBuf::from(home));
     }
