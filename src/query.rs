@@ -59,11 +59,9 @@ fn garden_trees(config: &model::Configuration, pattern: &glob::Pattern)
     -> Vec<model::TreeContext> {
 
     let mut result = Vec::new();
-    let mut garden_idx: model::GardenIndex = 0;
 
-    for garden in &config.gardens {
+    for (garden_idx, garden) in config.gardens.iter().enumerate() {
         if !pattern.matches(garden.name.as_ref()) {
-            garden_idx += 1;
             continue;
         }
         // Loop over the garden's groups.
@@ -91,9 +89,6 @@ fn garden_trees(config: &model::Configuration, pattern: &glob::Pattern)
                 result.push(tree_ctx);
             }
         }
-
-        // Advance to the next garden index
-        garden_idx += 1;
     }
 
     return result;
@@ -110,9 +105,8 @@ fn tree_by_name(config: &model::Configuration, tree: &String,
                 garden_idx: Option<model::GardenIndex>)
     -> Option<model::TreeContext> {
 
-    let mut tree_idx: model::TreeIndex = 0;
     // Collect tree indexes for the configured trees
-    for cfg_tree in &config.trees {
+    for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
         if *tree == cfg_tree.name {
             // Tree found
             return Some(model::TreeContext {
@@ -120,8 +114,6 @@ fn tree_by_name(config: &model::Configuration, tree: &String,
                 garden: garden_idx,
             });
         }
-        // Advance to the next tree index
-        tree_idx += 1;
     }
     return None;
 }
@@ -132,8 +124,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
     -> Vec<model::TreeContext> {
 
     let mut result = Vec::new();
-    let mut tree_idx: model::TreeIndex = 0;
-    for tree in &config.trees {
+    for (tree_idx, tree) in config.trees.iter().enumerate() {
         if pattern.matches(tree.name.as_ref()) {
             result.push(
                 model::TreeContext {
@@ -142,7 +133,6 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
                 }
             );
         }
-        tree_idx += 1;
     }
 
     return result;
