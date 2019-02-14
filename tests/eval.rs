@@ -111,13 +111,13 @@ fn multi_variable_with_garden() {
 
 
 #[test]
-fn environ() {
+fn environment() {
     let mut config = common::garden_config();
     let context = garden::model::TreeContext {
         tree: 1,
         garden: Some(0),
     };
-    let values = garden::eval::environ(&mut config, &context);
+    let values = garden::eval::environment(&mut config, &context);
     assert_eq!(values.len(), 6);
 
     assert_eq!(values[0].0, "PYTHONPATH");

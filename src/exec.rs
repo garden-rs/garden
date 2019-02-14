@@ -31,7 +31,7 @@ pub fn main<S>(
     // and run the command.
     for context in &contexts {
         // Evaluate the tree environment
-        let env = eval::environ(config, context);
+        let env = eval::environment(config, context);
 
         // Exec each command in the tree's context
         let tree = &config.trees[context.tree];

@@ -231,7 +231,7 @@ pub fn multi_variable(
 
 
 /// Evaluate environments
-pub fn environ(
+pub fn environment(
     config: &mut model::Configuration,
     context: &model::TreeContext,
 ) -> Vec<(String, String)> {
