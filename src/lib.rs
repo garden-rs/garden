@@ -1,23 +1,23 @@
-/// Garden macros
+/// Macros
 #[macro_use]
 pub mod macros;
 
-/// Garden command utilities
+/// Command utilities
 pub mod cmd;
 
-/// Garden configuration
+/// Configuration
 pub mod config;
 
-/// Garden evaluation
+/// Variable evaluation
 pub mod eval;
 
-/// Garden model objects
+/// Model objects
 pub mod model;
 
-/// Garden queries, configuration lookups
+/// Queries, configuration lookups
 pub mod query;
 
-/// Garden command-line syntax conventions
+/// Command-line syntax conventions
 pub mod syntax;
 
 ///
