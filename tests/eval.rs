@@ -108,3 +108,25 @@ fn multi_variable_with_garden() {
                ["/home/test/src/git-cola/bin",
                 "/home/test/apps/git-cola/current"]);
 }
+
+
+#[test]
+fn environ() {
+    let mut config = common::garden_config();
+    let context = garden::model::TreeContext {
+        tree: 1,
+        garden: Some(0),
+    };
+    let values = garden::eval::environ(&mut config, &context);
+    assert_eq!(values.len(), 6);
+
+    assert_eq!(values[0].0, "PYTHONPATH");
+    assert_eq!(values[0].1, "/home/test/src/git-cola");
+
+    assert_eq!(values[5].0, "PATH");
+
+    assert!(values[5].1.starts_with(
+        "/home/test/apps/git-cola/current:/home/test/src/git-cola/bin:"));
+
+    assert!(values[5].1.ends_with(":/home/test/apps/git-cola/current"));
+}

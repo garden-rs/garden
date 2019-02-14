@@ -2,6 +2,8 @@ extern crate shellexpand;
 extern crate subprocess;
 extern crate dirs;
 
+use std::collections::HashMap;
+
 use super::model;
 
 
@@ -222,6 +224,114 @@ pub fn multi_variable(
 
     for (idx, value) in result.iter().enumerate() {
         multi_var.values[idx].value = Some(value.to_string());
+    }
+
+    return result;
+}
+
+
+/// Evaluate environments
+pub fn environ(
+    config: &mut model::Configuration,
+    context: &model::TreeContext,
+) -> Vec<(String, String)> {
+
+    let mut result = Vec::new();
+
+    let mut vars = Vec::new();
+    for var in &config.trees[context.tree].environment {
+        vars.push(var.clone());
+    }
+    if let Some(garden) = context.garden {
+        for var in &config.gardens[garden].environment {
+            vars.push(var.clone());
+        }
+    }
+
+    let mut var_values = Vec::new();
+    for var in vars.iter_mut() {
+        var_values.push((
+            var.name.to_string(),
+            multi_variable(config, var, context)
+        ));
+    }
+
+    // Loop over each value and evaluate the environment command.
+    // For "FOO=" values, record a simple (key, value), and update
+    // the values dict.  For "FOO" append values, check if it exists
+    // in values; if not, check the environment and bootstrap values.
+    // If still nothing, initialize it with the value and update the
+    // values hashmap.
+    let mut values: HashMap<String, String> = HashMap::new();
+
+    for (var_name, env_values) in &var_values {
+        let mut name = var_name.to_string();
+        let mut is_assign = false;
+        let mut is_append = false;
+
+        if name.ends_with("=") {
+            is_assign = true;
+        }
+
+        if name.ends_with("+") {
+            is_append = true;
+        }
+
+        if is_assign || is_append {
+            let len = name.len();
+            name.remove(len - 1);
+        }
+
+        for value in env_values {
+            let mut current = String::new();
+            let mut exists = false;
+            if let Some(map_value) = values.get(&name) {
+                // Use the existing value
+                current = map_value.to_string();
+                exists = true;
+            }
+            if !exists {
+                // Not found, try to get the current value from the environment
+                let mut has_env = false;
+                if let Ok(env_value) = std::env::var(&name) {
+                    current = env_value.to_string();
+                    has_env = true;
+                }
+
+                if has_env && !is_assign {
+                    values.insert(name.to_string(), current.to_string());
+                } else {
+                    // Either no environment value or an assignment will
+                    // create the value if it's never been seen.
+                    values.insert(name.to_string(), value.to_string());
+                    result.push((name.to_string(), value.to_string()));
+                    continue;
+                }
+            }
+
+            // If it's an assignment, replace the value.
+            if is_assign {
+                values.insert(name.to_string(), value.to_string());
+                result.push((name.to_string(), value.to_string()));
+                continue;
+            }
+
+            // Append/prepend the value.
+            let mut path_values: Vec<String> = Vec::new();
+            if !is_append {
+                path_values.push(value.to_string());
+            }
+            for path in current.split(':') {
+                path_values.push(path.to_string());
+            }
+            if is_append {
+                path_values.push(value.to_string());
+            }
+
+            let path_value = path_values.join(":");
+            values.insert(name.to_string(), path_value.to_string());
+            result.push((name.to_string(), path_value.to_string()));
+        }
     }
 
     return result;
