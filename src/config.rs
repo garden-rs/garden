@@ -1,6 +1,5 @@
 extern crate dirs;
 
-use super::eval;
 use super::model;
 use super::config_yaml;
 

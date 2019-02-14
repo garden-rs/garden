@@ -304,7 +304,7 @@ fn get_template(
     // Process the base templates in the specified order before processing
     // the template itself.
     for template_name in &template.extend {
-        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+        if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
@@ -323,7 +323,7 @@ fn get_template(
     // These follow first-found semantics; process the base templates in
     // reverse order.
     for template_name in template.extend.iter().rev() {
-        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+        if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
@@ -381,7 +381,7 @@ fn get_tree(
     // Process the base templates in the specified order before processing
     // the template itself.
     for template_name in &tree.templates {
-        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+        if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
@@ -402,7 +402,7 @@ fn get_tree(
     // These follow first-found semantics; process templates in
     // reverse order.
     for template_name in tree.templates.iter().rev() {
-        if let Yaml::Hash(ref hash) = templates[template_name.as_ref()] {
+        if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
