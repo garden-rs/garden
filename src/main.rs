@@ -31,6 +31,7 @@ struct CommandOptions {
     filename_str: String,
     subcommand: Command,
     verbose: bool,
+    quiet: bool,
 }
 
 impl CommandOptions {
@@ -150,7 +151,8 @@ fn garden_exec(options: &mut CommandOptions) {
         debug!("command: {:?}", command);
     }
 
-    garden::exec::main(&mut config, expr, &command);
+    garden::exec::main(&mut config,
+                       options.quiet, options.verbose, expr, &command);
 }
 
 fn main() {
@@ -169,8 +171,11 @@ fn main() {
 
         ap.refer(&mut options.verbose)
             .add_option(&["-v", "--verbose"],
-                        argparse::StoreTrue, "Be verbose");
+                        argparse::StoreTrue, "be verbose");
 
+        ap.refer(&mut options.quiet)
+            .add_option(&["-q", "--quiet"],
+                        argparse::StoreTrue, "be quiet");
 
         ap.refer(&mut options.subcommand).required()
             .add_argument("command", argparse::Store,
