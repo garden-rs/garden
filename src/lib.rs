@@ -27,5 +27,8 @@ pub mod syntax;
 /// YAML/JSON reader
 mod config_yaml;
 
-/// Exec command
-pub mod exec;
+/// Commands
+pub mod cmds {
+    /// Exec command
+    pub mod exec;
+}

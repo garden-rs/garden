@@ -1,4 +1,7 @@
-pub fn get_status(cmd: &Vec<std::path::PathBuf>) -> i32 {
+extern crate subprocess;
+
+
+pub fn run(cmd: &Vec<std::path::PathBuf>) -> i32 {
     let mut result: i32 = 1;
 
     if let Ok(mut p) = subprocess::Popen::create(
@@ -20,4 +23,17 @@ pub fn get_status(cmd: &Vec<std::path::PathBuf>) -> i32 {
         }
     }
     return result;
+}
+
+
+pub fn status(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
+    let mut exit_status: i32 = 1;
+
+    if let Ok(status_result) = result {
+        if let subprocess::ExitStatus::Exited(status) = status_result {
+            exit_status = status as i32;
+        }
+    }
+
+    return exit_status;
 }

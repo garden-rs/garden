@@ -110,7 +110,7 @@ fn garden_help(options: &mut CommandOptions) {
         }
     }
 
-    std::process::exit(garden::cmd::get_status(&help_cmd));
+    std::process::exit(garden::cmd::run(&help_cmd));
 }
 
 fn garden_exec(options: &mut CommandOptions) {
@@ -151,9 +151,10 @@ fn garden_exec(options: &mut CommandOptions) {
         debug!("command: {:?}", command);
     }
 
-    garden::exec::main(&mut config,
-                       options.quiet, options.verbose, expr, &command);
+    garden::cmds::exec::main(
+        &mut config, options.quiet, options.verbose, expr, &command);
 }
+
 
 fn main() {
     let mut options = CommandOptions::default();
