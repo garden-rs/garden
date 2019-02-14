@@ -233,7 +233,7 @@ fn gardens_json() {
         "cola": {
             "groups": "cola",
             "variables": {
-                "prefix": "~/src/git-cola/local/git-cola"
+                "prefix": "~/apps/git-cola/current"
             },
             "environment": {
                 "GIT_COLA_TRACE=": "full",
@@ -285,7 +285,7 @@ fn test_gardens(config: &garden::model::Configuration) {
     assert_eq!(config.gardens[0].variables.len(), 1);
     assert_eq!(config.gardens[0].variables[0].name, "prefix");
     assert_eq!(config.gardens[0].variables[0].expr,
-               "~/src/git-cola/local/git-cola");
+               "~/apps/git-cola/current");
 
     assert_eq!(config.gardens[0].environment.len(), 2);
     assert_eq!(config.gardens[0].environment[0].name, "GIT_COLA_TRACE=");

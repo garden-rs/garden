@@ -73,7 +73,7 @@ pub fn garden_config() -> garden::model::Configuration {
         cola:
             groups: cola
             variables:
-                prefix: ~/src/git-cola/local/git-cola
+                prefix: ~/apps/git-cola/current
             environment:
                 GIT_COLA_TRACE=: full
                 PATH+: ${prefix}

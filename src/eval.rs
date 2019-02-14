@@ -197,3 +197,32 @@ pub fn exec_expression(string: String) -> String {
 
     return string;
 }
+
+
+/// Evaluate a variable in the given context
+pub fn multi_variable(
+    config: &mut model::Configuration,
+    multi_var: &mut model::MultiVariable,
+    context: &model::TreeContext,
+) -> Vec<String> {
+
+    let mut result = Vec::new();
+
+    for var in &multi_var.values {
+        if let Some(ref value) = var.value {
+            result.push(value.to_string());
+            continue;
+        }
+
+        let mut value = tree_value(
+            config, var.expr.to_string(),
+            context.tree, context.garden);
+        result.push(value);
+    }
+
+    for (idx, value) in result.iter().enumerate() {
+        multi_var.values[idx].value = Some(value.to_string());
+    }
+
+    return result;
+}

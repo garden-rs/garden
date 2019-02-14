@@ -9,7 +9,7 @@ fn garden_root () {
     // The test has garden.root = ${root}
     // with variables: src = src, and root = ~/${src}
     // This should expand to $HOME/src.
-    let mut config = common::garden_config();
+    let config = common::garden_config();
     let expect_src_dir = "/home/test/src";
     assert_eq!(config.root.expr, "${root}");
     assert_eq!(config.root.value.unwrap(), expect_src_dir);
@@ -66,4 +66,45 @@ fn exec_expression() {
     // run through a shell to produce the final result.
     value = garden::eval::value(&mut config, "${echo_cmd_exec}");
     assert_eq!(value, "cmd");
+}
+
+
+#[test]
+fn multi_variable_with_tree() {
+    let mut config = common::garden_config();
+    assert!(config.trees.len() > 1);
+    assert!(config.trees[1].environment.len() > 1);
+
+    let mut var = config.trees[1].environment[1].clone();
+    assert_eq!(var.name, "PATH");
+
+    let context = garden::model::TreeContext {
+        tree: 1,
+        garden: None,
+    };
+    let values = garden::eval::multi_variable(
+        &mut config, &mut var, &context);
+    assert_eq!(values,
+               ["/home/test/src/git-cola/bin",
+                "/home/test/src/git-cola/local"]);
+}
+
+#[test]
+fn multi_variable_with_garden() {
+    let mut config = common::garden_config();
+    assert!(config.trees.len() > 1);
+    assert!(config.trees[1].environment.len() > 1);
+
+    let mut var = config.trees[1].environment[1].clone();
+    assert_eq!(var.name, "PATH");
+
+    let context = garden::model::TreeContext {
+        tree: 1,
+        garden: Some(0),
+    };
+    let values = garden::eval::multi_variable(
+        &mut config, &mut var, &context);
+    assert_eq!(values,
+               ["/home/test/src/git-cola/bin",
+                "/home/test/apps/git-cola/current"]);
 }
