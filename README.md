@@ -192,13 +192,14 @@ Add the tree at `<path>` to `garden.yaml`.
     garden exec <tree-expression> <command> <arguments>*
 
 Execute a command on all of the trees matched by `<tree-expression>`.
+Example: `garden exec cola git status -s`.
 
 ### custom commands
 
-    garden cmd <custom-command> <tree-expression>*
+    garden cmd <tree-expression> <custom-command>*
 
-Run a configured command over the trees matching `<tree-expression>`.
-For example, to build Git, `garden cmd build git`.
+Run custom command(s) over the trees matched by `<tree-expression>`.
+For example, to build and test Git, `garden cmd git build test`.
 
 Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level override commands defined on a tree.
