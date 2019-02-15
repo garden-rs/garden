@@ -389,6 +389,7 @@ fn get_tree(
 
             tree.environment.append(&mut base.environment);
             tree.gitconfig.append(&mut base.gitconfig);
+            tree.commands.append(&mut base.commands);
         }
     }
 
@@ -409,7 +410,6 @@ fn get_tree(
                 templates);
 
             tree.variables.append(&mut base.variables);
-            tree.commands.append(&mut base.commands);
         }
     }
 

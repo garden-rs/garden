@@ -209,14 +209,18 @@ fn trees() {
 
     assert_eq!(tree1.commands.len(), 4);
     // From the tree
-    assert_eq!(tree1.commands[0].name, "test");
-    assert_eq!(tree1.commands[0].values.len(), 2);
-    assert_eq!(tree1.commands[0].values[0].expr, "git status --short");
-    assert_eq!(tree1.commands[0].values[1].expr, "make tox");
-    // From the template
-    assert_eq!(tree1.commands[1].name, "build");
-    assert_eq!(tree1.commands[2].name, "install");
+    assert_eq!(tree1.commands[0].name, "build");
+    assert_eq!(tree1.commands[1].name, "install");
+    assert_eq!(tree1.commands[2].name, "test");
     assert_eq!(tree1.commands[3].name, "test");
+
+    assert_eq!(tree1.commands[2].values.len(), 1);
+    assert_eq!(tree1.commands[2].values[0].expr, "make test");
+
+    assert_eq!(tree1.commands[3].values.len(), 2);
+    assert_eq!(tree1.commands[3].values[0].expr, "git status --short");
+    assert_eq!(tree1.commands[3].values[1].expr, "make tox");
+    // From the template
 }
 
 

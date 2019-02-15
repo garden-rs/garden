@@ -159,7 +159,7 @@ fn command_tree_scope() {
         garden: None,
     };
 
-    // Garden scope
+    // The ${prefix} variable should expand to the tree-local value.
     {
         let values = garden::eval::command(&mut config, &context, "build");
         assert_eq!(values.len(), 1);
@@ -169,15 +169,18 @@ fn command_tree_scope() {
         assert_eq!(cmd, "make -j prefix=/home/test/src/git-cola/local all");
     }
 
+    // Commands should include the template commands followed by the
+    // tree-specific commands.
     {
         let values = garden::eval::command(&mut config, &context, "test");
         assert_eq!(values.len(), 2);
-        assert_eq!(values[0].len(), 2);
 
-        assert_eq!(values[0][0], "git status --short");
-        assert_eq!(values[0][1], "make tox");
+        assert_eq!(values[0].len(), 1);
+        assert_eq!(values[0][0], "make test");
 
-        assert_eq!(values[1].len(), 1);
-        assert_eq!(values[1][0], "make test");
+        assert_eq!(values[1].len(), 2);
+        assert_eq!(values[1][0], "git status --short");
+        assert_eq!(values[1][1], "make tox");
+
     }
 }
