@@ -143,6 +143,7 @@ fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
 }
 
 
+/// Yaml -> String
 fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     if let Yaml::String(yaml_string) = yaml {
         *string = yaml_string.to_string();
@@ -152,6 +153,7 @@ fn get_str(yaml: &Yaml, string: &mut String) -> bool {
 }
 
 
+/// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
 fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
 
     if let Yaml::String(yaml_string) = yaml {
@@ -171,6 +173,7 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
 }
 
 
+/// Read NamedVariable definitions (variables)
 fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (k, v) in hash {
@@ -217,6 +220,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
 }
 
 
+/// Read MultiVariable definitions (commands, environment)
 fn get_multivariables(yaml: &Yaml,
                       vec: &mut Vec<model::MultiVariable>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
@@ -279,6 +283,7 @@ fn get_multivariables(yaml: &Yaml,
 }
 
 
+/// Read template definitions
 fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
@@ -290,6 +295,7 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
 }
 
 
+/// Read a single template definition
 fn get_template(
     name: &Yaml,
     value: &Yaml,
@@ -338,6 +344,7 @@ fn get_template(
 }
 
 
+/// Read tree definitions
 fn get_trees(
     yaml: &Yaml,
     templates: &Yaml,
@@ -353,6 +360,7 @@ fn get_trees(
 }
 
 
+/// Read a single tree definition
 fn get_tree(
     name: &Yaml,
     value: &Yaml,
@@ -417,6 +425,7 @@ fn get_tree(
 }
 
 
+/// Read Git remote repository definitions
 fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::Remote>) {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
@@ -434,6 +443,7 @@ fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::Remote>) {
 }
 
 
+/// Read group definitions
 fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
@@ -448,6 +458,7 @@ fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
 }
 
 
+/// Read garden definitions
 fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {

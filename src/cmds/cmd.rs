@@ -34,7 +34,7 @@ pub fn main<S>(
     for context in &contexts {
         // Evaluate the tree environment
         let env = eval::environment(config, context);
-        let mut path = String::new();
+        let mut path;
 
         // Run each command in the tree's context
         {
@@ -50,13 +50,15 @@ pub fn main<S>(
             }
         }
 
+        // The "error" flag is set when a non-zero exit status is returned.
+        let mut error = false;
         // One invocation runs multiple commands
         for name in commands {
             // One command maps to multiple command sequences.
             // When the scope is tree, only the tree's commands
             // are included.  When the scope includes a gardens,
             // its matching commands are appended to the end.
-            let mut error = false;
+            error = false;
             let cmd_seq_vec = eval::command(config, context, name.to_string());
             for cmd_seq in &cmd_seq_vec {
                 for cmd in cmd_seq {
@@ -79,6 +81,10 @@ pub fn main<S>(
             if error {
                 break;
             }
+        }
+
+        if error && !keep_going {
+            break;
         }
     }
 
