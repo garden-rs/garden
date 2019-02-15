@@ -12,6 +12,7 @@ enum Command {
     Exec,
     Help,
     Init,
+    List,
     Shell,
     Status,
 }
@@ -65,6 +66,8 @@ impl std::str::FromStr for Command {
             "exec" => Ok(Command::Exec),
             "help" => Ok(Command::Help),
             "init" => Ok(Command::Init),
+            "list" => Ok(Command::List),
+            "ls" => Ok(Command::List),
             "run" => Ok(Command::Cmd),
             "sh" => Ok(Command::Shell),
             "shell" => Ok(Command::Shell),
@@ -209,6 +212,37 @@ fn garden_exec(options: &mut CommandOptions) {
         &mut config, options.quiet, options.verbose, expr, &command);
 }
 
+fn garden_list(options: &mut CommandOptions) {
+    let config = garden::config::new(&options.filename, options.verbose);
+
+    if !config.gardens.is_empty() {
+        println!("gardens:");
+        print!("    ");
+        for garden in &config.gardens {
+            print!("{} ", garden.name);
+        }
+        println!("");
+    }
+
+    if !config.groups.is_empty() {
+        println!("groups:");
+        print!("    ");
+        for group in &config.groups {
+            print!("{} ", group.name);
+        }
+        println!("");
+    }
+
+    if !config.trees.is_empty() {
+        println!("trees:");
+        print!("    ");
+        for tree in &config.trees{
+            print!("{} ", tree.name);
+        }
+        println!("");
+    }
+}
+
 
 fn main() {
     let mut options = CommandOptions::default();
@@ -252,6 +286,7 @@ fn main() {
         Command::Cmd => garden_cmd(&mut options),
         Command::Exec => garden_exec(&mut options),
         Command::Init => garden_help(&mut options),
+        Command::List => garden_list(&mut options),
         Command::Status => garden_help(&mut options),
         Command::Shell => garden_help(&mut options),
     }
