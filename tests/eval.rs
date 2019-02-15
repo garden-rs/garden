@@ -130,3 +130,54 @@ fn environment() {
 
     assert!(values[5].1.ends_with(":/home/test/apps/git-cola/current"));
 }
+
+#[test]
+fn command_garden_scope() {
+    let mut config = common::garden_config();
+    let mut context = garden::model::TreeContext {
+        tree: 1,
+        garden: Some(0),
+    };
+
+    // Garden scope
+    let values = garden::eval::command(&mut config, &context, "build");
+    assert_eq!(values.len(), 1);
+
+    let cmd_vec = &values[0];
+    assert_eq!(cmd_vec.len(), 1);
+
+    let cmd = &cmd_vec[0];
+    assert_eq!(cmd, "make -j prefix=/home/test/apps/git-cola/current all");
+}
+
+
+#[test]
+fn command_tree_scope() {
+    let mut config = common::garden_config();
+    let mut context = garden::model::TreeContext {
+        tree: 1,
+        garden: None,
+    };
+
+    // Garden scope
+    {
+        let values = garden::eval::command(&mut config, &context, "build");
+        assert_eq!(values.len(), 1);
+        assert_eq!(values[0].len(), 1);
+
+        let cmd = &values[0][0];
+        assert_eq!(cmd, "make -j prefix=/home/test/src/git-cola/local all");
+    }
+
+    {
+        let values = garden::eval::command(&mut config, &context, "test");
+        assert_eq!(values.len(), 2);
+        assert_eq!(values[0].len(), 2);
+
+        assert_eq!(values[0][0], "git status --short");
+        assert_eq!(values[0][1], "make tox");
+
+        assert_eq!(values[1].len(), 1);
+        assert_eq!(values[1][0], "make test");
+    }
+}

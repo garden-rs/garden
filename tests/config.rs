@@ -151,7 +151,7 @@ fn trees() {
     // git
     let ref tree0 = config.trees[0];
     assert!(tree0.environment.is_empty());
-    assert_eq!(tree0.commands.len(), 2);
+    assert_eq!(tree0.commands.len(), 3);
 
     assert_eq!(tree0.name, "git");
     assert_eq!(tree0.path.expr, "git");  // picks up default value
@@ -207,14 +207,16 @@ fn trees() {
     assert_eq!(tree1.environment[2].values.len(), 1);
     assert_eq!(tree1.environment[2].values[0].expr, "${TREE_PATH}");
 
-    assert_eq!(tree1.commands.len(), 3);
+    assert_eq!(tree1.commands.len(), 4);
     // From the tree
     assert_eq!(tree1.commands[0].name, "test");
     assert_eq!(tree1.commands[0].values.len(), 2);
     assert_eq!(tree1.commands[0].values[0].expr, "git status --short");
-    assert_eq!(tree1.commands[0].values[1].expr, "make test");
+    assert_eq!(tree1.commands[0].values[1].expr, "make tox");
     // From the template
-    assert_eq!(tree1.commands[1].name, "install");
+    assert_eq!(tree1.commands[1].name, "build");
+    assert_eq!(tree1.commands[2].name, "install");
+    assert_eq!(tree1.commands[3].name, "test");
 }
 
 
@@ -241,7 +243,7 @@ fn gardens_json() {
             },
             "commands": {
                 "summary": [
-                    "git branch -vv",
+                    "git branch",
                     "git status --short"
                 ]
             }
@@ -278,7 +280,7 @@ fn test_gardens(config: &garden::model::Configuration) {
     assert_eq!(config.gardens[0].commands[0].name, "summary");
     assert_eq!(config.gardens[0].commands[0].values.len(), 2);
     assert_eq!(config.gardens[0].commands[0].values[0].expr,
-               "git branch -vv");
+               "git branch");
     assert_eq!(config.gardens[0].commands[0].values[1].expr,
                "git status --short");
 

@@ -1,6 +1,7 @@
+extern crate dirs;
+extern crate glob;
 extern crate shellexpand;
 extern crate subprocess;
-extern crate dirs;
 
 use std::collections::HashMap;
 
@@ -332,6 +333,51 @@ pub fn environment(
             values.insert(name.to_string(), path_value.to_string());
             result.push((name.to_string(), path_value.to_string()));
         }
+    }
+
+    return result;
+}
+
+
+/// Evaluate commands
+pub fn command<S>(
+    config: &mut model::Configuration,
+    context: &model::TreeContext,
+    name: S,
+) -> Vec<Vec<String>>
+where S: Into<String>
+{
+    let mut vars = Vec::new();
+    let pattern = glob::Pattern::new(&name.into()).unwrap();
+
+    // Global commands
+    for var in &config.commands {
+        if pattern.matches(&var.name) {
+            vars.push(var.clone());
+        }
+    }
+
+    // Tree commands
+    for var in &config.trees[context.tree].commands {
+        if pattern.matches(&var.name) {
+            vars.push(var.clone());
+        }
+    }
+
+    // Optional garden command scope
+    if let Some(garden) = context.garden {
+        for var in &config.gardens[garden].commands {
+            if pattern.matches(&var.name) {
+                vars.push(var.clone());
+            }
+        }
+    }
+
+    let mut result = Vec::new();
+    for var in vars.iter_mut() {
+        result.push(
+            multi_variable(config, var, context)
+        );
     }
 
     return result;

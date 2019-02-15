@@ -30,6 +30,7 @@ pub fn garden_config() -> garden::model::Configuration {
             variables:
                 prefix: ${TREE_PATH}/local
             commands:
+                build: make -j prefix=${prefix} all
                 install: make -j prefix=${prefix} install
                 test: make test
         python:
@@ -58,7 +59,7 @@ pub fn garden_config() -> garden::model::Configuration {
             commands:
                 test:
                     - git status --short
-                    - make test
+                    - make tox
             remotes:
                 davvid: git@github.com:davvid/git-cola.git
         tmp:
@@ -79,7 +80,7 @@ pub fn garden_config() -> garden::model::Configuration {
                 PATH+: ${prefix}
             commands:
                 summary:
-                    - git branch -vv
+                    - git branch
                     - git status --short
         git:
             groups: cola

@@ -29,6 +29,8 @@ mod config_yaml;
 
 /// Commands
 pub mod cmds {
+    /// Preset commands
+    pub mod cmd;
     /// Exec command
     pub mod exec;
 }
