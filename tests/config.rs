@@ -8,7 +8,6 @@ mod common;
 fn config_default() {
     let config = garden::model::Configuration::new();
     assert_eq!(config.shell, "zsh");
-    assert_eq!(config.environment_variables, true);
     assert_eq!(config.verbose, false);
 }
 
@@ -19,12 +18,10 @@ fn core() {
     let string = r#"
     garden:
         root: /tmp
-        environment_variables: false
     "#.to_string();
 
     let config = common::from_string(&string);
     assert_eq!(config.root_path, std::path::PathBuf::from("/tmp"));
-    assert_eq!(config.environment_variables, false);
 }
 
 /// Variables

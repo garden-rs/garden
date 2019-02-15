@@ -149,7 +149,6 @@ pub struct Configuration {
     pub commands: Vec<MultiVariable>,
     pub debug: std::collections::HashSet<String>,
     pub environment: Vec<MultiVariable>,
-    pub environment_variables: bool,
     pub gardens: Vec<Garden>,
     pub groups: Vec<Group>,
     pub path: Option<std::path::PathBuf>,
@@ -170,7 +169,6 @@ impl Configuration {
     /// Create a default Configuration
     pub fn new() -> Self {
         return Configuration {
-            environment_variables: true,
             shell: "zsh".to_string(),
             ..std::default::Default::default()
         }

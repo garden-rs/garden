@@ -27,13 +27,6 @@ pub fn parse(string: &String, verbose: bool,
         dump_node(doc, 1, "");
     }
 
-    // garden.environment_variables
-    if get_bool(&doc["garden"]["environment_variables"],
-                &mut config.environment_variables) && verbose {
-        debug!("yaml: garden.environment_variables = {}",
-               config.environment_variables);
-    }
-
     // garden.root
     if get_str(&doc["garden"]["root"], &mut config.root.expr) && verbose {
         debug!("yaml: garden.root = {}", config.root.expr);
@@ -131,15 +124,6 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
             println!("{:?}", doc);
         }
     }
-}
-
-
-fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
-    if let Yaml::Boolean(boolean) = yaml {
-        *value = *boolean;
-        return true;
-    }
-    return false;
 }
 
 

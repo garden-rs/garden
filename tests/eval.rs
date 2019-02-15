@@ -134,7 +134,7 @@ fn environment() {
 #[test]
 fn command_garden_scope() {
     let mut config = common::garden_config();
-    let mut context = garden::model::TreeContext {
+    let context = garden::model::TreeContext {
         tree: 1,
         garden: Some(0),
     };
@@ -154,7 +154,7 @@ fn command_garden_scope() {
 #[test]
 fn command_tree_scope() {
     let mut config = common::garden_config();
-    let mut context = garden::model::TreeContext {
+    let context = garden::model::TreeContext {
         tree: 1,
         garden: None,
     };
