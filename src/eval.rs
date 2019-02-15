@@ -98,6 +98,11 @@ fn expand_tree_vars(
         return Ok(Some(result));
     }
 
+    // If nothing was found then check for environment variables.
+    if let Ok(env_value) = std::env::var(name) {
+        return Ok(Some(env_value.to_string()));
+    }
+
     // Nothing was found -> empty value
     return Ok(Some("".to_string()));
 }
@@ -129,6 +134,11 @@ fn expand_vars(
         config.variables[var_idx].value = Some(result.to_string());
 
         return Ok(Some(result));
+    }
+
+    // If nothing was found then check for environment variables.
+    if let Ok(env_value) = std::env::var(name) {
+        return Ok(Some(env_value.to_string()));
     }
 
     // Nothing was found -> empty value

@@ -184,3 +184,18 @@ fn command_tree_scope() {
 
     }
 }
+
+
+#[test]
+fn environment_variables() {
+    let mut config = common::garden_config();
+    // Environment variables in tree scope
+    std::env::set_var("GARDEN_TEST_VALUE", "test");
+
+    let mut value = garden::eval::value(&mut config, "${GARDEN_TEST_VALUE}");
+    assert_eq!(value, "test");
+
+    value = garden::eval::tree_value(
+        &mut config, "${GARDEN_TEST_VALUE}", 0, None);
+    assert_eq!(value, "test");
+}
