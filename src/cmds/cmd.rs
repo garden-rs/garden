@@ -58,7 +58,6 @@ pub fn main<S>(
             // its matching commands are appended to the end.
             let mut error = false;
             let cmd_seq_vec = eval::command(config, context, name.to_string());
-            debug!("seq: {:?}", cmd_seq_vec);
             for cmd_seq in &cmd_seq_vec {
                 for cmd in cmd_seq {
                     let mut exec = subprocess::Exec::shell(&cmd).cwd(&path);
