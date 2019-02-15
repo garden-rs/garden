@@ -268,7 +268,7 @@ fn main() {
 
         ap.refer(&mut options.subcommand).required()
             .add_argument("command", argparse::Store,
-                "command to run {add, exec, help, init, shell, status}");
+                "command to run {cmd, exec, help, ls, init, shell, status}");
 
         ap.refer(&mut options.args)
             .add_argument("arguments", argparse::List,
