@@ -186,7 +186,7 @@ fn garden_eval(options: &mut CommandOptions) {
             .add_argument("garden-expr", argparse::Store,
                           "gardens expression to evaluate");
 
-        ap.refer(&mut tree).required()
+        ap.refer(&mut tree)
             .add_argument("tree", argparse::Store, "tree to evaluate");
 
         ap.refer(&mut garden)
@@ -205,6 +205,12 @@ fn garden_eval(options: &mut CommandOptions) {
         debug!("{}", config);
     }
 
+    if tree.is_empty() {
+        println!("{}", garden::eval::value(&mut config, expr));
+        return;
+    }
+
+    // Evaluate and print the garden expression.
     let mut tree_ctx = garden::model::TreeContext {
         tree: 0,
         garden: None
