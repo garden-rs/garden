@@ -194,6 +194,13 @@ Add the tree at `<path>` to `garden.yaml`.
 Execute a command on all of the trees matched by `<tree-expression>`.
 Example: `garden exec cola git status -s`.
 
+### garden eval
+
+    garden eval <expression> <tree> [<garden>]
+
+Evaluate a garden expression in the specified tree context.
+
+
 ### custom commands
 
     garden cmd <tree-expression> <custom-command>*

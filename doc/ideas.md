@@ -33,13 +33,6 @@ tree-expressions, and is convenient to type.
 ## Commands
 
 
-### garden eval
-
-    garden eval <string> <tree> [<garden>]
-
-Evaluate a string in the specified tree context.
-
-
 ### garden init
 
     garden init <tree-expr>
