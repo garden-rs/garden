@@ -225,18 +225,20 @@ impl Configuration {
     }
 
     /// Reset resolved variables
-    pub fn reset_all_variables(&mut self) {
-        self.reset_variables();
-        self.reset_tree_variables();
-    }
-
     pub fn reset_variables(&mut self) {
         for var in &mut self.variables {
             var.value = None;
         }
-    }
-
-    pub fn reset_tree_variables(&mut self) {
+        for env in &mut self.environment {
+            for var in &mut env.values {
+                var.value = None;
+            }
+        }
+        for cmd in &mut self.commands {
+            for var in &mut cmd.values {
+                var.value = None;
+            }
+        }
         for tree in &mut self.trees {
             tree.reset_variables();
         }
