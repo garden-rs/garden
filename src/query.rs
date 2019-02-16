@@ -55,8 +55,11 @@ pub fn resolve_trees<S: Into<String>>(config: &model::Configuration, expr: S)
 /// Parameters:
 /// - config: `&garden::model::Configuration`
 /// - pattern: `&glob::Pattern`
-fn garden_trees(config: &model::Configuration, pattern: &glob::Pattern)
-    -> Vec<model::TreeContext> {
+
+pub fn garden_trees(
+    config: &model::Configuration,
+    pattern: &glob::Pattern,
+) -> Vec<model::TreeContext> {
 
     let mut result = Vec::new();
 
@@ -101,9 +104,11 @@ fn garden_trees(config: &model::Configuration, pattern: &glob::Pattern)
 /// - tree: Tree name `&String`
 /// - garden_idx: `Option<garden::model::GardenIndex>`
 
-fn tree_by_name(config: &model::Configuration, tree: &String,
-                garden_idx: Option<model::GardenIndex>)
-    -> Option<model::TreeContext> {
+pub fn tree_by_name(
+    config: &model::Configuration,
+    tree: &String,
+    garden_idx: Option<model::GardenIndex>,
+) -> Option<model::TreeContext> {
 
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
