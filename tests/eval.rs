@@ -39,8 +39,10 @@ fn config_variable() {
     assert_eq!("TEST/local", local);
 }
 
+
+/// ${TREE_PATH} should be set to the current tree's path
 #[test]
-fn tree_path_variable() {
+fn tree_path() {
     let mut config = common::garden_config();
     let tree_idx: garden::model::TreeIndex = 0;
     let expect = "/home/test/src/git";
