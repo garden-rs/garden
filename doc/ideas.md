@@ -30,6 +30,12 @@ because that allows multiple commands; this form allows multiple
 tree-expressions, and is convenient to type.
 
 
+###  Allow ${variables} in environment variables names
+
+    environment:
+        RP_${TREE_NAME}=: ${prefix}
+
+
 ## Commands
 
 
