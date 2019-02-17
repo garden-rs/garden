@@ -6,6 +6,7 @@ extern crate subprocess;
 use std::collections::HashMap;
 
 use super::model;
+use super::syntax;
 
 
 /// Expand variables across all scopes (garden, tree, and global)
@@ -170,7 +171,7 @@ pub fn tree_value<S: Into<String>>(
         |x| { return expand_tree_vars(config, tree_idx, garden_idx, x); }
         ).unwrap().to_string();
 
-    return exec_expression(expanded);
+    return exec_expression(&expanded);
 }
 
 
@@ -186,18 +187,15 @@ pub fn value<S: Into<String>>(
         |x| { return expand_vars(config, x); }
         ).unwrap().to_string();
 
-    return exec_expression(expanded);
+    return exec_expression(&expanded);
 }
 
 
 /// Evaluate "$ <command>" command strings, AKA "exec expressions".
 /// The result of the expression is the stdout output from the command.
-pub fn exec_expression(string: String) -> String {
-    if string.starts_with("$ ") {
-        let mut cmd = string.to_string();
-        cmd.remove(0);
-        cmd.remove(0);
-
+pub fn exec_expression(string: &String) -> String {
+    if syntax::is_exec(&string) {
+        let cmd = syntax::trim_exec(&string);
         let capture = subprocess::Exec::shell(cmd)
             .stdout(subprocess::Redirection::Pipe)
             .capture();
@@ -208,7 +206,7 @@ pub fn exec_expression(string: String) -> String {
         return "".to_string();
     }
 
-    return string;
+    string.to_string()
 }
 
 
