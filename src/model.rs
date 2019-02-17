@@ -208,7 +208,15 @@ impl Configuration {
                 path_buf.push(result);
                 tree.path.value = Some(path_buf.to_string_lossy().to_string());
             }
+        }
 
+        // Reset variables to allow for tree-scope evaluation
+        self.reset_variables();
+
+        let mut idx = 0;
+        while idx < values.len() {
+            let tree = &mut self.trees[idx];
+            idx += 1;
             // ${TREE_PATH} is automatically available in each tree
             let tree_path = tree.path.value.as_ref().unwrap().to_string();
             tree.variables.push(
@@ -218,10 +226,8 @@ impl Configuration {
                     value: Some(tree_path.to_string()),
                 }
             );
-        }
 
-        // Reset variables to allow for tree-scope evaluation
-        self.reset_variables();
+        }
     }
 
     /// Reset resolved variables
