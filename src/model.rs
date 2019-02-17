@@ -314,7 +314,7 @@ impl TreeExpression {
             is_default = true;
         }
         if trim {
-            glob_pattern.remove(0);
+            glob_pattern = syntax::trim(&glob_pattern);
         }
 
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
