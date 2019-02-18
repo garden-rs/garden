@@ -36,19 +36,18 @@ pub fn main<S>(
 
         // Exec each command in the tree's context
         let tree = &config.trees[context.tree];
+        let path = tree.path.value.as_ref().unwrap();
         if !quiet {
             if verbose {
-                eprintln!("# {}: {}", tree.name,
-                          tree.path.value.as_ref().unwrap());
+                eprintln!("# {}: {}", tree.name, path);
             } else {
                 eprintln!("# {}", tree.name);
             }
         }
 
-        let path = tree.path.value.as_ref().unwrap();
         let mut exec = subprocess::Exec::cmd(command[0].to_string())
             .args(&command[1..])
-            .cwd(path);
+            .cwd(&path);
 
         // Update the command environment
         for (name, value) in &env {

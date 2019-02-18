@@ -183,7 +183,7 @@ impl Configuration {
         let expr = self.root.expr.to_string();
         let value = eval::value(self, expr);
         // Store the resolved garden.root
-        self.root_path = std::path::PathBuf::from(value.to_string());
+        self.root_path = std::path::PathBuf::from(&value);
         self.root.value = Some(value.to_string());
 
         // Resolve tree paths
