@@ -180,37 +180,6 @@ fn garden_exec(options: &mut model::CommandOptions) {
         &mut config, options.quiet, options.verbose, expr, &command);
 }
 
-fn garden_list(options: &mut model::CommandOptions) {
-    let config = garden::config::new(&options.filename, options.verbose);
-
-    if !config.gardens.is_empty() {
-        println!("gardens:");
-        print!("    ");
-        for garden in &config.gardens {
-            print!("{} ", garden.name);
-        }
-        println!("");
-    }
-
-    if !config.groups.is_empty() {
-        println!("groups:");
-        print!("    ");
-        for group in &config.groups {
-            print!("{} ", group.name);
-        }
-        println!("");
-    }
-
-    if !config.trees.is_empty() {
-        println!("trees:");
-        print!("    ");
-        for tree in &config.trees{
-            print!("{} ", tree.name);
-        }
-        println!("");
-    }
-}
-
 
 fn main() {
     let mut options = model::CommandOptions::default();
@@ -250,13 +219,13 @@ fn main() {
 
     match options.subcommand {
         model::Command::Add => cmds::help::main(&mut options),
-        model::Command::Help => cmd::help::main(&mut options),
+        model::Command::Help => cmds::help::main(&mut options),
         model::Command::Cmd => garden_cmd(&mut options),
         model::Command::Exec => garden_exec(&mut options),
         model::Command::Eval => garden_eval(&mut options),
-        model::Command::Init => cmd::help::main(&mut options),
-        model::Command::List => garden_list(&mut options),
-        model::Command::Status => cmd::help::main(&mut options),
-        model::Command::Shell => cmd::help::main(&mut options),
+        model::Command::Init => cmds::help::main(&mut options),
+        model::Command::List => cmds::list::main(&mut options),
+        model::Command::Status => cmds::help::main(&mut options),
+        model::Command::Shell => cmds::help::main(&mut options),
     }
 }

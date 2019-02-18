@@ -1,9 +1,9 @@
 extern crate subprocess;
 
-use super::super::cmd;
-use super::super::eval;
-use super::super::model;
-use super::super::query;
+use super::command;
+use super::eval;
+use super::model;
+use super::query;
 
 /// Resolve garden and tree names into a set of trees
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -80,7 +80,7 @@ pub fn main<S>(
                     for (k, v) in &env {
                         exec = exec.env(k, v);
                     }
-                    let status = cmd::status(exec.join());
+                    let status = command::status(exec.join());
                     if status != 0 {
                         exit_status = status as i32;
                         error = true;
