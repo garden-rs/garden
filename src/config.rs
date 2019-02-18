@@ -1,4 +1,5 @@
 extern crate dirs;
+extern crate xdg;
 
 use super::model;
 use super::config_yaml;
@@ -36,9 +37,9 @@ fn search_path() -> Vec<std::path::PathBuf> {
         paths.push(current_etc_garden_dir);
     }
 
-    // ~/.config/garden
-    let mut home_config_dir = home_dir.to_path_buf();
-    home_config_dir.push(".config");
+    // $XDG_CONFIG_HOME/garden (typically ~/.config/garden)
+    let xdg_dirs = xdg::BaseDirectories::new().unwrap();
+    let mut home_config_dir = xdg_dirs.get_config_home().to_path_buf();
     home_config_dir.push("garden");
     if home_config_dir.exists() {
         paths.push(home_config_dir);
