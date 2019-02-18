@@ -4,6 +4,7 @@ extern crate subprocess;
 
 #[macro_use]
 extern crate garden;
+
 use garden::model;
 use garden::cmds;
 
@@ -53,88 +54,6 @@ fn garden_cmd(options: &mut model::CommandOptions) {
     garden::cmds::cmd::main(
         &mut config, options.quiet, options.verbose,
         options.keep_going, expr, &commands);
-}
-
-
-fn garden_eval(options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden eval".to_string());
-
-    let mut expr = String::new();
-    let mut tree = String::new();
-    let mut garden = String::new();
-
-    // Parse arguments
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden eval - evaluate expressions");
-
-        ap.refer(&mut expr).required()
-            .add_argument("garden-expr", argparse::Store,
-                          "gardens expression to evaluate");
-
-        ap.refer(&mut tree)
-            .add_argument("tree", argparse::Store, "tree to evaluate");
-
-        ap.refer(&mut garden)
-            .add_argument("garden", argparse::Store, "garden to evaluate");
-
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
-    }
-
-    let verbose = options.is_debug("config::new");
-    let mut config = garden::config::new(&options.filename, verbose);
-    if options.is_debug("config") {
-        debug!("{}", config);
-    }
-
-    if tree.is_empty() {
-        println!("{}", garden::eval::value(&mut config, expr));
-        return;
-    }
-
-    // Evaluate and print the garden expression.
-    let mut tree_ctx = garden::model::TreeContext {
-        tree: 0,
-        garden: None
-    };
-    if let Some(context) = garden::query::tree_by_name(&config, &tree, None) {
-        tree_ctx.tree = context.tree;
-    } else {
-        error!("unable to find '{}': No tree exists with that name", tree);
-    }
-
-    if !garden.is_empty() {
-        let pattern = glob::Pattern::new(&garden).unwrap();
-        let contexts = garden::query::garden_trees(&config, &pattern);
-
-        if contexts.is_empty() {
-            error!("unable to find '{}': No garden exists with that name",
-                   garden);
-        }
-
-        let mut found = false;
-        for ctx in &contexts {
-            if ctx.tree == tree_ctx.tree {
-                tree_ctx.garden = ctx.garden;
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            error!("invalid arguments: '{}' is not part of the '{}' garden",
-                   tree, garden);
-        }
-    }
-
-    // Evaluate and print the garden expression.
-    let value = garden::eval::tree_value(
-        &mut config, expr, tree_ctx.tree, tree_ctx.garden);
-    println!("{}", value);
 }
 
 
@@ -222,7 +141,7 @@ fn main() {
         model::Command::Help => cmds::help::main(&mut options),
         model::Command::Cmd => garden_cmd(&mut options),
         model::Command::Exec => garden_exec(&mut options),
-        model::Command::Eval => garden_eval(&mut options),
+        model::Command::Eval => cmds::evaluate::main(&mut options),
         model::Command::Init => cmds::help::main(&mut options),
         model::Command::List => cmds::list::main(&mut options),
         model::Command::Status => cmds::help::main(&mut options),

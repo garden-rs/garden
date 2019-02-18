@@ -29,6 +29,7 @@ mod config_yaml;
 
 /// Commands
 pub mod cmds {
+    // For convenience
     use super::command;
     use super::config;
     use super::eval;
@@ -39,6 +40,8 @@ pub mod cmds {
     pub mod cmd;
     /// Exec command
     pub mod exec;
+    /// Eval command
+    pub mod evaluate;
     /// Help command
     pub mod help;
     /// List command
