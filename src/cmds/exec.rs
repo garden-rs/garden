@@ -37,15 +37,18 @@ pub fn main<S>(
         // Exec each command in the tree's context
         let tree = &config.trees[context.tree];
         let path = tree.path.value.as_ref().unwrap();
-        if !quiet {
-            if !std::path::PathBuf::from(&path).exists() {
+        // Sparse gardens/missing trees are ok -> skip these entries.
+        if !std::path::PathBuf::from(&path).exists() {
+            if !quiet {
                 if verbose {
                     eprintln!("# {}: {} (skipped)", tree.name, path);
                 } else {
                     eprintln!("# {} (skipped)", tree.name);
                 }
-                continue;
             }
+            continue;
+        }
+        if !quiet {
             if verbose {
                 eprintln!("# {}: {}", tree.name, path);
             } else {
