@@ -41,6 +41,16 @@ pub fn main<S>(
             let tree = &config.trees[context.tree];
             path = tree.path.value.as_ref().unwrap().to_string();
             if !quiet {
+                if !std::path::PathBuf::from(&path).exists() {
+                    // Sparse/missing checkouts are ok, skip these entries
+                    if verbose {
+                        eprintln!("# {}: {} (skipped)", tree.name,
+                                  tree.path.value.as_ref().unwrap());
+                    } else {
+                        eprintln!("# {} (skipped)", tree.name);
+                    }
+                    continue;
+                }
                 if verbose {
                     eprintln!("# {}: {}", tree.name,
                               tree.path.value.as_ref().unwrap());

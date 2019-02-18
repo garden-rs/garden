@@ -38,6 +38,14 @@ pub fn main<S>(
         let tree = &config.trees[context.tree];
         let path = tree.path.value.as_ref().unwrap();
         if !quiet {
+            if !std::path::PathBuf::from(&path).exists() {
+                if verbose {
+                    eprintln!("# {}: {} (skipped)", tree.name, path);
+                } else {
+                    eprintln!("# {} (skipped)", tree.name);
+                }
+                continue;
+            }
             if verbose {
                 eprintln!("# {}: {}", tree.name, path);
             } else {
