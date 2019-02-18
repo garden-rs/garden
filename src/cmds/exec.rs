@@ -1,9 +1,59 @@
 extern crate subprocess;
 
 use super::command;
+use super::config;
 use super::eval;
 use super::model;
 use super::query;
+
+
+/// Main entry point for the "garden exec" command
+/// Parameters:
+/// - options: `garden::model::CommandOptions`
+
+pub fn main(options: &mut model::CommandOptions) {
+    options.args.insert(0, "garden exec".to_string());
+
+    let mut expr = String::new();
+    let mut command: Vec<String> = Vec::new();
+
+    // Parse arguments
+    {
+        let mut ap = argparse::ArgumentParser::new();
+        ap.set_description("garden exec - run commands inside gardens");
+
+        ap.refer(&mut expr).required()
+            .add_argument("tree-expr", argparse::Store,
+                          "gardens/trees to exec (tree expression)");
+
+        ap.refer(&mut command).required()
+            .add_argument("command", argparse::List,
+                          "command to run over resolved trees");
+
+        ap.stop_on_first_argument(true);
+        if let Err(err) = ap.parse(options.args.to_vec(),
+                                   &mut std::io::stdout(),
+                                   &mut std::io::stderr()) {
+            std::process::exit(err);
+        }
+    }
+
+    let verbose = options.is_debug("config::new");
+    let mut cfg = config::new(&options.filename, verbose);
+    if options.is_debug("config") {
+        debug!("{}", cfg);
+    }
+    if options.is_debug("exec") {
+        debug!("subcommand: exec");
+        debug!("expr: {}", expr);
+        debug!("command: {:?}", command);
+    }
+
+    let quiet = options.quiet;
+    let verbose = options.verbose;
+    exec(&mut cfg, quiet, verbose, expr, &command);
+}
+
 
 /// Resolve garden and tree names into a set of trees
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -16,7 +66,7 @@ use super::query;
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn main<S>(
+pub fn exec<S>(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
