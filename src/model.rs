@@ -170,6 +170,10 @@ impl Configuration {
     pub fn new() -> Self {
         return Configuration {
             shell: "zsh".to_string(),
+            root: Variable {
+                expr: "~/src".to_string(),
+                value: None,
+            },
             ..std::default::Default::default()
         }
     }
