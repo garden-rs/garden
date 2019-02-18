@@ -60,7 +60,7 @@ pub fn main<S>(
             // its matching commands are appended to the end.
             error = false;
             let cmd_seq_vec = eval::command(config, context, name.to_string());
-            config.reset_variables();
+            config.reset();
             for cmd_seq in &cmd_seq_vec {
                 for cmd in cmd_seq {
                     let mut exec = subprocess::Exec::shell(&cmd).cwd(&path);

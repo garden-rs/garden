@@ -34,15 +34,22 @@ fn variables() {
     "#.to_string();
 
     let config = common::from_string(&string);
-    assert_eq!(config.variables.len(), 2);
+    assert_eq!(config.variables.len(), 3);
 
-    assert_eq!(config.variables[0].name, "foo");
-    assert_eq!(config.variables[0].expr, "foo_value");
-    assert_eq!(config.variables[0].value, None);
+    let mut i = 0;
+    assert_eq!(config.variables[i].name, "GARDEN_ROOT");
+    assert_eq!(config.variables[i].expr, "/home/test/src");
+    assert_eq!(config.variables[i].value, Some("/home/test/src".to_string()));
+    i += 1;
 
-    assert_eq!(config.variables[1].name, "bar");
-    assert_eq!(config.variables[1].expr, "${foo}");
-    assert_eq!(config.variables[1].value, None);
+    assert_eq!(config.variables[i].name, "foo");
+    assert_eq!(config.variables[i].expr, "foo_value");
+    assert_eq!(config.variables[i].value, None);
+    i += 1;
+
+    assert_eq!(config.variables[i].name, "bar");
+    assert_eq!(config.variables[i].expr, "${foo}");
+    assert_eq!(config.variables[i].value, None);
 }
 
 /// Commands
@@ -159,14 +166,16 @@ fn trees() {
     assert_eq!(tree0.remotes[0].url, "https://github.com/git/git");
 
     assert_eq!(tree0.variables.len(), 3);
-    assert_eq!(tree0.variables[0].name, "prefix");
-    assert_eq!(tree0.variables[0].expr, "~/.local");
-    // From the template, effectively "hidden"
-    assert_eq!(tree0.variables[1].name, "prefix");
-    // TREE_PATH
-    assert_eq!(tree0.variables[2].name, "TREE_PATH");
-    assert!(tree0.variables[2].value.is_some());
+    // TREE_PATH, highest precedence at position 0
+    assert_eq!(tree0.variables[0].name, "TREE_PATH");
+    assert!(tree0.variables[0].value.is_some());
 
+    assert_eq!(tree0.variables[1].name, "prefix");
+    assert_eq!(tree0.variables[1].expr, "~/.local");
+    // From the template, effectively "hidden"
+    assert_eq!(tree0.variables[2].name, "prefix");
+    assert_eq!(tree0.variables[2].expr, "${TREE_PATH}/local");
+    // gitconfig
     assert_eq!(tree0.gitconfig.len(), 2);
     assert_eq!(tree0.gitconfig[0].name, "user.name");
     assert_eq!(tree0.gitconfig[0].expr, "A U Thor");

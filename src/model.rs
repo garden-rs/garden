@@ -184,16 +184,62 @@ impl Configuration {
         let value = eval::value(self, expr);
         // Store the resolved garden.root
         self.root_path = std::path::PathBuf::from(value.to_string());
-        self.root.value = Some(value);
+        self.root.value = Some(value.to_string());
 
         // Resolve tree paths
         self.update_tree_paths();
+
+        // Reset variables
+        self.reset();
+    }
+
+    pub fn reset(&mut self) {
+        // Reset variables to allow for tree-scope evaluation
+        self.reset_variables();
+
+        // Add custom variables
+        self.reset_builtin_variables()
+    }
+
+    fn reset_builtin_variables(&mut self) {
+        let value = self.root.value.as_ref().unwrap().to_string();
+
+        // Ensure GARDEN_ROOT is at position 0
+        if self.variables.is_empty()
+            || self.variables[0].name != "GARDEN_ROOT" {
+            self.variables.insert(
+                0, NamedVariable {
+                    name: "GARDEN_ROOT".to_string(),
+                    expr: value.to_string(),
+                    value: None,
+                }
+            );
+        }
+        // Provided an evaluated value for GARDEN_ROOT.
+        self.variables[0].value = Some(value.to_string());
+
+        // Ensure TREE_PATH is at position 0 for each tree
+        for tree in self.trees.iter_mut() {
+            let tree_path = tree.path.value.as_ref().unwrap().to_string();
+            if tree.variables.is_empty()
+                || tree.variables[0].name != "TREE_PATH" {
+                tree.variables.insert(
+                    0, NamedVariable {
+                        name: "TREE_PATH".to_string(),
+                        expr: tree_path.to_string(),
+                        value: None,
+                    }
+                );
+            }
+            // Provided an evaluated value for TREE_PATH.
+            tree.variables[0].value = Some(tree_path.to_string());
+        }
     }
 
     // Calculate the "path" field for each tree.
     // If specified as a relative path, it will be relative to garden.root.
     // If specified as an asbolute path, it will be left as-is.
-    pub fn update_tree_paths(&mut self) {
+    fn update_tree_paths(&mut self) {
         let mut values = vec!();
         for tree in &self.trees {
             values.push(tree.path.expr.to_string());
@@ -212,25 +258,6 @@ impl Configuration {
                 path_buf.push(result);
                 tree.path.value = Some(path_buf.to_string_lossy().to_string());
             }
-        }
-
-        // Reset variables to allow for tree-scope evaluation
-        self.reset_variables();
-
-        let mut idx = 0;
-        while idx < values.len() {
-            let tree = &mut self.trees[idx];
-            idx += 1;
-            // ${TREE_PATH} is automatically available in each tree
-            let tree_path = tree.path.value.as_ref().unwrap().to_string();
-            tree.variables.push(
-                NamedVariable {
-                    name: "TREE_PATH".to_string(),
-                    expr: tree_path.to_string(),
-                    value: Some(tree_path.to_string()),
-                }
-            );
-
         }
     }
 

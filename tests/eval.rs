@@ -52,6 +52,16 @@ fn tree_path() {
 }
 
 
+/// ${GARDEN_ROOT} should be set to the garden.root configuration
+#[test]
+fn garden_path() {
+    let mut config = common::garden_config();
+    let expect = "/home/test/src";
+    let actual = garden::eval::value(&mut config, "${GARDEN_ROOT}");
+    assert_eq!(expect, actual);
+}
+
+
 #[test]
 fn exec_expression() {
     let mut config = common::garden_config();
