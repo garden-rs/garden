@@ -1,9 +1,60 @@
 extern crate subprocess;
 
 use super::command;
+use super::config;
 use super::eval;
 use super::model;
 use super::query;
+
+
+pub fn main(options: &mut model::CommandOptions) {
+    options.args.insert(0, "garden run".to_string());
+
+    let mut expr = String::new();
+    let mut commands: Vec<String> = Vec::new();
+
+    // Parse arguments
+    {
+        let mut ap = argparse::ArgumentParser::new();
+        ap.set_description("garden cmd - run preset commands over gardens");
+
+        ap.refer(&mut options.keep_going)
+            .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
+                        "continue to the next tree when errors occur");
+
+        ap.refer(&mut expr).required()
+            .add_argument("tree-expr", argparse::Store,
+                          "gardens/trees to exec (tree expression)");
+
+        ap.refer(&mut commands).required()
+            .add_argument("commands", argparse::List,
+                          "commands to run over resolved trees");
+
+        ap.stop_on_first_argument(true);
+        if let Err(err) = ap.parse(options.args.to_vec(),
+                                   &mut std::io::stdout(),
+                                   &mut std::io::stderr()) {
+            std::process::exit(err);
+        }
+    }
+
+    let verbose = options.is_debug("config::new");
+    let mut cfg = config::new(&options.filename, verbose);
+    if options.is_debug("config") {
+        debug!("{}", cfg);
+    }
+    if options.is_debug("cmd") {
+        debug!("subcommand: cmd");
+        debug!("expr: {}", expr);
+        debug!("commands: {:?}", commands);
+    }
+
+    let quiet = options.quiet;
+    let verbose = options.verbose;
+    let keep_going = options.keep_going;
+    cmd(&mut cfg, quiet, verbose, keep_going, expr, &commands);
+}
+
 
 /// Resolve garden and tree names into a set of trees
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -16,7 +67,7 @@ use super::query;
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn main<S>(
+pub fn cmd<S>(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
