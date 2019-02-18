@@ -4,125 +4,11 @@ extern crate subprocess;
 
 #[macro_use]
 extern crate garden;
+use garden::model;
+use garden::cmds;
 
 
-#[derive(Debug)]
-enum Command {
-    Add,
-    Cmd,
-    Exec,
-    Eval,
-    Help,
-    Init,
-    List,
-    Shell,
-    Status,
-}
-
-impl std::default::Default for Command {
-    fn default() -> Self { Command::Help }
-}
-
-impl_display_brief!(Command);
-
-
-#[derive(Default)]
-struct CommandOptions {
-    args: Vec<String>,
-    debug: std::collections::HashSet<String>,
-    debug_str: String,
-    filename: Option<std::path::PathBuf>,
-    filename_str: String,
-    keep_going: bool,
-    quiet: bool,
-    subcommand: Command,
-    verbose: bool,
-}
-
-impl CommandOptions {
-    fn update(&mut self) {
-        if self.filename_str.len() > 0 {
-            self.filename = Some(std::path::PathBuf::from(&self.filename_str));
-        }
-
-        for debug_name in self.debug_str.split(",") {
-            self.debug.insert(debug_name.to_string());
-        }
-    }
-
-    fn is_debug(&self, name: &str) -> bool {
-        return self.debug.contains(name);
-    }
-}
-
-
-impl std::str::FromStr for Command {
-    type Err = ();  // For the FromStr trait
-
-    fn from_str(src: &str) -> Result<Command, ()> {
-        return match src {
-            "add" => Ok(Command::Add),
-            "do" => Ok(Command::Cmd),
-            "cmd" => Ok(Command::Cmd),
-            "ex" => Ok(Command::Exec),
-            "exec" => Ok(Command::Exec),
-            "eval" => Ok(Command::Eval),
-            "help" => Ok(Command::Help),
-            "init" => Ok(Command::Init),
-            "list" => Ok(Command::List),
-            "ls" => Ok(Command::List),
-            "sh" => Ok(Command::Shell),
-            "shell" => Ok(Command::Shell),
-            "status" => Ok(Command::Status),
-            _ => Err(()),
-        }
-    }
-}
-
-fn garden_help(options: &mut CommandOptions) {
-    let cmd_path = match std::env::current_exe() {
-        Err(_) => std::path::PathBuf::from("garden"),
-        Ok(path) => path,
-    };
-    let mut help_cmd = vec!(cmd_path);
-
-    let mut command = String::new();
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden help - command documentation");
-        ap.stop_on_first_argument(true);
-
-        ap.refer(&mut command)
-            .add_argument("command", argparse::Store,
-                          "Command help to display");
-
-        options.args.insert(0, "garden help".to_string());
-        ap.parse(options.args.to_vec(),
-                 &mut std::io::stdout(), &mut std::io::stderr())
-            .map_err(|c| std::process::exit(c)).ok();
-    }
-
-    // garden help foo -> garden foo --help
-    if !command.is_empty() {
-        help_cmd.push(std::path::PathBuf::from(command));
-    }
-
-    help_cmd.push(std::path::PathBuf::from("--help"));
-
-    if options.verbose {
-        debug!("help command");
-        let mut i: i32 = 0;
-        for arg in &help_cmd {
-            debug!("help_cmd[{:02}] = {:?}", i, arg);
-            i += 1;
-        }
-    }
-
-    std::process::exit(garden::cmd::run(&help_cmd));
-}
-
-
-fn garden_cmd(options: &mut CommandOptions) {
+fn garden_cmd(options: &mut model::CommandOptions) {
     options.args.insert(0, "garden run".to_string());
 
     let mut expr = String::new();
@@ -170,7 +56,7 @@ fn garden_cmd(options: &mut CommandOptions) {
 }
 
 
-fn garden_eval(options: &mut CommandOptions) {
+fn garden_eval(options: &mut model::CommandOptions) {
     options.args.insert(0, "garden eval".to_string());
 
     let mut expr = String::new();
@@ -252,7 +138,7 @@ fn garden_eval(options: &mut CommandOptions) {
 }
 
 
-fn garden_exec(options: &mut CommandOptions) {
+fn garden_exec(options: &mut model::CommandOptions) {
     options.args.insert(0, "garden exec".to_string());
 
     let mut expr = String::new();
@@ -294,7 +180,7 @@ fn garden_exec(options: &mut CommandOptions) {
         &mut config, options.quiet, options.verbose, expr, &command);
 }
 
-fn garden_list(options: &mut CommandOptions) {
+fn garden_list(options: &mut model::CommandOptions) {
     let config = garden::config::new(&options.filename, options.verbose);
 
     if !config.gardens.is_empty() {
@@ -327,7 +213,7 @@ fn garden_list(options: &mut CommandOptions) {
 
 
 fn main() {
-    let mut options = CommandOptions::default();
+    let mut options = model::CommandOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden - git tree organizer");
@@ -363,14 +249,14 @@ fn main() {
     options.update();
 
     match options.subcommand {
-        Command::Add => garden_help(&mut options),
-        Command::Help => garden_help(&mut options),
-        Command::Cmd => garden_cmd(&mut options),
-        Command::Exec => garden_exec(&mut options),
-        Command::Eval => garden_eval(&mut options),
-        Command::Init => garden_help(&mut options),
-        Command::List => garden_list(&mut options),
-        Command::Status => garden_help(&mut options),
-        Command::Shell => garden_help(&mut options),
+        model::Command::Add => cmds::help::main(&mut options),
+        model::Command::Help => cmd::help::main(&mut options),
+        model::Command::Cmd => garden_cmd(&mut options),
+        model::Command::Exec => garden_exec(&mut options),
+        model::Command::Eval => garden_eval(&mut options),
+        model::Command::Init => cmd::help::main(&mut options),
+        model::Command::List => garden_list(&mut options),
+        model::Command::Status => cmd::help::main(&mut options),
+        model::Command::Shell => cmd::help::main(&mut options),
     }
 }

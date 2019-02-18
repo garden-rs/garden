@@ -33,4 +33,6 @@ pub mod cmds {
     pub mod cmd;
     /// Exec command
     pub mod exec;
+    /// Help command
+    pub mod help;
 }

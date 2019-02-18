@@ -362,3 +362,77 @@ impl TreeExpression {
         }
     }
 }
+
+
+// Commands
+#[derive(Debug)]
+pub enum Command {
+    Add,
+    Cmd,
+    Exec,
+    Eval,
+    Help,
+    Init,
+    List,
+    Shell,
+    Status,
+}
+
+impl std::default::Default for Command {
+    fn default() -> Self { Command::Help }
+}
+
+impl_display_brief!(Command);
+
+impl std::str::FromStr for Command {
+    type Err = ();  // For the FromStr trait
+
+    fn from_str(src: &str) -> Result<Command, ()> {
+        return match src {
+            "add" => Ok(Command::Add),
+            "do" => Ok(Command::Cmd),
+            "cmd" => Ok(Command::Cmd),
+            "ex" => Ok(Command::Exec),
+            "exec" => Ok(Command::Exec),
+            "eval" => Ok(Command::Eval),
+            "help" => Ok(Command::Help),
+            "init" => Ok(Command::Init),
+            "list" => Ok(Command::List),
+            "ls" => Ok(Command::List),
+            "sh" => Ok(Command::Shell),
+            "shell" => Ok(Command::Shell),
+            "status" => Ok(Command::Status),
+            _ => Err(()),
+        }
+    }
+}
+
+
+#[derive(Default)]
+pub struct CommandOptions {
+    pub args: Vec<String>,
+    pub debug: std::collections::HashSet<String>,
+    pub debug_str: String,
+    pub filename: Option<std::path::PathBuf>,
+    pub filename_str: String,
+    pub keep_going: bool,
+    pub quiet: bool,
+    pub subcommand: Command,
+    pub verbose: bool,
+}
+
+impl CommandOptions {
+    pub fn update(&mut self) {
+        if self.filename_str.len() > 0 {
+            self.filename = Some(std::path::PathBuf::from(&self.filename_str));
+        }
+
+        for debug_name in self.debug_str.split(",") {
+            self.debug.insert(debug_name.to_string());
+        }
+    }
+
+    pub fn is_debug(&self, name: &str) -> bool {
+        return self.debug.contains(name);
+    }
+}
