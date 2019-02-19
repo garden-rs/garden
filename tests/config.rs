@@ -150,7 +150,7 @@ fn groups() {
 #[test]
 fn trees() {
     let config = common::garden_config();
-    assert!(config.trees.len() >= 2);
+    assert_eq!(config.trees.len(), 4);
 
     // git
     let ref tree0 = config.trees[0];
@@ -219,14 +219,21 @@ fn trees() {
     assert_eq!(tree1.commands[1].name, "install");
     assert_eq!(tree1.commands[2].name, "test");
     assert_eq!(tree1.commands[3].name, "test");
-
+    // From the template
     assert_eq!(tree1.commands[2].values.len(), 1);
     assert_eq!(tree1.commands[2].values[0].expr, "make test");
-
+    // From the tree
     assert_eq!(tree1.commands[3].values.len(), 2);
     assert_eq!(tree1.commands[3].values[0].expr, "git status --short");
     assert_eq!(tree1.commands[3].values[1].expr, "make tox");
-    // From the template
+
+    // annex
+    let ref tree3 = config.trees[3];
+    assert_eq!(tree3.name, "annex/data");
+    // gitconfig
+    assert_eq!(tree3.gitconfig.len(), 1);
+    assert_eq!(tree3.gitconfig[0].name, "remote.origin.annex-ignore");
+    assert_eq!(tree3.gitconfig[0].expr, "true");
 }
 
 

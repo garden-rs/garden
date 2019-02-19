@@ -188,7 +188,16 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                         model::NamedVariable {
                             name: k.as_str().unwrap().to_string(),
                             expr: yaml_int.to_string(),
-                            value: Some(yaml_int.to_string()),
+                            value: None,
+                        }
+                    );
+                }
+                Yaml::Boolean(ref yaml_bool) => {
+                    vec.push(
+                        model::NamedVariable {
+                            name: k.as_str().unwrap().to_string(),
+                            expr: bool_to_string(yaml_bool),
+                            value: None,
                         }
                     );
                 }
@@ -203,6 +212,13 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
     return false;
 }
 
+
+fn bool_to_string(value: &bool) -> String {
+    match *value {
+        true => "true".to_string(),
+        false => "false".to_string(),
+    }
+}
 
 /// Read MultiVariable definitions (commands, environment)
 fn get_multivariables(yaml: &Yaml,
