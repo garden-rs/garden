@@ -3,6 +3,7 @@
 Garden makes it easy to run operations over arbitrary collections of
 self-contained Git trees.
 
+
 ## Use cases
 
 * Make it easy to define collections of independent Git repositories and
@@ -16,6 +17,7 @@ Garden is useful when you're writing software and weaving together
 development environments directly from Git trees.  Garden aids in common
 development setup steps such as setting environment variables, search paths,
 and creating arbitrary groupings of repositories for development.
+
 
 ## Configuration
 
@@ -122,7 +124,9 @@ Example `garden.yaml`:
             environment:
                 PATH: ${TREE_PATH}
 
+
 ## Commands
+
 
 ### Basics
 
@@ -140,6 +144,7 @@ Specify a garden config file to use instead of searching for `garden.yaml`.
     -v | --verbose
 
 Enable verbose debugging output.
+
 
 #### Gardens, Groups and Trees
 
@@ -163,11 +168,13 @@ Garden understands shell wildcards, so multiple trees, gardens, or
 groups can be matched by using wildcards.  For example, `garden init '@x*'`
 initializes all trees that start with "x".
 
+
 #### Tree Expressions
 
 Command arguments with explicit garden names, @tree references, %group syntax,
 and wildcards are all referred to as "tree expressions".  Tree expressions
 are strings that resolve to a set of trees.
+
 
 ### garden init
 
@@ -181,11 +188,13 @@ The `init` command can also be used to update existing trees.  It is always
 safe to re-run the `init` command.  For existing trees, their git
 configuration will be updated to match any changes made to the configuration.
 
+
 ### garden add
 
     garden add <path>
 
 Add the tree at `<path>` to `garden.yaml`.
+
 
 ### garden exec
 
@@ -194,6 +203,7 @@ Add the tree at `<path>` to `garden.yaml`.
 Execute a command on all of the trees matched by `<tree-expression>`.
 Example: `garden exec cola git status -s`.
 
+
 ### garden eval
 
     garden eval <expression> <tree> [<garden>]
@@ -201,15 +211,15 @@ Example: `garden exec cola git status -s`.
 Evaluate a garden expression in the specified tree context.
 
 
-### custom commands
+### garden cmd
 
-    garden cmd <tree-expression> <custom-command>*
+    garden cmd <tree-expression> <command>*
 
-Run custom command(s) over the trees matched by `<tree-expression>`.
+Run command(s) over the trees matched by `<tree-expression>`.
 For example, to build and test Git, `garden cmd git build test`.
 
 Custom commands can be defined at either the tree or garden level.
-Commands defined at the garden level override commands defined on a tree.
+Commands defined at the garden level extend commands defined on a tree.
 
 
 ## Variables
