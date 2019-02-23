@@ -1,5 +1,5 @@
+use super::super::cmd;
 use super::super::model;
-use super::super::command;
 
 
 /// Entry point for `garden help`
@@ -13,13 +13,13 @@ pub fn main(options: &mut model::CommandOptions) {
     };
     let mut help_cmd = vec!(cmd_path);
 
-    let mut cmd = String::new();
+    let mut cmd_name = String::new();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden help - command documentation");
         ap.stop_on_first_argument(true);
 
-        ap.refer(&mut cmd)
+        ap.refer(&mut cmd_name)
             .add_argument("command", argparse::Store,
                           "Command help to display");
 
@@ -30,8 +30,8 @@ pub fn main(options: &mut model::CommandOptions) {
     }
 
     // garden help foo -> garden foo --help
-    if !cmd.is_empty() {
-        help_cmd.push(std::path::PathBuf::from(&cmd));
+    if !cmd_name.is_empty() {
+        help_cmd.push(std::path::PathBuf::from(&cmd_name));
     }
 
     help_cmd.push(std::path::PathBuf::from("--help"));
@@ -45,5 +45,5 @@ pub fn main(options: &mut model::CommandOptions) {
         }
     }
 
-    std::process::exit(command::run(&help_cmd));
+    std::process::exit(cmd::run(&help_cmd));
 }

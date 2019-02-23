@@ -3,7 +3,7 @@
 pub mod macros;
 
 /// Command utilities
-pub mod command;
+pub mod cmd;
 
 /// Configuration
 pub mod config;

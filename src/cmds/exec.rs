@@ -1,6 +1,6 @@
 extern crate subprocess;
 
-use super::super::command;
+use super::super::cmd;
 use super::super::config;
 use super::super::eval;
 use super::super::model;
@@ -115,7 +115,7 @@ pub fn exec<S>(
             exec = exec.env(name, value);
         }
 
-        let status = command::status(exec.join());
+        let status = cmd::status(exec.join());
         if status != 0 {
             exit_status = status as i32;
         }

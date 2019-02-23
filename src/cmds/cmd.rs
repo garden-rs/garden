@@ -1,6 +1,6 @@
 extern crate subprocess;
 
-use super::super::command;
+use super::super::cmd;
 use super::super::config;
 use super::super::eval;
 use super::super::model;
@@ -125,13 +125,13 @@ pub fn cmd<S>(
             let cmd_seq_vec = eval::command(config, context, name.to_string());
             config.reset();
             for cmd_seq in &cmd_seq_vec {
-                for cmd in cmd_seq {
-                    let mut exec = subprocess::Exec::shell(&cmd).cwd(&path);
+                for cmd_str in cmd_seq {
+                    let mut exec = subprocess::Exec::shell(&cmd_str).cwd(&path);
                     // Update the command environment
                     for (k, v) in &env {
                         exec = exec.env(k, v);
                     }
-                    let status = command::status(exec.join());
+                    let status = cmd::status(exec.join());
                     if status != 0 {
                         exit_status = status as i32;
                         error = true;
