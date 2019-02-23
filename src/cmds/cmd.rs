@@ -7,6 +7,7 @@ use super::super::model;
 use super::super::query;
 
 
+/// garden cmd <tree-expr> <command-name>*
 pub fn main(options: &mut model::CommandOptions) {
     options.args.insert(0, "garden cmd".to_string());
 
@@ -58,7 +59,52 @@ pub fn main(options: &mut model::CommandOptions) {
 }
 
 
-/// Resolve garden and tree names into a set of trees
+/// garden <command-name> <tree-expr>*
+pub fn custom(options: &mut model::CommandOptions, command: &String) {
+    options.args.insert(0, "garden cmd".to_string());
+
+    let mut exprs: Vec<String> = Vec::new();
+
+    // Parse arguments
+    {
+        let mut ap = argparse::ArgumentParser::new();
+        ap.set_description("garden cmd - run preset commands over gardens");
+
+        ap.refer(&mut options.keep_going)
+            .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
+                        "continue to the next tree when errors occur");
+
+        ap.refer(&mut exprs).required()
+            .add_argument("tree-exprs", argparse::List,
+                          "gardens/trees to exec (tree expressions)");
+
+
+        ap.stop_on_first_argument(true);
+        if let Err(err) = ap.parse(options.args.to_vec(),
+                                   &mut std::io::stdout(),
+                                   &mut std::io::stderr()) {
+            std::process::exit(err);
+        }
+    }
+
+    let verbose = options.is_debug("config::new");
+    let mut cfg = config::new(&options.filename, verbose);
+    if options.is_debug("config") {
+        debug!("{}", cfg);
+    }
+    if options.is_debug("cmd") {
+        debug!("command: {}", command);
+        debug!("exprs: {:?}", exprs);
+    }
+
+    let quiet = options.quiet;
+    let verbose = options.verbose;
+    let keep_going = options.keep_going;
+
+    let exit_status = cmds(&mut cfg, quiet, verbose, keep_going, command.to_string(), &exprs);
+    std::process::exit(exit_status);
+}
+
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
 /// an optional garden context.
 ///
@@ -151,6 +197,36 @@ pub fn cmd<S>(
 
         if error && !keep_going {
             break;
+        }
+    }
+
+    // Return the last non-zero exit status.
+    exit_status
+}
+
+
+/// Run cmd() over a Vec of tree expressions
+pub fn cmds<S>(
+    config: &mut model::Configuration,
+    quiet: bool,
+    verbose: bool,
+    keep_going: bool,
+    command: S,
+    exprs: &Vec<String>,
+) -> i32 where S: Into<String> {
+
+    let mut exit_status: i32 = 0;
+
+    let mut commands: Vec<String> = Vec::new();
+    commands.push(command.into());
+
+    for expr in exprs {
+        let status = cmd(config, quiet, verbose, keep_going, expr.to_string(), &commands);
+        if status != 0 {
+            exit_status = status;
+            if !keep_going {
+                break;
+            }
         }
     }
 

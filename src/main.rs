@@ -41,15 +41,16 @@ fn main() {
 
     options.update();
 
-    match options.subcommand {
+    let subcommand = options.subcommand.clone();
+    match subcommand {
         model::Command::Add => cmds::help::main(&mut options),
         model::Command::Help => cmds::help::main(&mut options),
         model::Command::Cmd => cmds::cmd::main(&mut options),
+        model::Command::Custom(cmd) => cmds::cmd::custom(&mut options, &cmd),
         model::Command::Exec => cmds::exec::main(&mut options),
         model::Command::Eval => cmds::eval::main(&mut options),
         model::Command::Init => cmds::help::main(&mut options),
         model::Command::List => cmds::list::main(&mut options),
-        model::Command::Status => cmds::help::main(&mut options),
         model::Command::Shell => cmds::help::main(&mut options),
     }
 }

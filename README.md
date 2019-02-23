@@ -222,6 +222,20 @@ Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level extend commands defined on a tree.
 
 
+### garden custom sub-commands
+
+    garden <command> <tree-expression>*
+
+    garden diff @cola
+
+When no builtin command exists by the specified name then garden will
+run custom commands by that name.
+
+This is complementary to `garden cmd <tree-expression> <command>*`
+because that form allows multiple commands; this form allows multiple
+tree-expressions, and is convenient to type.
+
+
 ## Variables
 
 Garden configuration contains a "variables" block that allows defining

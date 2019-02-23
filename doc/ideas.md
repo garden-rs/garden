@@ -15,21 +15,6 @@ Example:
             path: /media/${USER}
 
 
-### Custom sub-commands
-
-    garden <command>  <tree-expression>*
-    garden diff @cola
-
-Extend the argument parser to allow for custom commands to be used when
-no builtin garden command exists by that name.  This should resolve
-the tree context first so that the command is evaluated  in the
-tree context.
-
-This is complementary to `garden cmd <tree-expression> <command>*`
-because that allows multiple commands; this form allows multiple
-tree-expressions, and is convenient to type.
-
-
 ###  Allow ${variables} in environment variables names
 
     environment:

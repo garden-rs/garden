@@ -365,17 +365,17 @@ impl TreeExpression {
 
 
 // Commands
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Command {
     Add,
     Cmd,
+    Custom(String),
     Exec,
     Eval,
     Help,
     Init,
     List,
     Shell,
-    Status,
 }
 
 impl std::default::Default for Command {
@@ -390,9 +390,7 @@ impl std::str::FromStr for Command {
     fn from_str(src: &str) -> Result<Command, ()> {
         return match src {
             "add" => Ok(Command::Add),
-            "do" => Ok(Command::Cmd),
             "cmd" => Ok(Command::Cmd),
-            "ex" => Ok(Command::Exec),
             "exec" => Ok(Command::Exec),
             "eval" => Ok(Command::Eval),
             "help" => Ok(Command::Help),
@@ -401,8 +399,7 @@ impl std::str::FromStr for Command {
             "ls" => Ok(Command::List),
             "sh" => Ok(Command::Shell),
             "shell" => Ok(Command::Shell),
-            "status" => Ok(Command::Status),
-            _ => Err(()),
+            _ => Ok(Command::Custom(src.to_string())),
         }
     }
 }
