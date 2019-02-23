@@ -18,8 +18,6 @@ pub fn parse(string: &String, verbose: bool,
     if docs.len() < 1 {
         error!("empty yaml configuration: {:?}", config.path);
     }
-
-    // Multi document support, doc is a yaml::Yaml
     let doc = &docs[0];
 
     // Debug support
