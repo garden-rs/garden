@@ -61,9 +61,9 @@ An optional garden can be specified to provide a garden context.
 Add an existing tree to garden.yaml.
 
 
-### garden status
+### garden inspect
 
-    garden status <tree-expr>
+    garden inspect <tree-expr>
 
 Show the repository status for the resolved trees.
 
