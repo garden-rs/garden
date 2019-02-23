@@ -1,4 +1,4 @@
-use super::model;
+use ::model;
 
 
 /// Resolve a tree expression into a `Vec<garden::model::TreeContext>`.

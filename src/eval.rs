@@ -5,8 +5,8 @@ extern crate subprocess;
 
 use std::collections::HashMap;
 
-use super::model;
-use super::syntax;
+use ::model;
+use ::syntax;
 
 
 /// Expand variables across all scopes (garden, tree, and global)

@@ -1,7 +1,7 @@
 extern crate glob;
 
-use super::eval;
-use super::syntax;
+use ::eval;
+use ::syntax;
 
 
 /// Remotes at minimum have a name and a URL

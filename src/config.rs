@@ -1,8 +1,8 @@
 extern crate dirs;
 extern crate xdg;
 
-use super::model;
-use super::config_yaml;
+use ::model;
+use ::config_yaml;
 
 // Search for configuration in the following locations:
 //  .

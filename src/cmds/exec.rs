@@ -1,10 +1,10 @@
 extern crate subprocess;
 
-use super::super::cmd;
-use super::super::config;
-use super::super::eval;
-use super::super::model;
-use super::super::query;
+use ::cmd;
+use ::config;
+use ::eval;
+use ::model;
+use ::query;
 
 
 /// Main entry point for the "garden exec" command

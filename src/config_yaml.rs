@@ -1,10 +1,8 @@
-use std::string::ToString;
-
 extern crate yaml_rust;
 use self::yaml_rust::yaml::Yaml;
 use self::yaml_rust::YamlLoader;
 
-use super::model;
+use ::model;
 
 
 // Apply YAML Configuration from a string.
