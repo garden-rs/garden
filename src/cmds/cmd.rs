@@ -8,7 +8,7 @@ use super::super::query;
 
 
 pub fn main(options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden run".to_string());
+    options.args.insert(0, "garden cmd".to_string());
 
     let mut expr = String::new();
     let mut commands: Vec<String> = Vec::new();
@@ -52,7 +52,9 @@ pub fn main(options: &mut model::CommandOptions) {
     let quiet = options.quiet;
     let verbose = options.verbose;
     let keep_going = options.keep_going;
-    cmd(&mut cfg, quiet, verbose, keep_going, expr, &commands);
+
+    let exit_status = cmd(&mut cfg, quiet, verbose, keep_going, expr, &commands);
+    std::process::exit(exit_status);
 }
 
 
@@ -74,7 +76,7 @@ pub fn cmd<S>(
     keep_going: bool,
     expr: S,
     commands: &Vec<String>,
-) where S: Into<String> {
+) -> i32 where S: Into<String> {
 
     // Resolve the tree expression into a vector of tree contexts.
     let contexts = query::resolve_trees(config, expr);
@@ -153,5 +155,5 @@ pub fn cmd<S>(
     }
 
     // Return the last non-zero exit status.
-    std::process::exit(exit_status);
+    exit_status
 }
