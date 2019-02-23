@@ -1,5 +1,5 @@
-use super::config;
-use super::model;
+use super::super::config;
+use super::super::model;
 
 
 pub fn main(options: &mut model::CommandOptions) {

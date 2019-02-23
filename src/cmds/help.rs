@@ -1,5 +1,5 @@
-use super::model;
-use super::command;
+use super::super::model;
+use super::super::command;
 
 
 /// Entry point for `garden help`

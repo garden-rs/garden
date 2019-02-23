@@ -1,9 +1,9 @@
 extern crate glob;
 
-use super::config;
-use super::eval;
-use super::model;
-use super::query;
+use super::super::eval;
+use super::super::config;
+use super::super::model;
+use super::super::query;
 
 
 pub fn main(options: &mut model::CommandOptions) {

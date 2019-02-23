@@ -46,7 +46,7 @@ fn main() {
         model::Command::Help => cmds::help::main(&mut options),
         model::Command::Cmd => cmds::cmd::main(&mut options),
         model::Command::Exec => cmds::exec::main(&mut options),
-        model::Command::Eval => cmds::evaluate::main(&mut options),
+        model::Command::Eval => cmds::eval::main(&mut options),
         model::Command::Init => cmds::help::main(&mut options),
         model::Command::List => cmds::list::main(&mut options),
         model::Command::Status => cmds::help::main(&mut options),
