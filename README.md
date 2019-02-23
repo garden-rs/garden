@@ -140,6 +140,12 @@ global to all `garden` commands.
     -c | --config <path>
 
 Specify a garden config file to use instead of searching for `garden.yaml`.
+The path can either be the path to an actual config file, or it can be
+the basename of a file in the configuration search path.
+
+Config files found through the search path must have a `.yaml` or `.json` extension.
+When specifying a search path basename, the filename can be specified either
+with or without an extension.  Garden will add the extension automatically.
 
     -v | --verbose
 

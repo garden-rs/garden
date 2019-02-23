@@ -53,12 +53,4 @@ Add an existing tree to garden.yaml.
 Show the repository status for the resolved trees.
 
 
-### garden -c foo ...
-
-    garden -c foo ...
-    garden -c foo.yaml ...  # both stil use the search path
-
-Search for foo.yaml instead of garden.yaml.
-This allows for easy swapping of different configurations.
-
 # vim: set ts=4 sw=4 sts=4
