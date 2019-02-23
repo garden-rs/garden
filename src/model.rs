@@ -202,37 +202,27 @@ impl Configuration {
     }
 
     fn reset_builtin_variables(&mut self) {
-        let value = self.root.value.as_ref().unwrap().to_string();
-
-        // Ensure GARDEN_ROOT is at position 0
-        if self.variables.is_empty()
-            || self.variables[0].name != "GARDEN_ROOT" {
-            self.variables.insert(
-                0, NamedVariable {
-                    name: "GARDEN_ROOT".to_string(),
-                    expr: value.to_string(),
-                    value: None,
-                }
-            );
+        // Update GARDEN_ROOT at position 0
+        if !self.variables.is_empty() && self.variables[0].name == "GARDEN_ROOT" {
+            let value = self.root.value.as_ref().unwrap().to_string();
+            self.variables[0].expr = value.to_string();
+            self.variables[0].value = Some(value.to_string());
         }
-        // Provided an evaluated value for GARDEN_ROOT.
-        self.variables[0].value = Some(value.to_string());
 
-        // Ensure TREE_PATH is at position 0 for each tree
         for tree in self.trees.iter_mut() {
             let tree_path = tree.path.value.as_ref().unwrap().to_string();
-            if tree.variables.is_empty()
-                || tree.variables[0].name != "TREE_PATH" {
-                tree.variables.insert(
-                    0, NamedVariable {
-                        name: "TREE_PATH".to_string(),
-                        expr: tree_path.to_string(),
-                        value: None,
-                    }
-                );
+            if tree.variables.len() >= 2 {
+                // Update TREE_NAME at position 0
+                if tree.variables[0].name == "TREE_NAME" {
+                    tree.variables[0].expr = tree.name.to_string();
+                    tree.variables[0].value = Some(tree.name.to_string());
+                }
+                // Update TREE_PATH at position 1
+                if tree.variables[1].name == "TREE_PATH" {
+                    tree.variables[1].expr = tree_path.to_string();
+                    tree.variables[1].value = Some(tree_path.to_string());
+                }
             }
-            // Provided an evaluated value for TREE_PATH.
-            tree.variables[0].value = Some(tree_path.to_string());
         }
     }
 

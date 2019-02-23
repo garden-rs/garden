@@ -16,6 +16,7 @@ fn garden_root () {
     assert_eq!(config.root_path.to_string_lossy(), expect_src_dir);
 }
 
+
 #[test]
 fn tree_variable() {
     let mut config = common::garden_config();
@@ -24,6 +25,7 @@ fn tree_variable() {
         &mut config, "${prefix}", tree_idx, None);
     assert_eq!(result, "/home/test/.local");
 }
+
 
 #[test]
 fn config_variable() {
@@ -37,6 +39,18 @@ fn config_variable() {
     let local = garden::eval::tree_value(
         &mut config, "${local}", tree_idx, None);
     assert_eq!("TEST/local", local);
+}
+
+
+/// ${TREE_NAME} should be set to the current tree's name
+#[test]
+fn tree_name() {
+    let mut config = common::garden_config();
+    let tree_idx: garden::model::TreeIndex = 0;
+    let expect = "git";
+    let actual = garden::eval::tree_value(
+        &mut config, "${TREE_NAME}", tree_idx, None);
+    assert_eq!(expect, actual);
 }
 
 

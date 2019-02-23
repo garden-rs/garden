@@ -39,6 +39,12 @@ pub fn parse(string: &String, verbose: bool,
     if verbose {
         debug!("yaml: variables");
     }
+    // Provide GARDEN_ROOT
+    config.variables.push(model::NamedVariable {
+        name: "GARDEN_ROOT".to_string(),
+        expr: config.root.expr.to_string(),
+        value: None,
+    });
     if !get_variables(&doc["variables"], &mut config.variables) && verbose {
         debug!("yaml: no variables");
     }
@@ -364,6 +370,7 @@ fn get_tree(
     value: &Yaml,
     templates: &Yaml,
 ) -> model::Tree {
+
     let mut tree = model::Tree::default();
     get_str(&name, &mut tree.name);
     if !get_str(&value["path"], &mut tree.path.expr) {
@@ -371,6 +378,19 @@ fn get_tree(
         tree.path.expr = tree.name.to_string();
         tree.path.value = Some(tree.name.to_string());
     }
+
+    // Add the TREE_NAME and TREE_PATH variables
+    tree.variables.push(model::NamedVariable {
+        name: "TREE_NAME".to_string(),
+        expr: tree.name.to_string(),
+        value: None,
+    });
+    tree.variables.push(model::NamedVariable {
+        name: "TREE_PATH".to_string(),
+        expr: tree.path.expr.to_string(),
+        value: None,
+    });
+
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {

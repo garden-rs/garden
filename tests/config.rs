@@ -165,16 +165,23 @@ fn trees() {
     assert_eq!(tree0.remotes[0].name, "origin");
     assert_eq!(tree0.remotes[0].url, "https://github.com/git/git");
 
-    assert_eq!(tree0.variables.len(), 3);
-    // TREE_PATH, highest precedence at position 0
-    assert_eq!(tree0.variables[0].name, "TREE_PATH");
-    assert!(tree0.variables[0].value.is_some());
+    assert_eq!(tree0.variables.len(), 4);
 
-    assert_eq!(tree0.variables[1].name, "prefix");
-    assert_eq!(tree0.variables[1].expr, "~/.local");
-    // From the template, effectively "hidden"
+    // TREE_NAME, highest precedence at position 0
+    assert_eq!(tree0.variables[0].name, "TREE_NAME");
+    assert_eq!(tree0.variables[0].expr, "git");
+    assert_eq!(tree0.variables[0].value.as_ref().unwrap(), "git");
+
+    // TREE_PATH, highest precedence at position 0
+    assert_eq!(tree0.variables[1].name, "TREE_PATH");
+    assert_eq!(tree0.variables[1].expr, "/home/test/src/git");
+    assert_eq!(tree0.variables[1].value.as_ref().unwrap(), "/home/test/src/git");
+
     assert_eq!(tree0.variables[2].name, "prefix");
-    assert_eq!(tree0.variables[2].expr, "${TREE_PATH}/local");
+    assert_eq!(tree0.variables[2].expr, "~/.local");
+    // From the template, effectively "hidden"
+    assert_eq!(tree0.variables[3].name, "prefix");
+    assert_eq!(tree0.variables[3].expr, "${TREE_PATH}/local");
     // gitconfig
     assert_eq!(tree0.gitconfig.len(), 2);
     assert_eq!(tree0.gitconfig[0].name, "user.name");
