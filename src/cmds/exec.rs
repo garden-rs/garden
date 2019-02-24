@@ -106,7 +106,7 @@ pub fn exec<S>(
             }
         }
 
-        let mut exec = subprocess::Exec::cmd(command[0].to_string())
+        let mut exec = subprocess::Exec::cmd(&command[0])
             .args(&command[1..])
             .cwd(&path);
 
