@@ -136,9 +136,9 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
 
 /// Parse and apply configuration from a YAML/JSON string
 pub fn parse(config_string: &str, verbose: bool,
-             mut cfg: &mut model::Configuration) {
+             cfg: &mut model::Configuration) {
 
-    config_yaml::parse(&config_string, verbose, &mut cfg);
+    config_yaml::parse(&config_string, verbose, cfg);
     // Initialize the configuration now that the values have been read.
     cfg.initialize();
 }
