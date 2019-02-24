@@ -181,7 +181,7 @@ impl Configuration {
     pub fn initialize(&mut self) {
         // Evaluate garden.root
         let expr = self.root.expr.to_string();
-        let value = eval::value(self, expr);
+        let value = eval::value(self, &expr);
         // Store the resolved garden.root
         self.root_path = std::path::PathBuf::from(&value);
         self.root.value = Some(value.to_string());
@@ -236,7 +236,7 @@ impl Configuration {
         }
 
         for (idx, value) in values.iter().enumerate() {
-            let result = eval::value(self, value.to_string());
+            let result = eval::value(self, &value);
             let tree = &mut self.trees[idx];
 
             if result.starts_with("/") {
@@ -305,8 +305,8 @@ impl_display_brief!(TreeExpression);
 
 impl TreeExpression {
 
-    pub fn new<S: Into<String>>(expr: S) -> Self {
-        let mut glob_pattern = expr.into();
+    pub fn new(expr: &str) -> Self {
+        let mut glob_pattern = expr.to_string();
         let mut is_default = false;
         let mut is_tree = false;
         let mut is_garden = false;

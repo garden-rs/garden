@@ -9,7 +9,7 @@ use ::model;
 /// Returns:
 /// - `Vec<garden::model::TreeContext>`
 
-pub fn resolve_trees<S: Into<String>>(config: &model::Configuration, expr: S)
+pub fn resolve_trees(config: &model::Configuration, expr: &str)
 -> Vec<model::TreeContext> {
     let tree_expr = model::TreeExpression::new(expr);
     let ref pattern = tree_expr.pattern;

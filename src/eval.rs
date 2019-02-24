@@ -42,7 +42,7 @@ fn expand_tree_vars(
                 .variables[var_idx]
                 .expr.to_string();
 
-            let result = tree_value(config, expr, tree_idx, garden_idx);
+            let result = tree_value(config, &expr, tree_idx, garden_idx);
             config
                 .gardens[garden_idx.unwrap()]
                 .variables[var_idx]
@@ -68,7 +68,7 @@ fn expand_tree_vars(
 
     if found {
         let expr = config.trees[tree_idx].variables[var_idx].expr.to_string();
-        let result = tree_value(config, expr, tree_idx, garden_idx);
+        let result = tree_value(config, &expr, tree_idx, garden_idx);
         config
             .trees[tree_idx]
             .variables[var_idx]
@@ -93,7 +93,7 @@ fn expand_tree_vars(
 
     if found {
         let expr = config.variables[var_idx].expr.to_string();
-        let result = tree_value(config, expr, tree_idx, garden_idx);
+        let result = tree_value(config, &expr, tree_idx, garden_idx);
         config.variables[var_idx].value = Some(result.to_string());
 
         return Ok(Some(result));
@@ -131,7 +131,7 @@ fn expand_vars(
 
     if found {
         let expr = config.variables[var_idx].expr.to_string();
-        let result = value(config, expr);
+        let result = value(config, &expr);
         config.variables[var_idx].value = Some(result.to_string());
 
         return Ok(Some(result));
@@ -158,16 +158,14 @@ fn home_dir() -> Option<std::path::PathBuf> {
 
 
 /// Resolve a variable in a garden/tree/global scope
-pub fn tree_value<S: Into<String>>(
+pub fn tree_value(
     config: &mut model::Configuration,
-    expr: S,
+    expr: &str,
     tree_idx: model::TreeIndex,
     garden_idx: Option<model::GardenIndex>,
 ) -> String {
-    let expr_str: String = expr.into();
-
     let expanded = shellexpand::full_with_context(
-        &expr_str, home_dir,
+        expr, home_dir,
         |x| { return expand_tree_vars(config, tree_idx, garden_idx, x); }
         ).unwrap().to_string();
 
@@ -176,14 +174,12 @@ pub fn tree_value<S: Into<String>>(
 
 
 /// Resolve a variable in configuration/global scope
-pub fn value<S: Into<String>>(
+pub fn value(
     config: &mut model::Configuration,
-    expr: S,
+    expr: &str,
 ) -> String {
-    let expr_str: String = expr.into();
-
     let expanded = shellexpand::full_with_context(
-        &expr_str, home_dir,
+        expr, home_dir,
         |x| { return expand_vars(config, x); }
         ).unwrap().to_string();
 
@@ -226,7 +222,7 @@ pub fn multi_variable(
         }
 
         let mut value = tree_value(
-            config, var.expr.to_string(),
+            config, &var.expr,
             context.tree, context.garden);
         result.push(value);
     }
@@ -348,15 +344,14 @@ pub fn environment(
 
 
 /// Evaluate commands
-pub fn command<S>(
+pub fn command(
     config: &mut model::Configuration,
     context: &model::TreeContext,
-    name: S,
+    name: &str,
 ) -> Vec<Vec<String>>
-where S: Into<String>
 {
     let mut vars = Vec::new();
-    let pattern = glob::Pattern::new(&name.into()).unwrap();
+    let pattern = glob::Pattern::new(name).unwrap();
 
     // Global commands
     for var in &config.commands {

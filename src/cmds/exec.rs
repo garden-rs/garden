@@ -51,7 +51,7 @@ pub fn main(options: &mut model::CommandOptions) {
 
     let quiet = options.quiet;
     let verbose = options.verbose;
-    exec(&mut cfg, quiet, verbose, expr, &command);
+    exec(&mut cfg, quiet, verbose, &expr, &command);
 }
 
 
@@ -66,13 +66,13 @@ pub fn main(options: &mut model::CommandOptions) {
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn exec<S>(
+pub fn exec(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
-    expr: S,
+    expr: &str,
     command: &Vec<String>,
-) where S: Into<String> {
+) {
 
     // Resolve the tree expression into a vector of tree contexts.
     let contexts = query::resolve_trees(config, expr);

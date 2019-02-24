@@ -54,7 +54,7 @@ pub fn main(options: &mut model::CommandOptions) {
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
-    let exit_status = cmd(&mut cfg, quiet, verbose, keep_going, expr, &commands);
+    let exit_status = cmd(&mut cfg, quiet, verbose, keep_going, &expr, &commands);
     std::process::exit(exit_status);
 }
 
@@ -101,7 +101,7 @@ pub fn custom(options: &mut model::CommandOptions, command: &String) {
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
-    let exit_status = cmds(&mut cfg, quiet, verbose, keep_going, command.to_string(), &exprs);
+    let exit_status = cmds(&mut cfg, quiet, verbose, keep_going, command, &exprs);
     std::process::exit(exit_status);
 }
 
@@ -115,15 +115,14 @@ pub fn custom(options: &mut model::CommandOptions, command: &String) {
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn cmd<S>(
+pub fn cmd(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
     keep_going: bool,
-    expr: S,
+    expr: &str,
     commands: &Vec<String>,
-) -> i32 where S: Into<String> {
-
+) -> i32 {
     // Resolve the tree expression into a vector of tree contexts.
     let contexts = query::resolve_trees(config, expr);
     let mut exit_status: i32 = 0;
@@ -170,7 +169,7 @@ pub fn cmd<S>(
             // are included.  When the scope includes a gardens,
             // its matching commands are appended to the end.
             error = false;
-            let cmd_seq_vec = eval::command(config, context, name.to_string());
+            let cmd_seq_vec = eval::command(config, context, &name);
             config.reset();
             for cmd_seq in &cmd_seq_vec {
                 for cmd_str in cmd_seq {
@@ -206,22 +205,21 @@ pub fn cmd<S>(
 
 
 /// Run cmd() over a Vec of tree expressions
-pub fn cmds<S>(
+pub fn cmds(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
     keep_going: bool,
-    command: S,
+    command: &str,
     exprs: &Vec<String>,
-) -> i32 where S: Into<String> {
-
+) -> i32 {
     let mut exit_status: i32 = 0;
 
     let mut commands: Vec<String> = Vec::new();
     commands.push(command.into());
 
     for expr in exprs {
-        let status = cmd(config, quiet, verbose, keep_going, expr.to_string(), &commands);
+        let status = cmd(config, quiet, verbose, keep_going, &expr, &commands);
         if status != 0 {
             exit_status = status;
             if !keep_going {

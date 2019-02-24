@@ -42,7 +42,7 @@ pub fn main(options: &mut model::CommandOptions) {
     }
 
     if tree.is_empty() {
-        println!("{}", eval::value(&mut cfg, expr));
+        println!("{}", eval::value(&mut cfg, &expr));
         return;
     }
 
@@ -82,6 +82,6 @@ pub fn main(options: &mut model::CommandOptions) {
     }
 
     // Evaluate and print the garden expression.
-    let value = eval::tree_value(&mut cfg, expr, ctx.tree, ctx.garden);
+    let value = eval::tree_value(&mut cfg, &expr, ctx.tree, ctx.garden);
     println!("{}", value);
 }
