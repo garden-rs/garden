@@ -1,5 +1,6 @@
 extern crate yaml_rust;
 use self::yaml_rust::yaml::Yaml;
+use self::yaml_rust::yaml::Hash as YamlHash;
 use self::yaml_rust::YamlLoader;
 
 use ::model;
@@ -354,7 +355,7 @@ fn get_trees(
 ) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
-            trees.push(get_tree(name, value, templates));
+            trees.push(get_tree(name, value, templates, hash, true));
         }
         return true;
     }
@@ -367,9 +368,22 @@ fn get_tree(
     name: &Yaml,
     value: &Yaml,
     templates: &Yaml,
+    trees: &YamlHash,
+    variables: bool,
 ) -> model::Tree {
 
     let mut tree = model::Tree::default();
+    // Allow extending an existing tree by specifying "extend".
+    let mut extend = String::new();
+    if get_str(&value["extend"], &mut extend) {
+        let tree_name = Yaml::String(extend);
+        if let Some(ref tree_values) = trees.get(&tree_name) {
+            tree = get_tree(&tree_name, tree_values, templates, trees, false);
+            tree.remotes.truncate(1);  // Keep origin only
+            tree.templates.truncate(0);  // Parent templates have already been processed.
+        }
+    }
+
     get_str(&name, &mut tree.name);
     if !get_str(&value["path"], &mut tree.path.expr) {
         // default to the name when "path" is unspecified
@@ -378,16 +392,18 @@ fn get_tree(
     }
 
     // Add the TREE_NAME and TREE_PATH variables
-    tree.variables.push(model::NamedVariable {
-        name: "TREE_NAME".to_string(),
-        expr: tree.name.to_string(),
-        value: None,
-    });
-    tree.variables.push(model::NamedVariable {
-        name: "TREE_PATH".to_string(),
-        expr: tree.path.expr.to_string(),
-        value: None,
-    });
+    if variables {
+        tree.variables.insert(0, model::NamedVariable {
+            name: "TREE_NAME".to_string(),
+            expr: tree.name.to_string(),
+            value: None,
+        });
+        tree.variables.insert(1, model::NamedVariable {
+            name: "TREE_PATH".to_string(),
+            expr: tree.path.expr.to_string(),
+            value: None,
+        });
+    }
 
     {
         let mut url = String::new();
@@ -416,7 +432,6 @@ fn get_tree(
             tree.commands.append(&mut base.commands);
         }
     }
-
 
     get_variables(&value["variables"], &mut tree.variables);
     get_variables(&value["gitconfig"], &mut tree.gitconfig);

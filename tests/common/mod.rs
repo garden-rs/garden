@@ -69,6 +69,11 @@ pub fn garden_config() -> garden::model::Configuration {
             url: git@example.com:git-annex/data.git
             gitconfig:
                 remote.origin.annex-ignore: true
+            remotes:
+                local: ${GARDEN_ROOT}/annex/local
+
+        annex/local:
+            extend: annex/data
 
     groups:
         cola: [git, qtpy, cola]

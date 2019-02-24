@@ -68,14 +68,14 @@ impl_display!(MultiVariable);
 // Trees represent a single worktree
 #[derive(Clone, Debug, Default)]
 pub struct Tree {
+    pub commands: Vec<MultiVariable>,
+    pub environment: Vec<MultiVariable>,
+    pub gitconfig: Vec<NamedVariable>,
     pub name: String,
     pub path: Variable,
-    pub templates: Vec<String>,
     pub remotes: Vec<Remote>,
-    pub gitconfig: Vec<NamedVariable>,
+    pub templates: Vec<String>,
     pub variables: Vec<NamedVariable>,
-    pub environment: Vec<MultiVariable>,
-    pub commands: Vec<MultiVariable>,
 }
 
 impl_display!(Tree);

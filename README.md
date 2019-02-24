@@ -55,7 +55,7 @@ Example `garden.yaml`:
         cola:
             groups: cola
             commands:
-                init:
+                setup:
                     - cd ${cola_PATH}
                     - virtualenv --system-site-packages env27
                     - vx env27 make requirements
@@ -106,6 +106,10 @@ Example `garden.yaml`:
         garden:
             url: git://github.com/davvid/garden.git
             templates: rust
+        garden/release:
+            extend: garden
+            variables:
+                flavor: release
         git:
             url: git://github.com/git/git.git
             templates: makefile
@@ -123,6 +127,15 @@ Example `garden.yaml`:
             url: git://github.com/davvid/vx.git
             environment:
                 PATH: ${TREE_PATH}
+
+
+Gardens aggregate groups and trees.  If tree lists need to be shared between
+gardens, use define groups and reuse the groups in each garden.
+
+Templates allow sharing of variables, gitconfig, and environments between
+trees.  Trees can also reuse another tree definition by specifying the
+"extend" keyword with the name of another tree.  Only the first remote is used
+when extending a tree.
 
 
 ## Commands
