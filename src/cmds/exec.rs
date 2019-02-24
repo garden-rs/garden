@@ -81,41 +81,8 @@ pub fn exec(
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in &contexts {
-        // Evaluate the tree environment
-        let env = eval::environment(config, context);
-
-        // Exec each command in the tree's context
-        let tree = &config.trees[context.tree];
-        let path = tree.path.value.as_ref().unwrap();
-        // Sparse gardens/missing trees are ok -> skip these entries.
-        if !std::path::PathBuf::from(&path).exists() {
-            if !quiet {
-                if verbose {
-                    eprintln!("# {}: {} (skipped)", tree.name, path);
-                } else {
-                    eprintln!("# {} (skipped)", tree.name);
-                }
-            }
-            continue;
-        }
-        if !quiet {
-            if verbose {
-                eprintln!("# {}: {}", tree.name, path);
-            } else {
-                eprintln!("# {}", tree.name);
-            }
-        }
-
-        let mut exec = subprocess::Exec::cmd(&command[0])
-            .args(&command[1..])
-            .cwd(&path);
-
-        // Update the command environment
-        for (name, value) in &env {
-            exec = exec.env(name, value);
-        }
-
-        let status = cmd::status(exec.join());
+        // Run the command in the current context
+        let status = cmd::exec_in_context(config, context, quiet, verbose, command);
         if status != 0 {
             exit_status = status as i32;
         }
