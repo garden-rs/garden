@@ -6,11 +6,11 @@ use ::model;
 
 
 // Apply YAML Configuration from a string.
-pub fn parse(string: &String, verbose: bool,
+pub fn parse(string: &str, verbose: bool,
              config: &mut model::Configuration) {
 
     let docs = unwrap_or_err!(
-        YamlLoader::load_from_str(string.as_ref()),
+        YamlLoader::load_from_str(string),
         "{:?}: {}", config.path);
 
     if docs.len() < 1 {

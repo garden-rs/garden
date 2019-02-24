@@ -189,9 +189,9 @@ pub fn value(
 
 /// Evaluate "$ <command>" command strings, AKA "exec expressions".
 /// The result of the expression is the stdout output from the command.
-pub fn exec_expression(string: &String) -> String {
-    if syntax::is_exec(&string) {
-        let cmd = syntax::trim_exec(&string);
+pub fn exec_expression(string: &str) -> String {
+    if syntax::is_exec(string) {
+        let cmd = syntax::trim_exec(string);
         let capture = subprocess::Exec::shell(cmd)
             .stdout(subprocess::Redirection::Pipe)
             .capture();

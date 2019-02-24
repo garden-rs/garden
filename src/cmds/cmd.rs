@@ -60,7 +60,7 @@ pub fn main(options: &mut model::CommandOptions) {
 
 
 /// garden <command-name> <tree-expr>*
-pub fn custom(options: &mut model::CommandOptions, command: &String) {
+pub fn custom(options: &mut model::CommandOptions, command: &str) {
     options.args.insert(0, "garden cmd".to_string());
 
     let mut exprs: Vec<String> = Vec::new();

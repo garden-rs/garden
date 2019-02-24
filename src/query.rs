@@ -5,7 +5,7 @@ use ::model;
 ///
 /// Parameters:
 /// - `config`: `&garden::model::Configuration`.
-/// - `expr`: Tree expression `&String`.
+/// - `expr`: Tree expression `&str`.
 /// Returns:
 /// - `Vec<garden::model::TreeContext>`
 
@@ -100,12 +100,12 @@ pub fn garden_trees(
 /// Find a tree by name
 /// Parameters:
 /// - config: `&garden::model::Configuration`
-/// - tree: Tree name `&String`
+/// - tree: Tree name `&str`
 /// - garden_idx: `Option<garden::model::GardenIndex>`
 
 pub fn tree_by_name(
     config: &model::Configuration,
-    tree: &String,
+    tree: &str,
     garden_idx: Option<model::GardenIndex>,
 ) -> Option<model::TreeContext> {
 
