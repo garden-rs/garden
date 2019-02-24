@@ -12,6 +12,7 @@ pub fn main(options: &mut model::CommandOptions) {
     let mut expr = String::new();
     let mut tree = String::new();
     let mut garden = String::new();
+    let mut garden_opt: Option<String> = None;
 
     // Parse arguments
     {
@@ -20,7 +21,7 @@ pub fn main(options: &mut model::CommandOptions) {
 
         ap.refer(&mut expr).required()
             .add_argument("garden-expr", argparse::Store,
-                          "gardens expression to evaluate");
+                          "garden variable expression to evaluate");
 
         ap.refer(&mut tree)
             .add_argument("tree", argparse::Store, "tree to evaluate");
@@ -46,42 +47,18 @@ pub fn main(options: &mut model::CommandOptions) {
         return;
     }
 
-    // Evaluate and print the garden expression.
-    let mut ctx = model::TreeContext {
-        tree: 0,
-        garden: None
-    };
-    if let Some(context) = query::tree_by_name(&cfg, &tree, None) {
-        ctx.tree = context.tree;
-    } else {
-        error!("unable to find '{}': No tree exists with that name", tree);
-    }
-
     if !garden.is_empty() {
-        let pattern = glob::Pattern::new(&garden).unwrap();
-        let contexts = query::garden_trees(&cfg, &pattern);
-
-        if contexts.is_empty() {
-            error!("unable to find '{}': No garden exists with that name",
-                   garden);
-        }
-
-        let mut found = false;
-        for current_ctx in &contexts {
-            if current_ctx.tree == ctx.tree {
-                ctx.garden = current_ctx.garden;
-                found = true;
-                break;
-            }
-        }
-
-        if !found {
-            error!("invalid arguments: '{}' is not part of the '{}' garden",
-                   tree, garden);
-        }
+        garden_opt = Some(garden);
     }
 
     // Evaluate and print the garden expression.
-    let value = eval::tree_value(&mut cfg, &expr, ctx.tree, ctx.garden);
-    println!("{}", value);
+    match query::tree_context(&cfg, &tree, garden_opt) {
+        Ok(ctx) => {
+            let value = eval::tree_value(&mut cfg, &expr, ctx.tree, ctx.garden);
+            println!("{}", value);
+        }
+        Err(err) => {
+            error!("{}", err);
+        }
+    }
 }

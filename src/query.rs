@@ -1,4 +1,5 @@
 use ::model;
+use ::query;
 
 
 /// Resolve a tree expression into a `Vec<garden::model::TreeContext>`.
@@ -140,4 +141,48 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
     }
 
     return result;
+}
+
+
+pub fn tree_context(config: &model::Configuration, tree: &str, garden: Option<String>)
+-> Result<model::TreeContext, String> {
+    // Evaluate and print the garden expression.
+    let mut ctx = model::TreeContext {
+        tree: 0,
+        garden: None
+    };
+    if let Some(context) = tree_by_name(&config, tree, None) {
+        ctx.tree = context.tree;
+    } else {
+        return Err(format!(
+                "unable to find '{}': No tree exists with that name", tree));
+    }
+
+    if garden.is_some() {
+        let pattern = glob::Pattern::new(garden.as_ref().unwrap()).unwrap();
+        let contexts = query::garden_trees(config, &pattern);
+
+        if contexts.is_empty() {
+            return Err(format!(
+                "unable to find '{}': No garden exists with that name",
+                garden.unwrap()));
+        }
+
+        let mut found = false;
+        for current_ctx in &contexts {
+            if current_ctx.tree == ctx.tree {
+                ctx.garden = current_ctx.garden;
+                found = true;
+                break;
+            }
+        }
+
+        if !found {
+            return Err(format!(
+                "invalid arguments: '{}' is not part of the '{}' garden",
+                tree, garden.unwrap()));
+        }
+    }
+
+    Ok(ctx)
 }
