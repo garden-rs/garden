@@ -255,6 +255,14 @@ because that form allows multiple commands; this form allows multiple
 tree-expressions, and is convenient to type.
 
 
+### garden shell
+
+    garden shell <tree> [<garden>]
+
+Launch a shell inside the environment formed by the tree context.
+An optional garden can be specified to provide a garden context.
+
+
 ## Variables
 
 Garden configuration contains a "variables" block that allows defining

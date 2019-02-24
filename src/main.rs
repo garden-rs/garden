@@ -51,6 +51,6 @@ fn main() {
         model::Command::Eval => cmds::eval::main(&mut options),
         model::Command::Init => cmds::help::main(&mut options),
         model::Command::List => cmds::list::main(&mut options),
-        model::Command::Shell => cmds::help::main(&mut options),
+        model::Command::Shell => cmds::shell::main(&mut options),
     }
 }

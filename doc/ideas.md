@@ -31,14 +31,6 @@ Example:
 Initialize missing repositories for the resolved trees.
 
 
-### garden shell
-
-    garden shell <tree> [<garden>]
-
-Launch a shell inside the environment formed by the tree context.
-An optional garden can be specified to provide a garden context.
-
-
 ### garden add
 
     garden add <path>

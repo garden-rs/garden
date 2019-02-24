@@ -42,4 +42,6 @@ pub mod cmds {
     pub mod help;
     /// List command
     pub mod list;
+    /// Shell command
+    pub mod shell;
 }
