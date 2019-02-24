@@ -53,9 +53,4 @@ Add an existing tree to garden.yaml.
 Show the repository status for the resolved trees.
 
 
-## Configuration
-
-Allow templates to provide the URL.
-
-
 # vim: set ts=4 sw=4 sts=4

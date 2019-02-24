@@ -304,14 +304,24 @@ fn get_template(
     value: &Yaml,
     templates: &Yaml,
 ) -> model::Template {
+
     let mut template = model::Template::default();
     get_str(&name, &mut template.name);
-    get_vec_str(&value["extend"], &mut template.extend);
-
+    {
+        let mut url = String::new();
+        if get_str(&value["url"], &mut url) {
+            template.remotes.push(
+                model::Remote {
+                    name: "origin".to_string(),
+                    url: url,
+                });
+        }
+    }
 
     // "environment" follow last-set-wins semantics.
     // Process the base templates in the specified order before processing
     // the template itself.
+    get_vec_str(&value["extend"], &mut template.extend);
     for template_name in &template.extend {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
@@ -321,6 +331,11 @@ fn get_template(
 
             template.environment.append(&mut base.environment);
             template.gitconfig.append(&mut base.gitconfig);
+            // If multiple templates define "url" then the first one wins,
+            // but only if we don't have url defined in the current template.
+            if template.remotes.is_empty() {
+                template.remotes.append(&mut base.remotes);
+            }
         }
     }
 
@@ -430,6 +445,11 @@ fn get_tree(
             tree.environment.append(&mut base.environment);
             tree.gitconfig.append(&mut base.gitconfig);
             tree.commands.append(&mut base.commands);
+            // If multiple templates define "url" then the first one wins,
+            // but only if we don't have url defined in the current template.
+            if tree.remotes.is_empty() {
+                tree.remotes.append(&mut base.remotes);
+            }
         }
     }
 

@@ -118,12 +118,13 @@ impl_display!(Group);
 
 #[derive(Clone, Debug, Default)]
 pub struct Template {
-    pub name: String,
-    pub extend: Vec<String>,
-    pub variables: Vec<NamedVariable>,
-    pub environment: Vec<MultiVariable>,
     pub commands: Vec<MultiVariable>,
+    pub environment: Vec<MultiVariable>,
+    pub extend: Vec<String>,
     pub gitconfig: Vec<NamedVariable>,
+    pub name: String,
+    pub remotes: Vec<Remote>,
+    pub variables: Vec<NamedVariable>,
 }
 
 impl_display!(Template);

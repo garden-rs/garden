@@ -36,6 +36,8 @@ pub fn garden_config() -> garden::model::Configuration {
         python:
             environment:
                 PYTHONPATH: ${TREE_PATH}
+        local:
+            url: ${local}/${TREE_NAME}
     trees:
         git:
             url: https://github.com/git/git
@@ -64,6 +66,7 @@ pub fn garden_config() -> garden::model::Configuration {
                 davvid: git@github.com:davvid/git-cola.git
         tmp:
             path: /tmp
+            templates: local
 
         annex/data:
             url: git@example.com:git-annex/data.git

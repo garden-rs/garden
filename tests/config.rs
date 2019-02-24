@@ -374,3 +374,15 @@ fn tree_path() {
     assert_eq!(config.trees[2].path.value.as_ref().unwrap().to_string(),
                "/tmp");
 }
+
+#[test]
+fn test_template_url() {
+    let config = common::garden_config();
+    assert!(config.trees.len() > 2);
+    // The "tmp" tree uses the "local" template which defines a URL.
+    let ref tree = config.trees[2];
+    assert_eq!(tree.name, "tmp");
+    assert_eq!(tree.remotes.len(), 1);
+    assert_eq!(tree.remotes[0].name, "origin");
+    assert_eq!(tree.remotes[0].url, "${local}/${TREE_NAME}");
+}
