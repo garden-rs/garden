@@ -1,6 +1,5 @@
 use ::cmd;
 use ::config;
-use ::eval;
 use ::model;
 use ::query;
 
