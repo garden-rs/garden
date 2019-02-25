@@ -5,6 +5,9 @@ pub mod macros;
 /// Command utilities
 pub mod cmd;
 
+/// Commands
+pub mod cmds;
+
 /// Configuration
 pub mod config;
 
@@ -26,22 +29,3 @@ pub mod syntax;
 
 /// YAML/JSON reader
 mod config_yaml;
-
-///
-/// Commands
-///
-
-pub mod cmds {
-    /// Preset commands
-    pub mod cmd;
-    /// Exec command
-    pub mod exec;
-    /// Eval command
-    pub mod eval;
-    /// Help command
-    pub mod help;
-    /// List command
-    pub mod list;
-    /// Shell command
-    pub mod shell;
-}
