@@ -43,7 +43,7 @@ fn main() {
 
     let subcommand = options.subcommand.clone();
     match subcommand {
-        model::Command::Add => cmds::help::main(&mut options),
+        model::Command::Add => cmds::add::main(&mut options),
         model::Command::Help => cmds::help::main(&mut options),
         model::Command::Cmd => cmds::cmd::main(&mut options),
         model::Command::Custom(cmd) => cmds::cmd::custom(&mut options, &cmd),

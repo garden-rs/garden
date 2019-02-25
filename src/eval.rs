@@ -5,6 +5,7 @@ extern crate subprocess;
 
 use std::collections::HashMap;
 
+use ::cmd;
 use ::model;
 use ::syntax;
 
@@ -169,6 +170,11 @@ pub fn tree_value(
         |x| { return expand_tree_vars(config, tree_idx, garden_idx, x); }
         ).unwrap().to_string();
 
+    // TODO exec_expression_with_path() to use the tree path.
+    // NOTE: an environment must not be calculated here otherwise any
+    // exec expression will implicitly depend on the entire environment,
+    // and potentially many variables (including itself).  Exec expressions
+    // always use the default environment.
     return exec_expression(&expanded);
 }
 
@@ -196,7 +202,7 @@ pub fn exec_expression(string: &str) -> String {
             .stdout(subprocess::Redirection::Pipe)
             .capture();
         if let Ok(x) = capture {
-            return x.stdout_str().trim_end().to_string();
+            return cmd::trim_stdout(&x);
         }
         // An error occurred running the command -- empty output by design
         return "".to_string();

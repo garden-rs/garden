@@ -31,13 +31,6 @@ Example:
 Initialize missing repositories for the resolved trees.
 
 
-### garden add
-
-    garden add <path>
-
-Add an existing tree to garden.yaml.
-
-
 ### garden inspect
 
     garden inspect <tree-expr>

@@ -1,3 +1,6 @@
+/// Add command
+pub mod add;
+
 /// Preset commands
 pub mod cmd;
 
