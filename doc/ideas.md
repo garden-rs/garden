@@ -21,6 +21,20 @@ Example:
         RP_${TREE_NAME}=: ${prefix}
 
 
+### Allow globs when specifying group members
+
+    groups:
+        example: foo/*
+
+
+### Allow globs when specifying garden trees and groups
+
+    gardens:
+        example:
+            groups: dev/*
+            trees: beta/*
+
+
 ## Commands
 
 
