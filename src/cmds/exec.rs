@@ -1,5 +1,3 @@
-extern crate subprocess;
-
 use ::cmd;
 use ::config;
 use ::eval;

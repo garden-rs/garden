@@ -1,5 +1,3 @@
-extern crate glob;
-
 use ::cmd;
 use ::eval;
 use ::config;
