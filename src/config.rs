@@ -74,21 +74,28 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
     // Find garden.yaml in the search path
     let mut found = false;
     if let Some(config_path) = config {
-        if config_path.is_file() {
+        if config_path.is_file() || config_path.is_absolute() {
+            // If an absolute apath was specified, or if the file exists, short-circuit
+            // the search; the config file is missing so we shouldn't silently use a
+            // different config files.
             cfg.path = Some(config_path.to_path_buf());
             found = true;
         } else {
             // The config path can be a basename that will be found in the config path.
             if config_path.is_relative() {
                 if config_path.extension().is_some() {
-                    // Convenience: if the user specified a filename with an extension then strip
-                    // off the extension so that we have just the basename.  Valid extensions
-                    // are appended when traversing the search path.
+                    // Convenience: if the user specified a filename with an
+                    // extension then strip off the extension so that we have
+                    // just the basename.  Valid extensions are appended when
+                    // traversing the search path.
                     //
-                    // Technically the user could specify e.g. "foo.txt" and we would only search
-                    // for "foo.yaml", but that's fine since it's an unsupported use case.
+                    // Technically the user could specify e.g. "foo.txt" and
+                    // we would only search for "foo.yaml", but that's fine
+                    // since it's an unsupported use case.
+                    //
                     // Config files must have a .yaml or .json extension.
-                    basename = config_path.file_stem().unwrap().to_string_lossy().to_string();
+                    basename = config_path
+                        .file_stem().unwrap().to_string_lossy().to_string();
                 } else {
                     // The user specified a plain basename -> use it as-is.
                     basename = config_path.to_string_lossy().to_string();
@@ -126,7 +133,7 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
         // Read file contents
         let config_string = unwrap_or_err_return!(
             std::fs::read_to_string(cfg.path.as_ref().unwrap()),
-            cfg, "unable to read {:?}: {}", cfg.path);
+            cfg, "unable to read {:?}: {}", cfg.path.as_ref().unwrap());
         parse(&config_string, verbose, &mut cfg);
     }
 
