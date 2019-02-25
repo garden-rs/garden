@@ -195,39 +195,11 @@ and wildcards are all referred to as "tree expressions".  Tree expressions
 are strings that resolve to a set of trees.
 
 
-### garden init
-
-    garden init <tree-expression>
-
-Initialize the tree(s) referenced by the `<tree-expression>`.
-Garden will use the first set of matching trees, gardens, or groups, in that
-order, when determining which trees to initialize.
-
-The `init` command can also be used to update existing trees.  It is always
-safe to re-run the `init` command.  For existing trees, their git
-configuration will be updated to match any changes made to the configuration.
-
-
 ### garden add
 
     garden add <path>
 
-Add the tree at `<path>` to `garden.yaml`.
-
-
-### garden exec
-
-    garden exec <tree-expression> <command> <arguments>*
-
-Execute a command on all of the trees matched by `<tree-expression>`.
-Example: `garden exec cola git status -s`.
-
-
-### garden eval
-
-    garden eval <expression> <tree> [<garden>]
-
-Evaluate a garden expression in the specified tree context.
+Add an existing tree at `<path>` to `garden.yaml`.
 
 
 ### garden cmd
@@ -253,6 +225,34 @@ run custom commands by that name.
 This is complementary to `garden cmd <tree-expression> <command>*`
 because that form allows multiple commands; this form allows multiple
 tree-expressions, and is convenient to type.
+
+
+### garden exec
+
+    garden exec <tree-expression> <command> <arguments>*
+
+Execute a command on all of the trees matched by `<tree-expression>`.
+Example: `garden exec cola git status -s`.
+
+
+### garden eval
+
+    garden eval <expression> <tree> [<garden>]
+
+Evaluate a garden expression in the specified tree context.
+
+
+### garden init
+
+    garden init <tree-expression>
+
+Initialize the tree(s) referenced by the `<tree-expression>`.
+Garden will use the first set of matching trees, gardens, or groups, in that
+order, when determining which trees to initialize.
+
+The `init` command can also be used to update existing trees.  It is always
+safe to re-run the `init` command.  For existing trees, their git
+configuration will be updated to match any changes made to the configuration.
 
 
 ### garden shell
