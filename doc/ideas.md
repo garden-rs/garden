@@ -35,6 +35,14 @@ Example:
             trees: beta/*
 
 
+### Allow "." to lookup the current directory in the tree configuration
+
+    garden build .
+    garden cmd . build
+    garden eval '${TREE_PATH}' .
+    garden exec . pwd
+
+
 ## Commands
 
 
