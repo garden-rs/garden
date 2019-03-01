@@ -2,6 +2,27 @@
 
 ## Features
 
+### garden shell
+
+When entering a garden, the entire environment of all trees should be
+processed.  Revisit garden shell arguments.
+
+
+### garden init
+
+    garden init <tree-expr>
+
+Initialize missing repositories for the resolved trees.
+
+
+### Allow "." to lookup the current directory in the tree configuration
+
+    garden build .
+    garden cmd . build
+    garden eval '${TREE_PATH}' .
+    garden exec . pwd
+
+
 ### Tree symlinks
 
 Support "symlink" trees whose purpose is to define the existence
@@ -13,12 +34,6 @@ Example:
         media:
             symlink: ~/media
             path: /media/${USER}
-
-
-###  Allow ${variables} in environment variables names
-
-    environment:
-        RP_${TREE_NAME}=: ${prefix}
 
 
 ### Allow globs when specifying group members
@@ -35,22 +50,10 @@ Example:
             trees: beta/*
 
 
-### Allow "." to lookup the current directory in the tree configuration
+###  Allow ${variables} in environment variables names
 
-    garden build .
-    garden cmd . build
-    garden eval '${TREE_PATH}' .
-    garden exec . pwd
-
-
-## Commands
-
-
-### garden init
-
-    garden init <tree-expr>
-
-Initialize missing repositories for the resolved trees.
+    environment:
+        RP_${TREE_NAME}=: ${prefix}
 
 
 ### garden inspect
