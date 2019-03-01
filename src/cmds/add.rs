@@ -172,7 +172,7 @@ fn add_path(
     }
 
     // Build the tree's path
-    let mut tree_path = String::new();
+    let mut tree_path: String;
 
     // canonicalize paths
     let path = pathbuf.canonicalize().unwrap().to_path_buf();
@@ -215,25 +215,6 @@ fn add_path(
         entry = trees.get(&key).unwrap().as_hash().unwrap().clone();
         if verbose {
             eprintln!("{}: found existing tree", tree_name);
-        }
-    }
-
-    let url_key = yaml::Yaml::String("url".to_string());
-    let has_url = entry.contains_key(&url_key);
-    if !has_url {
-        if verbose {
-            eprintln!("{}: no url", tree_name);
-        }
-
-        let command = ["git", "config", "remote.origin.url"];
-        let capture = cmd::capture_stdout(
-            subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(&path));
-
-        if let Ok(x) = capture {
-            let origin_url = cmd::trim_stdout(&x);
-            entry.insert(url_key, yaml::Yaml::String(origin_url));
-        } else {
-            error!("{:?}", capture.err());
         }
     }
 
@@ -305,6 +286,25 @@ fn add_path(
             } else {
                 remotes_hash.insert(remote, value);
             }
+        }
+    }
+
+    let url_key = yaml::Yaml::String("url".to_string());
+    let has_url = entry.contains_key(&url_key);
+    if !has_url {
+        if verbose {
+            eprintln!("{}: no url", tree_name);
+        }
+
+        let command = ["git", "config", "remote.origin.url"];
+        let capture = cmd::capture_stdout(
+            subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(&path));
+
+        if let Ok(x) = capture {
+            let origin_url = cmd::trim_stdout(&x);
+            entry.insert(url_key, yaml::Yaml::String(origin_url));
+        } else {
+            error!("{:?}", capture.err());
         }
     }
 
