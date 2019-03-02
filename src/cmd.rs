@@ -44,7 +44,7 @@ pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
 
 
 /// Return a CaptureData result for a subprocess's stdout.
-pub fn capture_stdout(mut exec: subprocess::Exec)
+pub fn capture_stdout(exec: subprocess::Exec)
 -> Result<subprocess::CaptureData, subprocess::PopenError> {
     exec.stdout(subprocess::Redirection::Pipe).capture()
 }

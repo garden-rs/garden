@@ -114,7 +114,9 @@ pub fn main(options: &mut model::CommandOptions) {
         error!("{}: unable to write configuration", output);
     }
 
-    file.sync_all();
+    if let Err(err) = file.sync_all() {
+        error!("unable to sync files: {}", err);
+    }
 }
 
 
@@ -172,9 +174,9 @@ fn add_path(
     }
 
     // Build the tree's path
-    let mut tree_path: String;
+    let tree_path: String;
 
-    // canonicalize paths
+    // Get a canonical tree path for comparison with the canonical root.
     let path = pathbuf.canonicalize().unwrap().to_path_buf();
 
     // Is the path a child of the current garden root?

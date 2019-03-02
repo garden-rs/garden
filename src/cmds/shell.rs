@@ -40,7 +40,6 @@ pub fn main(options: &mut model::CommandOptions) {
         garden_opt = Some(garden);
     }
 
-    // Evaluate and print the garden expression.
     let mut exit_status: i32 = 0;
     match query::tree_context(&cfg, &tree, garden_opt) {
         Ok(context) => {
