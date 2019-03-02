@@ -228,10 +228,10 @@ fn add_path(
     let mut remote_names: Vec<String> = Vec::new();
     {
         let command = ["git", "remote"];
-        let capture = cmd::capture_stdout(
-            subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(&path));
+        let exec = subprocess::Exec::cmd(&command[0])
+            .args(&command[1..]).cwd(&path);
 
-        if let Ok(x) = capture {
+        if let Ok(x) = cmd::capture_stdout(exec) {
             let output = cmd::trim_stdout(&x);
 
             for line in output.lines() {
@@ -254,10 +254,10 @@ fn add_path(
             command.push("config".into());
             command.push("remote.".to_string() + remote + ".url");
 
-            let capture = cmd::capture_stdout(
-                subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(&path));
+            let exec = subprocess::Exec::cmd(&command[0])
+                .args(&command[1..]).cwd(&path);
 
-            if let Ok(x) = capture {
+            if let Ok(x) = cmd::capture_stdout(exec) {
                 let output = cmd::trim_stdout(&x);
                 remotes.push((remote.to_string(), output));
             }
@@ -299,14 +299,17 @@ fn add_path(
         }
 
         let command = ["git", "config", "remote.origin.url"];
-        let capture = cmd::capture_stdout(
-            subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(&path));
+        let exec = subprocess::Exec::cmd(&command[0])
+            .args(&command[1..]).cwd(&path);
 
-        if let Ok(x) = capture {
-            let origin_url = cmd::trim_stdout(&x);
-            entry.insert(url_key, yaml::Yaml::String(origin_url));
-        } else {
-            error!("{:?}", capture.err());
+        match cmd::capture_stdout(exec) {
+            Ok(x) => {
+                let origin_url = cmd::trim_stdout(&x);
+                entry.insert(url_key, yaml::Yaml::String(origin_url));
+            }
+            Err(err) => {
+                error!("{:?}", err);
+            }
         }
     }
 
