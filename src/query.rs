@@ -20,7 +20,7 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
     // filesystem.  Look up the tree context for this entry and
     // use the matching tree.
     if tree_expr.is_default {
-        if let Ok(ctx) = tree_from_path(config, &tree_expr.expr) {
+        if let Some(ctx) = tree_from_path(config, &tree_expr.expr) {
             return vec!(ctx);
         }
     }
@@ -153,11 +153,11 @@ pub fn tree_from_name(
 pub fn tree_from_path(
     config: &model::Configuration,
     path: &str,
-) -> Result<model::TreeContext, ()> {
+) -> Option<model::TreeContext> {
 
     let canon = std::path::PathBuf::from(path).canonicalize();
     if canon.is_err() {
-        return Err(())
+        return None;
     }
 
     let pathbuf = canon.unwrap().to_path_buf();
@@ -169,7 +169,7 @@ pub fn tree_from_path(
             continue;
         }
         if pathbuf == tree_canon.unwrap() {
-            return Ok(
+            return Some(
                 model::TreeContext {
                     tree: idx as model::TreeIndex,
                     garden: None,
@@ -178,7 +178,7 @@ pub fn tree_from_path(
         }
     }
 
-    Err(())
+    None
 }
 
 /// Returns tree contexts matching the specified pattern
