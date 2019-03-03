@@ -63,34 +63,48 @@ pub fn garden_trees(
 
     let mut result = Vec::new();
 
-    for (garden_idx, garden) in config.gardens.iter().enumerate() {
+    for garden in &config.gardens {
         if !pattern.matches(garden.name.as_ref()) {
             continue;
         }
-        // Loop over the garden's groups.
-        for group in &garden.groups {
-            // Loop over configured groups to find the matching name
-            for cfg_group in &config.groups {
-                if &cfg_group.name != group {
-                    continue;
-                }
-                // Match found -- loop over each tree in the group and
-                // find its index in the configuration.
-                for tree in &cfg_group.members {
-                    if let Some(tree_ctx) = tree_by_name(
-                            config, tree, Some(garden_idx)) {
-                        result.push(tree_ctx);
-                    }
+        result.append(&mut trees_from_garden(config, &garden));
+    }
+
+    result
+}
+
+
+/// Return the tree contexts for a garden
+pub fn trees_from_garden(
+    config: &model::Configuration,
+    garden: &model::Garden,
+) -> Vec<model::TreeContext> {
+
+    let mut result = Vec::new();
+
+    // Loop over the garden's groups.
+    for group in &garden.groups {
+        // Loop over configured groups to find the matching name
+        for cfg_group in &config.groups {
+            if &cfg_group.name != group {
+                continue;
+            }
+            // Match found -- loop over each tree in the group and
+            // find its index in the configuration.
+            for tree in &cfg_group.members {
+                if let Some(tree_ctx) = tree_by_name(
+                        config, tree, Some(garden.index)) {
+                    result.push(tree_ctx);
                 }
             }
         }
+    }
 
-        // Collect indexes for each tree in this garden
-        for tree in &garden.trees {
-            if let Some(tree_ctx) = tree_by_name(
-                    config, tree, Some(garden_idx)) {
-                result.push(tree_ctx);
-            }
+    // Collect indexes for each tree in this garden
+    for tree in &garden.trees {
+        if let Some(tree_ctx) = tree_by_name(
+                config, tree, Some(garden.index)) {
+            result.push(tree_ctx);
         }
     }
 
