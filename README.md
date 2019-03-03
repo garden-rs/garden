@@ -257,10 +257,10 @@ configuration will be updated to match any changes made to the configuration.
 
 ### garden shell
 
-    garden shell <tree> [<garden>]
+    garden shell <tree-expression> [<tree>]
 
-Launch a shell inside the environment formed by the tree context.
-An optional garden can be specified to provide a garden context.
+Launch a shell inside the environment formed by the tree expression.
+An optional tree can be specified to specify which tree to chdir into.
 
 
 ## Variables

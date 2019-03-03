@@ -8,18 +8,6 @@
 
 ## Features
 
-### garden shell
-
-When entering a garden, the entire environment of all trees should be
-processed.  Revisit garden shell arguments.
-
-
-### garden init
-
-    garden init <tree-expr>
-
-Initialize missing repositories for the resolved trees.
-
 
 ### Allow "." to lookup the current directory in the tree configuration
 
@@ -27,6 +15,17 @@ Initialize missing repositories for the resolved trees.
     garden cmd . build
     garden eval '${TREE_PATH}' .
     garden exec . pwd
+
+### garden shell
+
+shlex.split() the shell expression.
+
+
+### garden init
+
+    garden init <tree-expr>
+
+Initialize missing repositories for the resolved trees.
 
 
 ### Tree symlinks

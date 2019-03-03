@@ -159,7 +159,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
 
 
 /// Return a Result<garden::model::TreeContext, String> when the tree and
-/// optional garden are present.  The Err is return as a String.
+/// optional garden are present.  Err is a String.
 
 pub fn tree_context(config: &model::Configuration,
                     tree: &str, garden: Option<String>)
