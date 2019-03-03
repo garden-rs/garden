@@ -112,7 +112,7 @@ fn multi_variable_with_tree() {
         &mut config, &mut var, &context);
     assert_eq!(values,
                ["/home/test/src/git-cola/bin",
-                "/home/test/src/git-cola/local"]);
+                "/home/test/src/git-cola/local/bin"]);
 }
 
 #[test]
@@ -132,7 +132,7 @@ fn multi_variable_with_garden() {
         &mut config, &mut var, &context);
     assert_eq!(values,
                ["/home/test/src/git-cola/bin",
-                "/home/test/apps/git-cola/current"]);
+                "/home/test/apps/git-cola/current/bin"]);
 }
 
 
@@ -149,12 +149,27 @@ fn environment() {
     assert_eq!(values[0].0, "PYTHONPATH");
     assert_eq!(values[0].1, "/home/test/src/git-cola");
 
-    assert_eq!(values[5].0, "PATH");
+    assert_eq!(values[1].0, "PATH");  // cola tree ${TREE_PATH}/bin
+    assert_eq!(values[1].1, "/home/test/src/git-cola/bin:/usr/bin:/bin");
 
-    assert!(values[5].1.starts_with(
-        "/home/test/apps/git-cola/current:/home/test/src/git-cola/bin:"));
+    assert_eq!(values[2].0, "PATH");  // cola garden PATH: ${prefix}
+    assert_eq!(values[2].1,
+               format!("{}:{}:/usr/bin:/bin",
+                       "/home/test/apps/git-cola/current/bin",
+                       "/home/test/src/git-cola/bin"));
 
-    assert!(values[5].1.ends_with(":/home/test/apps/git-cola/current"));
+    assert_eq!(values[3].0, "PYTHONPATH");  // cola ${GARDEN_ROOT}/python/qtpy
+    assert_eq!(values[3].1, "/home/test/src/python/qtpy:/home/test/src/git-cola");
+
+    assert_eq!(values[4].0, "GIT_COLA_TRACE");  // cola garden GIT_COLA_TRACE=: full
+    assert_eq!(values[4].1, "full");
+
+    assert_eq!(values[5].0, "PATH");  // cola garden PATH+: ${prefix}
+    assert_eq!(values[5].1,
+               format!("{}:{}:/usr/bin:/bin:{}",
+                       "/home/test/apps/git-cola/current/bin",
+                       "/home/test/src/git-cola/bin",
+                       "/home/test/apps/git-cola/current/bin"));
 }
 
 #[test]

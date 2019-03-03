@@ -214,11 +214,11 @@ fn trees() {
     assert_eq!(tree1.environment[1].name, "PATH");
     assert_eq!(tree1.environment[1].values.len(), 2);
     assert_eq!(tree1.environment[1].values[0].expr, "${TREE_PATH}/bin");
-    assert_eq!(tree1.environment[1].values[1].expr, "${prefix}");
+    assert_eq!(tree1.environment[1].values[1].expr, "${prefix}/bin");
 
     assert_eq!(tree1.environment[2].name, "PYTHONPATH");
     assert_eq!(tree1.environment[2].values.len(), 1);
-    assert_eq!(tree1.environment[2].values[0].expr, "${TREE_PATH}");
+    assert_eq!(tree1.environment[2].values[0].expr, "${GARDEN_ROOT}/python/qtpy");
 
     assert_eq!(tree1.commands.len(), 4);
     // From the tree
@@ -281,7 +281,7 @@ fn gardens_json() {
             },
             "environment": {
                 "GIT_COLA_TRACE=": "full",
-                "PATH+": "${prefix}"
+                "PATH+": "${prefix}/bin"
             },
             "commands": {
                 "summary": [
@@ -338,7 +338,7 @@ fn test_gardens(config: &garden::model::Configuration) {
 
     assert_eq!(config.gardens[0].environment[1].name, "PATH+");
     assert_eq!(config.gardens[0].environment[1].values.len(), 1);
-    assert_eq!(config.gardens[0].environment[1].values[0].expr, "${prefix}");
+    assert_eq!(config.gardens[0].environment[1].values[0].expr, "${prefix}/bin");
 
     // "git" garden
     assert_eq!(config.gardens[1].name, "git");

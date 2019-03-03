@@ -58,8 +58,8 @@ pub fn garden_config() -> garden::model::Configuration {
             environment:
                 PATH:
                     - ${TREE_PATH}/bin
-                    - ${prefix}
-                PYTHONPATH: ${TREE_PATH}
+                    - ${prefix}/bin
+                PYTHONPATH: ${GARDEN_ROOT}/python/qtpy
             commands:
                 test:
                     - git status --short
@@ -92,7 +92,7 @@ pub fn garden_config() -> garden::model::Configuration {
                 prefix: ~/apps/git-cola/current
             environment:
                 GIT_COLA_TRACE=: full
-                PATH+: ${prefix}
+                PATH+: ${prefix}/bin
             commands:
                 summary:
                     - git branch
