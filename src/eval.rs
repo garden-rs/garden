@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 use ::cmd;
 use ::model;
+use ::query;
 use ::syntax;
 
 
@@ -248,22 +249,32 @@ pub fn environment(
 ) -> Vec<(String, String)> {
 
     let mut result = Vec::new();
-
     let mut vars = Vec::new();
-    for var in &config.trees[context.tree].environment {
-        vars.push(var.clone());
-    }
-    if let Some(garden) = context.garden {
-        for var in &config.gardens[garden].environment {
-            vars.push(var.clone());
+
+    if let Some(idx) = context.garden {
+
+        let garden = &config.gardens[idx];
+
+        for ctx in query::trees_from_garden(config, garden) {
+            for var in &config.trees[ctx.tree].environment {
+                vars.push((ctx.clone(), var.clone()));
+            }
+        }
+
+        for var in &garden.environment {
+            vars.push((context.clone(), var.clone()));
+        }
+    } else {
+        for var in &config.trees[context.tree].environment {
+            vars.push((context.clone(), var.clone()));
         }
     }
 
     let mut var_values = Vec::new();
-    for var in vars.iter_mut() {
+    for (ctx, var) in vars.iter_mut() {
         var_values.push((
             var.name.to_string(),
-            multi_variable(config, var, context)
+            multi_variable(config, var, ctx)
         ));
     }
 

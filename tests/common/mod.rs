@@ -59,13 +59,17 @@ pub fn garden_config() -> garden::model::Configuration {
                 PATH:
                     - ${TREE_PATH}/bin
                     - ${prefix}/bin
-                PYTHONPATH: ${GARDEN_ROOT}/python/qtpy
+                PYTHONPATH: ${GARDEN_ROOT}/python/send2trash
             commands:
                 test:
                     - git status --short
                     - make tox
             remotes:
                 davvid: git@github.com:davvid/git-cola.git
+        python/qtpy:
+            url: git://github.com/spider-ide/qtpy.git
+            templates: python
+
         tmp:
             path: /tmp
             templates: local
@@ -81,7 +85,7 @@ pub fn garden_config() -> garden::model::Configuration {
             extend: annex/data
 
     groups:
-        cola: [git, qtpy, cola]
+        cola: [git, cola, python/qtpy]
         test: [a, b, c]
         reverse: [cola, git]
 

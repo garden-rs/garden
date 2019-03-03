@@ -6,11 +6,13 @@ mod common;
 fn default_expression_finds_garden() {
     let config = common::garden_config();
     let result = garden::query::resolve_trees(&config, "cola");
-    assert_eq!(result.len(), 2);
+    assert_eq!(result.len(), 3);
     assert_eq!(result[0].garden, Some(0));
     assert_eq!(result[0].tree, 0);
     assert_eq!(result[1].garden, Some(0));
     assert_eq!(result[1].tree, 1);
+    assert_eq!(result[2].garden, Some(0));
+    assert_eq!(result[2].tree, 2);
 }
 
 

@@ -140,7 +140,7 @@ fn groups() {
     let config = common::garden_config();
     assert!(config.groups.len() >= 2);
     assert_eq!(config.groups[0].name, "cola");
-    assert_eq!(config.groups[0].members, ["git", "qtpy", "cola"]);
+    assert_eq!(config.groups[0].members, ["git", "cola", "python/qtpy"]);
 
     assert_eq!(config.groups[1].name, "test");
     assert_eq!(config.groups[1].members, ["a", "b", "c"]);
@@ -150,7 +150,7 @@ fn groups() {
 #[test]
 fn trees() {
     let config = common::garden_config();
-    assert_eq!(config.trees.len(), 5);
+    assert_eq!(config.trees.len(), 6);
 
     // git
     let ref tree0 = config.trees[0];
@@ -218,7 +218,8 @@ fn trees() {
 
     assert_eq!(tree1.environment[2].name, "PYTHONPATH");
     assert_eq!(tree1.environment[2].values.len(), 1);
-    assert_eq!(tree1.environment[2].values[0].expr, "${GARDEN_ROOT}/python/qtpy");
+    assert_eq!(tree1.environment[2].values[0].expr,
+               "${GARDEN_ROOT}/python/send2trash");
 
     assert_eq!(tree1.commands.len(), 4);
     // From the tree
@@ -235,7 +236,7 @@ fn trees() {
     assert_eq!(tree1.commands[3].values[1].expr, "make tox");
 
     // annex/data
-    let ref tree3 = config.trees[3];
+    let ref tree3 = config.trees[4];
     assert_eq!(tree3.name, "annex/data");
     // gitconfig
     assert_eq!(tree3.gitconfig.len(), 1);
@@ -249,7 +250,7 @@ fn trees() {
     assert_eq!(tree3.remotes[1].url, "${GARDEN_ROOT}/annex/local");
 
     // annex/local extends annex/data
-    let ref tree4 = config.trees[4];
+    let ref tree4 = config.trees[5];
     assert_eq!(tree4.name, "annex/local");
     // gitconfig
     assert_eq!(tree4.gitconfig.len(), 1);
@@ -361,7 +362,7 @@ fn test_gardens(config: &garden::model::Configuration) {
 #[test]
 fn tree_path() {
     let config = common::garden_config();
-    assert!(config.trees.len() >= 3);
+    assert!(config.trees.len() >= 4);
 
     assert_eq!(config.trees[0].path.value.as_ref().unwrap().to_string(),
                "/home/test/src/git");
@@ -372,15 +373,15 @@ fn tree_path() {
 
     // tmp is in "/tmp"
     assert_eq!(config.trees[2].path.value.as_ref().unwrap().to_string(),
-               "/tmp");
+               "/home/test/src/python/qtpy");
 }
 
 #[test]
 fn test_template_url() {
     let config = common::garden_config();
-    assert!(config.trees.len() > 2);
+    assert!(config.trees.len() > 3);
     // The "tmp" tree uses the "local" template which defines a URL.
-    let ref tree = config.trees[2];
+    let ref tree = config.trees[3];
     assert_eq!(tree.name, "tmp");
     assert_eq!(tree.remotes.len(), 1);
     assert_eq!(tree.remotes[0].name, "origin");

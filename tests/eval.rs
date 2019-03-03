@@ -140,37 +140,54 @@ fn multi_variable_with_garden() {
 fn environment() {
     let mut config = common::garden_config();
     let context = garden::model::TreeContext {
-        tree: 1,
+        tree: 1,  // cola
         garden: Some(0),
     };
     let values = garden::eval::environment(&mut config, &context);
-    assert_eq!(values.len(), 6);
+    assert_eq!(values.len(), 7);
 
-    assert_eq!(values[0].0, "PYTHONPATH");
-    assert_eq!(values[0].1, "/home/test/src/git-cola");
+    let mut idx = 0;
+    assert_eq!(values[idx].0, "PYTHONPATH");  // ${TREE_PATH} for cola
+    assert_eq!(values[idx].1, "/home/test/src/git-cola");
 
-    assert_eq!(values[1].0, "PATH");  // cola tree ${TREE_PATH}/bin
-    assert_eq!(values[1].1, "/home/test/src/git-cola/bin:/usr/bin:/bin");
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH");  // cola tree ${TREE_PATH}/bin
+    assert_eq!(values[idx].1, "/home/test/src/git-cola/bin:/usr/bin:/bin");
 
-    assert_eq!(values[2].0, "PATH");  // cola garden PATH: ${prefix}
-    assert_eq!(values[2].1,
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH");  // cola garden ${prefix}
+    assert_eq!(values[idx].1,
                format!("{}:{}:/usr/bin:/bin",
                        "/home/test/apps/git-cola/current/bin",
                        "/home/test/src/git-cola/bin"));
 
-    assert_eq!(values[3].0, "PYTHONPATH");  // cola ${GARDEN_ROOT}/python/qtpy
-    assert_eq!(values[3].1, "/home/test/src/python/qtpy:/home/test/src/git-cola");
+    // cola tree ${GARDEN_ROOT}/python/send2trash, ${TREE_PATH}
+    idx += 1;
+    assert_eq!(values[idx].0, "PYTHONPATH");
+    assert_eq!(values[idx].1,
+               "/home/test/src/python/send2trash:/home/test/src/git-cola");
 
-    assert_eq!(values[4].0, "GIT_COLA_TRACE");  // cola garden GIT_COLA_TRACE=: full
-    assert_eq!(values[4].1, "full");
+    idx += 1;
+    assert_eq!(values[idx].0, "PYTHONPATH");  // qtpy ${prefix}
+    assert_eq!(values[idx].1,
+               "/home/test/src/python/qtpy:/home/test/src/python/send2trash:/home/test/src/git-cola");
 
-    assert_eq!(values[5].0, "PATH");  // cola garden PATH+: ${prefix}
-    assert_eq!(values[5].1,
+    idx += 1;
+    assert_eq!(values[idx].0, "GIT_COLA_TRACE");  // cola garden GIT_COLA_TRACE=: full
+    assert_eq!(values[idx].1, "full");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH");  // coal garden ${prefix}/bin
+    assert_eq!(values[idx].1,
                format!("{}:{}:/usr/bin:/bin:{}",
                        "/home/test/apps/git-cola/current/bin",
                        "/home/test/src/git-cola/bin",
                        "/home/test/apps/git-cola/current/bin"));
+
+    idx += 1;
+    assert_eq!(values.len(), idx);
 }
+
 
 #[test]
 fn command_garden_scope() {

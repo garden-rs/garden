@@ -291,7 +291,7 @@ pub type TreeIndex = usize;
 pub type GardenIndex = usize;
 
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct TreeContext {
     pub tree: TreeIndex,
     pub garden: Option<GardenIndex>,
