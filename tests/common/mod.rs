@@ -2,8 +2,10 @@ extern crate garden;
 
 
 pub fn from_string(string: &str) -> garden::model::Configuration {
-    // Use /home/test for all tests
+    // Simplify testing by using a canned environment.
     std::env::set_var("HOME", "/home/test");
+    std::env::set_var("PATH", "/usr/bin:/bin");
+    std::env::remove_var("PYTHONPATH");
 
     let mut config = garden::model::Configuration::new();
     garden::config::parse(string, false, &mut config);
