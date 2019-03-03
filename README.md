@@ -187,6 +187,10 @@ Garden understands shell wildcards, so multiple trees, gardens, or
 groups can be matched by using wildcards.  For example, `garden init '@x*'`
 initializes all trees that start with "x".
 
+When a tree expression matches an existing path on disk, garden will use that
+path to find a matching tree in its tree configuration.  The matching tree
+will be used for the command when found.
+
 
 #### Tree Expressions
 

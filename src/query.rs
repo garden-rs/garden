@@ -15,6 +15,16 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
     let tree_expr = model::TreeExpression::new(expr);
     let ref pattern = tree_expr.pattern;
 
+    // Highest precedence: the pattern is a default non-special
+    // pattern, and its value points to an existing tree on the
+    // filesystem.  Look up the tree context for this entry and
+    // use the matching tree.
+    if tree_expr.is_default {
+        if let Ok(ctx) = tree_from_path(config, &tree_expr.expr) {
+            return vec!(ctx);
+        }
+    }
+
     if tree_expr.include_gardens {
         let result = garden_trees(config, pattern);
         if result.len() > 0 {
@@ -135,6 +145,40 @@ pub fn tree_by_name(
         }
     }
     None
+}
+
+
+/// Return a tree context for the specified filesystem path.
+
+pub fn tree_from_path(
+    config: &model::Configuration,
+    path: &str,
+) -> Result<model::TreeContext, ()> {
+
+    let canon = std::path::PathBuf::from(path).canonicalize();
+    if canon.is_err() {
+        return Err(())
+    }
+
+    let pathbuf = canon.unwrap().to_path_buf();
+
+    for (idx, tree) in config.trees.iter().enumerate() {
+        let tree_path = tree.path.value.as_ref().unwrap();
+        let tree_canon = std::path::PathBuf::from(tree_path).canonicalize();
+        if tree_canon.is_err() {
+            continue;
+        }
+        if pathbuf == tree_canon.unwrap() {
+            return Ok(
+                model::TreeContext {
+                    tree: idx as model::TreeIndex,
+                    garden: None,
+                }
+            );
+        }
+    }
+
+    Err(())
 }
 
 /// Returns tree contexts matching the specified pattern

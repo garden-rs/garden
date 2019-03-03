@@ -302,6 +302,7 @@ impl_display_brief!(TreeContext);
 
 #[derive(Debug, Default)]
 pub struct TreeExpression {
+    pub expr: String,
     pub pattern: glob::Pattern,
     pub is_default: bool,
     pub is_garden: bool,
@@ -352,6 +353,7 @@ impl TreeExpression {
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
 
         return TreeExpression {
+            expr: expr.to_string(),
             is_default: is_default,
             is_garden: is_garden,
             is_group: is_group,
