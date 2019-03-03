@@ -1,5 +1,11 @@
 # Ideas
 
+
+## Fixups
+
+- Empty environment varibles should not get a ":"
+
+
 ## Features
 
 ### garden shell
