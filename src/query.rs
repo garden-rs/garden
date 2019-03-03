@@ -94,7 +94,7 @@ pub fn garden_trees(
         }
     }
 
-    return result;
+    result
 }
 
 
@@ -120,7 +120,7 @@ pub fn tree_by_name(
             });
         }
     }
-    return None;
+    None
 }
 
 /// Returns tree contexts matching the specified pattern
@@ -140,7 +140,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
         }
     }
 
-    return result;
+    result
 }
 
 
