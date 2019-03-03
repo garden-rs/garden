@@ -46,7 +46,7 @@ pub fn main(options: &mut model::CommandOptions) {
     if !tree.is_empty() {
         let mut found = false;
 
-        if let Some(ctx) = query::tree_by_name(&cfg, &tree, None) {
+        if let Some(ctx) = query::tree_from_name(&cfg, &tree, None) {
             for expr_ctx in &contexts {
                 if ctx.tree == expr_ctx.tree {
                     context.tree = expr_ctx.tree;

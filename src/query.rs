@@ -41,7 +41,7 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
             }
             // Matching group found, collect its trees
             for tree in &group.members {
-                if let Some(tree_ctx) = tree_by_name(config, tree, None) {
+                if let Some(tree_ctx) = tree_from_name(config, tree, None) {
                     result.push(tree_ctx);
                 }
             }
@@ -102,7 +102,7 @@ pub fn trees_from_garden(
             // Match found -- loop over each tree in the group and
             // find its index in the configuration.
             for tree in &cfg_group.members {
-                if let Some(tree_ctx) = tree_by_name(
+                if let Some(tree_ctx) = tree_from_name(
                         config, tree, Some(garden.index)) {
                     result.push(tree_ctx);
                 }
@@ -112,7 +112,7 @@ pub fn trees_from_garden(
 
     // Collect indexes for each tree in this garden
     for tree in &garden.trees {
-        if let Some(tree_ctx) = tree_by_name(
+        if let Some(tree_ctx) = tree_from_name(
                 config, tree, Some(garden.index)) {
             result.push(tree_ctx);
         }
@@ -128,7 +128,7 @@ pub fn trees_from_garden(
 /// - tree: Tree name `&str`
 /// - garden_idx: `Option<garden::model::GardenIndex>`
 
-pub fn tree_by_name(
+pub fn tree_from_name(
     config: &model::Configuration,
     tree: &str,
     garden_idx: Option<model::GardenIndex>,
@@ -213,7 +213,7 @@ pub fn tree_context(config: &model::Configuration,
         tree: 0,
         garden: None
     };
-    if let Some(context) = tree_by_name(&config, tree, None) {
+    if let Some(context) = tree_from_name(&config, tree, None) {
         ctx.tree = context.tree;
     } else {
         return Err(format!(
