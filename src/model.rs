@@ -138,6 +138,7 @@ pub struct Garden {
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
     pub groups: Vec<String>,
+    pub index: GardenIndex,
     pub trees: Vec<String>,
     pub variables: Vec<NamedVariable>,
 }
@@ -190,6 +191,9 @@ impl Configuration {
         // Resolve tree paths
         self.update_tree_paths();
 
+        // Assign garden.index to each garden
+        self.update_indexes();
+
         // Reset variables
         self.reset();
     }
@@ -224,6 +228,12 @@ impl Configuration {
                     tree.variables[1].value = Some(tree_path.to_string());
                 }
             }
+        }
+    }
+
+    fn update_indexes(&mut self) {
+        for (idx, garden) in self.gardens.iter_mut().enumerate() {
+            garden.index = idx as GardenIndex;
         }
     }
 
