@@ -28,6 +28,12 @@ shlex.split() the shell expression.
 Initialize missing repositories for the resolved trees.
 
 
+### Add group to TreeContext
+
+Add an Option(GroupIndex) to TreeContext so that environment()
+expansion can be extended to work on groups as well as gardens.
+
+
 ### Tree symlinks
 
 Support "symlink" trees whose purpose is to define the existence
