@@ -87,9 +87,8 @@ pub fn exec_in_context(
             eprintln!("# {}", tree.name);
         }
     }
-    let mut exec = subprocess::Exec::cmd(&command[0])
-        .args(&command[1..])
-        .cwd(&path);
+    let mut exec =
+        subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(&path);
 
     // Update the command environment
     for (name, value) in &env {
