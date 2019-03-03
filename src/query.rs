@@ -134,6 +134,7 @@ pub fn tree_from_name(
     garden_idx: Option<model::GardenIndex>,
 ) -> Option<model::TreeContext> {
 
+
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
         if *tree == cfg_tree.name {
@@ -144,6 +145,15 @@ pub fn tree_from_name(
             });
         }
     }
+
+    // Try to find the specified name on the filesystem if no tree was found
+    // that matched the specified name.  Matching trees are found by matching
+    // tree paths against the specified name.
+
+    if let Some(ctx) = tree_from_path(config, tree) {
+        return Some(ctx);
+    }
+
     None
 }
 
