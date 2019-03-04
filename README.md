@@ -165,6 +165,12 @@ with or without an extension.  Garden will add the extension automatically.
 Enable verbose debugging output.
 
 
+    -s | --set  $name=$value
+
+Override a configured variable by passing a `$name=$value` expression to
+the `--set` option.  The variable named `$name` will be updated with the
+expression `$value`.  This option can be specified multiple times.
+
 #### Gardens, Groups and Trees
 
 Garden commands take command-line arguments that specify a subset of

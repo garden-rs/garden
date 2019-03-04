@@ -408,7 +408,7 @@ impl std::str::FromStr for Command {
 }
 
 
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct CommandOptions {
     pub args: Vec<String>,
     pub debug: Vec<String>,
@@ -417,6 +417,7 @@ pub struct CommandOptions {
     pub keep_going: bool,
     pub quiet: bool,
     pub subcommand: Command,
+    pub variables: Vec<String>,
     pub verbose: bool,
 }
 
@@ -429,5 +430,23 @@ impl CommandOptions {
 
     pub fn is_debug(&self, name: &str) -> bool {
         return self.debug.contains(&name.to_string());
+    }
+}
+
+
+#[derive(Clone, Debug, Default)]
+pub struct ApplicationContext {
+    pub config: Configuration,
+    pub options: CommandOptions,
+}
+
+impl_display!(ApplicationContext);
+
+impl ApplicationContext {
+    pub fn new(mut config: Configuration, options: CommandOptions) -> Self {
+        ApplicationContext {
+            config: config,
+            options: options,
+        }
     }
 }

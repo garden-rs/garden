@@ -156,7 +156,7 @@ pub fn from_options(options: &model::CommandOptions) -> model::Configuration {
         eprintln!("config: {:?}", config.path.as_ref().unwrap());
     }
 
-    for k_eq_v in &options.variable_overrides {
+    for k_eq_v in &options.variables {
         let name: String;
         let expr: String;
         let values: Vec<&str> = k_eq_v.splitn(2, "=").collect();

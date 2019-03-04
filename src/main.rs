@@ -20,6 +20,10 @@ fn main() {
             .add_option(&["-d", "--debug"], argparse::Collect,
                         "enable debug categories");
 
+        ap.refer(&mut options.variables)
+            .add_option(&["-s", "--set"], argparse::Collect,
+                        "override variables using name=value tokens");
+
         ap.refer(&mut options.verbose)
             .add_option(&["-v", "--verbose"],
                         argparse::StoreTrue, "be verbose");
@@ -38,14 +42,16 @@ fn main() {
     }
     options.update();
 
-    let subcommand = options.subcommand.clone();
-    match subcommand {
+    let config = config::from_options(&options);
+    let mut app = model::ApplicationContext::new(config, options.clone());
+
+    match app.options.subcommand.clone() {
         model::Command::Add => cmds::add::main(&mut options),
         model::Command::Help => cmds::help::main(&mut options),
         model::Command::Cmd => cmds::cmd::main(&mut options),
         model::Command::Custom(cmd) => cmds::cmd::custom(&mut options, &cmd),
         model::Command::Exec => cmds::exec::main(&mut options),
-        model::Command::Eval => cmds::eval::main(&mut options),
+        model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Init => cmds::help::main(&mut options),
         model::Command::List => cmds::list::main(&mut options),
         model::Command::Shell => cmds::shell::main(&mut options),

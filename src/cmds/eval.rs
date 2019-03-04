@@ -6,8 +6,9 @@ use ::model;
 use ::query;
 
 
-pub fn main(options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden eval".to_string());
+pub fn main(app: &mut model::ApplicationContext) {
+    app.options.args.insert(0, "garden eval".to_string());
+    let options = &app.options;
 
     let mut expr = String::new();
     let mut tree = String::new();
@@ -32,29 +33,15 @@ pub fn main(options: &mut model::CommandOptions) {
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
-            std::process::exit(err);
+            error!("unable to parse arguments: {}", err);
         }
     }
 
-    let verbose = options.is_debug("config::new");
-    let mut cfg = config::new(&options.filename, verbose);
-    if options.is_debug("config") {
-        debug!("{}", cfg);
-    }
-
-    if tree.is_empty() {
-        println!("{}", eval::value(&mut cfg, &expr));
-        return;
-    }
-
-    if !garden.is_empty() {
-        garden_opt = Some(garden);
-    }
-
     // Evaluate and print the garden expression.
-    match query::tree_context(&cfg, &tree, garden_opt) {
+    match query::tree_context(&app.config, &tree, garden_opt) {
         Ok(ctx) => {
-            let value = eval::tree_value(&mut cfg, &expr, ctx.tree, ctx.garden);
+            let value = eval::tree_value(&mut app.config, &expr,
+                                         ctx.tree, ctx.garden);
             println!("{}", value);
         }
         Err(err) => {
