@@ -4,7 +4,6 @@
 /// - `args`: A `std::fmt::Arguments`
 pub fn error(args: std::fmt::Arguments) {
     eprintln!("error: {}", args);
-    std::process::exit(1);
 }
 
 /// Print a message to stderr with a "debug: " prefix
@@ -34,9 +33,10 @@ macro_rules! debug {
 /// - `args*`: Format string arguments.
 #[macro_export]
 macro_rules! error {
-    ( $fmt:expr $(, $args:expr )* ) => (
-        $crate::macros::error(format_args!($fmt, $( $args ),*))
-    );
+    ( $fmt:expr $(, $args:expr )* ) => {
+        $crate::macros::error(format_args!($fmt, $( $args ),*));
+        std::process::exit(1);
+    }
 }
 
 /// Unwrap an Option<T> and return the result; terminate if unwrappable.
@@ -52,7 +52,6 @@ macro_rules! unwrap_or_err {
             Ok(value) => value,
             Err(err) => {
                 error!($( $message ),*, err);
-                return;
             }
         }
     }
@@ -72,7 +71,6 @@ macro_rules! unwrap_or_err_return {
             Ok(value) => value,
             Err(err) => {
                 error!($( $message ),*, err);
-                return $retval;
             }
         }
     }

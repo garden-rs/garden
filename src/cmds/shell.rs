@@ -71,13 +71,11 @@ pub fn main(options: &mut model::CommandOptions) {
     let shell = eval::tree_value(&mut cfg, &shell_expr,
                                  context.tree, context.garden);
 
-    let mut exit_status: i32 = 1;
     if let Some(value) = shlex::split(&shell) {
-        exit_status = cmd::exec_in_context(
+        let exit_status = cmd::exec_in_context(
             &mut cfg, &context, options.quiet, options.verbose, &value);
+        std::process::exit(exit_status);
     } else {
         error!("invalid configuration: unable to shlex::split '{}'", shell);
     }
-
-    std::process::exit(exit_status);
 }

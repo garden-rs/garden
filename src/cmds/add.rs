@@ -54,7 +54,6 @@ pub fn main(options: &mut model::CommandOptions) {
         }
         Err(err) => {
             error!("{}", err);
-            return;
         }
     };
 
@@ -71,7 +70,6 @@ pub fn main(options: &mut model::CommandOptions) {
             },
             _ => {
                 error!("invalid config: not a hash");
-                return;
             },
         };
 
@@ -83,7 +81,6 @@ pub fn main(options: &mut model::CommandOptions) {
             },
             _ => {
                 error!("invalid trees: not a hash");
-                return;
             }
         };
 
