@@ -2,6 +2,7 @@ extern crate argparse;
 extern crate garden;
 
 use garden::cmds;
+use garden::config;
 use garden::model;
 
 
@@ -15,30 +16,26 @@ fn main() {
             .add_option(&["-c", "--config"], argparse::Store,
                         "specify the config file to use");
 
-        ap.refer(&mut options.debug_str)
-            .add_option(&["-d", "--debug"], argparse::Store,
-                        "debug categories to enable (comma-separated)");
+        ap.refer(&mut options.debug)
+            .add_option(&["-d", "--debug"], argparse::Collect,
+                        "enable debug categories");
 
         ap.refer(&mut options.verbose)
             .add_option(&["-v", "--verbose"],
                         argparse::StoreTrue, "be verbose");
 
         ap.refer(&mut options.quiet)
-            .add_option(&["-q", "--quiet"],
-                        argparse::StoreTrue, "be quiet");
+            .add_option(&["-q", "--quiet"], argparse::StoreTrue, "be quiet");
 
         ap.refer(&mut options.subcommand).required()
-            .add_argument("command", argparse::Store,
-                "command to run {cmd, exec, help, ls, init, shell, status}");
+            .add_argument("command", argparse::Store, "command to run");
 
         ap.refer(&mut options.args)
-            .add_argument("arguments", argparse::List,
-                "sub-command arguments");
+            .add_argument("arguments", argparse::List, "command arguments");
 
         ap.stop_on_first_argument(true);
         ap.parse_args_or_exit();
     }
-
     options.update();
 
     let subcommand = options.subcommand.clone();

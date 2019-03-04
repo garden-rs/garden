@@ -411,8 +411,7 @@ impl std::str::FromStr for Command {
 #[derive(Default)]
 pub struct CommandOptions {
     pub args: Vec<String>,
-    pub debug: std::collections::HashSet<String>,
-    pub debug_str: String,
+    pub debug: Vec<String>,
     pub filename: Option<std::path::PathBuf>,
     pub filename_str: String,
     pub keep_going: bool,
@@ -426,13 +425,9 @@ impl CommandOptions {
         if self.filename_str.len() > 0 {
             self.filename = Some(std::path::PathBuf::from(&self.filename_str));
         }
-
-        for debug_name in self.debug_str.split(",") {
-            self.debug.insert(debug_name.to_string());
-        }
     }
 
     pub fn is_debug(&self, name: &str) -> bool {
-        return self.debug.contains(name);
+        return self.debug.contains(&name.to_string());
     }
 }
