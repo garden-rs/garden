@@ -141,6 +141,46 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
 }
 
 
+/// Create a model::Configuration instance from model::CommandOptions
+
+pub fn from_options(options: &model::CommandOptions) -> model::Configuration {
+    let config_verbose = options.is_debug("config::new");
+    let mut config = new(&options.filename, config_verbose);
+    if config.path.is_none() {
+        error!("unable to find a configuration file -- use --config <path>");
+    }
+    if options.is_debug("config") {
+        debug!("{}", config);
+    }
+    if options.verbose {
+        eprintln!("config: {:?}", config.path.as_ref().unwrap());
+    }
+
+    for k_eq_v in &options.variable_overrides {
+        let name: String;
+        let expr: String;
+        let values: Vec<&str> = k_eq_v.splitn(2, "=").collect();
+        if values.len() == 1 {
+            name = values[0].into();
+            expr = "".to_string();
+        } else if values.len() == 2 {
+            name = values[0].into();
+            expr = values[1].into();
+        } else {
+            error!("unable to split '{}'", k_eq_v);
+        }
+        config.variables.insert(
+            0, model::NamedVariable {
+                name: name,
+                expr: expr,
+                value: None
+            }
+        );
+    }
+
+    config
+}
+
 /// Parse and apply configuration from a YAML/JSON string
 pub fn parse(config_string: &str, verbose: bool,
              cfg: &mut model::Configuration) {
