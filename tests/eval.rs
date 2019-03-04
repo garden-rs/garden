@@ -188,6 +188,25 @@ fn environment() {
     assert_eq!(values.len(), idx);
 }
 
+#[test]
+fn environment_empty_value() {
+    let mut config = common::garden_config();
+    let context = garden::query::tree_from_name(&config, "tmp", None).unwrap();
+    let values = garden::eval::environment(&mut config, &context);
+    assert_eq!(values.len(), 2);
+
+    let mut idx = 0;
+    assert_eq!(values[idx].0, "EMPTY");  // prepend "a", must not have a ":"
+    assert_eq!(values[idx].1, "a");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "EMPTY");  // prepend "b", must have ":"
+    assert_eq!(values[idx].1, "b:a");
+
+    idx += 1;
+    assert_eq!(values.len(), idx);
+}
+
 
 #[test]
 fn command_garden_scope() {

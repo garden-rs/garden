@@ -316,8 +316,13 @@ pub fn environment(
                 // Not found, try to get the current value from the environment
                 let mut has_env = false;
                 if let Ok(env_value) = std::env::var(&name) {
-                    current = env_value.to_string();
-                    has_env = true;
+                    let env_str = env_value.to_string();
+                    // Empty values are treated as not existing to prevent ":foo" or
+                    // "foo:" in the final result.
+                    if !env_str.is_empty() {
+                        current = env_str;
+                        has_env = true;
+                    }
                 }
 
                 if has_env && !is_assign {

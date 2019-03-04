@@ -5,6 +5,7 @@ pub fn from_string(string: &str) -> garden::model::Configuration {
     // Simplify testing by using a canned environment.
     std::env::set_var("HOME", "/home/test");
     std::env::set_var("PATH", "/usr/bin:/bin");
+    std::env::set_var("EMPTY", "");
     std::env::remove_var("PYTHONPATH");
 
     let mut config = garden::model::Configuration::new();
@@ -71,6 +72,8 @@ pub fn garden_config() -> garden::model::Configuration {
             templates: python
 
         tmp:
+            environment:
+                EMPTY: [a, b]
             path: /tmp
             templates: local
 
