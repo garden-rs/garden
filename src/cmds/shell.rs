@@ -1,3 +1,5 @@
+extern crate shlex;
+
 use ::cmd;
 use ::eval;
 use ::config;
@@ -68,10 +70,14 @@ pub fn main(options: &mut model::CommandOptions) {
     let shell_expr = cfg.shell.to_string();
     let shell = eval::tree_value(&mut cfg, &shell_expr,
                                  context.tree, context.garden);
-    // TODO shlex.split()
-    let commands = vec!(shell);
-    let exit_status = cmd::exec_in_context(
-        &mut cfg, &context, options.quiet, options.verbose, &commands);
+
+    let mut exit_status: i32 = 1;
+    if let Some(value) = shlex::split(&shell) {
+        exit_status = cmd::exec_in_context(
+            &mut cfg, &context, options.quiet, options.verbose, &value);
+    } else {
+        error!("invalid configuration: unable to shlex::split '{}'", shell);
+    }
 
     std::process::exit(exit_status);
 }

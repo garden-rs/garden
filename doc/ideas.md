@@ -4,11 +4,6 @@
 ## Features
 
 
-### garden shell
-
-shlex.split() the shell expression.
-
-
 ### garden init
 
     garden init <tree-expr>
