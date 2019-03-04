@@ -40,6 +40,17 @@ pub fn main(app: &mut model::ApplicationContext) {
 
     let mut context = contexts[0].clone();
 
+    // If a tree's name in the returned contexts exactly matches the tree
+    // expression that was used to find it then chdir into that tree.
+    // This makes it convenient to have gardens and trees with the same name.
+    for ctx in &contexts {
+        if config.trees[ctx.tree].name == expr {
+            context.tree = ctx.tree;
+            context.garden = ctx.garden;
+            break;
+        }
+    }
+
     if !tree.is_empty() {
         let mut found = false;
 
@@ -68,7 +79,7 @@ pub fn main(app: &mut model::ApplicationContext) {
 
     if let Some(value) = shlex::split(&shell) {
         let exit_status = cmd::exec_in_context(
-            config, &context, options.quiet, options.verbose, &value);
+            config, &context, /*quiet*/ true, /*verbose*/ false, &value);
         std::process::exit(exit_status);
     } else {
         error!("invalid configuration: unable to shlex::split '{}'", shell);
