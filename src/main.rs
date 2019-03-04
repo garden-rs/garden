@@ -42,18 +42,23 @@ fn main() {
     }
     options.update();
 
+    // Help should run without a config file
+    if let model::Command::Help = options.subcommand {
+        cmds::help::main(&mut options);
+    }
+
     let config = config::from_options(&options);
-    let mut app = model::ApplicationContext::new(config, options.clone());
+    let mut app = model::ApplicationContext::new(config, options);
 
     match app.options.subcommand.clone() {
-        model::Command::Add => cmds::add::main(&mut options),
-        model::Command::Help => cmds::help::main(&mut options),
-        model::Command::Cmd => cmds::cmd::main(&mut options),
-        model::Command::Custom(cmd) => cmds::cmd::custom(&mut options, &cmd),
-        model::Command::Exec => cmds::exec::main(&mut options),
+        model::Command::Add => cmds::add::main(&mut app),
+        model::Command::Cmd => cmds::cmd::main(&mut app),
+        model::Command::Custom(cmd) => cmds::cmd::custom(&mut app, &cmd),
+        model::Command::Exec => cmds::exec::main(&mut app),
         model::Command::Eval => cmds::eval::main(&mut app),
-        model::Command::Init => cmds::help::main(&mut options),
-        model::Command::List => cmds::list::main(&mut options),
-        model::Command::Shell => cmds::shell::main(&mut options),
+        model::Command::Help => (),  // Handled above
+        model::Command::Init => (),  // TODO
+        model::Command::List => cmds::list::main(&mut app),
+        model::Command::Shell => cmds::shell::main(&mut app),
     }
 }

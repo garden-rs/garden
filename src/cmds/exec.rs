@@ -8,8 +8,8 @@ use ::query;
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden exec".to_string());
+pub fn main(app: &mut model::ApplicationContext) {
+    let options = &mut app.options;
 
     let mut expr = String::new();
     let mut command: Vec<String> = Vec::new();
@@ -17,6 +17,7 @@ pub fn main(options: &mut model::CommandOptions) {
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
+        ap.stop_on_first_argument(true);
         ap.set_description("garden exec - run commands inside gardens");
 
         ap.refer(&mut expr).required()
@@ -27,7 +28,7 @@ pub fn main(options: &mut model::CommandOptions) {
             .add_argument("command", argparse::List,
                           "command to run over resolved trees");
 
-        ap.stop_on_first_argument(true);
+        options.args.insert(0, "garden exec".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {

@@ -1,14 +1,13 @@
 extern crate glob;
 
 use ::eval;
-use ::config;
 use ::model;
 use ::query;
 
 
 pub fn main(app: &mut model::ApplicationContext) {
-    app.options.args.insert(0, "garden eval".to_string());
-    let options = &app.options;
+    let config = &mut app.config;
+    let options = &mut app.options;
 
     let mut expr = String::new();
     let mut tree = String::new();
@@ -30,17 +29,27 @@ pub fn main(app: &mut model::ApplicationContext) {
         ap.refer(&mut garden)
             .add_argument("garden", argparse::Store, "garden to evaluate");
 
+        options.args.insert(0, "garden eval".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
-            error!("unable to parse arguments: {}", err);
+            std::process::exit(err);
         }
     }
 
+    if tree.is_empty() {
+        println!("{}", eval::value(config, &expr));
+        return;
+    }
+
+    if !garden.is_empty() {
+        garden_opt = Some(garden);
+    }
+
     // Evaluate and print the garden expression.
-    match query::tree_context(&app.config, &tree, garden_opt) {
+    match query::tree_context(config, &tree, garden_opt) {
         Ok(ctx) => {
-            let value = eval::tree_value(&mut app.config, &expr,
+            let value = eval::tree_value(config, &expr,
                                          ctx.tree, ctx.garden);
             println!("{}", value);
         }

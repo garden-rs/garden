@@ -443,7 +443,7 @@ pub struct ApplicationContext {
 impl_display!(ApplicationContext);
 
 impl ApplicationContext {
-    pub fn new(mut config: Configuration, options: CommandOptions) -> Self {
+    pub fn new(config: Configuration, options: CommandOptions) -> Self {
         ApplicationContext {
             config: config,
             options: options,

@@ -1,32 +1,31 @@
-use ::config;
 use ::model;
 
 
-pub fn main(options: &mut model::CommandOptions) {
-    let cfg = config::new(&options.filename, options.verbose);
+pub fn main(app: &mut model::ApplicationContext) {
+    let config = &app.config;
 
-    if !cfg.gardens.is_empty() {
+    if !config.gardens.is_empty() {
         println!("gardens:");
         print!("    ");
-        for garden in &cfg.gardens {
+        for garden in &config.gardens {
             print!("{} ", garden.name);
         }
         println!("");
     }
 
-    if !cfg.groups.is_empty() {
+    if !config.groups.is_empty() {
         println!("groups:");
         print!("    ");
-        for group in &cfg.groups {
+        for group in &config.groups {
             print!("{} ", group.name);
         }
         println!("");
     }
 
-    if !cfg.trees.is_empty() {
+    if !config.trees.is_empty() {
         println!("trees:");
         print!("    ");
-        for tree in &cfg.trees{
+        for tree in &config.trees{
             print!("{} ", tree.name);
         }
         println!("");

@@ -8,13 +8,14 @@ use self::yaml_rust::YamlLoader;
 use self::yaml_rust::yaml;
 
 use ::cmd;
-use ::config;
 use ::model;
 
 
-pub fn main(options: &mut model::CommandOptions) {
+pub fn main(app: &mut model::ApplicationContext) {
     // Parse arguments
-    options.args.insert(0, "garden add".to_string());
+    let options = &mut app.options;
+    let config = &mut app.config;
+
     let mut output = String::new();
     let mut paths: Vec<String> = Vec::new();
     {
@@ -28,6 +29,7 @@ pub fn main(options: &mut model::CommandOptions) {
         ap.refer(&mut paths).required()
             .add_argument("paths", argparse::List, "trees to add");
 
+        options.args.insert(0, "garden add".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
@@ -35,20 +37,8 @@ pub fn main(options: &mut model::CommandOptions) {
         }
     }
 
-    let verbose = options.is_debug("config::new");
-    let cfg = config::new(&options.filename, verbose);
-    if cfg.path.is_none() {
-        error!("unable to find a configuration file -- use --config <path>");
-    }
-    if options.is_debug("config") {
-        debug!("{}", cfg);
-    }
-    if options.verbose {
-        eprintln!("config: {:?}", cfg.path.as_ref().unwrap());
-    }
-
     // Read existing configuration
-    let mut doc = match yaml_from_path(cfg.path.as_ref().unwrap()) {
+    let mut doc = match yaml_from_path(config.path.as_ref().unwrap()) {
         Ok(doc) => {
             doc
         }
@@ -59,7 +49,7 @@ pub fn main(options: &mut model::CommandOptions) {
 
     // Output filename defaults to the input filename.
     if output.is_empty() {
-        output = cfg.path.as_ref().unwrap().to_string_lossy().to_string();
+        output = config.path.as_ref().unwrap().to_string_lossy().to_string();
     }
 
     {
@@ -85,7 +75,7 @@ pub fn main(options: &mut model::CommandOptions) {
         };
 
         for path in &paths {
-            if let Err(msg) = add_path(&cfg, options.verbose, path, trees) {
+            if let Err(msg) = add_path(config, options.verbose, path, trees) {
                 error!("{}", msg);
             }
         }

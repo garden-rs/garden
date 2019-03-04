@@ -2,13 +2,13 @@ extern crate shlex;
 
 use ::cmd;
 use ::eval;
-use ::config;
 use ::model;
 use ::query;
 
 
-pub fn main(options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden shell".to_string());
+pub fn main(app: &mut model::ApplicationContext) {
+    let config = &mut app.config;
+    let options = &mut app.options;
 
     let mut expr = String::new();
     let mut tree = String::new();
@@ -25,6 +25,7 @@ pub fn main(options: &mut model::CommandOptions) {
         ap.refer(&mut tree)
             .add_argument("tree", argparse::Store, "tree to chdir into");
 
+        options.args.insert(0, "garden shell".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
@@ -32,13 +33,7 @@ pub fn main(options: &mut model::CommandOptions) {
         }
     }
 
-    let verbose = options.is_debug("config::new");
-    let mut cfg = config::new(&options.filename, verbose);
-    if options.is_debug("config") {
-        debug!("{}", cfg);
-    }
-
-    let contexts = query::resolve_trees(&cfg, &expr);
+    let contexts = query::resolve_trees(config, &expr);
     if contexts.is_empty() {
         error!("tree expression matched zero trees: '{}'", expr);
     }
@@ -48,7 +43,7 @@ pub fn main(options: &mut model::CommandOptions) {
     if !tree.is_empty() {
         let mut found = false;
 
-        if let Some(ctx) = query::tree_from_name(&cfg, &tree, None) {
+        if let Some(ctx) = query::tree_from_name(config, &tree, None) {
             for expr_ctx in &contexts {
                 if ctx.tree == expr_ctx.tree {
                     context.tree = expr_ctx.tree;
@@ -67,13 +62,13 @@ pub fn main(options: &mut model::CommandOptions) {
     }
 
     // Evaluate garden.shell
-    let shell_expr = cfg.shell.to_string();
-    let shell = eval::tree_value(&mut cfg, &shell_expr,
+    let shell_expr = config.shell.to_string();
+    let shell = eval::tree_value(config, &shell_expr,
                                  context.tree, context.garden);
 
     if let Some(value) = shlex::split(&shell) {
         let exit_status = cmd::exec_in_context(
-            &mut cfg, &context, options.quiet, options.verbose, &value);
+            config, &context, options.quiet, options.verbose, &value);
         std::process::exit(exit_status);
     } else {
         error!("invalid configuration: unable to shlex::split '{}'", shell);

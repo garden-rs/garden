@@ -1,15 +1,15 @@
 extern crate subprocess;
 
 use ::cmd;
-use ::config;
 use ::eval;
 use ::model;
 use ::query;
 
 
 /// garden cmd <tree-expr> <command-name>*
-pub fn main(options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden cmd".to_string());
+pub fn main(app: &mut model::ApplicationContext) {
+    let config = &mut app.config;
+    let options = &mut app.options;
 
     let mut expr = String::new();
     let mut commands: Vec<String> = Vec::new();
@@ -17,6 +17,8 @@ pub fn main(options: &mut model::CommandOptions) {
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
+        ap.stop_on_first_argument(true);
+
         ap.set_description("garden cmd - run preset commands over gardens");
 
         ap.refer(&mut options.keep_going)
@@ -31,7 +33,7 @@ pub fn main(options: &mut model::CommandOptions) {
             .add_argument("commands", argparse::List,
                           "commands to run over resolved trees");
 
-        ap.stop_on_first_argument(true);
+        options.args.insert(0, "garden cmd".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
@@ -39,11 +41,6 @@ pub fn main(options: &mut model::CommandOptions) {
         }
     }
 
-    let verbose = options.is_debug("config::new");
-    let mut cfg = config::new(&options.filename, verbose);
-    if options.is_debug("config") {
-        debug!("{}", cfg);
-    }
     if options.is_debug("cmd") {
         debug!("subcommand: cmd");
         debug!("expr: {}", expr);
@@ -54,20 +51,22 @@ pub fn main(options: &mut model::CommandOptions) {
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
-    let exit_status = cmd(&mut cfg, quiet, verbose, keep_going, &expr, &commands);
+    let exit_status = cmd(config, quiet, verbose, keep_going, &expr, &commands);
     std::process::exit(exit_status);
 }
 
 
 /// garden <command-name> <tree-expr>*
-pub fn custom(options: &mut model::CommandOptions, command: &str) {
-    options.args.insert(0, "garden cmd".to_string());
+pub fn custom(app: &mut model::ApplicationContext, command: &str) {
+    let config = &mut app.config;
+    let options = &mut app.options;
 
     let mut exprs: Vec<String> = Vec::new();
 
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
+        ap.stop_on_first_argument(true);
         ap.set_description("garden cmd - run preset commands over gardens");
 
         ap.refer(&mut options.keep_going)
@@ -79,7 +78,7 @@ pub fn custom(options: &mut model::CommandOptions, command: &str) {
                           "gardens/trees to exec (tree expressions)");
 
 
-        ap.stop_on_first_argument(true);
+        options.args.insert(0, "garden cmd".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
@@ -87,21 +86,15 @@ pub fn custom(options: &mut model::CommandOptions, command: &str) {
         }
     }
 
-    let verbose = options.is_debug("config::new");
-    let mut cfg = config::new(&options.filename, verbose);
-    if options.is_debug("config") {
-        debug!("{}", cfg);
-    }
     if options.is_debug("cmd") {
         debug!("command: {}", command);
         debug!("exprs: {:?}", exprs);
     }
-
     let quiet = options.quiet;
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
-    let exit_status = cmds(&mut cfg, quiet, verbose, keep_going, command, &exprs);
+    let exit_status = cmds(config, quiet, verbose, keep_going, command, &exprs);
     std::process::exit(exit_status);
 }
 
