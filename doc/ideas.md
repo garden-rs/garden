@@ -44,12 +44,6 @@ Example:
             trees: beta/*
 
 
-###  Allow ${variables} in environment variables names
-
-    environment:
-        RP_${TREE_NAME}=: ${prefix}
-
-
 ### garden inspect
 
     garden inspect <tree-expr>

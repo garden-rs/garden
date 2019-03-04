@@ -74,6 +74,8 @@ pub fn garden_config() -> garden::model::Configuration {
         tmp:
             environment:
                 EMPTY: [a, b]
+                ${TREE_NAME}_VALUE=: ${TREE_PATH}
+
             path: /tmp
             templates: local
 

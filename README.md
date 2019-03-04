@@ -320,12 +320,16 @@ of behavior from the garden scope.
 Environment variables are resolved after garden variables.  This allows
 the use of garden variables when defining environment variable values.
 
+Environment variable names can use garden `${variable}` syntax when defining
+their name, for example `${TREE_NAME}_LOCATION=: ${TREE_PATH}` exports a
+variable called `xyz_LOCATION` with the location of the `xyz` tree when used
+inside the `xyz` tree's environment definition.
+
 
 ### OS Environment Variables
 
-OS-level environment variables that are present in garden's runtime environment
-are pre-populated into garden's variables.   This allows for `${variable}`
-expressions to reference values from garden's runtime environment.
-
-To disable loading of environment variables, configure the
-`garden.environment_variables` value to `false`.
+OS-level environment variables that are present in garden's runtime
+environment can be referenced using garden `${variable}` expression syntax.
+Garden variables have higher precedence than environment variables when
+resolving `${variable}` references -- the environment is checked only when
+no garden variables exist by that name.

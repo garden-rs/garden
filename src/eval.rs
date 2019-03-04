@@ -273,7 +273,7 @@ pub fn environment(
     let mut var_values = Vec::new();
     for (ctx, var) in vars.iter_mut() {
         var_values.push((
-            var.name.to_string(),
+            tree_value(config, &var.name, ctx.tree, ctx.garden),
             multi_variable(config, var, ctx)
         ));
     }
