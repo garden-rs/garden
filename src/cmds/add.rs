@@ -214,10 +214,8 @@ fn add_path(
     // Gather remote names
     let mut remote_names: Vec<String> = Vec::new();
     {
-        let command = ["git", "remote"];
-        let exec = subprocess::Exec::cmd(&command[0])
-            .args(&command[1..]).cwd(&path);
-
+        let command: Vec<String> = ["git".into(), "remote".into()].to_vec();
+        let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(x) = cmd::capture_stdout(exec) {
             let output = cmd::trim_stdout(&x);
 
@@ -241,8 +239,7 @@ fn add_path(
             command.push("config".into());
             command.push("remote.".to_string() + remote + ".url");
 
-            let exec = subprocess::Exec::cmd(&command[0])
-                .args(&command[1..]).cwd(&path);
+            let exec = cmd::exec_in_dir(&command, &path);
 
             if let Ok(x) = cmd::capture_stdout(exec) {
                 let output = cmd::trim_stdout(&x);
@@ -285,10 +282,12 @@ fn add_path(
             eprintln!("{}: no url", tree_name);
         }
 
-        let command = ["git", "config", "remote.origin.url"];
-        let exec = subprocess::Exec::cmd(&command[0])
-            .args(&command[1..]).cwd(&path);
-
+        let command: Vec<String> = [
+            "git".into(),
+            "config".into(),
+            "remote.origin.url".into(),
+        ].to_vec();
+        let exec = cmd::exec_in_dir(&command, &path);
         match cmd::capture_stdout(exec) {
             Ok(x) => {
                 let origin_url = cmd::trim_stdout(&x);
