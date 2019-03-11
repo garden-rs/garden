@@ -1,3 +1,4 @@
+extern crate dirs;
 extern crate glob;
 
 use ::eval;
@@ -170,10 +171,12 @@ impl Configuration {
 
     /// Create a default Configuration
     pub fn new() -> Self {
+        let curdir = std::env::current_dir()
+            .unwrap().to_string_lossy().to_string();
         return Configuration {
             shell: "zsh".to_string(),
             root: Variable {
-                expr: "~/src".to_string(),
+                expr: curdir,
                 value: None,
             },
             ..std::default::Default::default()
