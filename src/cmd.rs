@@ -49,6 +49,12 @@ pub fn capture_stdout(exec: subprocess::Exec)
     exec.stdout(subprocess::Redirection::Pipe).capture()
 }
 
+/// Return a `subprocess::Exec` that runs a command in the specified directory.
+pub fn exec_in_dir<P>(command: &Vec<String>, path: P) -> subprocess::Exec
+    where P: AsRef<std::path::Path> {
+    return subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(path);
+}
+
 /// Run a command in the specified tree context.
 /// Parameters:
 /// - config: Mutable reference to a Configuration.
@@ -87,10 +93,9 @@ pub fn exec_in_context(
             eprintln!("# {}", tree.name);
         }
     }
-    let mut exec =
-        subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(&path);
 
-    // Update the command environment
+    let mut exec = exec_in_dir(command, &path);
+    //  Update the command environment
     for (name, value) in &env {
         exec = exec.env(name, value);
     }
