@@ -63,13 +63,14 @@ pub fn exec_in_dir<P>(command: &Vec<String>, path: P) -> subprocess::Exec
 /// - verbose: increase verbosity of messages.
 /// - command: String vector of the command to run.
 
-pub fn exec_in_context(
+pub fn exec_in_context<S>(
     config: &mut model::Configuration,
     context: &model::TreeContext,
     quiet: bool,
     verbose: bool,
-    command: &Vec<String>,
-) -> i32 {
+    command: &[S],
+) -> i32
+where S: AsRef<std::ffi::OsStr> {
     // Evaluate the tree environment and run the command.
     let env = eval::environment(config, context);
     // Exec each command in the tree's context
