@@ -10,17 +10,15 @@ Add an Option(GroupIndex) to TreeContext so that environment()
 expansion can be extended to work on groups as well as gardens.
 
 
-### Tree symlinks
+### Symlinks
 
-Support "symlink" trees whose purpose is to define the existence
-of a symlink on the filesystem only.
-
-Example:
+Symlink trees create a symlink on the filesystem during `garden init`.
+`garden exec`, and custom `garden cmd` commands ignore symlink trees.
 
     trees:
         media:
-            symlink: ~/media
-            path: /media/${USER}
+            path: ~/media
+            symlink: /media/${USER}
 
 
 ### Allow globs when specifying group members
