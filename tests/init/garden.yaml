@@ -1,14 +1,14 @@
 ---
 variables:
-  __URLS__: ________ Git repository URLs ________
-  gh_git: "git://github.com"
   gh_ssh: "git@github.com"
+  repos: repos
 
 trees:
-  example/vx:
+  example/tree:
     environment:
       PATH: "${TREE_PATH}"
-    path: example/vx/repo
+    path: example/tree/repo
     remotes:
-      publish: "${gh_ssh}:davvid/vx.git"
-    url: "${gh_git}/davvid/vx.git"
+      publish: "${gh_ssh}:user/example.git"
+    # example/repo0git is created by the integration test
+    url: ${repos}/example.git

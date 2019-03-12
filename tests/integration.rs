@@ -8,19 +8,21 @@ use super::garden::cmd;
 
 #[test]
 fn garden_init() {
-    // First, cleanup existing repos from any previous runs
-    if std::path::PathBuf::from("tests/init/example").exists() {
-        if let Err(err) = std::fs::remove_dir_all("tests/init/example") {
-            assert!(false, "unable to remove tests/init/example: {}", err);
-        }
+    // Cleanup and create the bare repository used by this test
+    {
+        let cmd = ["./setup.sh"];
+        let exec = garden::cmd::exec_in_dir(&cmd, "tests/init");
+        let exit_status = garden::cmd::status(exec.join());
+        assert_eq!(exit_status, 0);
     }
 
+    // garden init examples/tree
     let cmd = [
         "./target/debug/garden",
         "--chdir", "./tests/init",
-        "init", "example/vx",
+        "init", "example/tree",
     ];
-    let exec = garden::cmd::exec_in_dir(&cmd, ".");
+    let exec = garden::cmd::exec_cmd(&cmd);
     let exit_status = garden::cmd::status(exec.join());
     assert_eq!(exit_status, 0);
 
@@ -33,23 +35,23 @@ fn garden_init() {
     // tests/init/example
     repo.push("example");
     assert!(repo.exists());
-    // tests/init/example/vx
-    repo.push("vx");
+    // tests/init/example/tree
+    repo.push("tree");
     assert!(repo.exists());
-    // tests/init/example/vx/repo
+    // tests/init/example/tree/repo
     repo.push("repo");
     assert!(repo.exists());
-    // tests/init/example/vx/repo/.git
+    // tests/init/example/tree/repo/.git
     repo.push(".git");
     assert!(repo.exists());
 
     // remote.origin.url is a read-only git:// URL
     {
         let command = ["git", "config", "remote.origin.url"];
-        let exec = cmd::exec_in_dir(&command, "tests/init/example/vx/repo");
+        let exec = cmd::exec_in_dir(&command, "tests/init/example/tree/repo");
         if let Ok(x) = cmd::capture_stdout(exec) {
             let output = cmd::trim_stdout(&x);
-            assert_eq!(output, "git://github.com/davvid/vx.git");
+            assert_eq!(output, "repos/example.git");
         } else {
             assert!(false, "unable to run 'git config remote.origin.url'");
         }
@@ -58,10 +60,10 @@ fn garden_init() {
     // remote.publish.url is a ssh push URL
     {
         let command = ["git", "config", "remote.publish.url"];
-        let exec = cmd::exec_in_dir(&command, "tests/init/example/vx/repo");
+        let exec = cmd::exec_in_dir(&command, "tests/init/example/tree/repo");
         if let Ok(x) = cmd::capture_stdout(exec) {
             let output = cmd::trim_stdout(&x);
-            assert_eq!(output, "git@github.com:davvid/vx.git");
+            assert_eq!(output, "git@github.com:user/example.git");
         } else {
             assert!(false, "unable to run 'git config remote.origin.url'");
         }

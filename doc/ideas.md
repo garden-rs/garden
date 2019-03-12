@@ -4,13 +4,6 @@
 ## Features
 
 
-### garden init
-
-    garden init <tree-expr>
-
-Initialize missing repositories for the resolved trees.
-
-
 ### Add group to TreeContext
 
 Add an Option(GroupIndex) to TreeContext so that environment()
