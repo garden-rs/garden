@@ -1,0 +1,11 @@
+---
+variables:
+  __URLS__: ________ Git repository URLs ________
+  gh_git: "git://github.com"
+
+trees:
+  example/vx:
+    environment:
+      PATH: "${TREE_PATH}"
+    path: example/vx/repo
+    url: "${gh_git}/davvid/vx.git"

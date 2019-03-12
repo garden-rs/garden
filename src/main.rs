@@ -61,7 +61,7 @@ fn main() {
         model::Command::Exec => cmds::exec::main(&mut app),
         model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Help => (),  // Handled above
-        model::Command::Init => (),  // TODO
+        model::Command::Init => cmds::init::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
     }

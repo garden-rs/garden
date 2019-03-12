@@ -13,6 +13,9 @@ pub mod eval;
 /// Help command
 pub mod help;
 
+/// Init command
+pub mod init;
+
 /// List command
 pub mod list;
 
