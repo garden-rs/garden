@@ -1,5 +1,4 @@
 use ::cmd;
-use ::config;
 use ::model;
 use ::query;
 
@@ -10,6 +9,7 @@ use ::query;
 
 pub fn main(app: &mut model::ApplicationContext) {
     let options = &mut app.options;
+    let config = &mut app.config;
 
     let mut expr = String::new();
     let mut command: Vec<String> = Vec::new();
@@ -36,20 +36,15 @@ pub fn main(app: &mut model::ApplicationContext) {
         }
     }
 
-    let verbose = options.is_debug("config::new");
-    let mut cfg = config::new(&options.filename, verbose);
-    if options.is_debug("config") {
-        debug!("{}", cfg);
-    }
     if options.is_debug("exec") {
-        debug!("subcommand: exec");
+        debug!("command: exec");
         debug!("expr: {}", expr);
         debug!("command: {:?}", command);
     }
 
     let quiet = options.quiet;
     let verbose = options.verbose;
-    let exit_status = exec(&mut cfg, quiet, verbose, &expr, &command);
+    let exit_status = exec(config, quiet, verbose, &expr, &command);
     std::process::exit(exit_status);
 }
 
