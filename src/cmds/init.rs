@@ -83,8 +83,52 @@ pub fn init(
             let url = eval::tree_value(config, &remote.expr,
                                        ctx.tree, ctx.garden);
 
-            let cmd = ["git", "clone", url.as_ref(), path.as_ref()];
-            let exec = cmd::exec_cmd(&cmd);
+            let command = ["git", "clone", url.as_ref(), path.as_ref()];
+            let exec = cmd::exec_cmd(&command);
+            let status = cmd::status(exec.join());
+            if status != 0 {
+                exit_status = status as i32;
+            }
+        }
+
+        // Loop over remotes, update them as needed
+        let mut config_remotes = std::collections::HashMap::new();
+        {
+            // Immutable config scope
+            for remote in &config.trees[ctx.tree].remotes {
+                config_remotes.insert(remote.name.to_string(), remote.expr.to_string());
+            }
+        }
+
+        // Gather existing remotes
+        let mut existing_remotes = std::collections::HashSet::new();
+        {
+            let command = ["git", "remote"];
+            let exec = cmd::exec_in_dir(&command, &path);
+            if let Ok(x) = cmd::capture_stdout(exec) {
+                let output = cmd::trim_stdout(&x);
+                for line in output.lines() {
+                    existing_remotes.insert(line.to_string());
+                }
+            }
+        }
+
+        for (k, v) in &config_remotes {
+            let url = eval::tree_value(config, &v, ctx.tree, ctx.garden);
+
+            let exec;
+            if existing_remotes.contains(k) {
+                let remote_key = format!("remote.{}.url", k);
+                let command = [
+                    "git", "config", remote_key.as_ref(), url.as_ref(),
+                ];
+                exec = cmd::exec_in_dir(&command, &path);
+            } else {
+                let command = [
+                    "git", "remote", "add", k.as_ref(), url.as_ref(),
+                ];
+                exec = cmd::exec_in_dir(&command, &path);
+            }
             let status = cmd::status(exec.join());
             if status != 0 {
                 exit_status = status as i32;

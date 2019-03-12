@@ -2,10 +2,13 @@
 variables:
   __URLS__: ________ Git repository URLs ________
   gh_git: "git://github.com"
+  gh_ssh: "git@github.com"
 
 trees:
   example/vx:
     environment:
       PATH: "${TREE_PATH}"
     path: example/vx/repo
+    remotes:
+      publish: "${gh_ssh}:davvid/vx.git"
     url: "${gh_git}/davvid/vx.git"
