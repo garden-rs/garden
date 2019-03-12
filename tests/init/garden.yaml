@@ -1,14 +1,14 @@
 ---
 variables:
   gh_ssh: "git@github.com"
-  repos: repos
+  repos: ${GARDEN_ROOT}/repos
 
 trees:
+  # repos/example.git is created by setup.sh during the integration test.
   example/tree:
     environment:
       PATH: "${TREE_PATH}"
     path: example/tree/repo
     remotes:
       publish: "${gh_ssh}:user/example.git"
-    # example/repo0git is created by the integration test
     url: ${repos}/example.git

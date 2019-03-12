@@ -1,5 +1,5 @@
 /Cargo.lock
 /target
 /*.html
-/tests/init/example
-/tests/init/repos
+/tests/init/clone
+/tests/init/remotes
