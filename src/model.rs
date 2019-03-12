@@ -5,16 +5,6 @@ use ::eval;
 use ::syntax;
 
 
-/// Remotes at minimum have a name and a URL
-#[derive(Clone, Debug)]
-pub struct Remote {
-    pub name: String,
-    pub url: String,
-}
-
-impl_display_brief!(Remote);
-
-
 /// Config files can define a sequence of variables that are
 /// iteratively calculated.  Variables can reference other
 /// variables in their Tree, Garden, and Configuration scopes.
@@ -74,7 +64,7 @@ pub struct Tree {
     pub gitconfig: Vec<NamedVariable>,
     pub name: String,
     pub path: Variable,
-    pub remotes: Vec<Remote>,
+    pub remotes: Vec<NamedVariable>,
     pub templates: Vec<String>,
     pub variables: Vec<NamedVariable>,
 }
@@ -124,7 +114,7 @@ pub struct Template {
     pub extend: Vec<String>,
     pub gitconfig: Vec<NamedVariable>,
     pub name: String,
-    pub remotes: Vec<Remote>,
+    pub remotes: Vec<NamedVariable>,
     pub variables: Vec<NamedVariable>,
 }
 

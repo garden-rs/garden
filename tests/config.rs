@@ -169,7 +169,7 @@ fn trees() {
 
     assert_eq!(tree0.remotes.len(), 1);
     assert_eq!(tree0.remotes[0].name, "origin");
-    assert_eq!(tree0.remotes[0].url, "https://github.com/git/git");
+    assert_eq!(tree0.remotes[0].expr, "https://github.com/git/git");
 
     assert_eq!(tree0.variables.len(), 4);
 
@@ -207,9 +207,9 @@ fn trees() {
 
     assert_eq!(tree1.remotes.len(), 2);
     assert_eq!(tree1.remotes[0].name, "origin");
-    assert_eq!(tree1.remotes[0].url, "https://github.com/git-cola/git-cola");
+    assert_eq!(tree1.remotes[0].expr, "https://github.com/git-cola/git-cola");
     assert_eq!(tree1.remotes[1].name, "davvid");
-    assert_eq!(tree1.remotes[1].url, "git@github.com:davvid/git-cola.git");
+    assert_eq!(tree1.remotes[1].expr, "git@github.com:davvid/git-cola.git");
 
     assert_eq!(tree1.environment.len(), 3);
     // From "python" template
@@ -251,9 +251,9 @@ fn trees() {
     // remotes
     assert_eq!(tree3.remotes.len(), 2);
     assert_eq!(tree3.remotes[0].name, "origin");
-    assert_eq!(tree3.remotes[0].url, "git@example.com:git-annex/data.git");
+    assert_eq!(tree3.remotes[0].expr, "git@example.com:git-annex/data.git");
     assert_eq!(tree3.remotes[1].name, "local");
-    assert_eq!(tree3.remotes[1].url, "${GARDEN_ROOT}/annex/local");
+    assert_eq!(tree3.remotes[1].expr, "${GARDEN_ROOT}/annex/local");
 
     // annex/local extends annex/data
     let ref tree4 = config.trees[5];
@@ -265,7 +265,7 @@ fn trees() {
     // remotes
     assert_eq!(tree4.remotes.len(), 1);
     assert_eq!(tree4.remotes[0].name, "origin");
-    assert_eq!(tree4.remotes[0].url, "git@example.com:git-annex/data.git");
+    assert_eq!(tree4.remotes[0].expr, "git@example.com:git-annex/data.git");
 }
 
 
@@ -391,5 +391,5 @@ fn test_template_url() {
     assert_eq!(tree.name, "tmp");
     assert_eq!(tree.remotes.len(), 1);
     assert_eq!(tree.remotes[0].name, "origin");
-    assert_eq!(tree.remotes[0].url, "${local}/${TREE_NAME}");
+    assert_eq!(tree.remotes[0].expr, "${local}/${TREE_NAME}");
 }

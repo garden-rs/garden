@@ -311,9 +311,10 @@ fn get_template(
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
             template.remotes.push(
-                model::Remote {
+                model::NamedVariable {
                     name: "origin".to_string(),
-                    url: url,
+                    expr: url,
+                    value: None,
                 });
         }
     }
@@ -424,9 +425,10 @@ fn get_tree(
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
             tree.remotes.push(
-                model::Remote {
+                model::NamedVariable {
                     name: "origin".to_string(),
-                    url: url,
+                    expr: url,
+                    value: None,
                 });
         }
     }
@@ -477,16 +479,17 @@ fn get_tree(
 
 
 /// Read Git remote repository definitions
-fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::Remote>) {
+fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if !name.as_str().is_some() || !value.as_str().is_some() {
                 continue;
             }
             remotes.push(
-                model::Remote {
+                model::NamedVariable {
                     name: name.as_str().unwrap().to_string(),
-                    url: value.as_str().unwrap().to_string(),
+                    expr: value.as_str().unwrap().to_string(),
+                    value: None,
                 }
             );
         }
