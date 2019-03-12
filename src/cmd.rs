@@ -49,10 +49,18 @@ pub fn capture_stdout(exec: subprocess::Exec)
     exec.stdout(subprocess::Redirection::Pipe).capture()
 }
 
+
+/// Return a `subprocess::Exec` for a command.
+pub fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
+    where S: AsRef<std::ffi::OsStr> {
+
+    subprocess::Exec::cmd(&command[0]).args(&command[1..])
+}
+
 /// Return a `subprocess::Exec` that runs a command in the specified directory.
-pub fn exec_in_dir<P>(command: &Vec<String>, path: P) -> subprocess::Exec
-    where P: AsRef<std::path::Path> {
-    return subprocess::Exec::cmd(&command[0]).args(&command[1..]).cwd(path);
+pub fn exec_in_dir<P, S>(command: &[S], path: P) -> subprocess::Exec
+where P: AsRef<std::path::Path>, S: AsRef<std::ffi::OsStr> {
+    exec_cmd(&command).cwd(path)
 }
 
 /// Run a command in the specified tree context.
