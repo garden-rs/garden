@@ -16,6 +16,10 @@ fn main() {
             .add_option(&["-c", "--config"], argparse::Store,
                         "specify the config file to use");
 
+        ap.refer(&mut options.chdir)
+            .add_option(&["-C", "--chdir"], argparse::Store,
+                        "chdir before searching for configuration");
+
         ap.refer(&mut options.debug)
             .add_option(&["-d", "--debug"], argparse::Collect,
                         "enable debug categories");

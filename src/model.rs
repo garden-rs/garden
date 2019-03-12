@@ -405,6 +405,7 @@ impl std::str::FromStr for Command {
 pub struct CommandOptions {
     pub args: Vec<String>,
     pub debug: Vec<String>,
+    pub chdir: String,
     pub filename: Option<std::path::PathBuf>,
     pub filename_str: String,
     pub keep_going: bool,
@@ -418,6 +419,12 @@ impl CommandOptions {
     pub fn update(&mut self) {
         if self.filename_str.len() > 0 {
             self.filename = Some(std::path::PathBuf::from(&self.filename_str));
+        }
+
+        if !self.chdir.is_empty() {
+            if let Err(err) = std::env::set_current_dir(&self.chdir) {
+                error!("could not chdir to '{}': {}", self.chdir, err);
+            }
         }
     }
 
