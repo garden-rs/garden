@@ -107,6 +107,7 @@ fn multi_variable_with_tree() {
     let context = garden::model::TreeContext {
         tree: 1,
         garden: None,
+        group: None,
     };
     let values = garden::eval::multi_variable(
         &mut config, &mut var, &context);
@@ -127,6 +128,7 @@ fn multi_variable_with_garden() {
     let context = garden::model::TreeContext {
         tree: 1,
         garden: Some(0),
+        group: None,
     };
     let values = garden::eval::multi_variable(
         &mut config, &mut var, &context);
@@ -142,6 +144,7 @@ fn environment() {
     let context = garden::model::TreeContext {
         tree: 1,  // cola
         garden: Some(0),
+        group: None,
     };
     let values = garden::eval::environment(&mut config, &context);
     assert_eq!(values.len(), 7);
@@ -218,6 +221,7 @@ fn command_garden_scope() {
     let context = garden::model::TreeContext {
         tree: 1,
         garden: Some(0),
+        group: None,
     };
 
     // Garden scope
@@ -238,6 +242,7 @@ fn command_tree_scope() {
     let context = garden::model::TreeContext {
         tree: 1,
         garden: None,
+        group: None,
     };
 
     // The ${prefix} variable should expand to the tree-local value.

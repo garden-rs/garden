@@ -34,14 +34,15 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
 
     if tree_expr.include_groups {
         let mut result = Vec::new();
-        for group in &config.groups {
+        for (idx, group) in config.groups.iter().enumerate() {
             // Find the matching group
             if !pattern.matches(group.name.as_ref()) {
                 continue;
             }
             // Matching group found, collect its trees
             for tree in &group.members {
-                if let Some(tree_ctx) = tree_from_name(config, tree, None) {
+                if let Some(mut tree_ctx) = tree_from_name(config, tree, None) {
+                    tree_ctx.group = Some(idx as model::GroupIndex);
                     result.push(tree_ctx);
                 }
             }
@@ -142,6 +143,7 @@ pub fn tree_from_name(
             return Some(model::TreeContext {
                 tree: tree_idx,
                 garden: garden_idx,
+                group: None,
             });
         }
     }
@@ -183,6 +185,7 @@ pub fn tree_from_path(
                 model::TreeContext {
                     tree: idx as model::TreeIndex,
                     garden: None,
+                    group: None,
                 }
             );
         }
@@ -203,6 +206,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
                 model::TreeContext {
                     tree: tree_idx,
                     garden: None,
+                    group: None,
                 }
             );
         }
@@ -221,7 +225,8 @@ pub fn tree_context(config: &model::Configuration,
     // Evaluate and print the garden expression.
     let mut ctx = model::TreeContext {
         tree: 0,
-        garden: None
+        garden: None,
+        group: None,
     };
     if let Some(context) = tree_from_name(&config, tree, None) {
         ctx.tree = context.tree;

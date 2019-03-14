@@ -280,6 +280,9 @@ impl Configuration {
 /// Tree index into config.trees
 pub type TreeIndex = usize;
 
+/// Group index into config.groups
+pub type GroupIndex = usize;
+
 /// Garden index into config.gardens
 pub type GardenIndex = usize;
 
@@ -288,6 +291,7 @@ pub type GardenIndex = usize;
 pub struct TreeContext {
     pub tree: TreeIndex,
     pub garden: Option<GardenIndex>,
+    pub group: Option<GroupIndex>,
 }
 
 impl_display_brief!(TreeContext);
