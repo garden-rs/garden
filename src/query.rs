@@ -34,15 +34,15 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
 
     if tree_expr.include_groups {
         let mut result = Vec::new();
-        for (idx, group) in config.groups.iter().enumerate() {
+        for group in &config.groups {
             // Find the matching group
             if !pattern.matches(group.name.as_ref()) {
                 continue;
             }
             // Matching group found, collect its trees
             for tree in &group.members {
-                if let Some(mut tree_ctx) = tree_from_name(config, tree, None) {
-                    tree_ctx.group = Some(idx as model::GroupIndex);
+                if let Some(tree_ctx) = tree_from_name(config, tree, None,
+                                                       Some(group.index)) {
                     result.push(tree_ctx);
                 }
             }
@@ -104,7 +104,7 @@ pub fn trees_from_garden(
             // find its index in the configuration.
             for tree in &cfg_group.members {
                 if let Some(tree_ctx) = tree_from_name(
-                        config, tree, Some(garden.index)) {
+                        config, tree, Some(garden.index), None) {
                     result.push(tree_ctx);
                 }
             }
@@ -114,7 +114,26 @@ pub fn trees_from_garden(
     // Collect indexes for each tree in this garden
     for tree in &garden.trees {
         if let Some(tree_ctx) = tree_from_name(
-                config, tree, Some(garden.index)) {
+                config, tree, Some(garden.index), None) {
+            result.push(tree_ctx);
+        }
+    }
+
+    result
+}
+
+/// Return the tree contexts for a garden
+pub fn trees_from_group(
+    config: &model::Configuration,
+    group: &model::Group,
+) -> Vec<model::TreeContext> {
+
+    let mut result = Vec::new();
+
+    // Collect indexes for each tree in this group
+    for tree in &group.members {
+        if let Some(mut tree_ctx) = tree_from_name(config, tree,
+                                                   None, Some(group.index)) {
             result.push(tree_ctx);
         }
     }
@@ -133,6 +152,7 @@ pub fn tree_from_name(
     config: &model::Configuration,
     tree: &str,
     garden_idx: Option<model::GardenIndex>,
+    group_idx: Option<model::GroupIndex>,
 ) -> Option<model::TreeContext> {
 
 
@@ -143,7 +163,7 @@ pub fn tree_from_name(
             return Some(model::TreeContext {
                 tree: tree_idx,
                 garden: garden_idx,
-                group: None,
+                group: group_idx,
             });
         }
     }
@@ -228,7 +248,7 @@ pub fn tree_context(config: &model::Configuration,
         garden: None,
         group: None,
     };
-    if let Some(context) = tree_from_name(&config, tree, None) {
+    if let Some(context) = tree_from_name(&config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
         return Err(format!(

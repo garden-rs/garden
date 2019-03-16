@@ -4,12 +4,6 @@
 ## Features
 
 
-### Add group to TreeContext
-
-Add an Option(GroupIndex) to TreeContext so that environment()
-expansion can be extended to work on groups as well as gardens.
-
-
 ### Symlinks
 
 Symlink trees create a symlink on the filesystem during `garden init`.

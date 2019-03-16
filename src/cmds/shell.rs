@@ -47,6 +47,7 @@ pub fn main(app: &mut model::ApplicationContext) {
         if config.trees[ctx.tree].name == expr {
             context.tree = ctx.tree;
             context.garden = ctx.garden;
+            context.group = ctx.group;
             break;
         }
     }
@@ -54,11 +55,12 @@ pub fn main(app: &mut model::ApplicationContext) {
     if !tree.is_empty() {
         let mut found = false;
 
-        if let Some(ctx) = query::tree_from_name(config, &tree, None) {
+        if let Some(ctx) = query::tree_from_name(config, &tree, None, None) {
             for expr_ctx in &contexts {
                 if ctx.tree == expr_ctx.tree {
                     context.tree = expr_ctx.tree;
                     context.garden = expr_ctx.garden;
+                    context.group = expr_ctx.group;
                     found = true;
                     break;
                 }

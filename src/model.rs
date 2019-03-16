@@ -101,6 +101,7 @@ impl Tree {
 #[derive(Clone, Debug, Default)]
 pub struct Group {
     pub name: String,
+    pub index: GroupIndex,
     pub members: Vec<String>,
 }
 
@@ -225,6 +226,10 @@ impl Configuration {
     }
 
     fn update_indexes(&mut self) {
+        for (idx, group) in self.groups.iter_mut().enumerate() {
+            group.index = idx as GroupIndex;
+        }
+
         for (idx, garden) in self.gardens.iter_mut().enumerate() {
             garden.index = idx as GardenIndex;
         }

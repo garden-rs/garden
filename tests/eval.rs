@@ -139,7 +139,7 @@ fn multi_variable_with_garden() {
 
 
 #[test]
-fn environment() {
+fn garden_environment() {
     let mut config = common::garden_config();
     let context = garden::model::TreeContext {
         tree: 1,  // cola
@@ -193,9 +193,54 @@ fn environment() {
 }
 
 #[test]
+fn group_environment() {
+    let mut config = common::garden_config();
+    let context = garden::model::TreeContext {
+        tree: 1,  // cola
+        garden: None,
+        group: Some(0),  // cola group
+    };
+
+    let values = garden::eval::environment(&mut config, &context);
+    assert_eq!(values.len(), 5);
+
+    let mut idx = 0;
+    assert_eq!(values[idx].0, "PYTHONPATH");  // ${TREE_PATH} for cola
+    assert_eq!(values[idx].1, "/home/test/src/git-cola");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH");  // cola tree ${prefix}/bin
+    assert_eq!(values[idx].1,
+               "/home/test/src/git-cola/local/bin:/usr/bin:/bin");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH");  // cola tree ${TREE_PATH}/bin
+    assert_eq!(values[idx].1,
+               format!("{}:{}:/usr/bin:/bin",
+                       "/home/test/src/git-cola/bin",
+                       "/home/test/src/git-cola/local/bin"));
+
+
+    // cola tree ${GARDEN_ROOT}/python/send2trash, ${TREE_PATH}
+    idx += 1;
+    assert_eq!(values[idx].0, "PYTHONPATH");
+    assert_eq!(values[idx].1,
+               "/home/test/src/python/send2trash:/home/test/src/git-cola");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "PYTHONPATH");  // qtpy ${prefix}
+    assert_eq!(values[idx].1,
+               "/home/test/src/python/qtpy:/home/test/src/python/send2trash:/home/test/src/git-cola");
+
+    idx += 1;
+    assert_eq!(values.len(), idx);
+}
+
+#[test]
 fn environment_empty_value() {
     let mut config = common::garden_config();
-    let context = garden::query::tree_from_name(&config, "tmp", None).unwrap();
+    let context = garden::query::tree_from_name(&config, "tmp",
+                                                None, None).unwrap();
     let values = garden::eval::environment(&mut config, &context);
     assert_eq!(values.len(), 3);
 
