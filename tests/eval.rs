@@ -112,8 +112,8 @@ fn multi_variable_with_tree() {
     let values = garden::eval::multi_variable(
         &mut config, &mut var, &context);
     assert_eq!(values,
-               ["/home/test/src/git-cola/bin",
-                "/home/test/src/git-cola/local/bin"]);
+               ["/home/test/src/git-cola/local/bin",
+                "/home/test/src/git-cola/bin"]);
 }
 
 #[test]
@@ -133,8 +133,8 @@ fn multi_variable_with_garden() {
     let values = garden::eval::multi_variable(
         &mut config, &mut var, &context);
     assert_eq!(values,
-               ["/home/test/src/git-cola/bin",
-                "/home/test/apps/git-cola/current/bin"]);
+               ["/home/test/apps/git-cola/current/bin",
+                "/home/test/src/git-cola/bin"]);
 }
 
 
@@ -154,15 +154,16 @@ fn environment() {
     assert_eq!(values[idx].1, "/home/test/src/git-cola");
 
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // cola tree ${TREE_PATH}/bin
-    assert_eq!(values[idx].1, "/home/test/src/git-cola/bin:/usr/bin:/bin");
+    assert_eq!(values[idx].0, "PATH");  // cola ${TREE_PATH}/bin
+    assert_eq!(values[idx].1,
+               "/home/test/apps/git-cola/current/bin:/usr/bin:/bin");
 
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // cola garden ${prefix}
+    assert_eq!(values[idx].0, "PATH");  // cola ${prefix}/bin garden prefix
     assert_eq!(values[idx].1,
                format!("{}:{}:/usr/bin:/bin",
-                       "/home/test/apps/git-cola/current/bin",
-                       "/home/test/src/git-cola/bin"));
+                       "/home/test/src/git-cola/bin",
+                       "/home/test/apps/git-cola/current/bin"));
 
     // cola tree ${GARDEN_ROOT}/python/send2trash, ${TREE_PATH}
     idx += 1;
@@ -180,11 +181,11 @@ fn environment() {
     assert_eq!(values[idx].1, "full");
 
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // coal garden ${prefix}/bin
+    assert_eq!(values[idx].0, "PATH");  // cola garden ${prefix}/bin
     assert_eq!(values[idx].1,
                format!("{}:{}:/usr/bin:/bin:{}",
-                       "/home/test/apps/git-cola/current/bin",
                        "/home/test/src/git-cola/bin",
+                       "/home/test/apps/git-cola/current/bin",
                        "/home/test/apps/git-cola/current/bin"));
 
     idx += 1;

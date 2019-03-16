@@ -219,8 +219,8 @@ fn trees() {
     // From tree
     assert_eq!(tree1.environment[1].name, "PATH");
     assert_eq!(tree1.environment[1].values.len(), 2);
-    assert_eq!(tree1.environment[1].values[0].expr, "${TREE_PATH}/bin");
-    assert_eq!(tree1.environment[1].values[1].expr, "${prefix}/bin");
+    assert_eq!(tree1.environment[1].values[0].expr, "${prefix}/bin");
+    assert_eq!(tree1.environment[1].values[1].expr, "${TREE_PATH}/bin");
 
     assert_eq!(tree1.environment[2].name, "PYTHONPATH");
     assert_eq!(tree1.environment[2].values.len(), 1);

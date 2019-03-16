@@ -58,8 +58,8 @@ pub fn garden_config() -> garden::model::Configuration {
                 prefix: ${TREE_PATH}/local
             environment:
                 PATH:
-                    - ${TREE_PATH}/bin
                     - ${prefix}/bin
+                    - ${TREE_PATH}/bin
                 PYTHONPATH: ${GARDEN_ROOT}/python/send2trash
             commands:
                 test:
