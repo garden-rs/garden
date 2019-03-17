@@ -204,31 +204,34 @@ fn group_environment() {
     let values = garden::eval::environment(&mut config, &context);
     assert_eq!(values.len(), 5);
 
+    // ${TREE_PATH} for cola
     let mut idx = 0;
-    assert_eq!(values[idx].0, "PYTHONPATH");  // ${TREE_PATH} for cola
+    assert_eq!(values[idx].0, "PYTHONPATH");
     assert_eq!(values[idx].1, "/home/test/src/git-cola");
 
+    // cola tree ${prefix}/bin
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // cola tree ${prefix}/bin
+    assert_eq!(values[idx].0, "PATH");
     assert_eq!(values[idx].1,
                "/home/test/src/git-cola/local/bin:/usr/bin:/bin");
 
+    // cola tree ${TREE_PATH}/bin
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // cola tree ${TREE_PATH}/bin
+    assert_eq!(values[idx].0, "PATH");
     assert_eq!(values[idx].1,
                format!("{}:{}:/usr/bin:/bin",
                        "/home/test/src/git-cola/bin",
                        "/home/test/src/git-cola/local/bin"));
 
-
-    // cola tree ${GARDEN_ROOT}/python/send2trash, ${TREE_PATH}
+    // cola tree ${GARDEN_ROOT}/python/send2trash
     idx += 1;
     assert_eq!(values[idx].0, "PYTHONPATH");
     assert_eq!(values[idx].1,
                "/home/test/src/python/send2trash:/home/test/src/git-cola");
 
+    // qtpy ${prefix}
     idx += 1;
-    assert_eq!(values[idx].0, "PYTHONPATH");  // qtpy ${prefix}
+    assert_eq!(values[idx].0, "PYTHONPATH");
     assert_eq!(values[idx].1,
                "/home/test/src/python/qtpy:/home/test/src/python/send2trash:/home/test/src/git-cola");
 
