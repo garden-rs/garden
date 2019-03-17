@@ -10,32 +10,32 @@ use ::query;
 
 pub fn main(app: &mut model::ApplicationContext) {
     let options = &mut app.options;
-    let config = &mut app.config;
-
     let mut expr = String::new();
-
-    // Parse arguments
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.stop_on_first_argument(true);
-        ap.set_description("garden exec - run commands inside gardens");
-
-        ap.refer(&mut expr).required()
-            .add_argument("tree-expr", argparse::Store,
-                          "gardens/trees to initialize (tree expression)");
-
-        options.args.insert(0, "garden init".to_string());
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
-    }
+    parse_args(&mut expr, options);
 
     let quiet = options.quiet;
     let verbose = options.verbose;
-    let exit_status = init(config, quiet, verbose, &expr);
+    let exit_status = init(&mut app.config, quiet, verbose, &expr);
     std::process::exit(exit_status);
+}
+
+fn parse_args(expr: &mut String, options: &mut model::CommandOptions) {
+    // Parse arguments
+    options.args.insert(0, "garden init".to_string());
+
+    let mut ap = argparse::ArgumentParser::new();
+    ap.set_description(
+        "garden init - Create gardens or reinitialize existing ones");
+
+    ap.refer(expr).required()
+        .add_argument("tree-expr", argparse::Store,
+                      "gardens/trees to initialize (tree expression)");
+
+    if let Err(err) = ap.parse(options.args.to_vec(),
+                               &mut std::io::stdout(),
+                               &mut std::io::stderr()) {
+        std::process::exit(err);
+    }
 }
 
 
