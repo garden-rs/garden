@@ -19,7 +19,7 @@ pub fn main(app: &mut model::ApplicationContext) {
         let mut ap = argparse::ArgumentParser::new();
         ap.stop_on_first_argument(true);
 
-        ap.set_description("garden cmd - run preset commands over gardens");
+        ap.set_description("garden cmd - run custom commands over gardens");
 
         ap.refer(&mut options.keep_going)
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
@@ -67,7 +67,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.stop_on_first_argument(true);
-        ap.set_description("garden cmd - run preset commands over gardens");
+        ap.set_description("garden cmd - run custom commands over gardens");
 
         ap.refer(&mut options.keep_going)
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
