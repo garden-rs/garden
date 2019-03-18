@@ -10,16 +10,23 @@ use ::query;
 
 pub fn main(app: &mut model::ApplicationContext) {
     let options = &mut app.options;
-    let mut expr = String::new();
-    parse_args(&mut expr, options);
+    let mut exprs = Vec::new();
+    parse_args(&mut exprs, options);
 
     let quiet = options.quiet;
     let verbose = options.verbose;
-    let exit_status = init(&mut app.config, quiet, verbose, &expr);
+
+    let mut exit_status = 0;
+    for expr in &exprs {
+        let status = init(&mut app.config, quiet, verbose, &expr);
+        if status != 0 {
+            exit_status = status;
+        }
+    }
     std::process::exit(exit_status);
 }
 
-fn parse_args(expr: &mut String, options: &mut model::CommandOptions) {
+fn parse_args(exprs: &mut Vec<String>, options: &mut model::CommandOptions) {
     // Parse arguments
     options.args.insert(0, "garden init".to_string());
 
@@ -27,8 +34,8 @@ fn parse_args(expr: &mut String, options: &mut model::CommandOptions) {
     ap.set_description(
         "garden init - Create gardens or reinitialize existing ones");
 
-    ap.refer(expr).required()
-        .add_argument("tree-expr", argparse::Store,
+    ap.refer(exprs).required()
+        .add_argument("tree-expr", argparse::List,
                       "gardens/trees to initialize (tree expression)");
 
     if let Err(err) = ap.parse(options.args.to_vec(),

@@ -3,3 +3,4 @@
 /*.html
 /tests/init/clone
 /tests/init/remotes
+/tests/init/symlinks

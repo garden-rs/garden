@@ -107,4 +107,52 @@ fn garden_init_remotes() {
     teardown("tests/init/remotes");
 }
 
+/// `garden init` creates symlinks
+#[test]
+fn garden_init_symlinks() {
+    setup("symlinks", "tests/init");
+
+    // garden init examples/tree examples/symlink
+    {
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir", "./tests/init/symlinks",
+            "--config", "../garden.yaml",
+            "init", "example/tree", "link", "example/link",
+        ];
+        let exec = garden::cmd::exec_cmd(&cmd);
+        let exit_status = garden::cmd::status(exec.join());
+        assert_eq!(exit_status, 0);
+    }
+
+    // tests/init/symlinks/trees/example/repo exists
+    {
+        let repo = std::path::PathBuf::from(
+            "tests/init/symlinks/example/tree/repo/.git");
+        assert!(repo.exists());
+    }
+
+    // tests/init/symlinks/link is a symlink pointing to example/tree/repo
+    {
+        let link = std::path::PathBuf::from("tests/init/symlinks/link");
+        assert!(link.exists(), "tests/init/symlinks/link does not exist");
+        assert!(link.read_link().is_ok());
+
+        let target = link.read_link().unwrap();
+        assert_eq!(target.to_string_lossy(), "example/tree/repo");
+    }
+
+    // tests/init/symlinks/example/link is a symlink pointing to tree/repo
+    {
+        let link = std::path::PathBuf::from("tests/init/symlinks/example/link");
+        assert!(link.exists(), "tests/init/symlinks/example/link does not exist");
+        assert!(link.read_link().is_ok());
+
+        let target = link.read_link().unwrap();
+        assert_eq!(target.to_string_lossy(), "tree/repo");
+    }
+
+    teardown("tests/init/symlinks");
+}
+
 }  // integration
