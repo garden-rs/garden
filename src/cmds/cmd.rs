@@ -121,6 +121,10 @@ pub fn cmd(
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in &contexts {
+        // Skip symlink trees.
+        if config.trees[context.tree].is_symlink {
+            continue;
+        }
         // Evaluate the tree environment
         let env = eval::environment(config, context);
         let mut path;

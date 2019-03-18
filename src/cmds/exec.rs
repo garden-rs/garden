@@ -74,7 +74,11 @@ pub fn exec(
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in &contexts {
-        // Run the command in the current context
+        // Skip symlink trees.
+        if config.trees[context.tree].is_symlink {
+            continue;
+        }
+        // Run the command in the current context.
         let status = cmd::exec_in_context(config, context, quiet, verbose, command);
         if status != 0 {
             exit_status = status as i32;
