@@ -44,93 +44,101 @@ Garden searches for "garden.yaml" in the following locations by default.
 Example `garden.yaml`:
 
     garden:
-        root: ~/src
+      root: ~/src
+
     variables:
-        flavor: debug
-        prefix: ${TREE_PATH}/target/${flavor}
-        num_procs: $ nprocs 2>/dev/null || echo 4
+      flavor: debug
+      prefix: ${TREE_PATH}/target/${flavor}
+      num_procs: $ nprocs 2>/dev/null || echo 4
+
     groups:
-        cola: [cola, git, qtpy, vx]
+      cola: [cola, git, qtpy, vx]
+
     gardens:
-        cola:
-            groups: cola
-            commands:
-                setup:
-                    - cd ${cola_PATH}
-                    - virtualenv --system-site-packages env27
-                    - vx env27 make requirements
-                    - vx env27 make requirements-dev
-                build: cd "${cola_PATH}" && vx env27 make all
-                doc: cd "${cola_PATH}" && vx env27 make doc
-                test: cd "${cola_PATH}" && vx env27 make test
-                run: vx "${cola_PATH}/env27" git cola
-        gitdev:
-            variables:
-                prefix: ~/apps/gitdev
-            environment:
-                PATH: ~/apps/gitdev/bin
-            trees: git, gitk
+      cola:
+        groups: cola
+        commands:
+          setup:
+            - cd ${cola_PATH}
+            - virtualenv --system-site-packages env27
+            - vx env27 make requirements
+            - vx env27 make requirements-dev
+          build: cd "${cola_PATH}" && vx env27 make all
+          doc: cd "${cola_PATH}" && vx env27 make doc
+          test: cd "${cola_PATH}" && vx env27 make test
+          run: vx "${cola_PATH}/env27" git cola
+      gitdev:
+        variables:
+          prefix: ~/apps/gitdev
+        environment:
+          PATH: ~/apps/gitdev/bin
+        trees: git, gitk
 
     templates:
-        rust:
-            environment:
-                PATH: ${TREE_PATH}/target/${rust_flavor}
-            commands:
-                build: cargo build
-                test: cargo test
-                doc: cargo doc
-                run: cargo run
-        bin:
-            environment:
-                PATH: ${TREE_PATH}/bin
-        python:
-            environment:
-                PYTHONPATH: ${TREE_PATH}
-        makefile:
-            commands:
-                build: make -j${num_procs} prefix="${prefix}" all
-                install: make -j${num_procs} prefix="${prefix}" install
-                test: make -j${num_procs} prefix="${prefix}" test
-                doc: make -j${num_procs} prefix="${prefix}" doc
+      rust:
+        environment:
+          PATH: ${TREE_PATH}/target/${rust_flavor}
+        commands:
+          build: cargo build
+          test: cargo test
+          doc: cargo doc
+          run: cargo run
+      bin:
+        environment:
+          PATH: ${TREE_PATH}/bin
+      python:
+        environment:
+          PYTHONPATH: ${TREE_PATH}
+      makefile:
+        commands:
+          build: make -j${num_procs} prefix="${prefix}" all
+          install: make -j${num_procs} prefix="${prefix}" install
+          test: make -j${num_procs} prefix="${prefix}" test
+          doc: make -j${num_procs} prefix="${prefix}" doc
+
     trees:
-        cola:
-            path: git-cola
-            url: git://github.com/git-cola/git-cola.git
-            environment: {GIT_COLA_TRACE=: 1}
-            templates: [bin, makefile, python]
-            remotes:
-                gitlab:
-                    url: git@gitlab.com:git-cola/git-cola.git
-            packages:
-                apt: python-qt5
-        garden:
-            url: git://github.com/davvid/garden.git
-            templates: rust
-        garden/release:
-            extend: garden
-            variables:
-                flavor: release
-        git:
-            url: git://github.com/git/git.git
-            templates: makefile
-            environment:
-                PATH: ${TREE_PATH}/bin-wrappers
-        gitk:
-            url: git://ozlabs.org/~paulus/gitk.git
-            templates: makefile
-            environment:
-                PATH: ${TREE_PATH}
-        qtpy:
-            url: git://github.com/spyder-ide/qtpy.git
-            templates: python
-        vx:
-            url: git://github.com/davvid/vx.git
-            environment:
-                PATH: ${TREE_PATH}
+      cola:
+        path: git-cola
+        url: git://github.com/git-cola/git-cola.git
+        environment: {GIT_COLA_TRACE=: 1}
+        templates: [bin, makefile, python]
+        remotes:
+          gitlab:
+            url: git@gitlab.com:git-cola/git-cola.git
+
+      garden:
+        url: git://github.com/davvid/garden.git
+        templates: rust
+
+      garden/release:
+        extend: garden
+        variables:
+          flavor: release
+
+      git:
+        url: git://github.com/git/git.git
+        templates: makefile
+        environment:
+          PATH: ${TREE_PATH}/bin-wrappers
+
+      gitk:
+        url: git://ozlabs.org/~paulus/gitk.git
+        templates: makefile
+        environment:
+          PATH: ${TREE_PATH}
+
+      qtpy:
+        url: git://github.com/spyder-ide/qtpy.git
+        templates: python
+
+      vx:
+        url: git://github.com/davvid/vx.git
+        environment:
+          PATH: ${TREE_PATH}
 
 
 Gardens aggregate groups and trees.  If tree lists need to be shared between
-gardens, use define groups and reuse the groups in each garden.
+gardens, define a group and reuse the group in each garden.
 
 Templates allow sharing of variables, gitconfig, and environments between
 trees.  Trees can also reuse another tree definition by specifying the
