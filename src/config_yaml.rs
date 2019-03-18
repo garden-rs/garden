@@ -134,9 +134,9 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
 fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     if let Yaml::String(yaml_string) = yaml {
         *string = yaml_string.to_string();
-        return true;
     }
-    return false;
+
+    !string.is_empty()
 }
 
 
@@ -389,6 +389,7 @@ fn get_tree(
 ) -> model::Tree {
 
     let mut tree = model::Tree::default();
+
     // Allow extending an existing tree by specifying "extend".
     let mut extend = String::new();
     if get_str(&value["extend"], &mut extend) {
@@ -400,7 +401,10 @@ fn get_tree(
         }
     }
 
+    // Tree name
     get_str(&name, &mut tree.name);
+
+    // Tree path
     if !get_str(&value["path"], &mut tree.path.expr) {
         // default to the name when "path" is unspecified
         tree.path.expr = tree.name.to_string();
@@ -432,6 +436,11 @@ fn get_tree(
                 });
         }
     }
+
+    // Symlinks
+    tree.is_symlink = get_str(&value["symlink"], &mut tree.symlink.expr);
+
+    // Templates
     get_vec_str(&value["templates"], &mut tree.templates);
 
     // "environment" follow last-set-wins semantics.
@@ -459,6 +468,8 @@ fn get_tree(
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables(&value["commands"], &mut tree.commands);
+
+    // Remotes
     get_remotes(&value["remotes"], &mut tree.remotes);
 
     // These follow first-found semantics; process templates in
@@ -474,7 +485,7 @@ fn get_tree(
         }
     }
 
-    return tree;
+    tree
 }
 
 

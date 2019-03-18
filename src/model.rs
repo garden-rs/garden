@@ -62,9 +62,11 @@ pub struct Tree {
     pub commands: Vec<MultiVariable>,
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
+    pub is_symlink: bool,
     pub name: String,
     pub path: Variable,
     pub remotes: Vec<NamedVariable>,
+    pub symlink: Variable,
     pub templates: Vec<String>,
     pub variables: Vec<NamedVariable>,
 }
@@ -239,24 +241,41 @@ impl Configuration {
     // If specified as a relative path, it will be relative to garden.root.
     // If specified as an asbolute path, it will be left as-is.
     fn update_tree_paths(&mut self) {
-        let mut values = vec!();
-        for tree in &self.trees {
-            values.push(tree.path.expr.to_string());
+        // Gather path and symlink expressions.
+        let mut path_values = Vec::new();
+        let mut symlink_values = Vec::new();
+        for (idx, tree) in self.trees.iter().enumerate() {
+            path_values.push(tree.path.expr.to_string());
+            if tree.is_symlink {
+                symlink_values.push((idx, tree.symlink.expr.to_string()));
+            }
         }
 
-        for (idx, value) in values.iter().enumerate() {
-            let result = eval::value(self, &value);
-            let tree = &mut self.trees[idx];
+        // Evaluate the "path" expression.
+        for (idx, value) in path_values.iter().enumerate() {
+            let eval_value = eval::value(self, &value);
+            let result = Some(self.abspath(&eval_value));
+            self.trees[idx].path.value = result;
+        }
 
-            if result.starts_with("/") {
-                // Absolute path, nothing to do
-                tree.path.value = Some(result);
-            } else {
-                // Make path relative to root_path
-                let mut path_buf = self.root_path.to_path_buf();
-                path_buf.push(result);
-                tree.path.value = Some(path_buf.to_string_lossy().to_string());
-            }
+        // Evaluate the "symlink" expression.
+        for (idx, value) in &symlink_values {
+            let eval_value = eval::value(self, &value);
+            let result = Some(self.abspath(&eval_value));
+            self.trees[*idx].symlink.value = result;
+        }
+    }
+
+    fn abspath(&self, path: &str) -> String {
+        if path.starts_with("/") {
+            // Absolute path, nothing to do
+            path.to_string()
+        } else {
+            // Make path relative to root_path
+            let mut path_buf = self.root_path.to_path_buf();
+            path_buf.push(path);
+
+            path_buf.to_string_lossy().to_string()
         }
     }
 

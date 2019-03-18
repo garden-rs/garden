@@ -146,6 +146,20 @@ trees.  Trees can also reuse another tree definition by specifying the
 when extending a tree.
 
 
+### Symlinks
+
+Symlink trees create a symlink on the filesystem during `garden init`.
+`garden exec`, and custom `garden cmd` commands ignore symlink trees.
+
+    trees:
+      media:
+        path: ~/media
+        symlink: /media/${USER}
+
+The "path" entry behaves like the tree "path" entry -- when unspecified it
+defaults to a path named after the tree relative to the garden root.
+
+
 ## Commands
 
 

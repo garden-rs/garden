@@ -74,6 +74,14 @@ pub fn init(
                 error!("unable to create '{}': {}", path, err);
             }
 
+            if config.trees[ctx.tree].is_symlink {
+                let status = init_symlink(config, ctx);
+                if status != 0 {
+                    exit_status = status;
+                }
+                continue;
+            }
+
             if config.trees[ctx.tree].remotes.is_empty() {
                 continue;
             }
@@ -89,6 +97,11 @@ pub fn init(
             if status != 0 {
                 exit_status = status as i32;
             }
+        }
+
+        // Existing symlinks require no further processing.
+        if config.trees[ctx.tree].is_symlink {
+            continue;
         }
 
         // Loop over remotes, update them as needed
@@ -138,4 +151,53 @@ pub fn init(
 
     // Return the last non-zero exit status.
     exit_status
+}
+
+
+/// Initialize a tree symlink entry.
+
+fn init_symlink(
+    config: &model::Configuration,
+    ctx: &model::TreeContext,
+) -> i32 {
+    let tree = &config.trees[ctx.tree];
+    // Invalid usage: non-symlink
+    if !tree.is_symlink
+        || tree.path.value.is_none()
+        || tree.path.value.as_ref().unwrap().is_empty()
+        || tree.symlink.value.is_none()
+        || tree.symlink.value.as_ref().unwrap().is_empty() {
+        return 1;
+    }
+
+    let path_str = tree.path.value.as_ref().unwrap();
+    let path = std::path::PathBuf::from(&path_str);
+
+    // Leave existing paths as-is.
+    if std::fs::read_link(&path).is_ok() || path.exists() {
+        return 0;
+    }
+
+    let symlink_str = tree.symlink.value.as_ref().unwrap();
+    let symlink = std::path::PathBuf::from(&symlink_str);
+
+    // Note: parent directory was already created by the caller.
+    let parent = path.parent().as_ref().unwrap().to_path_buf();
+
+    // Is the link target a child of the link's parent directory?
+    let target;
+    if symlink.starts_with(&parent) && symlink.strip_prefix(&parent).is_ok() {
+        // If so, create the symlink using a relative path.
+        target = symlink.strip_prefix(&parent)
+                        .unwrap().to_string_lossy().to_string();
+    } else {
+        // Use an absolute path otherwise.
+        target = symlink.to_string_lossy().to_string();
+    }
+
+    if std::os::unix::fs::symlink(&target, &path).is_ok() {
+        0
+    } else {
+        1
+    }
 }
