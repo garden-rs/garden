@@ -27,7 +27,7 @@ fn garden_init_clone() {
 
     // garden init examples/tree
     let cmd = [
-        "./target/debug/garden",
+        "./target/debug/gdn",
         "--chdir", "./tests/init/clone",
         "--config", "../garden.yaml",
         "init", "example/tree",
@@ -69,7 +69,7 @@ fn garden_init_remotes() {
 
     // garden init examples/tree
     let cmd = [
-        "./target/debug/garden",
+        "./target/debug/gdn",
         "--chdir", "./tests/init/remotes",
         "--config", "../garden.yaml",
         "init", "example/tree",
@@ -115,7 +115,7 @@ fn garden_init_symlinks() {
     // garden init examples/tree examples/symlink
     {
         let cmd = [
-            "./target/debug/garden",
+            "./target/debug/gdn",
             "--chdir", "./tests/init/symlinks",
             "--config", "../garden.yaml",
             "init", "example/tree", "link", "example/link",
