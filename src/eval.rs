@@ -252,8 +252,8 @@ pub fn environment(
     let mut vars = Vec::new();
     let mut ready = false;
 
-    // Evaluate garden environments.
     if let Some(idx) = context.garden {
+        // Evaluate garden environments.
         let garden = &config.gardens[idx];
         for ctx in query::trees_from_garden(config, garden) {
             for var in &config.trees[ctx.tree].environment {
@@ -265,10 +265,9 @@ pub fn environment(
             vars.push((context.clone(), var.clone()));
         }
         ready = true;
-    }
 
-    // Evaluate group environments.
-    if let Some(idx) = context.group {
+    } else if let Some(idx) = context.group {
+        // Evaluate group environments.
         let group = &config.groups[idx];
         for ctx in query::trees_from_group(config, group) {
             for var in &config.trees[ctx.tree].environment {
