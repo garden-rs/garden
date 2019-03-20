@@ -1,5 +1,12 @@
 # Ideas, New Features, Usability Enhancements
 
+## Set gitconfig values in garden init
+
+    trees:
+        example:
+            gitconfig:
+                remote.origin.annex-ignore: true
+
 ## Allow globs when specifying group members
 
     groups:
