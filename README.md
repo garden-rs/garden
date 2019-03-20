@@ -51,30 +51,19 @@ Example `garden.yaml`:
       prefix: ${TREE_PATH}/target/${flavor}
       num_procs: $ nprocs 2>/dev/null || echo 4
 
-    groups:
-      cola: [cola, git, qtpy, vx]
-
-    gardens:
-      cola:
-        groups: cola
-        commands:
-          setup:
-            - cd ${cola_PATH}
-            - virtualenv --system-site-packages env27
-            - vx env27 make requirements
-            - vx env27 make requirements-dev
-          build: cd "${cola_PATH}" && vx env27 make all
-          doc: cd "${cola_PATH}" && vx env27 make doc
-          test: cd "${cola_PATH}" && vx env27 make test
-          run: vx "${cola_PATH}/env27" git cola
-      gitdev:
-        variables:
-          prefix: ~/apps/gitdev
-        environment:
-          PATH: ~/apps/gitdev/bin
-        trees: git, gitk
+    commands:
+      status:
+        - git branch
+        - git status -s
 
     templates:
+      annex:
+        gitconfig:
+          remote.origin.annex-ignore: true
+        commands:
+          sync:
+            - git fetch && git rebase origin/master
+            - git annex sync --content
       rust:
         environment:
           PATH: ${TREE_PATH}/target/${rust_flavor}
@@ -137,6 +126,50 @@ Example `garden.yaml`:
         environment:
           PATH: ${TREE_PATH}
 
+      annex/music:
+        url: git://git.example.com/music.git
+        remotes:
+          backup: user@backup:music
+        templates: annex
+
+      annex/movies:
+        url: git://git.example.com/movies.git
+        remotes:
+          backup: user@backup:movies
+        templates: annex
+
+
+    # wildcards can be used when specifying names in a group member list,
+    # or in a garden's group and tree lists.
+
+    groups:
+      annex: annex/*
+      cola: [cola, git, qtpy, vx]
+      git-all:
+       - cola
+       - git*
+
+    gardens:
+      annex:
+        trees: annex/*
+      cola27:
+        groups: cola
+        commands:
+          setup27:
+            - virtualenv --system-site-packages env27
+            - vx env27 make requirements
+            - vx env27 make requirements-dev
+          build27: vx env27 make all
+          doc27: vx env27 make doc
+          test27: vx env27 make test
+          run27: vx env27 git cola
+      gitdev:
+        variables:
+          prefix: ~/apps/gitdev
+        environment:
+          PATH: ~/apps/gitdev/bin
+        trees: git*
+
 
 Gardens aggregate groups and trees.  Define a group and reuse the group in
 each garden to share tree lists between gardens.
@@ -145,6 +178,17 @@ Templates allow sharing of variables, gitconfig, and environments between
 trees.  Trees can also reuse another tree definition by specifying the
 "extend" keyword with the name of another tree.  Only the first remote is used
 when extending a tree.
+
+Fields that expect lists can also specify a single string, and the list
+will be treated like a list with a single item.  This is useful, for example,
+when defining groups that consist of a single wildcard pattern.
+
+The names in garden `tree` and `group` lists, and group member names accept glob
+wildcard patterns.
+
+For example, the "annex" group matches all trees that start with "annex/".
+The "git-all" group has two entries -- the first matches all trees that start
+with "git", and the second one matches "cola" explicitly.
 
 
 ### Symlinks
@@ -203,7 +247,12 @@ determining which trees to operate on.  When a garden or group is matched,
 all of its associated trees are included in the operation.
 
 When matching names, gardens have the highest precedence, followed by groups,
-and finally trees.
+and finally trees.  In the following example, the "cola" group is found
+in the example configuration, and the commands are run over multiple repos.
+
+    garden exec cola git status -s
+    garden status cola
+    garden cmd cola status build
 
 If you have groups, gardens, and trees with the same name then you can use the
 `@tree`, `%group`, and `:garden` syntax to disambiguate the name.
