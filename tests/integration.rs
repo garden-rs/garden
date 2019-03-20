@@ -152,4 +152,58 @@ fn integration_gdn_init_symlinks() {
     teardown("tests/tmp/symlinks");
 }
 
+/// `gdn init` sets up git config settings
+#[test]
+fn integration_gdn_init_gitconfig() {
+    setup("gitconfig", "tests/tmp");
+
+    // gdn init examples/tree
+    {
+        let cmd = [
+            "./target/debug/gdn",
+            "--chdir", "./tests/tmp/gitconfig",
+            "--config", "../../integration/garden.yaml",
+            "init", "example/tree",
+        ];
+        let exec = garden::cmd::exec_cmd(&cmd);
+        let exit_status = garden::cmd::status(exec.join());
+        assert_eq!(exit_status, 0);
+    }
+
+    // remote.origin.annex-ignore is true
+    {
+        let command = ["git", "config", "remote.origin.annex-ignore"];
+        let exec = cmd::exec_in_dir(
+            &command, "tests/tmp/gitconfig/example/tree/repo");
+        let capture = cmd::capture_stdout(exec);
+        assert!(capture.is_ok());
+        let output = cmd::trim_stdout(&capture.unwrap());
+        assert_eq!(output, "true");
+    }
+
+    // user.name is "A U Thor"
+    {
+        let command = ["git", "config", "user.name"];
+        let exec = cmd::exec_in_dir(
+            &command, "tests/tmp/gitconfig/example/tree/repo");
+        let capture = cmd::capture_stdout(exec);
+        assert!(capture.is_ok());
+        let output = cmd::trim_stdout(&capture.unwrap());
+        assert_eq!(output, "A U Thor");
+    }
+
+    // user.email is "author@example.com"
+    {
+        let command = ["git", "config", "user.email"];
+        let exec = cmd::exec_in_dir(
+            &command, "tests/tmp/gitconfig/example/tree/repo");
+        let capture = cmd::capture_stdout(exec);
+        assert!(capture.is_ok());
+        let output = cmd::trim_stdout(&capture.unwrap());
+        assert_eq!(output, "author@example.com");
+    }
+
+    teardown("tests/tmp/gitconfig");
+}
+
 }  // integration

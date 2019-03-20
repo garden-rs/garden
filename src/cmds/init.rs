@@ -155,6 +155,25 @@ pub fn init(
                 exit_status = status as i32;
             }
         }
+
+        // Set gitconfig settings
+        let mut gitconfig = Vec::new();
+        for cfg in &config.trees[ctx.tree].gitconfig {
+            gitconfig.push(cfg.clone());
+        }
+
+        for var in &gitconfig {
+            let value = eval::tree_value(config, &var.expr,
+                                         ctx.tree, ctx.garden);
+            let command = [
+                "git", "config", var.name.as_ref(), value.as_ref(),
+            ];
+            let exec = cmd::exec_in_dir(&command, &path);
+            let status = cmd::status(exec.join());
+            if status != 0 {
+                exit_status = status as i32;
+            }
+        }
     }
 
     // Return the last non-zero exit status.

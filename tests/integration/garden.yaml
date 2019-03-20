@@ -8,6 +8,10 @@ trees:
   example/tree:
     environment:
       PATH: "${TREE_PATH}"
+    gitconfig:
+      remote.origin.annex-ignore: true
+      user.name: A U Thor
+      user.email: author@example.com
     path: example/tree/repo
     remotes:
       publish: "${gh_ssh}:user/example.git"
