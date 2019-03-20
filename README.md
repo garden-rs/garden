@@ -52,9 +52,17 @@ Example `garden.yaml`:
       num_procs: $ nprocs 2>/dev/null || echo 4
 
     commands:
+      add: git add -u
+      diff: GIT_PAGER= git diff
+      cola: git cola
+      fetch: git pull --ff-only
+      gitk: gitk --all &
+      log: git log
+      pull: git pull --ff-only
+      push: git push
       status:
         - git branch
-        - git status -s
+        - git status --short
 
     templates:
       annex:
