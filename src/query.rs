@@ -12,28 +12,18 @@ use ::query;
 
 pub fn resolve_trees(config: &model::Configuration, expr: &str)
 -> Vec<model::TreeContext> {
+    let mut result = Vec::new();
     let tree_expr = model::TreeExpression::new(expr);
     let ref pattern = tree_expr.pattern;
 
-    // Highest precedence: the pattern is a default non-special
-    // pattern, and its value points to an existing tree on the
-    // filesystem.  Look up the tree context for this entry and
-    // use the matching tree.
-    if tree_expr.is_default {
-        if let Some(ctx) = tree_from_path(config, &tree_expr.expr) {
-            return vec!(ctx);
-        }
-    }
-
     if tree_expr.include_gardens {
-        let result = garden_trees(config, pattern);
+        result = garden_trees(config, pattern);
         if result.len() > 0 {
             return result;
         }
     }
 
     if tree_expr.include_groups {
-        let mut result = Vec::new();
         for group in &config.groups {
             // Find the matching group
             if !pattern.matches(group.name.as_ref()) {
@@ -55,10 +45,24 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
     // No matching gardens or groups were found.
     // Search for matching trees.
     if tree_expr.include_trees {
-        return trees(config, pattern);
+        result.append(&mut trees(config, pattern));
+        if result.len() > 0 {
+            return result;
+        }
     }
 
-    return Vec::new();
+    // Lowest precedence: match paths on the filesystem.
+    // The pattern is a default non-special pattern, and its value points to an
+    // existing tree on the filesystem.  Look up the tree context for this
+    // entry and use the matching tree.
+    if tree_expr.is_default {
+        if let Some(ctx) = tree_from_path(config, &tree_expr.expr) {
+            result.push(ctx);
+        }
+    }
+
+
+    result
 }
 
 
