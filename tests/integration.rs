@@ -206,4 +206,28 @@ fn integration_gdn_init_gitconfig() {
     teardown("tests/tmp/gitconfig");
 }
 
+/// `gdn eval` evaluates ${GARDEN_CONFIG_DIR}
+#[test]
+fn integration_gdn_eval_garden_config_dir() {
+    setup("configdir", "tests/tmp");
+
+    // gdn eval ${GARDEN_CONFIG_DIR}
+    {
+        let cmd = [
+            "./target/debug/gdn",
+            "--chdir", "./tests/tmp/configdir",
+            "--config", "../../integration/garden.yaml",
+            "eval", "${GARDEN_CONFIG_DIR}",
+        ];
+        let exec = garden::cmd::exec_cmd(&cmd);
+        let capture = cmd::capture_stdout(exec);
+        assert!(capture.is_ok());
+        let output = cmd::trim_stdout(&capture.unwrap());
+        assert!(output.ends_with("/tests/integration"),
+                format!("{} does not end with /tests/integration", output));
+    }
+
+    teardown("tests/tmp/configdir");
+}
+
 }  // integration

@@ -411,7 +411,18 @@ construct paths in variables, commands, and any field that
 accepts garden expressions.
 
     GARDEN_ROOT         -   effective garden root
+    GARDEN_CONFIG_DIR   -   directory containing the "garden.yaml" config file
     TREE_PATH           -   path to the current tree
+
+`GARDEN_CONFIG_DIR` can be used to create relocatable configurations
+that define a `garden.root` relative to the config file itself.
+
+For example, to place all trees in a `src/` directory sibling to
+the `garden.yaml` file, the following configuration can be used:
+
+    garden:
+        root: ${GARDEN_CONFIG_DIR}/src
+
 
 ## Environment Variables
 

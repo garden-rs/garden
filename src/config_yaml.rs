@@ -44,6 +44,23 @@ pub fn parse(string: &str, verbose: bool,
         expr: config.root.expr.to_string(),
         value: None,
     });
+
+    if config.path.is_some() {
+        let mut config_path_raw = config.path.as_ref().unwrap().to_path_buf();
+        config_path_raw.pop();
+
+        // Calculate an absolute path for GARDEN_CONFIG_DIR.
+        if let Ok(config_path) = config_path_raw.canonicalize() {
+            config.variables.push(
+                model::NamedVariable {
+                    name: "GARDEN_CONFIG_DIR".to_string(),
+                    expr: config_path.to_string_lossy().to_string(),
+                    value: None,
+                }
+            );
+        }
+    }
+
     if !get_variables(&doc["variables"], &mut config.variables) && verbose {
         debug!("yaml: no variables");
     }
