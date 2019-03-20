@@ -117,10 +117,8 @@ pub fn trees_from_garden(
 
     // Collect indexes for each tree in this garden
     for tree in &garden.trees {
-        if let Some(tree_ctx) = tree_from_name(
-                config, tree, Some(garden.index), None) {
-            result.push(tree_ctx);
-        }
+        result.append(&mut trees_from_pattern(
+                config, tree, Some(garden.index), None));
     }
 
     result

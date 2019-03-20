@@ -7,19 +7,6 @@
             gitconfig:
                 remote.origin.annex-ignore: true
 
-## Allow globs when specifying group members
-
-    groups:
-        example: foo/*
-
-
-## Allow globs when specifying garden trees and groups
-
-    gardens:
-        example:
-            groups: dev/*
-            trees: beta/*
-
 
 ## garden inspect
 

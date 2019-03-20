@@ -105,4 +105,19 @@ fn trees_from_garden() {
     assert_eq!(result[1].garden, Some(3));
     assert_eq!(result[1].group, Some(5));
     assert_eq!(result[1].tree, 5);
+
+    // wildcard trees
+    let ref annex_wild_trees = config.gardens[4];
+    assert_eq!(annex_wild_trees.name, "annex/wildcard-trees");
+    // query
+    result = garden::query::trees_from_garden(&config, annex_wild_trees);
+    assert_eq!(result.len(), 2);
+    // annex/data
+    assert_eq!(result[0].garden, Some(4));
+    assert_eq!(result[0].group, None);
+    assert_eq!(result[0].tree, 4);
+    // annex/local
+    assert_eq!(result[1].garden, Some(4));
+    assert_eq!(result[1].group, None);
+    assert_eq!(result[1].tree, 5);
 }
