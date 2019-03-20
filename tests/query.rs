@@ -41,6 +41,22 @@ fn resolve_trees_group_expression() {
 }
 
 #[test]
+fn resolve_trees_group_with_wildcards() {
+    let config = common::garden_config();
+    // annex group
+    let result = garden::query::resolve_trees(&config, "%annex");
+    assert_eq!(result.len(), 2);
+    // annex/data
+    assert_eq!(result[0].garden, None);
+    assert_eq!(result[0].group, Some(3));
+    assert_eq!(result[0].tree, 4);
+    // annex/local
+    assert_eq!(result[1].garden, None);
+    assert_eq!(result[1].group, Some(3));
+    assert_eq!(result[1].tree, 5);
+}
+
+#[test]
 fn trees_from_pattern() {
     let config = common::garden_config();
     let result = garden::query::trees_from_pattern(&config, "annex/*", None, None);

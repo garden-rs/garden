@@ -30,12 +30,7 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
                 continue;
             }
             // Matching group found, collect its trees
-            for tree in &group.members {
-                if let Some(tree_ctx) = tree_from_name(config, tree, None,
-                                                       Some(group.index)) {
-                    result.push(tree_ctx);
-                }
-            }
+            result.append(&mut trees_from_group(config, None, group));
         }
         if result.len() > 0 {
             return result;
