@@ -131,15 +131,12 @@ pub fn trees_from_group(
     config: &model::Configuration,
     group: &model::Group,
 ) -> Vec<model::TreeContext> {
-
     let mut result = Vec::new();
 
     // Collect indexes for each tree in this group
     for tree in &group.members {
-        if let Some(mut tree_ctx) = tree_from_name(config, tree,
-                                                   None, Some(group.index)) {
-            result.push(tree_ctx);
-        }
+        result.append(
+            &mut trees_from_pattern(config, tree, None, Some(group.index)));
     }
 
     result
@@ -181,6 +178,51 @@ pub fn tree_from_name(
     }
 
     None
+}
+
+/// Find trees matching a pattern
+/// Parameters:
+/// - config: `&garden::model::Configuration`
+/// - tree: Tree name pattern `&str`
+/// - garden_idx: `Option<garden::model::GardenIndex>`
+
+pub fn trees_from_pattern(
+    config: &model::Configuration,
+    tree: &str,
+    garden_idx: Option<model::GardenIndex>,
+    group_idx: Option<model::GroupIndex>,
+) -> Vec<model::TreeContext> {
+    let mut result = Vec::new();
+
+    let pattern_res = glob::Pattern::new(tree);
+    if pattern_res.is_err() {
+        return result;
+    }
+    let pattern = pattern_res.unwrap();
+
+    // Collect tree indexes for the configured trees
+    for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
+        if pattern.matches(&cfg_tree.name) {
+            // Tree found
+            result.push(model::TreeContext {
+                tree: tree_idx,
+                garden: garden_idx,
+                group: group_idx,
+            });
+        }
+    }
+
+    // Try to find the specified name on the filesystem if no tree was found
+    // that matched the specified name.  Matching trees are found by matching
+    // tree paths against the specified name.
+    if result.is_empty() {
+        if let Some(ctx) = tree_from_path(config, tree) {
+            result.push(ctx);
+        }
+    }
+
+
+    result
 }
 
 

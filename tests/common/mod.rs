@@ -93,6 +93,7 @@ pub fn garden_config() -> garden::model::Configuration {
         cola: [git, cola, python/qtpy]
         test: [a, b, c]
         reverse: [cola, git]
+        annex: annex/*
 
     gardens:
         cola:
