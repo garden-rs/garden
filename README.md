@@ -8,15 +8,25 @@ self-contained Git trees.
 
 * Make it easy to define collections of independent Git repositories and
   group them into cohesive development gardens.
+
 * Build/test/install interdependent projects in self-contained sandboxes.
+
 * Bootstrap development environments from simple configuration.
+
 * Make it easy to recreate complex Git-based development environments from
-  scratch using a simple yaml configuration format.
+  scratch using a simple configuration file.
 
 Garden is useful when you're writing software and weaving together
 development environments directly from Git trees.  Garden aids in common
 development setup steps such as setting environment variables, search paths,
 and creating arbitrary groupings of repositories for development.
+
+Garden is used by creating a simple configuration file and defining a
+directory structure for git trees.  Existing trees can be added to the
+configuration using `gdn add`.
+
+When bootstrapping from a pre-defined `garden.yaml`, the `gdn init` command
+is used to bring trees into existence.
 
 
 ## Configuration
@@ -179,6 +189,11 @@ Example `garden.yaml`:
         trees: git*
 
 
+The garden root directory is configured in the `garden.root` field.
+This directory is the parent directory beneath which all trees will be cloned.
+Slashes in tree names will create new directories on disk as needed.
+`garden.root` defaults to the current directory when unspecified.
+
 Gardens aggregate groups and trees.  Define a group and reuse the group in
 each garden to share tree lists between gardens.
 
@@ -190,6 +205,8 @@ when extending a tree.
 Fields that expect lists can also specify a single string, and the list
 will be treated like a list with a single item.  This is useful, for example,
 when defining groups that consist of a single wildcard pattern.
+
+### Wildcards
 
 The names in garden `tree` and `group` lists, and group member names accept glob
 wildcard patterns.
