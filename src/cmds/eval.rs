@@ -17,7 +17,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden eval - evaluate expressions");
+        ap.set_description("gdn eval - evaluate garden expressions");
 
         ap.refer(&mut expr).required()
             .add_argument("garden-expr", argparse::Store,
@@ -29,7 +29,7 @@ pub fn main(app: &mut model::ApplicationContext) {
         ap.refer(&mut garden)
             .add_argument("garden", argparse::Store, "garden to evaluate");
 
-        options.args.insert(0, "garden eval".to_string());
+        options.args.insert(0, "gdn eval".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {

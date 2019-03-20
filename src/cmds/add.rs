@@ -29,7 +29,7 @@ pub fn main(app: &mut model::ApplicationContext) {
         ap.refer(&mut paths).required()
             .add_argument("paths", argparse::List, "trees to add");
 
-        options.args.insert(0, "garden add".to_string());
+        options.args.insert(0, "gdn add".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {

@@ -3,7 +3,7 @@ use ::model;
 use ::query;
 
 
-/// Main entry point for the "garden exec" command
+/// Main entry point for the "gdn exec" command
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
@@ -18,7 +18,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.stop_on_first_argument(true);
-        ap.set_description("garden exec - run commands inside gardens");
+        ap.set_description("gdn exec - run commands inside gardens");
 
         ap.refer(&mut expr).required()
             .add_argument("tree-expr", argparse::Store,
@@ -28,7 +28,7 @@ pub fn main(app: &mut model::ApplicationContext) {
             .add_argument("command", argparse::List,
                           "command to run over resolved trees");
 
-        options.args.insert(0, "garden exec".to_string());
+        options.args.insert(0, "gdn exec".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {

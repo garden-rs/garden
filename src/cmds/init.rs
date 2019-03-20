@@ -4,7 +4,7 @@ use ::model;
 use ::query;
 
 
-/// Main entry point for the "garden exec" command
+/// Main entry point for the "gdn exec" command
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
@@ -28,11 +28,11 @@ pub fn main(app: &mut model::ApplicationContext) {
 
 fn parse_args(exprs: &mut Vec<String>, options: &mut model::CommandOptions) {
     // Parse arguments
-    options.args.insert(0, "garden init".to_string());
+    options.args.insert(0, "gdn init".to_string());
 
     let mut ap = argparse::ArgumentParser::new();
     ap.set_description(
-        "garden init - Create gardens or reinitialize existing ones");
+        "gdn init - Create gardens or reinitialize existing ones");
 
     ap.refer(exprs).required()
         .add_argument("tree-expr", argparse::List,
