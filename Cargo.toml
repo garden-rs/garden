@@ -20,9 +20,6 @@ homepage = "https://github.com/davvid/garden"
 version = "1.0.0"
 authors = ["David Aguilar <davvid@gmail.com>"]
 
-[[bin]]
-name = "garden"
-
 [dependencies]
 argparse = "*"
 glob = "*"

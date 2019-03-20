@@ -212,9 +212,9 @@ defaults to a path named after the tree relative to the garden root.
 
 All garden commands have this basic syntax:
 
-    garden [options] <command> [command-options] [command-arguments]*
+    gdn [options] <command> [command-options] [command-arguments]*
 
-The following options must be specified before `<command>`, and is
+The following options are specified before `<command>`, and are
 global to all `garden` commands.
 
     -c | --config <path>
@@ -250,16 +250,16 @@ When matching names, gardens have the highest precedence, followed by groups,
 and finally trees.  In the following example, the "cola" group is found
 in the example configuration, and the commands are run over multiple repos.
 
-    garden exec cola git status -s
-    garden status cola
-    garden cmd cola status build
+    gdn exec cola git status -s
+    gdn status cola
+    gdn cmd cola status build
 
 If you have groups, gardens, and trees with the same name then you can use the
 `@tree`, `%group`, and `:garden` syntax to disambiguate the name.
 
-    garden init @tree  # initialize the tree called "tree"
-    garden init %group  # initialize the group called "group"
-    garden init :garden  # initialize the garden called "garden"
+    gdn init @tree  # initialize the tree called "tree"
+    gdn init %group  # initialize the group called "group"
+    gdn init :garden  # initialize the garden called "garden"
 
 Garden understands shell wildcards, so multiple trees, gardens, or
 groups can be matched by using wildcards.  For example, `garden init '@x*'`
@@ -277,19 +277,19 @@ and wildcards are all referred to as "tree expressions".  Tree expressions
 are strings that resolve to a set of trees.
 
 
-### garden add
+### gdn add
 
-    garden add <path>
+    gdn add <path>
 
 Add an existing tree at `<path>` to `garden.yaml`.
 
 
-### garden cmd
+### gdn cmd
 
-    garden cmd <tree-expression> <command>*
+    gdn cmd <tree-expression> <command>*
 
 Run command(s) over the trees matched by `<tree-expression>`.
-For example, to build and test Git, `garden cmd git build test`.
+For example, to build and test Git, `gdn cmd git build test`.
 
 Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level extend commands defined on a tree.
@@ -297,36 +297,36 @@ Commands defined at the garden level extend commands defined on a tree.
 
 ### garden custom sub-commands
 
-    garden <command> <tree-expression>*
+    gdn <command> <tree-expression>*
 
-    garden diff @cola
+    gdn diff @cola
 
 When no builtin command exists by the specified name then garden will
 run custom commands by that name.
 
-This is complementary to `garden cmd <tree-expression> <command>*`
+This is complementary to `gdn cmd <tree-expression> <command>*`
 because that form allows multiple commands; this form allows multiple
 tree-expressions, and is convenient to type.
 
 
-### garden exec
+### gdn exec
 
-    garden exec <tree-expression> <command> <arguments>*
+    gdn exec <tree-expression> <command> <arguments>*
 
 Execute a command on all of the trees matched by `<tree-expression>`.
-Example: `garden exec cola git status -s`.
+Example: `gdn exec cola git status -s`.
 
 
-### garden eval
+### gdn eval
 
-    garden eval <expression> <tree> [<garden>]
+    gdn eval <expression> <tree> [<garden>]
 
 Evaluate a garden expression in the specified tree context.
 
 
-### garden init
+### gdn init
 
-    garden init <tree-expression>
+    gdn init <tree-expression>
 
 Initialize the tree(s) referenced by the `<tree-expression>`.
 Garden will use the first set of matching trees, gardens, or groups, in that
@@ -337,9 +337,9 @@ safe to re-run the `init` command.  For existing trees, their git
 configuration will be updated to match any changes made to the configuration.
 
 
-### garden shell
+### gdn shell
 
-    garden shell <tree-expression> [<tree>]
+    gdn shell <tree-expression> [<tree>]
 
 Launch a shell inside the environment formed by the tree expression.
 The optional tree argument specifies which tree to chdir into.
