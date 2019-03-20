@@ -17,3 +17,4 @@ mkdir -p "$1" && (
         git commit-tree -m "$1" "$tree" >refs/heads/master
     )
 )
+

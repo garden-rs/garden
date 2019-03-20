@@ -133,6 +133,7 @@ pub fn init(
             }
         }
 
+        // Add/update git remote configuration.
         for (k, v) in &config_remotes {
             let url = eval::tree_value(config, &v, ctx.tree, ctx.garden);
 
