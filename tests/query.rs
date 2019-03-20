@@ -22,6 +22,7 @@ fn tree_expression_wildcard() {
     let result = garden::query::resolve_trees(&config, "@c*");
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].garden, None);
+    assert_eq!(result[0].group, None);
     assert_eq!(result[0].tree, 1);
 }
 
@@ -32,7 +33,9 @@ fn group_expression() {
     let result = garden::query::resolve_trees(&config, "%rev*");
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].garden, None);
+    assert_eq!(result[0].group, Some(2));
     assert_eq!(result[0].tree, 1);
     assert_eq!(result[1].garden, None);
+    assert_eq!(result[1].group, Some(2));
     assert_eq!(result[1].tree, 0);
 }
