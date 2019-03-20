@@ -77,31 +77,28 @@ fn gdn_init_remotes() {
     let exec = garden::cmd::exec_cmd(&cmd);
     let exit_status = garden::cmd::status(exec.join());
     assert_eq!(exit_status, 0);
+
     // remote.origin.url is a read-only git:// URL
     {
         let command = ["git", "config", "remote.origin.url"];
         let exec = cmd::exec_in_dir(
             &command, "tests/tmp/remotes/example/tree/repo");
-        if let Ok(x) = cmd::capture_stdout(exec) {
-            let output = cmd::trim_stdout(&x);
-            assert!(output.ends_with("/tests/tmp/remotes/repos/example.git"),
-            format!("{} does not end with /tests/tmp/clone/repos/example.git",
-                    output));
-        } else {
-            assert!(false, "'git config remote.origin.url' had an error");
-        }
+        let capture = cmd::capture_stdout(exec);
+        assert!(capture.is_ok());
+        let output = cmd::trim_stdout(&capture.unwrap());
+        assert!(output.ends_with("/tests/tmp/remotes/repos/example.git"),
+                format!("{} does not end with {}",
+                        output, "/tests/tmp/clone/repos/example.git"));
     }
 
     // remote.publish.url is a ssh push URL
     {
         let command = ["git", "config", "remote.publish.url"];
         let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
-        if let Ok(x) = cmd::capture_stdout(exec) {
-            let output = cmd::trim_stdout(&x);
-            assert_eq!(output, "git@github.com:user/example.git");
-        } else {
-            assert!(false, "'git config remote.publish.url' had an error");
-        }
+        let capture = cmd::capture_stdout(exec);
+        assert!(capture.is_ok());
+        let output = cmd::trim_stdout(&capture.unwrap());
+        assert_eq!(output, "git@github.com:user/example.git");
     }
 
     teardown("tests/tmp/remotes");
