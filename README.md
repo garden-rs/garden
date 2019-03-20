@@ -10,8 +10,8 @@ self-contained Git trees.
   group them into cohesive development gardens.
 * Build/test/install interdependent projects in self-contained sandboxes.
 * Bootstrap development environments from simple configuration.
-* Make it easy to configure a Git-based development environment so that it can
-  be recreated from scratch.
+* Make it easy to recreate complex Git-based development environments from
+  scratch using a simple yaml configuration format.
 
 Garden is useful when you're writing software and weaving together
 development environments directly from Git trees.  Garden aids in common
@@ -112,6 +112,7 @@ Example `garden.yaml`:
 
       garden/release:
         extend: garden
+        path: garden
         variables:
           flavor: release
 
@@ -137,8 +138,8 @@ Example `garden.yaml`:
           PATH: ${TREE_PATH}
 
 
-Gardens aggregate groups and trees.  If tree lists need to be shared between
-gardens, define a group and reuse the group in each garden.
+Gardens aggregate groups and trees.  Define a group and reuse the group in
+each garden to share tree lists between gardens.
 
 Templates allow sharing of variables, gitconfig, and environments between
 trees.  Trees can also reuse another tree definition by specifying the
