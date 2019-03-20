@@ -404,6 +404,15 @@ When resolving values, variables defined in a tree scope override/replace
 variables defined at the global scope.  Variables defined in garden scope
 override/replace variables defined in a tree scope.
 
+## Built-in variables
+
+Garden automatically defines a few variables that can be used to
+construct paths in variables, commands, and any field that
+accepts garden expressions.
+
+    GARDEN_ROOT         -   effective garden root
+    TREE_PATH           -   path to the current tree
+
 ## Environment Variables
 
 The "environment" block defines variables that are stored in the environment.
