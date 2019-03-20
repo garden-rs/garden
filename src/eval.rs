@@ -269,7 +269,7 @@ pub fn environment(
     } else if let Some(idx) = context.group {
         // Evaluate group environments.
         let group = &config.groups[idx];
-        for ctx in query::trees_from_group(config, group) {
+        for ctx in query::trees_from_group(config, None, group) {
             for var in &config.trees[ctx.tree].environment {
                 vars.push((ctx.clone(), var.clone()));
             }

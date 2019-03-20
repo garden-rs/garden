@@ -61,7 +61,7 @@ fn trees_from_group() {
     let annex_grp = &config.groups[3];
     assert_eq!(annex_grp.name, "annex");
 
-    let result = garden::query::trees_from_group(&config, annex_grp);
+    let result = garden::query::trees_from_group(&config, None, annex_grp);
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].garden, None);
     assert_eq!(result[0].group, Some(3));
@@ -69,4 +69,40 @@ fn trees_from_group() {
     assert_eq!(result[1].garden, None);
     assert_eq!(result[1].group, Some(3));
     assert_eq!(result[1].tree, 5);  // annex/local
+}
+
+#[test]
+fn trees_from_garden() {
+    let config = common::garden_config();
+    assert!(config.gardens.len() > 3);
+
+    // regulard group, group uses wildcards
+    let ref annex_group = config.gardens[2];
+    assert_eq!(annex_group.name, "annex/group");
+    // query
+    let mut result = garden::query::trees_from_garden(&config, annex_group);
+    assert_eq!(result.len(), 2);
+    // annex/data
+    assert_eq!(result[0].garden, Some(2));
+    assert_eq!(result[0].group, Some(3));
+    assert_eq!(result[0].tree, 4);
+    // annex/local
+    assert_eq!(result[1].garden, Some(2));
+    assert_eq!(result[1].group, Some(3));
+    assert_eq!(result[1].tree, 5);
+
+    // wildcard groups
+    let ref annex_wild_groups = config.gardens[3];
+    assert_eq!(annex_wild_groups.name, "annex/wildcard-groups");
+    // query
+    result = garden::query::trees_from_garden(&config, annex_wild_groups);
+    assert_eq!(result.len(), 2);
+    // annex/data
+    assert_eq!(result[0].garden, Some(3));
+    assert_eq!(result[0].group, Some(4));
+    assert_eq!(result[0].tree, 4);
+    // annex/local
+    assert_eq!(result[1].garden, Some(3));
+    assert_eq!(result[1].group, Some(5));
+    assert_eq!(result[1].tree, 5);
 }

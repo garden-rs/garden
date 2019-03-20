@@ -61,7 +61,6 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
         }
     }
 
-
     result
 }
 
@@ -99,19 +98,20 @@ pub fn trees_from_garden(
 
     // Loop over the garden's groups.
     for group in &garden.groups {
-        // Loop over configured groups to find the matching name
+        // Create a glob pattern for the group entry
+        let pattern_res = glob::Pattern::new(&group);
+        if pattern_res.is_err() {
+            continue;
+        }
+        let pattern = pattern_res.unwrap();
+        // Loop over configured groups to find the matching groups
         for cfg_group in &config.groups {
-            if &cfg_group.name != group {
+            if !pattern.matches(&cfg_group.name) {
                 continue;
             }
-            // Match found -- loop over each tree in the group and
-            // find its index in the configuration.
-            for tree in &cfg_group.members {
-                if let Some(tree_ctx) = tree_from_name(
-                        config, tree, Some(garden.index), None) {
-                    result.push(tree_ctx);
-                }
-            }
+            // Match found -- take all of the discovered trees.
+            result.append(
+                &mut trees_from_group(config, Some(garden.index), cfg_group));
         }
     }
 
@@ -129,6 +129,7 @@ pub fn trees_from_garden(
 /// Return the tree contexts for a garden
 pub fn trees_from_group(
     config: &model::Configuration,
+    garden: Option<model::GardenIndex>,
     group: &model::Group,
 ) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
@@ -136,7 +137,7 @@ pub fn trees_from_group(
     // Collect indexes for each tree in this group
     for tree in &group.members {
         result.append(
-            &mut trees_from_pattern(config, tree, None, Some(group.index)));
+            &mut trees_from_pattern(config, tree, garden, Some(group.index)));
     }
 
     result

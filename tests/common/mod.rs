@@ -94,6 +94,8 @@ pub fn garden_config() -> garden::model::Configuration {
         test: [a, b, c]
         reverse: [cola, git]
         annex: annex/*
+        annex-1: annex/data
+        annex-2: annex/local
 
     gardens:
         cola:
@@ -113,6 +115,10 @@ pub fn garden_config() -> garden::model::Configuration {
             gitconfig:
                 user.name: A U Thor
                 user.email: author@example.com
+        annex/group:
+            groups: annex
+        annex/wildcard-groups:
+            groups: annex-*
     "#.to_string();
 
     return from_string(&string);

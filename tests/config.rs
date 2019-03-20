@@ -314,7 +314,7 @@ fn gardens_json() {
 }
 
 fn test_gardens(config: &garden::model::Configuration) {
-    assert_eq!(config.gardens.len(), 2);
+    assert!(config.gardens.len() >= 2);
 
     // "cola" garden
     assert_eq!(config.gardens[0].name, "cola");
