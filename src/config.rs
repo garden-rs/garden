@@ -59,7 +59,7 @@ fn search_path() -> Vec<std::path::PathBuf> {
         paths.push(etc_garden);
     }
 
-    return paths;
+    paths
 }
 
 
