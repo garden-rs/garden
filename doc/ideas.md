@@ -8,8 +8,8 @@
                 remote.origin.annex-ignore: true
 
 
-## garden inspect
+## gdn inspect
 
-    garden inspect <tree-expr>
+    gdn inspect <tree-expr>*
 
 Show the repository status for the resolved trees.
