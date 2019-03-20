@@ -1,16 +1,12 @@
-# Ideas
+# Ideas, New Features, Usability Enhancements
 
-
-## Features
-
-
-### Allow globs when specifying group members
+## Allow globs when specifying group members
 
     groups:
         example: foo/*
 
 
-### Allow globs when specifying garden trees and groups
+## Allow globs when specifying garden trees and groups
 
     gardens:
         example:
@@ -18,11 +14,8 @@
             trees: beta/*
 
 
-### garden inspect
+## garden inspect
 
     garden inspect <tree-expr>
 
 Show the repository status for the resolved trees.
-
-
-# vim: set ts=4 sw=4 sts=4
