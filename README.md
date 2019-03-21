@@ -16,10 +16,10 @@ self-contained Git trees.
 * Make it easy to recreate complex Git-based development environments from
   scratch using a simple configuration file.
 
-Garden is useful when you're writing software and weaving together
-development environments directly from Git trees.  Garden aids in common
-development setup steps such as setting environment variables, search paths,
-and creating arbitrary groupings of repositories for development.
+Garden helps weave together development environments directly from Git trees.
+Garden aids in common development setup steps such as setting environment
+variables, search paths, and creating arbitrary groupings of repositories for
+development.
 
 Garden is used by creating a simple configuration file and defining a
 directory structure for git trees.  Existing trees can be added to the
@@ -28,8 +28,7 @@ configuration using `gdn add`.
 When bootstrapping from a pre-defined `garden.yaml`, the `gdn init` command
 is used to bring trees into existence.
 
-
-## Configuration
+# Configuration
 
 Garden is configured through a garden configuration file, typically called
 "garden.yaml".  You can specify a config file by specifying
@@ -51,7 +50,9 @@ Garden searches for "garden.yaml" in the following locations by default.
     # Global configuration
     /etc/garden/garden.yaml
 
-Example `garden.yaml`:
+
+The following example `garden.yaml` is referred to by the documentation
+when showing examples.
 
     garden:
       root: ~/src
@@ -156,10 +157,6 @@ Example `garden.yaml`:
           backup: user@backup:movies
         templates: annex
 
-
-    # wildcards can be used when specifying names in a group member list,
-    # or in a garden's group and tree lists.
-
     groups:
       annex: annex/*
       cola: [cola, git, qtpy, vx]
@@ -189,31 +186,126 @@ Example `garden.yaml`:
         trees: git*
 
 
+### Garden Root
+
 The garden root directory is configured in the `garden.root` field.
 This directory is the parent directory beneath which all trees will be cloned.
-Slashes in tree names will create new directories on disk as needed.
+Slashes in tree paths will create new directories on disk as needed.
 `garden.root` defaults to the current directory when unspecified.
 
+
+The built-in `${GARDEN_CONFIG_DIR}` variable can be used to create relocatable
+setups that define a `garden.root` relative to the config file itself.
+
+To place all trees in a `src` directory sibling to the `garden.yaml` file, the
+following configuration can be used:
+
+    garden:
+      root: ${GARDEN_CONFIG_DIR}/src
+
+# Variables
+
+Garden configuration contains a "variables" block that allows defining
+variables that are can be referenced by other garden values.
+
+    variables:
+      flavor: debug
+      home: ~
+      user: $ whoami
+      libdir: $ test -e /usr/lib64 && echo lib64 || echo lib
+      nproc: $ nproc
+      prefix: ${TREE_PATH}/target/${flavor}
+      py_ver_code: from sys import version_info as v; print("%s.%s" % v[:2])
+      py_ver: $ python -c '${py_ver_code}'
+      py_site: ${libdir}/python${py_ver}/site-packages
+
+Variables definitions can reference environment variables and other garden
+variables.
+
+Variable references use shell `${variable}` syntax.
+
+Values that start with dollar-sign+space (`$ `) are called "exec expressions".
+Exec expressions are run through a shell after evaluation and replaced with
+the output of the evaluated command.
+
+When resolving values, variables defined in a tree scope override/replace
+variables defined at the global scope.  Variables defined in garden scope
+override/replace variables defined in a tree scope.
+
+# Built-in variables
+
+Garden automatically defines some built-in variables that can be useful
+when constructing values for variables, commands, and paths.
+
+    GARDEN_CONFIG_DIR   -   directory containing the "garden.yaml" config file
+    GARDEN_ROOT         -   root directory for trees
+    TREE_NAME           -   current tree name
+    TREE_PATH           -   current tree path
+
+## Environment Variables
+
+The "environment" block defines variables that are stored in the environment.
+Names with an equals sign (`=`) suffix are treated as literal values and
+stored in the environment as-is.  Otherwise, the variable names are prepended
+to using colons (`:`).  Use a plus sign (`+`) suffix in the name to append
+to a variable instead of prepending.
+
+Environment variables are resolved in the same order as the garden variables:
+global scope, tree scope, and garden scope.  This allows gardens to
+prepend/append variables after a tree, thus allowing for customization
+of behavior from the garden scope.
+
+Environment variables are resolved after garden variables.  This allows
+the use of garden variables when defining environment variable values.
+
+Environment variable names can use garden `${variable}` syntax when defining
+their name, for example,
+
+    trees:
+      foo:
+        environment:
+          ${TREE_NAME}_LOCATION=: ${TREE_PATH}
+
+exports a variable called `foo_LOCATION` with the location of the `foo` tree.
+
+
+### OS Environment Variables
+
+OS-level environment variables that are present in garden's runtime
+environment can be referenced using garden `${variable}` expression syntax.
+Garden variables have higher precedence than environment variables when
+resolving `${variable}` references -- the environment is checked only when
+no garden variables exist by that name.
+
+### Gardens and Groups
+
 Gardens aggregate groups and trees.  Define a group and reuse the group in
-each garden to share tree lists between gardens.
+different gardens to share tree lists between gardens.  Defining gardens
+and groups make those names available when querying for trees.
+
+### Templates
 
 Templates allow sharing of variables, gitconfig, and environments between
 trees.  Trees can also reuse another tree definition by specifying the
 "extend" keyword with the name of another tree.  Only the first remote is used
 when extending a tree.
 
-Fields that expect lists can also specify a single string, and the list
-will be treated like a list with a single item.  This is useful, for example,
-when defining groups that consist of a single wildcard pattern.
+### Automagic Lists
+
+Fields that expect lists can also be specified using a single string, and the
+list will be treated like a list with a single item.  This is useful, for
+example, when defining groups using wildcards, or commands which can sometimes
+be one-lines, and multi-line at other times.
 
 ### Wildcards
 
 The names in garden `tree` and `group` lists, and group member names accept glob
 wildcard patterns.
 
-For example, the "annex" group matches all trees that start with "annex/".
-The "git-all" group has two entries -- the first matches all trees that start
-with "git", and the second one matches "cola" explicitly.
+The "annex" group definition is: `annex/*`.   This matches all trees that
+start with "annex/".  The "git-all" group has two entries -- `git*` and
+`cola`.  the first matches all trees that start with "git", and the second one
+matches "cola" only.
 
 
 ### Symlinks
@@ -257,22 +349,51 @@ with or without an extension.  Garden will add the extension automatically.
 Enable verbose debugging output.
 
 
-    -s | --set  $name=$value
+    -s | --set  name=value
 
-Override a configured variable by passing a `$name=$value` expression to
-the `--set` option.  The variable named `$name` will be updated with the
-expression `$value`.  This option can be specified multiple times.
+Override a configured variable by passing a `name=value` string to
+the `--set` option.  The variable named `name` will be updated with the
+garden expression `value`.  Multiple variables can be set by specifying the
+flag multiple times.
+
 
 #### Gardens, Groups and Trees
 
-Garden commands take command-line arguments that specify a subset of
-trees to operate on.  When a name is mentioned on the command-line, garden
-will use the first matching garden, group, or tree, in that order, when
-determining which trees to operate on.  When a garden or group is matched,
-all of its associated trees are included in the operation.
+Trees are Git repositories with configuration that allows for the
+specification of arbitrary commands and workflows.  Groups are a simple
+named grouping mechanism.
 
-When matching names, gardens have the highest precedence, followed by groups,
-and finally trees.  In the following example, the "cola" group is found
+Gardens can include groups and trees, as well as environment, gitconfig, and
+custom commands in addition to the ones provided by each tree.
+
+#### Tree queries
+
+Command arguments with explicit garden names, `@tree` references,
+`%group` syntax, and wildcards are all referred to as "tree queries".
+Tree queries are strings that resolve to a set of trees.
+
+Glob  wildcards in tree queries allows operations to span over ad-hoc gardens,
+groups, and trees.  A garden.yaml configuration can be carefully crafted for
+maximum glob-ability.
+
+For example, `gdn exec 'annex/*' operates on all the `annex/` repositories.
+
+Garden commands take tree query arguments that specify which trees to
+operate on.  When a name is mentioned on the command-line, garden will use the
+first matching garden, group, or tree, in that order, when determining which
+trees to operate on.  When a garden or group is matched, all of its associated
+trees are included in the operation.
+
+Paths can be specified as well, but the filesystem has the lowest priority
+relative to gardens, groups, and trees.  When specifyiing paths they must
+resolve to a configured tree.  For example:
+
+    gdn build .
+
+Will build the tree in the current directory.
+
+
+In the following example, the "cola" group is found
 in the example configuration, and the commands are run over multiple repos.
 
     gdn exec cola git status -s
@@ -282,39 +403,40 @@ in the example configuration, and the commands are run over multiple repos.
 If you have groups, gardens, and trees with the same name then you can use the
 `@tree`, `%group`, and `:garden` syntax to disambiguate the name.
 
-    gdn init @tree  # initialize the tree called "tree"
-    gdn init %group  # initialize the group called "group"
-    gdn init :garden  # initialize the garden called "garden"
+    gdn init @tree      # initialize the tree called "tree"
+    gdn init %group     # initialize the group called "group"
+    gdn init :garden    # initialize the garden called "garden"
+
+Gardens have highest priority, so the ":garden" query is rarely needed
+in practice.  "%group" and "@tree" queries refer to groups and trees only, but
+not gardens which have the same name.
 
 Garden understands shell wildcards, so multiple trees, gardens, or
-groups can be matched by using wildcards.  For example, `garden init '@x*'`
-initializes all trees that start with "x".
+groups can be matched by using wildcards.  For example,
 
-When a tree expression matches an existing path on disk, garden will use that
-path to find a matching tree in its tree configuration.  The matching tree
-will be used for the command when found.
+    gdn init '@annex/*'
 
-
-#### Tree Expressions
-
-Command arguments with explicit garden names, @tree references, %group syntax,
-and wildcards are all referred to as "tree expressions".  Tree expressions
-are strings that resolve to a set of trees.
+initializes all trees that start with "annex/".
 
 
 ### gdn add
 
     gdn add <path>
 
-Add an existing tree at `<path>` to `garden.yaml`.
+    # example
+    gdn add src/repo
+
+Add an existing Git tree at `<path>` to `garden.yaml`.
 
 
 ### gdn cmd
 
-    gdn cmd <tree-expression> <command>*
+    gdn cmd <query> <command>...
 
-Run command(s) over the trees matched by `<tree-expression>`.
-For example, to build and test Git, `gdn cmd git build test`.
+    # example
+    gdn cmd cola build test
+
+Run commands over the trees matched by `<query>`.
 
 Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level extend commands defined on a tree.
@@ -322,134 +444,73 @@ Commands defined at the garden level extend commands defined on a tree.
 
 ### garden custom sub-commands
 
-    gdn <command> <tree-expression>*
+    gdn <command> <query>...
 
-    gdn diff @cola
+    # example
+    gdn status @cola .
+    gdn build . git
 
 When no builtin command exists by the specified name then garden will
-run custom commands by that name.
+use custom commands defined in a "commands" block at the corresponding
+garden or tree scope.
 
-This is complementary to `gdn cmd <tree-expression> <command>*`
-because that form allows multiple commands; this form allows multiple
-tree-expressions, and is convenient to type.
+This is complementary to `gdn cmd <query> <command>...`.
+That form can run multiple commands; this form operates over multiple queries.
 
 
 ### gdn exec
 
-    gdn exec <tree-expression> <command> <arguments>*
+    gdn exec <query> <command> <arguments>...
 
-Execute a command on all of the trees matched by `<tree-expression>`.
-Example: `gdn exec cola git status -s`.
+    # example
+    gdn exec cola git status -s
+
+Execute a command on all of the trees matched by `<query>`.
 
 
 ### gdn eval
 
-    gdn eval <expression> <tree> [<garden>]
+    gdn eval <expression> [<tree>] [<garden>]
+
+    # example
+    gdn eval '${GARDEN_ROOT}'
+    gdn eval '${TREE_PATH}' cola
 
 Evaluate a garden expression in the specified tree context.
+If no tree is given then the variable scope includes the top-level variables
+block only.
+
+When a tree is given then its variables are considered as well.
+When a garden is specified then the garden's variables are also available for
+evaluation.
 
 
 ### gdn init
 
-    gdn init <tree-expression>
+    gdn init <query>
 
-Initialize the tree(s) referenced by the `<tree-expression>`.
-Garden will use the first set of matching trees, gardens, or groups, in that
-order, when determining which trees to initialize.
+    # example
+    gdn init cola
 
-The `init` command can also be used to update existing trees.  It is always
-safe to re-run the `init` command.  For existing trees, their git
-configuration will be updated to match any changes made to the configuration.
+Initialize the tree(s) referenced by the `<query>`.  The `init` command can
+also be used to update existing trees.  It is safe to re-run the `init`
+command.  For existing trees, their git configuration will be updated to match
+any changes made to the configuration.  Missing repositories are cloned from
+their configured url.
 
 
 ### gdn shell
 
-    gdn shell <tree-expression> [<tree>]
+    gdn shell <query> [<tree>]
 
-Launch a shell inside the environment formed by the tree expression.
+    # example
+    gdn shell cola
+
+Launch a shell inside the environment formed by the tree query.
 The optional tree argument specifies which tree to chdir into.
 
-If the resolved tree expression contains a tree whose name exactly matches the
-expression itself that tree's directory will be used when opening the shell.
-
-
-## Variables
-
-Garden configuration contains a "variables" block that allows defining
-variables that are can be referenced by other garden values.
-
-    variables:
-        flavor: debug
-        home: ~
-        user: $ whoami
-        libdir: $ test -e /usr/lib64 && echo lib64 || echo lib
-        prefix: ${TREE_PATH}/target/${flavor}
-        py_ver_code: from sys import version_info as v; print("%s.%s" % v[:2])
-        py_ver: $ python -c '${py_ver_code}'
-        py_site: ${libdir}/python${py_ver}/site-packages
-
-Variables definitions can reference environment variables and garden variables
-that were defined before them a "variables" block.
-
-Variable references use shell `${variable}` syntax.
-
-Values that start with dollar-sign, space (`$ `) are called "exec expressions".
-Exec expressions are run through a shell after evaluation and replaced with
-the output of the evaluated command.
-
-Garden variables references and Exec expressions can be used within tree and
-garden definitions.
-
-When resolving values, variables defined in a tree scope override/replace
-variables defined at the global scope.  Variables defined in garden scope
-override/replace variables defined in a tree scope.
-
-## Built-in variables
-
-Garden automatically defines a few variables that can be used to
-construct paths in variables, commands, and any field that
-accepts garden expressions.
-
-    GARDEN_ROOT         -   effective garden root
-    GARDEN_CONFIG_DIR   -   directory containing the "garden.yaml" config file
-    TREE_PATH           -   path to the current tree
-
-`GARDEN_CONFIG_DIR` can be used to create relocatable configurations
-that define a `garden.root` relative to the config file itself.
-
-For example, to place all trees in a `src/` directory sibling to
-the `garden.yaml` file, the following configuration can be used:
-
-    garden:
-        root: ${GARDEN_CONFIG_DIR}/src
-
-
-## Environment Variables
-
-The "environment" block defines variables that are stored in the environment.
-Names with an equals sign (`=`) suffix are treated as literal values and
-stored in the environment as-is.  Otherwise, the variable names are prepended
-to using colons (`:`).  Use a plus sign (`+`) suffix in the name to append
-to a variable instead of prepending.
-
-Environment variables are resolved in the same order as the garden variables:
-global scope, tree scope, and garden scope.  This allows gardens to
-prepend/append variables after a tree, thus allowing for customization
-of behavior from the garden scope.
-
-Environment variables are resolved after garden variables.  This allows
-the use of garden variables when defining environment variable values.
-
-Environment variable names can use garden `${variable}` syntax when defining
-their name, for example `${TREE_NAME}_LOCATION=: ${TREE_PATH}` exports a
-variable called `xyz_LOCATION` with the location of the `xyz` tree when used
-inside the `xyz` tree's environment definition.
-
-
-### OS Environment Variables
-
-OS-level environment variables that are present in garden's runtime
-environment can be referenced using garden `${variable}` expression syntax.
-Garden variables have higher precedence than environment variables when
-resolving `${variable}` references -- the environment is checked only when
-no garden variables exist by that name.
+If the resolved tree query contains a tree whose name exactly matches the
+query string then that tree's directory will be used when opening the shell.
+The optional tree argument is not needed for the common case where a garden
+and tree share a name -- garden will chdir into that same-named tree when
+creating the shell.
