@@ -36,7 +36,8 @@ fn main() {
             .add_option(&["-q", "--quiet"], argparse::StoreTrue, "be quiet");
 
         ap.refer(&mut options.subcommand).required()
-            .add_argument("command", argparse::Store, "command to run");
+            .add_argument("command", argparse::Store,
+                          "{add, cmd, eval, exec, ls, shell, <custom>}");
 
         ap.refer(&mut options.args)
             .add_argument("arguments", argparse::List, "command arguments");

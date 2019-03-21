@@ -20,7 +20,7 @@ pub fn main(options: &mut model::CommandOptions) {
 
         ap.refer(&mut cmd_name)
             .add_argument("command", argparse::Store,
-                          "Command help to display");
+                          "{add, cmd, eval, exec, ls, shell}");
 
         options.args.insert(0, "gdn help".to_string());
         ap.parse(options.args.to_vec(),
