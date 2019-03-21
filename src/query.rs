@@ -2,28 +2,28 @@ use ::model;
 use ::query;
 
 
-/// Resolve a tree expression into a `Vec<garden::model::TreeContext>`.
+/// Resolve a tree query into a `Vec<garden::model::TreeContext>`.
 ///
 /// Parameters:
 /// - `config`: `&garden::model::Configuration`.
-/// - `expr`: Tree expression `&str`.
+/// - `query`: Tree query `&str`.
 /// Returns:
 /// - `Vec<garden::model::TreeContext>`
 
-pub fn resolve_trees(config: &model::Configuration, expr: &str)
+pub fn resolve_trees(config: &model::Configuration, query: &str)
 -> Vec<model::TreeContext> {
     let mut result = Vec::new();
-    let tree_expr = model::TreeExpression::new(expr);
-    let ref pattern = tree_expr.pattern;
+    let tree_query = model::TreeQuery::new(query);
+    let ref pattern = tree_query.pattern;
 
-    if tree_expr.include_gardens {
+    if tree_query.include_gardens {
         result = garden_trees(config, pattern);
         if result.len() > 0 {
             return result;
         }
     }
 
-    if tree_expr.include_groups {
+    if tree_query.include_groups {
         for group in &config.groups {
             // Find the matching group
             if !pattern.matches(group.name.as_ref()) {
@@ -39,7 +39,7 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
 
     // No matching gardens or groups were found.
     // Search for matching trees.
-    if tree_expr.include_trees {
+    if tree_query.include_trees {
         result.append(&mut trees(config, pattern));
         if result.len() > 0 {
             return result;
@@ -50,8 +50,8 @@ pub fn resolve_trees(config: &model::Configuration, expr: &str)
     // The pattern is a default non-special pattern, and its value points to an
     // existing tree on the filesystem.  Look up the tree context for this
     // entry and use the matching tree.
-    if tree_expr.is_default {
-        if let Some(ctx) = tree_from_path(config, &tree_expr.expr) {
+    if tree_query.is_default {
+        if let Some(ctx) = tree_from_path(config, &tree_query.query) {
             result.push(ctx);
         }
     }
@@ -282,7 +282,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
 pub fn tree_context(config: &model::Configuration,
                     tree: &str, garden: Option<String>)
 -> Result<model::TreeContext, String> {
-    // Evaluate and print the garden expression.
+
     let mut ctx = model::TreeContext {
         tree: 0,
         garden: None,

@@ -20,8 +20,8 @@ pub fn main(app: &mut model::ApplicationContext) {
         ap.set_description("gdn eval - evaluate garden expressions");
 
         ap.refer(&mut expr).required()
-            .add_argument("garden-expr", argparse::Store,
-                          "garden variable expression to evaluate");
+            .add_argument("expr", argparse::Store,
+                          "garden expression to evaluate");
 
         ap.refer(&mut tree)
             .add_argument("tree", argparse::Store, "tree to evaluate");

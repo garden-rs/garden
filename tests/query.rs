@@ -3,7 +3,7 @@ extern crate garden;
 mod common;
 
 #[test]
-fn resolve_trees_default_expression_finds_garden() {
+fn resolve_trees_default_query_finds_garden() {
     let config = common::garden_config();
     let result = garden::query::resolve_trees(&config, "cola");
     assert_eq!(result.len(), 3);
@@ -17,7 +17,7 @@ fn resolve_trees_default_expression_finds_garden() {
 
 
 #[test]
-fn resolve_trees_tree_expression_wildcard() {
+fn resolve_trees_tree_query_wildcard() {
     let config = common::garden_config();
     let result = garden::query::resolve_trees(&config, "@c*");
     assert_eq!(result.len(), 1);
@@ -28,7 +28,7 @@ fn resolve_trees_tree_expression_wildcard() {
 
 
 #[test]
-fn resolve_trees_group_expression() {
+fn resolve_trees_group_query() {
     let config = common::garden_config();
     let result = garden::query::resolve_trees(&config, "%rev*");
     assert_eq!(result.len(), 2);

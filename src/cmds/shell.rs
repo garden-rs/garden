@@ -10,7 +10,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     let config = &mut app.config;
     let options = &mut app.options;
 
-    let mut expr = String::new();
+    let mut query = String::new();
     let mut tree = String::new();
 
     // Parse arguments
@@ -19,8 +19,9 @@ pub fn main(app: &mut model::ApplicationContext) {
         ap.set_description(
             "gdn shell - open a shell in a garden environment");
 
-        ap.refer(&mut expr).required()
-            .add_argument("expr", argparse::Store, "tree expression evaluate");
+        ap.refer(&mut query).required()
+            .add_argument("query", argparse::Store,
+                          "query for trees to build an environment");
 
         ap.refer(&mut tree)
             .add_argument("tree", argparse::Store, "tree to chdir into");
@@ -33,18 +34,18 @@ pub fn main(app: &mut model::ApplicationContext) {
         }
     }
 
-    let contexts = query::resolve_trees(config, &expr);
+    let contexts = query::resolve_trees(config, &query);
     if contexts.is_empty() {
-        error!("tree expression matched zero trees: '{}'", expr);
+        error!("tree query matched zero trees: '{}'", query);
     }
 
     let mut context = contexts[0].clone();
 
     // If a tree's name in the returned contexts exactly matches the tree
-    // expression that was used to find it then chdir into that tree.
+    // query that was used to find it then chdir into that tree.
     // This makes it convenient to have gardens and trees with the same name.
     for ctx in &contexts {
-        if config.trees[ctx.tree].name == expr {
+        if config.trees[ctx.tree].name == query {
             context.tree = ctx.tree;
             context.garden = ctx.garden;
             context.group = ctx.group;
@@ -56,11 +57,11 @@ pub fn main(app: &mut model::ApplicationContext) {
         let mut found = false;
 
         if let Some(ctx) = query::tree_from_name(config, &tree, None, None) {
-            for expr_ctx in &contexts {
-                if ctx.tree == expr_ctx.tree {
-                    context.tree = expr_ctx.tree;
-                    context.garden = expr_ctx.garden;
-                    context.group = expr_ctx.group;
+            for query_ctx in &contexts {
+                if ctx.tree == query_ctx.tree {
+                    context.tree = query_ctx.tree;
+                    context.garden = query_ctx.garden;
+                    context.group = query_ctx.group;
                     found = true;
                     break;
                 }
@@ -69,8 +70,7 @@ pub fn main(app: &mut model::ApplicationContext) {
             error!("unable to find '{}': No tree exists with that name", tree);
         }
         if !found {
-            error!("'{}' was not found in the tree expression '{}'",
-                   tree, expr);
+            error!("'{}' was not found in the tree query '{}'", tree, query);
         }
     }
 

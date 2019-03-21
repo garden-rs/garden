@@ -6,12 +6,12 @@ use ::model;
 use ::query;
 
 
-/// gdn cmd <tree-expr> <command-name>*
+/// gdn cmd <query> <command>...
 pub fn main(app: &mut model::ApplicationContext) {
     let config = &mut app.config;
     let options = &mut app.options;
 
-    let mut expr = String::new();
+    let mut query = String::new();
     let mut commands: Vec<String> = Vec::new();
 
     // Parse arguments
@@ -23,9 +23,9 @@ pub fn main(app: &mut model::ApplicationContext) {
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
                         "continue to the next tree when errors occur");
 
-        ap.refer(&mut expr).required()
-            .add_argument("tree-expr", argparse::Store,
-                          "gardens/trees to exec (tree expression)");
+        ap.refer(&mut query).required()
+            .add_argument("query", argparse::Store,
+                          "gardens/groups/trees to exec (tree query)");
 
         ap.refer(&mut commands).required()
             .add_argument("commands", argparse::List,
@@ -41,7 +41,7 @@ pub fn main(app: &mut model::ApplicationContext) {
 
     if options.is_debug("cmd") {
         debug!("subcommand: cmd");
-        debug!("expr: {}", expr);
+        debug!("query: {}", query);
         debug!("commands: {:?}", commands);
     }
 
@@ -49,17 +49,18 @@ pub fn main(app: &mut model::ApplicationContext) {
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
-    let exit_status = cmd(config, quiet, verbose, keep_going, &expr, &commands);
+    let exit_status = cmd(config, quiet, verbose, keep_going,
+                          &query, &commands);
     std::process::exit(exit_status);
 }
 
 
-/// gdn <command-name> <tree-expr>*
+/// gdn <command> <query>...
 pub fn custom(app: &mut model::ApplicationContext, command: &str) {
     let config = &mut app.config;
     let options = &mut app.options;
 
-    let mut exprs: Vec<String> = Vec::new();
+    let mut queries: Vec<String> = Vec::new();
 
     // Parse arguments
     {
@@ -71,9 +72,9 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
                         "continue to the next tree when errors occur");
 
-        ap.refer(&mut exprs).required()
-            .add_argument("tree-exprs", argparse::List,
-                          "gardens/trees to exec (tree expressions)");
+        ap.refer(&mut queries).required()
+            .add_argument("queries", argparse::List,
+                          "gardens/groups/trees to exec (tree queries)");
 
 
         options.args.insert(0, "gdn cmd".to_string());
@@ -86,13 +87,14 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
 
     if options.is_debug("cmd") {
         debug!("command: {}", command);
-        debug!("exprs: {:?}", exprs);
+        debug!("queries: {:?}", queries);
     }
     let quiet = options.quiet;
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
-    let exit_status = cmds(config, quiet, verbose, keep_going, command, &exprs);
+    let exit_status = cmds(config, quiet, verbose, keep_going,
+                           command, &queries);
     std::process::exit(exit_status);
 }
 
@@ -111,11 +113,11 @@ pub fn cmd(
     quiet: bool,
     verbose: bool,
     keep_going: bool,
-    expr: &str,
+    query: &str,
     commands: &Vec<String>,
 ) -> i32 {
-    // Resolve the tree expression into a vector of tree contexts.
-    let contexts = query::resolve_trees(config, expr);
+    // Resolve the tree query into a vector of tree contexts.
+    let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
 
     // Loop over each context, evaluate the tree environment,
@@ -199,22 +201,23 @@ pub fn cmd(
 }
 
 
-/// Run cmd() over a Vec of tree expressions
+/// Run cmd() over a Vec of tree queries
 pub fn cmds(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
     keep_going: bool,
     command: &str,
-    exprs: &Vec<String>,
+    queries: &Vec<String>,
 ) -> i32 {
     let mut exit_status: i32 = 0;
 
     let mut commands: Vec<String> = Vec::new();
     commands.push(command.into());
 
-    for expr in exprs {
-        let status = cmd(config, quiet, verbose, keep_going, &expr, &commands);
+    for query in queries {
+        let status = cmd(config, quiet, verbose, keep_going,
+                         &query, &commands);
         if status != 0 {
             exit_status = status;
             if !keep_going {

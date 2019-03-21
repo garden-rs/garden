@@ -2,6 +2,6 @@
 
 ## gdn inspect
 
-    gdn inspect <tree-expr>*
+    gdn inspect <query>...
 
 Show the repository status for the resolved trees.

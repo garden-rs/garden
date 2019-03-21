@@ -10,15 +10,15 @@ use ::query;
 
 pub fn main(app: &mut model::ApplicationContext) {
     let options = &mut app.options;
-    let mut exprs = Vec::new();
-    parse_args(&mut exprs, options);
+    let mut queries = Vec::new();
+    parse_args(&mut queries, options);
 
     let quiet = options.quiet;
     let verbose = options.verbose;
 
     let mut exit_status = 0;
-    for expr in &exprs {
-        let status = init(&mut app.config, quiet, verbose, &expr);
+    for query in &queries {
+        let status = init(&mut app.config, quiet, verbose, &query);
         if status != 0 {
             exit_status = status;
         }
@@ -26,7 +26,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     std::process::exit(exit_status);
 }
 
-fn parse_args(exprs: &mut Vec<String>, options: &mut model::CommandOptions) {
+fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
     // Parse arguments
     options.args.insert(0, "gdn init".to_string());
 
@@ -34,9 +34,9 @@ fn parse_args(exprs: &mut Vec<String>, options: &mut model::CommandOptions) {
     ap.set_description(
         "gdn init - Create gardens or reinitialize existing ones");
 
-    ap.refer(exprs).required()
-        .add_argument("tree-expr", argparse::List,
-                      "gardens/trees to initialize (tree expression)");
+    ap.refer(queries).required()
+        .add_argument("queries", argparse::List,
+                      "gardens/groups/trees to initialize (tree queries)");
 
     if let Err(err) = ap.parse(options.args.to_vec(),
                                &mut std::io::stdout(),
@@ -46,14 +46,14 @@ fn parse_args(exprs: &mut Vec<String>, options: &mut model::CommandOptions) {
 }
 
 
-/// Execute a command over every tree in the evaluated tree expression.
+/// Execute a command over every tree in the evaluated tree query.
 pub fn init(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
-    expr: &str,
+    query: &str,
 ) -> i32 {
-    let contexts = query::resolve_trees(config, expr);
+    let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
 
     for ctx in &contexts {
@@ -116,7 +116,8 @@ pub fn init(
         {
             // Immutable config scope
             for remote in &config.trees[ctx.tree].remotes {
-                config_remotes.insert(remote.name.to_string(), remote.expr.to_string());
+                config_remotes.insert(remote.name.to_string(),
+                                      remote.expr.to_string());
             }
         }
 

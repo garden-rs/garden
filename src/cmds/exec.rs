@@ -11,7 +11,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     let options = &mut app.options;
     let config = &mut app.config;
 
-    let mut expr = String::new();
+    let mut query = String::new();
     let mut command: Vec<String> = Vec::new();
 
     // Parse arguments
@@ -20,9 +20,9 @@ pub fn main(app: &mut model::ApplicationContext) {
         ap.stop_on_first_argument(true);
         ap.set_description("gdn exec - run commands inside gardens");
 
-        ap.refer(&mut expr).required()
-            .add_argument("tree-expr", argparse::Store,
-                          "gardens/trees to exec (tree expression)");
+        ap.refer(&mut query).required()
+            .add_argument("query", argparse::Store,
+                          "gardens/groups/trees to exec (tree query)");
 
         ap.refer(&mut command).required()
             .add_argument("command", argparse::List,
@@ -38,23 +38,23 @@ pub fn main(app: &mut model::ApplicationContext) {
 
     if options.is_debug("exec") {
         debug!("command: exec");
-        debug!("expr: {}", expr);
+        debug!("query: {}", query);
         debug!("command: {:?}", command);
     }
 
     let quiet = options.quiet;
     let verbose = options.verbose;
-    let exit_status = exec(config, quiet, verbose, &expr, &command);
+    let exit_status = exec(config, quiet, verbose, &query, &command);
     std::process::exit(exit_status);
 }
 
 
-/// Execute a command over every tree in the evaluated tree expression.
+/// Execute a command over every tree in the evaluated tree query.
 pub fn exec(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
-    expr: &str,
+    query: &str,
     command: &Vec<String>,
 ) -> i32 {
     // Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -67,8 +67,8 @@ pub fn exec(
     // If the names resolve to trees, each tree is processed independently
     // with no garden context.
 
-    // Resolve the tree expression into a vector of tree contexts.
-    let contexts = query::resolve_trees(config, expr);
+    // Resolve the tree query into a vector of tree contexts.
+    let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
 
     // Loop over each context, evaluate the tree environment,

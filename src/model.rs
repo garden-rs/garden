@@ -322,8 +322,8 @@ impl_display_brief!(TreeContext);
 
 
 #[derive(Debug, Default)]
-pub struct TreeExpression {
-    pub expr: String,
+pub struct TreeQuery {
+    pub query: String,
     pub pattern: glob::Pattern,
     pub is_default: bool,
     pub is_garden: bool,
@@ -334,12 +334,12 @@ pub struct TreeExpression {
     pub include_trees: bool,
 }
 
-impl_display_brief!(TreeExpression);
+impl_display_brief!(TreeQuery);
 
-impl TreeExpression {
+impl TreeQuery {
 
-    pub fn new(expr: &str) -> Self {
-        let mut glob_pattern = expr.to_string();
+    pub fn new(query: &str) -> Self {
+        let mut glob_pattern = query.to_string();
         let mut is_default = false;
         let mut is_tree = false;
         let mut is_garden = false;
@@ -373,8 +373,8 @@ impl TreeExpression {
 
         let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
 
-        return TreeExpression {
-            expr: expr.to_string(),
+        return TreeQuery {
+            query: query.to_string(),
             is_default: is_default,
             is_garden: is_garden,
             is_group: is_group,
