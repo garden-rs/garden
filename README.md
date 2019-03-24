@@ -23,9 +23,9 @@ development.
 
 Garden is used by creating a simple configuration file and defining a
 directory structure for git trees.  Existing trees can be added to the
-configuration using `gdn add`.
+configuration using `garden add`.
 
-When bootstrapping from a pre-defined `garden.yaml`, the `gdn init` command
+When bootstrapping from a pre-defined `garden.yaml`, the `garden init` command
 is used to bring trees into existence.
 
 # Configuration
@@ -329,7 +329,7 @@ defaults to a path named after the tree relative to the garden root.
 
 All garden commands have this basic syntax:
 
-    gdn [options] <command> [command-options] [command-arguments]*
+    garden [options] <command> [command-options] [command-arguments]*
 
 The following options are specified before `<command>`, and are
 global to all `garden` commands.
@@ -376,7 +376,7 @@ Glob  wildcards in tree queries allows operations to span over ad-hoc gardens,
 groups, and trees.  A garden.yaml configuration can be carefully crafted for
 maximum glob-ability.
 
-For example, `gdn exec 'annex/*' operates on all the `annex/` repositories.
+For example, `garden exec 'annex/*' operates on all the `annex/` repositories.
 
 Garden commands take tree query arguments that specify which trees to
 operate on.  When a name is mentioned on the command-line, garden will use the
@@ -386,26 +386,25 @@ trees are included in the operation.
 
 Paths can be specified as well, but the filesystem has the lowest priority
 relative to gardens, groups, and trees.  When specifyiing paths they must
-resolve to a configured tree.  For example:
+resolve to a configured tree.  For example,
 
-    gdn build .
+    garden build . -- --verbose
 
-Will build the tree in the current directory.
-
+builds the tree in the current directory, verbosely.
 
 In the following example, the "cola" group is found
 in the example configuration, and the commands are run over multiple repos.
 
-    gdn exec cola git status -s
-    gdn status cola
-    gdn cmd cola status build
+    garden exec cola git status -s
+    garden status cola
+    garden cmd cola status build
 
 If you have groups, gardens, and trees with the same name then you can use the
 `@tree`, `%group`, and `:garden` syntax to disambiguate the name.
 
-    gdn init @tree      # initialize the tree called "tree"
-    gdn init %group     # initialize the group called "group"
-    gdn init :garden    # initialize the garden called "garden"
+    garden init @tree      # initialize the tree called "tree"
+    garden init %group     # initialize the group called "group"
+    garden init :garden    # initialize the garden called "garden"
 
 Gardens have highest priority, so the ":garden" query is rarely needed
 in practice.  "%group" and "@tree" queries refer to groups and trees only, but
@@ -414,31 +413,31 @@ not gardens which have the same name.
 Garden understands shell wildcards, so multiple trees, gardens, or
 groups can be matched by using wildcards.  For example,
 
-    gdn init '@annex/*'
+    garden init '@annex/*'
 
 initializes all trees that start with "annex/".
 
 
-### gdn add
+### garden add
 
-    gdn add <path>
+    garden add <path>
 
     # example
-    gdn add src/repo
+    garden add src/repo
 
 Add an existing Git tree at `<path>` to `garden.yaml`.
 
 
-### gdn cmd
+### garden cmd
 
-    gdn cmd <query> <command>... [-- <arguments>..]
+    garden cmd <query> <command>... [-- <arguments>..]
 
     # example
-    gdn cmd cola build test -- V=1
+    garden cmd cola build test -- V=1
 
 Run commands over the trees matched by `<query>`.
 
-`gdn cmd` and `gdn <command>` interact with custom commands that are
+`garden cmd` and `garden <command>` interact with custom commands that are
 configured in the "commands" section for templates, trees, gardens,
 and the global top-level scope.
 
@@ -462,37 +461,37 @@ Optional arguments are available to command strings by using the traditional
 
 ### garden custom sub-commands
 
-    gdn <command> <query>... [-- <arguments>...]
+    garden <command> <query>... [-- <arguments>...]
 
     # example
-    gdn status @cola .
-    gdn build . git -- V=1
+    garden status @cola .
+    garden build . git -- V=1
 
 When no builtin command exists by the specified name then garden will
 use custom commands defined in a "commands" block at the corresponding
 garden or tree scope.
 
-This is complementary to `gdn cmd <query> <command>...`.
+This is complementary to `garden cmd <query> <command>...`.
 That form can run multiple commands; this form operates over multiple queries.
 
 
-### gdn exec
+### garden exec
 
-    gdn exec <query> <command> <arguments>...
+    garden exec <query> <command> <arguments>...
 
     # example
-    gdn exec cola git status -s
+    garden exec cola git status -s
 
 Execute a command on all of the trees matched by `<query>`.
 
 
-### gdn eval
+### garden eval
 
-    gdn eval <expression> [<tree>] [<garden>]
+    garden eval <expression> [<tree>] [<garden>]
 
     # example
-    gdn eval '${GARDEN_ROOT}'
-    gdn eval '${TREE_PATH}' cola
+    garden eval '${GARDEN_ROOT}'
+    garden eval '${TREE_PATH}' cola
 
 Evaluate a garden expression in the specified tree context.
 If no tree is given then the variable scope includes the top-level variables
@@ -503,12 +502,12 @@ When a garden is specified then the garden's variables are also available for
 evaluation.
 
 
-### gdn init
+### garden init
 
-    gdn init <query>
+    garden init <query>
 
     # example
-    gdn init cola
+    garden init cola
 
 Initialize the tree(s) referenced by the `<query>`.  The `init` command can
 also be used to update existing trees.  It is safe to re-run the `init`
@@ -517,12 +516,12 @@ any changes made to the configuration.  Missing repositories are cloned from
 their configured url.
 
 
-### gdn shell
+### garden shell
 
-    gdn shell <query> [<tree>]
+    garden shell <query> [<tree>]
 
     # example
-    gdn shell cola
+    garden shell cola
 
 Launch a shell inside the environment formed by the tree query.
 The optional tree argument specifies which tree to chdir into.

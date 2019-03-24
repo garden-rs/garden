@@ -6,7 +6,7 @@ use ::model;
 use ::query;
 
 
-/// gdn cmd <query> <command>...
+/// garden cmd <query> <command>...
 pub fn main(app: &mut model::ApplicationContext) {
     let config = &mut app.config;
     let options = &mut app.options;
@@ -17,7 +17,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
-        ap.set_description("gdn cmd - run custom commands over gardens");
+        ap.set_description("garden cmd - run custom commands over gardens");
 
         ap.refer(&mut options.keep_going)
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
@@ -31,7 +31,7 @@ pub fn main(app: &mut model::ApplicationContext) {
             .add_argument("commands", argparse::List,
                           "commands to run over resolved trees");
 
-        options.args.insert(0, "gdn cmd".to_string());
+        options.args.insert(0, "garden cmd".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
@@ -65,7 +65,7 @@ pub fn main(app: &mut model::ApplicationContext) {
 }
 
 
-/// gdn <command> <query>...
+/// garden <command> <query>...
 pub fn custom(app: &mut model::ApplicationContext, command: &str) {
     let config = &mut app.config;
     let options = &mut app.options;
@@ -75,7 +75,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
-        ap.set_description("gdn cmd - run custom commands over gardens");
+        ap.set_description("garden cmd - run custom commands over gardens");
 
         ap.refer(&mut options.keep_going)
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
@@ -86,7 +86,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
                           "gardens/groups/trees to exec (tree queries)");
 
 
-        options.args.insert(0, "gdn cmd".to_string());
+        options.args.insert(0, "garden cmd".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
@@ -188,7 +188,7 @@ pub fn cmd(
                 current_exe_result.as_ref().unwrap()
                 .to_string_lossy().to_string();
         } else {
-            current_exe = "gdn".to_string();
+            current_exe = "garden".to_string();
         }
 
         // One invocation runs multiple commands

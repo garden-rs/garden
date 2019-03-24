@@ -2,7 +2,7 @@ use ::cmd;
 use ::model;
 
 
-/// Entry point for `gdn help`
+/// Entry point for `garden help`
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
@@ -16,19 +16,19 @@ pub fn main(options: &mut model::CommandOptions) {
     let mut cmd_name = String::new();
     {
         let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("gdn help - command documentation");
+        ap.set_description("garden help - command documentation");
 
         ap.refer(&mut cmd_name)
             .add_argument("command", argparse::Store,
                           "{add, cmd, eval, exec, ls, shell}");
 
-        options.args.insert(0, "gdn help".to_string());
+        options.args.insert(0, "garden help".to_string());
         ap.parse(options.args.to_vec(),
                  &mut std::io::stdout(), &mut std::io::stderr())
             .map_err(|c| std::process::exit(c)).ok();
     }
 
-    // gdn help foo -> gdn foo --help
+    // garden help foo -> garden foo --help
     if !cmd_name.is_empty() {
         help_cmd.push(cmd_name.to_string());
     }

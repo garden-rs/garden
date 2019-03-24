@@ -20,14 +20,14 @@ fn teardown(path: &str) {
     }
 }
 
-/// `gdn init` clones repositories
+/// `garden init` clones repositories
 #[test]
-fn integration_gdn_init_clone() {
+fn int_init_clone() {
     setup("clone", "tests/tmp");
 
-    // gdn init examples/tree
+    // garden init examples/tree
     let cmd = [
-        "./target/debug/gdn",
+        "./target/debug/garden",
         "--chdir", "./tests/tmp/clone",
         "--config", "../../integration/garden.yaml",
         "init", "example/tree",
@@ -62,14 +62,14 @@ fn integration_gdn_init_clone() {
 }
 
 
-/// `gdn init` sets up remotes
+/// `garden init` sets up remotes
 #[test]
-fn gdn_init_remotes() {
+fn int_init_remotes() {
     setup("remotes", "tests/tmp");
 
-    // gdn init examples/tree
+    // garden init examples/tree
     let cmd = [
-        "./target/debug/gdn",
+        "./target/debug/garden",
         "--chdir", "./tests/tmp/remotes",
         "--config", "../../integration/garden.yaml",
         "init", "example/tree",
@@ -104,15 +104,15 @@ fn gdn_init_remotes() {
     teardown("tests/tmp/remotes");
 }
 
-/// `gdn init` creates symlinks
+/// `garden init` creates symlinks
 #[test]
-fn integration_gdn_init_symlinks() {
+fn int_init_symlinks() {
     setup("symlinks", "tests/tmp");
 
-    // gdn init examples/tree examples/symlink
+    // garden init examples/tree examples/symlink
     {
         let cmd = [
-            "./target/debug/gdn",
+            "./target/debug/garden",
             "--chdir", "./tests/tmp/symlinks",
             "--config", "../../integration/garden.yaml",
             "init", "example/tree", "link", "example/link",
@@ -152,15 +152,15 @@ fn integration_gdn_init_symlinks() {
     teardown("tests/tmp/symlinks");
 }
 
-/// `gdn init` sets up git config settings
+/// `garden init` sets up git config settings
 #[test]
-fn integration_gdn_init_gitconfig() {
+fn int_init_gitconfig() {
     setup("gitconfig", "tests/tmp");
 
-    // gdn init examples/tree
+    // garden init examples/tree
     {
         let cmd = [
-            "./target/debug/gdn",
+            "./target/debug/garden",
             "--chdir", "./tests/tmp/gitconfig",
             "--config", "../../integration/garden.yaml",
             "init", "example/tree",
@@ -206,15 +206,15 @@ fn integration_gdn_init_gitconfig() {
     teardown("tests/tmp/gitconfig");
 }
 
-/// `gdn eval` evaluates ${GARDEN_CONFIG_DIR}
+/// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
-fn integration_gdn_eval_garden_config_dir() {
+fn int_eval_garden_config_dir() {
     setup("configdir", "tests/tmp");
 
-    // gdn eval ${GARDEN_CONFIG_DIR}
+    // garden eval ${GARDEN_CONFIG_DIR}
     {
         let cmd = [
-            "./target/debug/gdn",
+            "./target/debug/garden",
             "--chdir", "./tests/tmp/configdir",
             "--config", "../../integration/garden.yaml",
             "eval", "${GARDEN_CONFIG_DIR}",
@@ -232,9 +232,9 @@ fn integration_gdn_eval_garden_config_dir() {
 
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
-fn integration_cmd_dash_dash_arguments() {
+fn int_cmd_dash_dash_arguments() {
     let cmd = [
-        "./target/debug/gdn",
+        "./target/debug/garden",
         "--chdir", "./tests/integration",
         "--quiet",
         "cmd", ".",
@@ -249,15 +249,16 @@ fn integration_cmd_dash_dash_arguments() {
     let output = cmd::trim_stdout(&capture.unwrap());
 
     // Repeated command names were used to operate on the tree twice.
-    let msg = "integration\ngdn\narguments -- a b c -- d e f -- g h i -- x y z";
+    let msg = format!("integration\ngarden\n{}",
+                      "arguments -- a b c -- d e f -- g h i -- x y z");
     assert_eq!(output, format!("{}\n{}", msg, msg));
 }
 
 /// Test dash-dash arguments in custom commands via "garden <custom> ..."
 #[test]
-fn integration_cmd_dash_dash_arguments_custom() {
+fn int_cmd_dash_dash_arguments_custom() {
     let cmd = [
-        "./target/debug/gdn",
+        "./target/debug/garden",
         "--chdir", "./tests/integration",
         "--quiet",
         "echo-args", ".", ".",
@@ -270,7 +271,7 @@ fn integration_cmd_dash_dash_arguments_custom() {
     let output = cmd::trim_stdout(&capture.unwrap());
 
     // `. .` was used to operate on the tree twice.
-    let msg = "gdn\narguments -- a b c -- d e f -- g h i -- x y z";
+    let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
     assert_eq!(output, format!("{}\n{}", msg, msg));
 }
 

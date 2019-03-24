@@ -17,7 +17,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description(
-            "gdn shell - open a shell in a garden environment");
+            "garden shell - open a shell in a garden environment");
 
         ap.refer(&mut query).required()
             .add_argument("query", argparse::Store,
@@ -26,7 +26,7 @@ pub fn main(app: &mut model::ApplicationContext) {
         ap.refer(&mut tree)
             .add_argument("tree", argparse::Store, "tree to chdir into");
 
-        options.args.insert(0, "gdn shell".to_string());
+        options.args.insert(0, "garden shell".to_string());
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {

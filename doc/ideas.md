@@ -1,7 +1,7 @@
 # Ideas, New Features, Usability Enhancements
 
-## gdn inspect
+## garden inspect
 
-    gdn inspect <query>...
+    garden inspect <query>...
 
 Show the repository status for the resolved trees.
