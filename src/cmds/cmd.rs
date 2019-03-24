@@ -181,15 +181,7 @@ pub fn cmd(
         let mut error = false;
 
         // Get the current executable name
-        let current_exe;
-        let current_exe_result = std::env::current_exe();
-        if current_exe_result.is_ok() {
-            current_exe =
-                current_exe_result.as_ref().unwrap()
-                .to_string_lossy().to_string();
-        } else {
-            current_exe = "garden".to_string();
-        }
+        let current_exe = cmd::current_exe();
 
         // One invocation runs multiple commands
         for name in commands {

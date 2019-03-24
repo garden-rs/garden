@@ -7,10 +7,7 @@ use ::model;
 /// - options: `garden::model::CommandOptions`
 
 pub fn main(options: &mut model::CommandOptions) {
-    let cmd_path = match std::env::current_exe() {
-        Err(_) => "garden".to_string(),
-        Ok(path) => path.to_string_lossy().to_string(),
-    };
+    let cmd_path = cmd::current_exe();
     let mut help_cmd = vec!(cmd_path);
 
     let mut cmd_name = String::new();

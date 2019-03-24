@@ -4,6 +4,7 @@ use ::eval;
 use ::model;
 
 
+/// Return a subprocess::Exec instance from a command vector.
 pub fn run<S>(cmd: &[S]) -> i32
 where S: AsRef<std::ffi::OsStr> {
     let mut exit_status: i32 = 1;
@@ -17,6 +18,7 @@ where S: AsRef<std::ffi::OsStr> {
 }
 
 
+/// Extract the return status from subprocess::Result<subprocess::ExitStatus>.
 pub fn status(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
     let mut exit_status: i32 = 1;
 
@@ -132,5 +134,14 @@ pub fn split_on_dash<S>(
         } else {
             post_dash.push(string.to_string());
         }
+    }
+}
+
+
+/// Return the current executable path.
+pub fn current_exe() -> String {
+    match std::env::current_exe() {
+        Err(_) => "garden".to_string(),
+        Ok(path) => path.to_string_lossy().to_string(),
     }
 }
