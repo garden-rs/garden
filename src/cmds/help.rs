@@ -8,8 +8,8 @@ use ::model;
 
 pub fn main(options: &mut model::CommandOptions) {
     let cmd_path = match std::env::current_exe() {
-        Err(_) => std::path::PathBuf::from("garden"),
-        Ok(path) => path,
+        Err(_) => "garden".to_string(),
+        Ok(path) => path.to_string_lossy().to_string(),
     };
     let mut help_cmd = vec!(cmd_path);
 
@@ -30,10 +30,10 @@ pub fn main(options: &mut model::CommandOptions) {
 
     // gdn help foo -> gdn foo --help
     if !cmd_name.is_empty() {
-        help_cmd.push(std::path::PathBuf::from(&cmd_name));
+        help_cmd.push(cmd_name.to_string());
     }
 
-    help_cmd.push(std::path::PathBuf::from("--help"));
+    help_cmd.push("--help".to_string());
 
     if options.verbose {
         debug!("help command");

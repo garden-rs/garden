@@ -87,10 +87,10 @@ when showing examples.
         environment:
           PATH: ${TREE_PATH}/target/${rust_flavor}
         commands:
-          build: cargo build
-          test: cargo test
-          doc: cargo doc
-          run: cargo run
+          build: cargo build "$@"
+          test: cargo test "$@"
+          doc: cargo doc "$@"
+          run: cargo run "$@"
       bin:
         environment:
           PATH: ${TREE_PATH}/bin
@@ -99,10 +99,10 @@ when showing examples.
           PYTHONPATH: ${TREE_PATH}
       makefile:
         commands:
-          build: make -j${num_procs} prefix="${prefix}" all
-          install: make -j${num_procs} prefix="${prefix}" install
-          test: make -j${num_procs} prefix="${prefix}" test
-          doc: make -j${num_procs} prefix="${prefix}" doc
+          build: make -j${num_procs} prefix="${prefix}" "$@" all
+          install: make -j${num_procs} prefix="${prefix}" "$@" install
+          test: make -j${num_procs} prefix="${prefix}" "$@" test
+          doc: make -j${num_procs} prefix="${prefix}" "$@" doc
 
     trees:
       cola:
@@ -174,10 +174,10 @@ when showing examples.
             - virtualenv --system-site-packages env27
             - vx env27 make requirements
             - vx env27 make requirements-dev
-          build27: vx env27 make all
-          doc27: vx env27 make doc
-          test27: vx env27 make test
-          run27: vx env27 git cola
+          build27: vx env27 make "$@" all
+          doc27: vx env27 make "$@" doc
+          test27: vx env27 make "$@" test
+          run27: vx env27 git cola "$@"
       gitdev:
         variables:
           prefix: ~/apps/gitdev
@@ -431,24 +431,42 @@ Add an existing Git tree at `<path>` to `garden.yaml`.
 
 ### gdn cmd
 
-    gdn cmd <query> <command>...
+    gdn cmd <query> <command>... [-- <arguments>..]
 
     # example
-    gdn cmd cola build test
+    gdn cmd cola build test -- V=1
 
 Run commands over the trees matched by `<query>`.
+
+`gdn cmd` and `gdn <command>` interact with custom commands that are
+configured in the "commands" section for templates, trees, gardens,
+and the global top-level scope.
 
 Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level extend commands defined on a tree.
 
+Commands are executed in a shell, so shell expressions can be used in commands.
+Each command runs under `["sh", "-c", "<command>"]` with the resolved
+environment from the corresponding garden, group, or tree.
+
+Optional command-line `<arguments>` specified after a double-dash (`--`)
+end-of-options marker are forwarded to each command.
+
+`"$0"` in a custom command points to the current garden executable and can be
+used to rerun garden from within a garden command.
+
+Optional arguments are available to command strings by using the traditional
+`"$@"` shell expression syntax.  When optional arguments are present `"$1"`,
+`"$2"`, and subsequent variables will be set according to each argument.
+
 
 ### garden custom sub-commands
 
-    gdn <command> <query>...
+    gdn <command> <query>... [-- <arguments>...]
 
     # example
     gdn status @cola .
-    gdn build . git
+    gdn build . git -- V=1
 
 When no builtin command exists by the specified name then garden will
 use custom commands defined in a "commands" block at the corresponding

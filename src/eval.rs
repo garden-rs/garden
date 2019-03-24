@@ -11,6 +11,12 @@ use ::query;
 use ::syntax;
 
 
+/// Return true if the string contains 0-9 digits only
+fn is_digit(string: &str) -> bool {
+    string.chars().all(|c| c.is_digit(10))
+}
+
+
 /// Expand variables across all scopes (garden, tree, and global)
 fn expand_tree_vars(
     config: &mut model::Configuration,
@@ -18,6 +24,10 @@ fn expand_tree_vars(
     garden_idx: Option<model::GardenIndex>,
     name: &str,
 ) -> Result<Option<String>, String> {
+    // Special case $0, $1, .. $N so they can be used in commands.
+    if is_digit(name) {
+        return Ok(Some(format!("${}", name)));
+    }
 
     let mut var_idx: usize = 0;
     let mut found = false;
@@ -116,6 +126,10 @@ fn expand_vars(
     config: &mut model::Configuration,
     name: &str,
 ) -> Result<Option<String>, String> {
+    // Special case $0, $1, .. $N so they can be used in commands.
+    if is_digit(name) {
+        return Ok(Some(format!("${}", name)));
+    }
 
     let mut var_idx: usize = 0;
     let mut found = false;

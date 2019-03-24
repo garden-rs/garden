@@ -10,13 +10,13 @@ use ::query;
 pub fn main(app: &mut model::ApplicationContext) {
     let config = &mut app.config;
     let options = &mut app.options;
-
     let mut query = String::new();
-    let mut commands: Vec<String> = Vec::new();
+    let mut commands_and_args: Vec<String> = Vec::new();
 
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
+        ap.stop_on_first_argument(true);
         ap.set_description("gdn cmd - run custom commands over gardens");
 
         ap.refer(&mut options.keep_going)
@@ -27,7 +27,7 @@ pub fn main(app: &mut model::ApplicationContext) {
             .add_argument("query", argparse::Store,
                           "gardens/groups/trees to exec (tree query)");
 
-        ap.refer(&mut commands).required()
+        ap.refer(&mut commands_and_args).required()
             .add_argument("commands", argparse::List,
                           "commands to run over resolved trees");
 
@@ -42,15 +42,25 @@ pub fn main(app: &mut model::ApplicationContext) {
     if options.is_debug("cmd") {
         debug!("subcommand: cmd");
         debug!("query: {}", query);
+        debug!("commands_and_args: {:?}", commands_and_args);
+    }
+
+    // Queries and arguments are separated by a double-dash "--" marker.
+    let mut commands = Vec::new();
+    let mut arguments = Vec::new();
+    cmd::split_on_dash(&commands_and_args, &mut commands, &mut arguments);
+
+    if options.is_debug("cmd") {
         debug!("commands: {:?}", commands);
+        debug!("arguments: {:?}", arguments);
     }
 
     let quiet = options.quiet;
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
-    let exit_status = cmd(config, quiet, verbose, keep_going,
-                          &query, &commands);
+    let exit_status = cmd(config, quiet, verbose, keep_going, &query,
+                          &commands, &arguments);
     std::process::exit(exit_status);
 }
 
@@ -59,8 +69,7 @@ pub fn main(app: &mut model::ApplicationContext) {
 pub fn custom(app: &mut model::ApplicationContext, command: &str) {
     let config = &mut app.config;
     let options = &mut app.options;
-
-    let mut queries: Vec<String> = Vec::new();
+    let mut queries_and_arguments: Vec<String> = Vec::new();
 
     // Parse arguments
     {
@@ -72,7 +81,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
                         "continue to the next tree when errors occur");
 
-        ap.refer(&mut queries).required()
+        ap.refer(&mut queries_and_arguments).required()
             .add_argument("queries", argparse::List,
                           "gardens/groups/trees to exec (tree queries)");
 
@@ -87,14 +96,24 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
 
     if options.is_debug("cmd") {
         debug!("command: {}", command);
-        debug!("queries: {:?}", queries);
+        debug!("queries_and_arguments: {:?}", queries_and_arguments);
     }
     let quiet = options.quiet;
     let verbose = options.verbose;
     let keep_going = options.keep_going;
 
+    // Queries and arguments are separated by a double-dash "--" marker.
+    let mut queries = Vec::new();
+    let mut arguments = Vec::new();
+    cmd::split_on_dash(&queries_and_arguments, &mut queries, &mut arguments);
+
+    if options.is_debug("cmd") {
+        debug!("queries {:?}", queries);
+        debug!("arguments: {:?}", arguments);
+    }
+
     let exit_status = cmds(config, quiet, verbose, keep_going,
-                           command, &queries);
+                           command, &queries, &arguments);
     std::process::exit(exit_status);
 }
 
@@ -115,6 +134,7 @@ pub fn cmd(
     keep_going: bool,
     query: &str,
     commands: &Vec<String>,
+    arguments: &Vec<String>,
 ) -> i32 {
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
@@ -159,6 +179,18 @@ pub fn cmd(
 
         // The "error" flag is set when a non-zero exit status is returned.
         let mut error = false;
+
+        // Get the current executable name
+        let current_exe;
+        let current_exe_result = std::env::current_exe();
+        if current_exe_result.is_ok() {
+            current_exe =
+                current_exe_result.as_ref().unwrap()
+                .to_string_lossy().to_string();
+        } else {
+            current_exe = "gdn".to_string();
+        }
+
         // One invocation runs multiple commands
         for name in commands {
             // One command maps to multiple command sequences.
@@ -170,7 +202,11 @@ pub fn cmd(
             config.reset();
             for cmd_seq in &cmd_seq_vec {
                 for cmd_str in cmd_seq {
-                    let mut exec = subprocess::Exec::shell(&cmd_str).cwd(&path);
+                    let mut exec =
+                        subprocess::Exec::shell(&cmd_str)
+                        .arg(&current_exe)
+                        .args(arguments)
+                        .cwd(&path);
                     // Update the command environment
                     for (k, v) in &env {
                         exec = exec.env(k, v);
@@ -209,6 +245,7 @@ pub fn cmds(
     keep_going: bool,
     command: &str,
     queries: &Vec<String>,
+    arguments: &Vec<String>,
 ) -> i32 {
     let mut exit_status: i32 = 0;
 
@@ -217,7 +254,7 @@ pub fn cmds(
 
     for query in queries {
         let status = cmd(config, quiet, verbose, keep_going,
-                         &query, &commands);
+                         &query, &commands, arguments);
         if status != 0 {
             exit_status = status;
             if !keep_going {

@@ -4,7 +4,8 @@ use ::eval;
 use ::model;
 
 
-pub fn run(cmd: &Vec<std::path::PathBuf>) -> i32 {
+pub fn run<S>(cmd: &[S]) -> i32
+where S: AsRef<std::ffi::OsStr> {
     let mut exit_status: i32 = 1;
 
     if let Ok(mut p) = subprocess::Popen::create(
@@ -110,4 +111,26 @@ where S: AsRef<std::ffi::OsStr> {
     }
 
     status(exec.join())
+}
+
+
+/// Split a vector into two vectors -- pre-dash and post-dash
+pub fn split_on_dash<S>(
+    strings: &[S],
+    pre_dash: &mut Vec<String>,
+    post_dash: &mut Vec<String>,
+) where S: AsRef<std::ffi::OsStr> + std::string::ToString + std::cmp::PartialEq {
+
+    let mut is_pre_dash = true;
+    for string in strings {
+        if  is_pre_dash {
+            if string.as_ref() == "--" {
+                is_pre_dash = false;
+                continue;
+            }
+            pre_dash.push((*string).to_string());
+        } else {
+            post_dash.push(string.to_string());
+        }
+    }
 }
