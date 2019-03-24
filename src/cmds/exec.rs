@@ -17,6 +17,7 @@ pub fn main(app: &mut model::ApplicationContext) {
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
+        ap.silence_double_dash(false);
         ap.stop_on_first_argument(true);
         ap.set_description("gdn exec - run commands inside gardens");
 
