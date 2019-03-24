@@ -230,4 +230,48 @@ fn integration_gdn_eval_garden_config_dir() {
     teardown("tests/tmp/configdir");
 }
 
+/// Test dash-dash arguments in custom commands via "garden cmd ..."
+#[test]
+fn integration_cmd_dash_dash_arguments() {
+    let cmd = [
+        "./target/debug/gdn",
+        "--chdir", "./tests/integration",
+        "--quiet",
+        "cmd", ".",
+        "echo-dir", "echo-args",
+        "echo-dir", "echo-args",
+        "--", "d", "e", "f",
+        "--", "g", "h", "i",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+    let output = cmd::trim_stdout(&capture.unwrap());
+
+    // Repeated command names were used to operate on the tree twice.
+    let msg = "integration\ngdn\narguments -- a b c -- d e f -- g h i -- x y z";
+    assert_eq!(output, format!("{}\n{}", msg, msg));
+}
+
+/// Test dash-dash arguments in custom commands via "garden <custom> ..."
+#[test]
+fn integration_cmd_dash_dash_arguments_custom() {
+    let cmd = [
+        "./target/debug/gdn",
+        "--chdir", "./tests/integration",
+        "--quiet",
+        "echo-args", ".", ".",
+        "--", "d", "e", "f",
+        "--", "g", "h", "i",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+    let output = cmd::trim_stdout(&capture.unwrap());
+
+    // `. .` was used to operate on the tree twice.
+    let msg = "gdn\narguments -- a b c -- d e f -- g h i -- x y z";
+    assert_eq!(output, format!("{}\n{}", msg, msg));
+}
+
 }  // integration

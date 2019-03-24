@@ -20,3 +20,12 @@ trees:
     symlink: example/tree/repo
   link:
     symlink: example/tree/repo
+
+  current:
+    path: .
+    commands:
+      echo-dir:
+        - basename "$(pwd)"
+      echo-args:
+        - basename "$0"
+        - echo arguments -- a b c -- "$@" -- x y z
