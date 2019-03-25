@@ -63,6 +63,7 @@ fn main() {
         model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Help => (),  // Handled above
         model::Command::Init => cmds::init::main(&mut app),
+        model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
     }

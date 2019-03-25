@@ -16,6 +16,9 @@ pub mod help;
 /// Init command
 pub mod init;
 
+/// Inspect command
+pub mod inspect;
+
 /// List command
 pub mod list;
 

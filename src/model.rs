@@ -398,6 +398,7 @@ pub enum Command {
     Eval,
     Help,
     Init,
+    Inspect,
     List,
     Shell,
 }
@@ -419,6 +420,7 @@ impl std::str::FromStr for Command {
             "eval" => Ok(Command::Eval),
             "help" => Ok(Command::Help),
             "init" => Ok(Command::Init),
+            "inspect" => Ok(Command::Inspect),
             "list" => Ok(Command::List),
             "ls" => Ok(Command::List),
             "sh" => Ok(Command::Shell),

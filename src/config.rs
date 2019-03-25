@@ -150,10 +150,8 @@ pub fn from_options(options: &model::CommandOptions) -> model::Configuration {
         error!("unable to find a configuration file -- use --config <path>");
     }
     if options.is_debug("config") {
-        debug!("{}", config);
-    }
-    if options.verbose {
         eprintln!("config: {:?}", config.path.as_ref().unwrap());
+        debug!("{}", config);
     }
 
     for k_eq_v in &options.variables {
