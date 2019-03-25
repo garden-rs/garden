@@ -275,4 +275,71 @@ fn int_cmd_dash_dash_arguments_custom() {
     assert_eq!(output, format!("{}\n{}", msg, msg));
 }
 
+/// Test "." default for custom "garden <command>" with no arguments
+#[test]
+fn int_cmd_dot_default_no_args() {
+    let cmd = [
+        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "echo-dir",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+    let output = cmd::trim_stdout(&capture.unwrap());
+    assert_eq!(output, "integration");
+}
+
+/// Test "." default for "garden <command>" with no arguments and echo
+#[test]
+fn int_cmd_dot_default_no_args_echo() {
+    let cmd = [
+        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "echo-args",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+    let output = cmd::trim_stdout(&capture.unwrap());
+
+    let msg = "garden\narguments -- a b c -- -- x y z";
+    assert_eq!(output, msg);
+
+}
+
+
+/// Test "." default for "garden <command>" with double-dash
+#[test]
+fn int_cmd_dot_default_double_dash() {
+    let cmd = [
+        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "echo-args", "--",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+    let output = cmd::trim_stdout(&capture.unwrap());
+
+    let msg = "garden\narguments -- a b c -- -- x y z";
+    assert_eq!(output, msg);
+
+}
+
+/// Test "." default for "garden <command>" with extra arguments
+#[test]
+fn int_cmd_dot_default_double_dash_args() {
+    let cmd = [
+        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "echo-args", "--", "d", "e", "f", "--", "g", "h", "i",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+    let output = cmd::trim_stdout(&capture.unwrap());
+
+    let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
+    assert_eq!(output, msg);
+
+}
+
+
 }  // integration

@@ -79,7 +79,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
             .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
                         "continue to the next tree when errors occur");
 
-        ap.refer(&mut queries_and_arguments).required()
+        ap.refer(&mut queries_and_arguments)
             .add_argument("queries", argparse::List,
                           "gardens/groups/trees to exec (tree queries)");
 
@@ -100,6 +100,11 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
     let mut queries = Vec::new();
     let mut arguments = Vec::new();
     cmd::split_on_dash(&queries_and_arguments, &mut queries, &mut arguments);
+
+    // Default to "." when no queries have been specified.
+    if queries.is_empty() {
+        queries.push(".".to_string());
+    }
 
     if options.is_debug("cmd") {
         debug!("queries {:?}", queries);
