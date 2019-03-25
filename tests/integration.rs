@@ -1,8 +1,11 @@
 extern crate subprocess;
 extern crate garden;
 
-#[cfg(test)]
-mod integration {
+use garden::cmd;
+
+
+#[cfg(feature = "test_git")]
+mod test_git {
 
 use super::garden::cmd;
 
@@ -14,15 +17,17 @@ fn setup(name: &str, path: &str) {
     assert_eq!(exit_status, 0);
 }
 
+
 fn teardown(path: &str) {
     if let Err(err) = std::fs::remove_dir_all(path) {
         assert!(false, format!("unable to remove '{}': {}", path, err));
     }
 }
 
+
 /// `garden init` clones repositories
 #[test]
-fn int_init_clone() {
+fn init_clone() {
     setup("clone", "tests/tmp");
 
     // garden init examples/tree
@@ -64,7 +69,7 @@ fn int_init_clone() {
 
 /// `garden init` sets up remotes
 #[test]
-fn int_init_remotes() {
+fn init_remotes() {
     setup("remotes", "tests/tmp");
 
     // garden init examples/tree
@@ -104,9 +109,10 @@ fn int_init_remotes() {
     teardown("tests/tmp/remotes");
 }
 
+
 /// `garden init` creates symlinks
 #[test]
-fn int_init_symlinks() {
+fn init_symlinks() {
     setup("symlinks", "tests/tmp");
 
     // garden init examples/tree examples/symlink
@@ -152,9 +158,10 @@ fn int_init_symlinks() {
     teardown("tests/tmp/symlinks");
 }
 
+
 /// `garden init` sets up git config settings
 #[test]
-fn int_init_gitconfig() {
+fn init_gitconfig() {
     setup("gitconfig", "tests/tmp");
 
     // garden init examples/tree
@@ -206,9 +213,10 @@ fn int_init_gitconfig() {
     teardown("tests/tmp/gitconfig");
 }
 
+
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
-fn int_eval_garden_config_dir() {
+fn eval_garden_config_dir() {
     setup("configdir", "tests/tmp");
 
     // garden eval ${GARDEN_CONFIG_DIR}
@@ -230,9 +238,12 @@ fn int_eval_garden_config_dir() {
     teardown("tests/tmp/configdir");
 }
 
+}  // test_git
+
+
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
-fn int_cmd_dash_dash_arguments() {
+fn cmd_dash_dash_arguments() {
     let cmd = [
         "./target/debug/garden",
         "--chdir", "./tests/integration",
@@ -254,9 +265,10 @@ fn int_cmd_dash_dash_arguments() {
     assert_eq!(output, format!("{}\n{}", msg, msg));
 }
 
+
 /// Test dash-dash arguments in custom commands via "garden <custom> ..."
 #[test]
-fn int_cmd_dash_dash_arguments_custom() {
+fn cmd_dash_dash_arguments_custom() {
     let cmd = [
         "./target/debug/garden",
         "--chdir", "./tests/integration",
@@ -275,9 +287,10 @@ fn int_cmd_dash_dash_arguments_custom() {
     assert_eq!(output, format!("{}\n{}", msg, msg));
 }
 
+
 /// Test "." default for custom "garden <command>" with no arguments
 #[test]
-fn int_cmd_dot_default_no_args() {
+fn cmd_dot_default_no_args() {
     let cmd = [
         "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
         "echo-dir",
@@ -289,9 +302,10 @@ fn int_cmd_dot_default_no_args() {
     assert_eq!(output, "integration");
 }
 
+
 /// Test "." default for "garden <command>" with no arguments and echo
 #[test]
-fn int_cmd_dot_default_no_args_echo() {
+fn cmd_dot_default_no_args_echo() {
     let cmd = [
         "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
         "echo-args",
@@ -309,7 +323,7 @@ fn int_cmd_dot_default_no_args_echo() {
 
 /// Test "." default for "garden <command>" with double-dash
 #[test]
-fn int_cmd_dot_default_double_dash() {
+fn cmd_dot_default_double_dash() {
     let cmd = [
         "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
         "echo-args", "--",
@@ -324,9 +338,10 @@ fn int_cmd_dot_default_double_dash() {
 
 }
 
+
 /// Test "." default for "garden <command>" with extra arguments
 #[test]
-fn int_cmd_dot_default_double_dash_args() {
+fn cmd_dot_default_double_dash_args() {
     let cmd = [
         "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
         "echo-args", "--", "d", "e", "f", "--", "g", "h", "i",
@@ -340,6 +355,3 @@ fn int_cmd_dot_default_double_dash_args() {
     assert_eq!(output, msg);
 
 }
-
-
-}  // integration
