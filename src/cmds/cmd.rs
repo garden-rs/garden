@@ -83,8 +83,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
             .add_argument("queries", argparse::List,
                           "gardens/groups/trees to exec (tree queries)");
 
-
-        options.args.insert(0, "garden cmd".to_string());
+        options.args.insert(0, format!("garden {}", command));
         if let Err(err) = ap.parse(options.args.to_vec(),
                                    &mut std::io::stdout(),
                                    &mut std::io::stderr()) {
