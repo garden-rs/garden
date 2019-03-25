@@ -55,12 +55,10 @@ pub fn main(app: &mut model::ApplicationContext) {
         debug!("arguments: {:?}", arguments);
     }
 
-    let quiet = options.quiet;
-    let verbose = options.verbose;
-    let keep_going = options.keep_going;
-
-    let exit_status = cmd(config, quiet, verbose, keep_going, &query,
-                          &commands, &arguments);
+    let exit_status = cmd(
+        config, options.quiet, options.verbose, options.keep_going,
+        &query, &commands, &arguments,
+    );
     std::process::exit(exit_status);
 }
 
@@ -98,9 +96,6 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
         debug!("command: {}", command);
         debug!("queries_and_arguments: {:?}", queries_and_arguments);
     }
-    let quiet = options.quiet;
-    let verbose = options.verbose;
-    let keep_going = options.keep_going;
 
     // Queries and arguments are separated by a double-dash "--" marker.
     let mut queries = Vec::new();
@@ -112,8 +107,11 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
         debug!("arguments: {:?}", arguments);
     }
 
-    let exit_status = cmds(config, quiet, verbose, keep_going,
-                           command, &queries, &arguments);
+    let exit_status = cmds(
+        config, options.quiet, options.verbose, options.keep_going,
+        command, &queries, &arguments,
+    );
+
     std::process::exit(exit_status);
 }
 
