@@ -1,5 +1,7 @@
 [package]
 name = "garden"
+version = "1.0.0"
+
 description = """
 Garden Weaves Git Trees
 
@@ -8,16 +10,16 @@ of configuration-defined Git worktrees.  Gardens simplifies common development
 tasks when working in a multi-worktree Git development environment.
 
 """
-license = "MIT"
-readme = "README.md"
 keywords = ["git", "development", "sandboxes", "vcs", "worktree"]
 categories = [
     "command-line-utilities",
     "development-tools",
     "development-tools::build-utils",
 ]
+
+license = "MIT"
+readme = "README.md"
 homepage = "https://github.com/davvid/garden"
-version = "1.0.0"
 authors = ["David Aguilar <davvid@gmail.com>"]
 
 [dependencies]
