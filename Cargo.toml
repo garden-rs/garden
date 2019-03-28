@@ -27,6 +27,7 @@ test_git = []
 
 [dependencies]
 argparse = "*"
+atty = "*"
 glob = "*"
 dirs = "*"
 shellexpand = "*"

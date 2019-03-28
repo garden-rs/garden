@@ -1,5 +1,6 @@
 extern crate dirs;
 extern crate glob;
+extern crate atty;
 
 use ::eval;
 use ::syntax;
@@ -431,11 +432,63 @@ impl std::str::FromStr for Command {
 }
 
 
+// Is color enabled?
+// --color=<auto,on,off> overrides the default "auto" value.
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum ColorMode {
+    Auto,  // "auto" enables color when a tty is detected.
+    Off,  // disable color
+    On,  // enable color
+}
+
+impl ColorMode {
+    pub fn is_enabled(&self) -> bool {
+        match self {
+            ColorMode::Auto => atty::is(atty::Stream::Stdout),
+            ColorMode::Off => false,
+            ColorMode::On => true,
+        }
+    }
+
+    pub fn names() -> &'static str {
+        "auto, true, false, 1, 0, on, off, always, never"
+    }
+}
+
+impl std::default::Default for ColorMode {
+    fn default() -> Self { ColorMode::Auto }
+}
+
+impl std::str::FromStr for ColorMode {
+    type Err = ();  // For the FromStr trait
+
+    fn from_str(src: &str) -> Result<ColorMode, ()> {
+        return match src {
+            "auto" => Ok(ColorMode::Auto),
+            "-1" => Ok(ColorMode::Auto),
+            "0" => Ok(ColorMode::Off),
+            "1" => Ok(ColorMode::On),
+            "false" => Ok(ColorMode::Off),
+            "true" => Ok(ColorMode::On),
+            "never" => Ok(ColorMode::Off),
+            "always" => Ok(ColorMode::Off),
+            "off" => Ok(ColorMode::Off),
+            "on" => Ok(ColorMode::On),
+            "n" => Ok(ColorMode::Off),
+            "y" => Ok(ColorMode::On),
+            _ => Err(()),
+        }
+    }
+}
+
+
 #[derive(Clone, Debug, Default)]
 pub struct CommandOptions {
     pub args: Vec<String>,
     pub debug: Vec<String>,
     pub chdir: String,
+    pub color_mode: ColorMode,
     pub filename: Option<std::path::PathBuf>,
     pub filename_str: String,
     pub keep_going: bool,
@@ -454,6 +507,16 @@ impl CommandOptions {
         if !self.chdir.is_empty() {
             if let Err(err) = std::env::set_current_dir(&self.chdir) {
                 error!("could not chdir to '{}': {}", self.chdir, err);
+            }
+        }
+
+        if self.color_mode == ColorMode::Auto {
+            // Speedup future calls to is_enabled() by performing the "auto"
+            // atty check once and caching the result.
+            if self.color_mode.is_enabled() {
+                self.color_mode = ColorMode::On;
+            } else {
+                self.color_mode = ColorMode::Off;
             }
         }
     }
