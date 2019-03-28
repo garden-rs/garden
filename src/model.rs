@@ -500,25 +500,8 @@ impl std::str::FromStr for ColorMode {
 }
 
 
-pub struct Color { }
-
-impl Color {
-    pub fn blue(string: &str) -> yansi::Paint<&str> {
-        yansi::Paint::blue(string)
-    }
-
-    pub fn green(string: &str) -> yansi::Paint<&str> {
-        yansi::Paint::green(string)
-    }
-
-    pub fn red(string: &str) -> yansi::Paint<&str> {
-        yansi::Paint::red(string)
-    }
-
-    pub fn yellow(string: &str) -> yansi::Paint<&str> {
-        yansi::Paint::yellow(string)
-    }
-}
+// Color is an alias for yansi::Paint.
+pub type Color<T> = yansi::Paint<T>;
 
 
 #[derive(Clone, Debug, Default)]
