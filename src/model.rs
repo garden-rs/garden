@@ -534,6 +534,21 @@ pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
 }
 
 
+pub fn print_tree(tree: &Tree, path: &str, verbose: bool, quiet: bool) -> bool {
+    // Sparse gardens/missing trees are ok -> skip these entries.
+    if !std::path::PathBuf::from(&path).exists() {
+        if !quiet {
+            eprintln!("{}", display_missing_tree(&tree, &path, verbose));
+        }
+        return false;
+    }
+    if !quiet {
+        eprintln!("{}", display_tree(&tree, &path, verbose));
+    }
+    return true;
+}
+
+
 #[derive(Clone, Debug, Default)]
 pub struct CommandOptions {
     pub args: Vec<String>,
