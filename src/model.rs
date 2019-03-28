@@ -1,6 +1,6 @@
+extern crate atty;
 extern crate dirs;
 extern crate glob;
-extern crate atty;
 
 use ::eval;
 use ::syntax;
@@ -454,6 +454,22 @@ impl ColorMode {
     pub fn names() -> &'static str {
         "auto, true, false, 1, 0, on, off, always, never"
     }
+
+    pub fn update(&mut self) {
+        if *self == ColorMode::Auto {
+            // Speedup future calls to is_enabled() by performing the "auto"
+            // atty check once and caching the result.
+            if self.is_enabled() {
+                *self = ColorMode::On;
+            } else {
+                *self = ColorMode::Off;
+            }
+        }
+
+        if *self == ColorMode::Off {
+            yansi::Paint::disable();
+        }
+    }
 }
 
 impl std::default::Default for ColorMode {
@@ -510,15 +526,7 @@ impl CommandOptions {
             }
         }
 
-        if self.color_mode == ColorMode::Auto {
-            // Speedup future calls to is_enabled() by performing the "auto"
-            // atty check once and caching the result.
-            if self.color_mode.is_enabled() {
-                self.color_mode = ColorMode::On;
-            } else {
-                self.color_mode = ColorMode::Off;
-            }
-        }
+        self.color_mode.update();
     }
 
     pub fn is_debug(&self, name: &str) -> bool {
