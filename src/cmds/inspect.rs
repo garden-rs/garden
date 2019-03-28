@@ -36,8 +36,7 @@ pub fn main(app: &mut model::ApplicationContext) {
         debug!("query: {:?}", query);
     }
 
-    let verbose = options.verbose;
-    let exit_status = inspect(config, verbose, &query);
+    let exit_status = inspect(config, options.verbose, &query);
     std::process::exit(exit_status);
 }
 
