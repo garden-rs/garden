@@ -504,6 +504,36 @@ impl std::str::FromStr for ColorMode {
 pub type Color<T> = yansi::Paint<T>;
 
 
+pub fn display_missing_tree(tree: &Tree, path: &str, verbose: bool) -> String {
+    if verbose {
+        format!("{} {}  {} {}",
+                Color::black("#").bold(),
+                Color::black(&tree.name).bold(),
+                Color::black(&path).bold(),
+                Color::black("(skipped)").bold())
+    } else {
+        format!("{} {} {}",
+                Color::black("#").bold(),
+                Color::black(&tree.name).bold(),
+                Color::black("(skipped)").bold())
+    }
+}
+
+
+pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
+    if verbose {
+        format!("{} {}  {}",
+                Color::cyan("#"),
+                Color::blue(&tree.name).bold(),
+                Color::blue(&path))
+    } else {
+        format!("{} {}",
+                Color::cyan("#"),
+                Color::blue(&tree.name).bold())
+    }
+}
+
+
 #[derive(Clone, Debug, Default)]
 pub struct CommandOptions {
     pub args: Vec<String>,

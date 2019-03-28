@@ -2,7 +2,6 @@ extern crate subprocess;
 
 use ::eval;
 use ::model;
-use ::model::Color;
 
 
 /// Return a subprocess::Exec instance from a command vector.
@@ -91,32 +90,12 @@ where S: AsRef<std::ffi::OsStr> {
     // Sparse gardens/missing trees are ok -> skip these entries.
     if !std::path::PathBuf::from(&path).exists() {
         if !quiet {
-            if verbose {
-                eprintln!("{} {}  {} {}",
-                          Color::black("#").bold(),
-                          Color::black(&tree.name).bold(),
-                          Color::black(&path).bold(),
-                          Color::black("(skipped)").bold());
-            } else {
-                eprintln!("{} {} {}",
-                          Color::black("#").bold(),
-                          Color::black(&tree.name).bold(),
-                          Color::black("(skipped)").bold());
-            }
+            eprintln!("{}", model::display_missing_tree(&tree, &path, verbose));
         }
         return 0;  // Missing trees are ok
     }
     if !quiet {
-        if verbose {
-            eprintln!("{} {}  {}",
-                      Color::cyan("#"),
-                      Color::blue(&tree.name).bold(),
-                      Color::blue(&path));
-        } else {
-            eprintln!("{} {}",
-                      Color::cyan("#"),
-                      Color::blue(&tree.name).bold());
-        }
+        eprintln!("{}", model::display_tree(&tree, &path, verbose));
     }
 
     let mut exec = exec_in_dir(command, &path);
