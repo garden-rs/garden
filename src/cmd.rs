@@ -2,6 +2,7 @@ extern crate subprocess;
 
 use ::eval;
 use ::model;
+use ::model::Color;
 
 
 /// Return a subprocess::Exec instance from a command vector.
@@ -91,18 +92,30 @@ where S: AsRef<std::ffi::OsStr> {
     if !std::path::PathBuf::from(&path).exists() {
         if !quiet {
             if verbose {
-                eprintln!("# {}: {} (skipped)", tree.name, path);
+                eprintln!("{} {}  {} {}",
+                          Color::black("#").bold(),
+                          Color::black(&tree.name).bold(),
+                          Color::black(&path).bold(),
+                          Color::black("(skipped)").bold());
             } else {
-                eprintln!("# {} (skipped)", tree.name);
+                eprintln!("{} {} {}",
+                          Color::black("#").bold(),
+                          Color::black(&tree.name).bold(),
+                          Color::black("(skipped)").bold());
             }
         }
         return 0;  // Missing trees are ok
     }
     if !quiet {
         if verbose {
-            eprintln!("# {}: {}", tree.name, path);
+            eprintln!("{} {}  {}",
+                      Color::cyan("#"),
+                      Color::blue(&tree.name).bold(),
+                      Color::blue(&path));
         } else {
-            eprintln!("# {}", tree.name);
+            eprintln!("{} {}",
+                      Color::cyan("#"),
+                      Color::blue(&tree.name).bold());
         }
     }
 
