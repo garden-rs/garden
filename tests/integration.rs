@@ -4,8 +4,10 @@ extern crate garden;
 use garden::cmd;
 
 
-#[cfg(feature = "test_git")]
-mod test_git {
+// Slow or filesystem/IO-heavy integration tests go in the slow namespace
+// and are enabled by using "cargo test --features integration"
+#[cfg(feature = "integration")]
+mod slow {
 
 use super::garden::cmd;
 
@@ -238,7 +240,7 @@ fn eval_garden_config_dir() {
     teardown("tests/tmp/configdir");
 }
 
-}  // test_git
+}  // slow
 
 
 /// Test dash-dash arguments in custom commands via "garden cmd ..."

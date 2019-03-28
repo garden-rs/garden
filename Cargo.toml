@@ -23,7 +23,7 @@ homepage = "https://github.com/davvid/garden"
 authors = ["David Aguilar <davvid@gmail.com>"]
 
 [features]
-test_git = []
+integration = []
 
 [dependencies]
 argparse = "*"
