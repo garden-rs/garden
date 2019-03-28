@@ -7,6 +7,33 @@ use garden::model;
 
 
 fn main() {
+    let mut options = parse_args();
+
+    // Help should run without a config file
+    if let model::Command::Help = options.subcommand {
+        cmds::help::main(&mut options);
+        return;
+    }
+
+    let config = config::from_options(&options);
+    let mut app = model::ApplicationContext::new(config, options);
+
+    match app.options.subcommand.clone() {
+        model::Command::Add => cmds::add::main(&mut app),
+        model::Command::Cmd => cmds::cmd::main(&mut app),
+        model::Command::Custom(cmd) => cmds::cmd::custom(&mut app, &cmd),
+        model::Command::Exec => cmds::exec::main(&mut app),
+        model::Command::Eval => cmds::eval::main(&mut app),
+        model::Command::Help => (),  // Handled above
+        model::Command::Init => cmds::init::main(&mut app),
+        model::Command::Inspect => cmds::inspect::main(&mut app),
+        model::Command::List => cmds::list::main(&mut app),
+        model::Command::Shell => cmds::shell::main(&mut app),
+    }
+}
+
+
+fn parse_args() -> model::CommandOptions {
     let mut options = model::CommandOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
@@ -47,24 +74,5 @@ fn main() {
     }
     options.update();
 
-    // Help should run without a config file
-    if let model::Command::Help = options.subcommand {
-        cmds::help::main(&mut options);
-    }
-
-    let config = config::from_options(&options);
-    let mut app = model::ApplicationContext::new(config, options);
-
-    match app.options.subcommand.clone() {
-        model::Command::Add => cmds::add::main(&mut app),
-        model::Command::Cmd => cmds::cmd::main(&mut app),
-        model::Command::Custom(cmd) => cmds::cmd::custom(&mut app, &cmd),
-        model::Command::Exec => cmds::exec::main(&mut app),
-        model::Command::Eval => cmds::eval::main(&mut app),
-        model::Command::Help => (),  // Handled above
-        model::Command::Init => cmds::init::main(&mut app),
-        model::Command::Inspect => cmds::inspect::main(&mut app),
-        model::Command::List => cmds::list::main(&mut app),
-        model::Command::Shell => cmds::shell::main(&mut app),
-    }
+    options
 }
