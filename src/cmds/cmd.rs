@@ -158,24 +158,8 @@ pub fn cmd(
             let tree = &config.trees[context.tree];
             path = tree.path.value.as_ref().unwrap().to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !std::path::PathBuf::from(&path).exists() {
-                if !quiet {
-                    if verbose {
-                        eprintln!("# {}: {} (skipped)", tree.name,
-                                  tree.path.value.as_ref().unwrap());
-                    } else {
-                        eprintln!("# {} (skipped)", tree.name);
-                    }
-                }
+            if !model::print_tree(&tree, &path, verbose, quiet) {
                 continue;
-            }
-            if !quiet {
-                if verbose {
-                    eprintln!("# {}: {}", tree.name,
-                              tree.path.value.as_ref().unwrap());
-                } else {
-                    eprintln!("# {}", tree.name);
-                }
             }
         }
 

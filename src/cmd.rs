@@ -82,22 +82,20 @@ pub fn exec_in_context<S>(
     command: &[S],
 ) -> i32
 where S: AsRef<std::ffi::OsStr> {
-    // Evaluate the tree environment and run the command.
-    let env = eval::environment(config, context);
-    // Exec each command in the tree's context
-    let tree = &config.trees[context.tree];
-    let path = tree.path.value.as_ref().unwrap();
-    // Sparse gardens/missing trees are ok -> skip these entries.
-    if !std::path::PathBuf::from(&path).exists() {
-        if !quiet {
-            eprintln!("{}", model::display_missing_tree(&tree, &path, verbose));
+    let path;
+    // Immutable scope over tree
+    {
+        let tree = &config.trees[context.tree];
+        path = tree.path.value.as_ref().unwrap().clone();
+
+        // Sparse gardens/missing trees are ok -> skip these entries.
+        if !model::print_tree(&tree, &path, verbose, quiet) {
+            return 0;
         }
-        return 0;  // Missing trees are ok
-    }
-    if !quiet {
-        eprintln!("{}", model::display_tree(&tree, &path, verbose));
     }
 
+    // Evaluate the tree environment and run the command.
+    let env = eval::environment(config, context);
     let mut exec = exec_in_dir(command, &path);
     //  Update the command environment
     for (name, value) in &env {
