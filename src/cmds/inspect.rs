@@ -1,4 +1,5 @@
 use ::model;
+use ::model::Color;
 use ::query;
 
 
@@ -48,8 +49,7 @@ pub fn inspect(
     queries: &Vec<String>,
 ) -> i32 {
 
-    // The last error is returned through the exit status.
-    let mut exit_status: i32 = 0;
+    let mut exit_status: i32 = 0;  // Return the last error
 
     for query in queries {
         // Resolve the tree query into a vector of tree contexts.
@@ -62,9 +62,14 @@ pub fn inspect(
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !std::path::PathBuf::from(&path).exists() {
                 if verbose {
-                    println!("- {} ({})", tree.name, path);
+                    println!("{} {}  {}",
+                             Color::red("-").dimmed(),
+                             Color::red(&tree.name),
+                             Color::red(&path).dimmed());
                 } else {
-                    println!("- {}", tree.name);
+                    println!("{} {}",
+                             Color::red("-").dimmed(),
+                             Color::red(&tree.name));
                 }
                 // Missing trees trigger a non-zero status.
                 exit_status = 1;
@@ -73,17 +78,28 @@ pub fn inspect(
 
             if tree.is_symlink {
                 if verbose {
-                    println!("+ {} ({}) -> {}", tree.name, path,
-                             tree.symlink.value.as_ref().unwrap());
+                    println!("{} {}  {} {} {}",
+                             Color::green("+"),
+                             Color::green(&tree.name).bold(),
+                             Color::green(&path),
+                             Color::yellow("->").bold(),
+                             Color::blue(&tree.symlink.value.as_ref().unwrap()).bold());
                 } else {
-                    println!("+ {} -> {}", tree.name,
-                             tree.symlink.value.as_ref().unwrap());
+                    println!("{} {} {} {}",
+                             Color::green("+"),
+                             Color::green(&tree.name).bold(),
+                             Color::yellow("->").bold(),
+                             Color::blue(tree.symlink.value.as_ref().unwrap()).bold());
                 }
             } else {
                 if verbose {
-                    println!("+ {} ({})", tree.name, path);
+                    println!("{} {}  {}",
+                             Color::green("+"),
+                             Color::green(&tree.name).bold(),
+                             Color::green(&path));
                 } else {
-                    println!("+ {}", tree.name);
+                    println!("{} {}",
+                             Color::green("+"), Color::green(&tree.name).bold());
                 }
             }
         }
