@@ -125,7 +125,7 @@ pub fn split_on_dash<S>(
 
     let mut is_pre_dash = true;
     for string in strings {
-        if  is_pre_dash {
+        if is_pre_dash {
             if string.as_ref() == "--" {
                 is_pre_dash = false;
                 continue;
