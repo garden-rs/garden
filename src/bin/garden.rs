@@ -34,6 +34,10 @@ fn main() {
 
 
 fn parse_args() -> model::CommandOptions {
+
+    let color_names = model::ColorMode::names();
+    let color_help = format!("set color mode {{{}}}", color_names);
+
     let mut options = model::CommandOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
@@ -41,11 +45,14 @@ fn parse_args() -> model::CommandOptions {
 
         ap.refer(&mut options.filename_str)
             .add_option(&["-c", "--config"], argparse::Store,
-                        "specify the config file to use");
+                        "set the config file to use");
 
         ap.refer(&mut options.chdir)
             .add_option(&["-C", "--chdir"], argparse::Store,
                         "chdir before searching for configuration");
+
+        ap.refer(&mut options.color_mode)
+            .add_option(&["--color"], argparse::Store, &color_help);
 
         ap.refer(&mut options.debug)
             .add_option(&["-d", "--debug"], argparse::Collect,
