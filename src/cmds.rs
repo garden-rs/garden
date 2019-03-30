@@ -10,11 +10,11 @@ pub mod exec;
 /// Eval command
 pub mod eval;
 
+/// Grow command
+pub mod grow;
+
 /// Help command
 pub mod help;
-
-/// Init command
-pub mod init;
 
 /// Inspect command
 pub mod inspect;

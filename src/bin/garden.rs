@@ -24,8 +24,8 @@ fn main() {
         model::Command::Custom(cmd) => cmds::cmd::custom(&mut app, &cmd),
         model::Command::Exec => cmds::exec::main(&mut app),
         model::Command::Eval => cmds::eval::main(&mut app),
+        model::Command::Grow => cmds::grow::main(&mut app),
         model::Command::Help => (),  // Handled above
-        model::Command::Init => cmds::init::main(&mut app),
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),

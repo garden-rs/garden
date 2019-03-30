@@ -18,7 +18,7 @@ pub fn main(app: &mut model::ApplicationContext) {
 
     let mut exit_status = 0;
     for query in &queries {
-        let status = init(&mut app.config, quiet, verbose, &query);
+        let status = grow(&mut app.config, quiet, verbose, &query);
         if status != 0 {
             exit_status = status;
         }
@@ -28,15 +28,14 @@ pub fn main(app: &mut model::ApplicationContext) {
 
 fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
     // Parse arguments
-    options.args.insert(0, "garden init".to_string());
+    options.args.insert(0, "garden grow".to_string());
 
     let mut ap = argparse::ArgumentParser::new();
-    ap.set_description(
-        "garden init - Create gardens or reinitialize existing ones");
+    ap.set_description("garden grow - Create and update gardens");
 
     ap.refer(queries).required()
         .add_argument("queries", argparse::List,
-                      "gardens/groups/trees to initialize (tree queries)");
+                      "gardens/groups/trees to grow (tree queries)");
 
     if let Err(err) = ap.parse(options.args.to_vec(),
                                &mut std::io::stdout(),
@@ -46,8 +45,8 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
 }
 
 
-/// Execute a command over every tree in the evaluated tree query.
-pub fn init(
+/// Create/update trees in the evaluated tree query.
+pub fn grow(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,

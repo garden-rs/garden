@@ -37,7 +37,7 @@ fn init_clone() {
         "./target/debug/garden",
         "--chdir", "./tests/tmp/clone",
         "--config", "../../integration/garden.yaml",
-        "init", "example/tree",
+        "grow", "example/tree",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
     let exit_status = garden::cmd::status(exec.join());
@@ -79,7 +79,7 @@ fn init_remotes() {
         "./target/debug/garden",
         "--chdir", "./tests/tmp/remotes",
         "--config", "../../integration/garden.yaml",
-        "init", "example/tree",
+        "grow", "example/tree",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
     let exit_status = garden::cmd::status(exec.join());
@@ -123,7 +123,7 @@ fn init_symlinks() {
             "./target/debug/garden",
             "--chdir", "./tests/tmp/symlinks",
             "--config", "../../integration/garden.yaml",
-            "init", "example/tree", "link", "example/link",
+            "grow", "example/tree", "link", "example/link",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
         let exit_status = garden::cmd::status(exec.join());
@@ -172,7 +172,7 @@ fn init_gitconfig() {
             "./target/debug/garden",
             "--chdir", "./tests/tmp/gitconfig",
             "--config", "../../integration/garden.yaml",
-            "init", "example/tree",
+            "grow", "example/tree",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
         let exit_status = garden::cmd::status(exec.join());

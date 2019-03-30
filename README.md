@@ -24,19 +24,21 @@ development.
 Garden is used by creating a simple configuration file and defining a
 directory structure for git trees.  Existing trees can be added to the
 configuration using `garden add`.
+The `garden grow` command is used to bring trees into existence when
+using an existing `garden.yaml`.
 
-When bootstrapping from a pre-defined `garden.yaml`, the `garden init` command
-is used to bring trees into existence.
+Garden commands can be used to operate over sets of trees once a
+configuration has been defined using `garden add <repo>` or `$EDITOR`.
+
 
 # Configuration
 
 Garden is configured through a garden configuration file, typically called
 "garden.yaml".  You can specify a config file by specifying
-`-c|--config <filename>` when running garden, or arrange to have
-garden find it in the current directory or in specific locations
-on the filesystem.
+`-c|--config <filename>` when running garden, or by allowing garden to find
+`garden.yaml` in current directory or in specific locations on the filesystem.
 
-Garden searches for "garden.yaml" in the following locations by default.
+Garden searches for `garden.yaml` in the following locations by default.
 
     # Relative to the current directory
     ./garden.yaml
@@ -504,16 +506,20 @@ evaluation.
 
 ### garden init
 
-    garden init <query>
+    garden init [options]
+
+### garden grow
+
+    garden grow <query>
 
     # example
-    garden init cola
+    garden grow cola
 
-Initialize the tree(s) referenced by the `<query>`.  The `init` command can
-also be used to update existing trees.  It is safe to re-run the `init`
-command.  For existing trees, their git configuration will be updated to match
-any changes made to the configuration.  Missing repositories are cloned from
-their configured url.
+Update or create the tree(s) referenced by the `<query>`.
+
+It is safe to re-run the `grow` command.  Existing trees will have their git
+configuration updated to match the configured remotes.  Missing repositories
+are created by cloning the configured tree url.
 
 
 ### garden shell
