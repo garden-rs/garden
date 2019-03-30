@@ -41,7 +41,8 @@ fn parse_args() -> model::CommandOptions {
     let mut options = model::CommandOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden - git tree organizer");
+        ap.set_description("garden - cultivate git trees");
+        ap.stop_on_first_argument(true);
 
         ap.refer(&mut options.filename_str)
             .add_option(&["-c", "--config"], argparse::Store,
@@ -76,7 +77,6 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.args)
             .add_argument("arguments", argparse::List, "command arguments");
 
-        ap.stop_on_first_argument(true);
         ap.parse_args_or_exit();
     }
     options.update();
