@@ -21,11 +21,24 @@ Garden aids in common development setup steps such as setting environment
 variables, search paths, and creating arbitrary groupings of repositories for
 development.
 
-Garden is used by creating a simple configuration file and defining a
-directory structure for git trees.  Existing trees can be added to the
-configuration using `garden add`.
-The `garden grow` command is used to bring trees into existence when
-using an existing `garden.yaml`.
+# Setup
+
+The following `garden init` invocation creates an empty `garden.yaml` with a
+root directory of `~/src` in the user's home confiuration directory.
+
+    garden init --global --root '~/src'
+
+Garden is used by creating a configuration file and defining a directory
+structure for git trees.  Existing trees can be added to the configuration
+using `garden add`.
+
+The `garden init` command creates an empty `garden.yaml` file from
+scratch in the current directory, or in the user-global
+`~/.config/garden/garden.yaml` directory.  The global configuration
+is used when `garden.yaml` is not found under the current directory.
+
+The `garden grow` command is used to bring trees into existence from an
+existing `garden.yaml`.
 
 Garden commands can be used to operate over sets of trees once a
 configuration has been defined using `garden add <repo>` or `$EDITOR`.
@@ -507,6 +520,16 @@ evaluation.
 ### garden init
 
     garden init [options]
+
+    # create a local garden config rooted at the current directory
+    garden init --root '${GARDEN_CONFIG_DIR}'
+
+    # create a global garden config rooted at ~/src
+    garden init --global --root '~/src'
+
+Create a new empty `garden.yaml` in the current directory, or in the
+user's global configuration directory when `--global` is specified.
+See `garden help init` for more details.
 
 ### garden grow
 
