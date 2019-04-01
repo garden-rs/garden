@@ -22,10 +22,3 @@ pub mod query;
 
 /// Command-line syntax conventions
 pub mod syntax;
-
-///
-/// Private modules
-///
-
-/// YAML/JSON reader
-mod config_yaml;

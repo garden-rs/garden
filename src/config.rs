@@ -2,7 +2,10 @@ extern crate dirs;
 extern crate xdg;
 
 use ::model;
-use ::config_yaml;
+
+/// YAML reader
+mod reader;
+
 
 // Search for configuration in the following locations:
 //  .
@@ -183,7 +186,7 @@ pub fn from_options(options: &model::CommandOptions) -> model::Configuration {
 pub fn parse(config_string: &str, verbose: bool,
              cfg: &mut model::Configuration) {
 
-    config_yaml::parse(&config_string, verbose, cfg);
+    reader::parse(&config_string, verbose, cfg);
     // Initialize the configuration now that the values have been read.
     cfg.initialize();
 }
