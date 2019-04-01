@@ -7,12 +7,22 @@ use garden::model;
 
 
 fn main() {
+    std::process::exit(cmd_main());
+}
+
+
+fn cmd_main() -> i32 {
     let mut options = parse_args();
 
-    // Help should run without a config file
-    if let model::Command::Help = options.subcommand {
-        cmds::help::main(&mut options);
-        return;
+    // The following commands run without a configuration file
+    match options.subcommand {
+        model::Command::Help => {
+            return cmds::help::main(&mut options);
+        },
+        model::Command::Init => {
+            return cmds::init::main(&mut options);
+        },
+        _ => (),
     }
 
     let config = config::from_options(&options);
@@ -25,7 +35,7 @@ fn main() {
         model::Command::Exec => cmds::exec::main(&mut app),
         model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Grow => cmds::grow::main(&mut app),
-        model::Command::Help => (),  // Handled above
+        model::Command::Help => 0,  // Handled above
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),

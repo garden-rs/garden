@@ -8,7 +8,7 @@ use ::query;
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     let options = &mut app.options;
     let mut queries = Vec::new();
     parse_args(&mut queries, options);
@@ -23,8 +23,10 @@ pub fn main(app: &mut model::ApplicationContext) {
             exit_status = status;
         }
     }
-    std::process::exit(exit_status);
+
+    exit_status
 }
+
 
 fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
     // Parse arguments

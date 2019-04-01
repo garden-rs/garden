@@ -6,7 +6,7 @@ use ::model;
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(options: &mut model::CommandOptions) {
+pub fn main(options: &mut model::CommandOptions) -> i32 {
     let cmd_path = cmd::current_exe();
     let mut help_cmd = vec!(cmd_path);
 
@@ -20,9 +20,9 @@ pub fn main(options: &mut model::CommandOptions) {
                           "{add, cmd, eval, exec, ls, shell}");
 
         options.args.insert(0, "garden help".to_string());
-        ap.parse(options.args.to_vec(),
-                 &mut std::io::stdout(), &mut std::io::stderr())
-            .map_err(|c| std::process::exit(c)).ok();
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
 
     // garden help foo -> garden foo --help
@@ -41,5 +41,5 @@ pub fn main(options: &mut model::CommandOptions) {
         }
     }
 
-    std::process::exit(cmd::run(&help_cmd));
+    cmd::run(&help_cmd)
 }

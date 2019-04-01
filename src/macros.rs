@@ -1,4 +1,4 @@
-/// Print a message to stderr with an "error: " prefix and terminate the process
+/// Print a message to stderr with an "error: " prefix
 ///
 /// Parameters:
 /// - `args`: A `std::fmt::Arguments`
@@ -39,11 +39,25 @@ macro_rules! error {
     }
 }
 
+
+/// Print a message to stderr with a "error: " prefix
+///
+/// Parameters:
+/// - `fmt`: A format string.
+/// - `args*`: Format string arguments.
+#[macro_export]
+macro_rules! errmsg {
+    ( $fmt:expr $(, $args:expr )* ) => {
+        $crate::macros::error(format_args!($fmt, $( $args ),*));
+    }
+}
+
+
 /// Unwrap an Option<T> and return the result; terminate if unwrappable.
 /// This variant assumes a void function and returns.
 ///
 /// Parameters:
-/// - `expr`: An expression that results to an Option<T>.
+/// - `expr`: An expression that resolves to an Option<T>.
 /// - `message`: Error message format arguments.
 #[macro_export]
 macro_rules! unwrap_or_err {
@@ -61,7 +75,7 @@ macro_rules! unwrap_or_err {
 /// This variant returns the specified value from the function on error.
 ///
 /// Parameters:
-/// - `expr`: An expression that results to an Option<T>.
+/// - `expr`: An expression that resolves to an Option<T>.
 /// - `retval`: The value to return from the current function on error.
 /// - `message`: Error message format arguments.
 #[macro_export]
@@ -70,8 +84,22 @@ macro_rules! unwrap_or_err_return {
         match $expr {
             Ok(value) => value,
             Err(err) => {
-                error!($( $message ),*, err);
+                errmsg!($( $message ),*, err);
+                return $retval;
             }
+        }
+    }
+}
+
+/// Evaluate an expression and return the inner Err on error.
+///
+/// Parameters:
+/// - `expr`: An expression that resolves to an Option<T>.
+#[macro_export]
+macro_rules! return_on_err {
+    ($expr:expr) => {
+        if let Err(err) = $expr {
+            return err;
         }
     }
 }

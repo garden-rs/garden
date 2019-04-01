@@ -7,7 +7,7 @@ use ::query;
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     let options = &mut app.options;
     let config = &mut app.config;
 
@@ -30,11 +30,9 @@ pub fn main(app: &mut model::ApplicationContext) {
                           "command to run over resolved trees");
 
         options.args.insert(0, "garden exec".to_string());
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
 
     if options.is_debug("exec") {
@@ -45,8 +43,8 @@ pub fn main(app: &mut model::ApplicationContext) {
 
     let quiet = options.quiet;
     let verbose = options.verbose;
-    let exit_status = exec(config, quiet, verbose, &query, &command);
-    std::process::exit(exit_status);
+
+    exec(config, quiet, verbose, &query, &command)
 }
 
 

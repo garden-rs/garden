@@ -1,7 +1,7 @@
 use ::model;
 
 
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     let config = &app.config;
 
     if !config.gardens.is_empty() {
@@ -30,4 +30,6 @@ pub fn main(app: &mut model::ApplicationContext) {
         }
         println!("");
     }
+
+    0
 }

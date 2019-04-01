@@ -7,7 +7,7 @@ use ::query;
 
 
 /// garden cmd <query> <command>...
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     let config = &mut app.config;
     let options = &mut app.options;
     let mut query = String::new();
@@ -32,11 +32,9 @@ pub fn main(app: &mut model::ApplicationContext) {
                           "commands to run over resolved trees");
 
         options.args.insert(0, "garden cmd".to_string());
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
 
     if options.is_debug("cmd") {
@@ -59,12 +57,13 @@ pub fn main(app: &mut model::ApplicationContext) {
         config, options.quiet, options.verbose, options.keep_going,
         &query, &commands, &arguments,
     );
-    std::process::exit(exit_status);
+
+    exit_status
 }
 
 
 /// garden <command> <query>...
-pub fn custom(app: &mut model::ApplicationContext, command: &str) {
+pub fn custom(app: &mut model::ApplicationContext, command: &str) -> i32 {
     let config = &mut app.config;
     let options = &mut app.options;
     let mut queries_and_arguments: Vec<String> = Vec::new();
@@ -84,11 +83,9 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
                           "gardens/groups/trees to exec (tree queries)");
 
         options.args.insert(0, format!("garden {}", command));
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
 
     if options.is_debug("cmd") {
@@ -116,7 +113,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) {
         command, &queries, &arguments,
     );
 
-    std::process::exit(exit_status);
+    exit_status
 }
 
 /// Strategy: resolve the trees down to a set of tree indexes paired with an

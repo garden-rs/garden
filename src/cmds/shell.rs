@@ -6,7 +6,7 @@ use ::model;
 use ::query;
 
 
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     let config = &mut app.config;
     let options = &mut app.options;
 
@@ -27,11 +27,9 @@ pub fn main(app: &mut model::ApplicationContext) {
             .add_argument("tree", argparse::Store, "tree to chdir into");
 
         options.args.insert(0, "garden shell".to_string());
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
 
     let contexts = query::resolve_trees(config, &query);
@@ -80,9 +78,8 @@ pub fn main(app: &mut model::ApplicationContext) {
                                  context.tree, context.garden);
 
     if let Some(value) = shlex::split(&shell) {
-        let exit_status = cmd::exec_in_context(
-            config, &context, /*quiet*/ true, /*verbose*/ false, &value);
-        std::process::exit(exit_status);
+        cmd::exec_in_context(
+            config, &context, /*quiet*/ true, /*verbose*/ false, &value)
     } else {
         error!("invalid configuration: unable to shlex::split '{}'", shell);
     }

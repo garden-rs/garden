@@ -11,7 +11,7 @@ use ::cmd;
 use ::model;
 
 
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     // Parse arguments
     let options = &mut app.options;
     let config = &mut app.config;
@@ -30,11 +30,9 @@ pub fn main(app: &mut model::ApplicationContext) {
             .add_argument("paths", argparse::List, "trees to add");
 
         options.args.insert(0, "garden add".to_string());
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
 
     // Read existing configuration
@@ -104,6 +102,8 @@ pub fn main(app: &mut model::ApplicationContext) {
     if let Err(err) = file.sync_all() {
         error!("unable to sync files: {}", err);
     }
+
+    0
 }
 
 

@@ -5,7 +5,7 @@ use ::model;
 use ::query;
 
 
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     let config = &mut app.config;
     let options = &mut app.options;
 
@@ -30,16 +30,14 @@ pub fn main(app: &mut model::ApplicationContext) {
             .add_argument("garden", argparse::Store, "garden to evaluate");
 
         options.args.insert(0, "garden eval".to_string());
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
 
     if tree.is_empty() {
         println!("{}", eval::value(config, &expr));
-        return;
+        return 0;
     }
 
     if !garden.is_empty() {
@@ -52,6 +50,7 @@ pub fn main(app: &mut model::ApplicationContext) {
             let value = eval::tree_value(config, &expr,
                                          ctx.tree, ctx.garden);
             println!("{}", value);
+            0
         }
         Err(err) => {
             error!("{}", err);

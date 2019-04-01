@@ -7,7 +7,7 @@ use ::query;
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(app: &mut model::ApplicationContext) {
+pub fn main(app: &mut model::ApplicationContext) -> i32 {
     let options = &mut app.options;
     let config = &mut app.config;
 
@@ -23,11 +23,9 @@ pub fn main(app: &mut model::ApplicationContext) {
                           "gardens/groups/trees to exec (tree queries)");
 
         options.args.insert(0, "garden exec".to_string());
-        if let Err(err) = ap.parse(options.args.to_vec(),
-                                   &mut std::io::stdout(),
-                                   &mut std::io::stderr()) {
-            std::process::exit(err);
-        }
+        return_on_err!(ap.parse(options.args.to_vec(),
+                                &mut std::io::stdout(),
+                                &mut std::io::stderr()));
     }
     if query.is_empty() {
         query.push(".".to_string());
@@ -37,8 +35,7 @@ pub fn main(app: &mut model::ApplicationContext) {
         debug!("query: {:?}", query);
     }
 
-    let exit_status = inspect(config, options.verbose, &query);
-    std::process::exit(exit_status);
+    inspect(config, options.verbose, &query)
 }
 
 
