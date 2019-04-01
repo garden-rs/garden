@@ -453,7 +453,7 @@ impl ColorMode {
     }
 
     pub fn names() -> &'static str {
-        "auto, true, false, 1, 0, on, off, always, never"
+        "auto, true, false, 1, 0, [y]es, [n]o, on, off, always, never"
     }
 
     pub fn update(&mut self) {
@@ -481,7 +481,7 @@ impl std::str::FromStr for ColorMode {
     type Err = ();  // For the FromStr trait
 
     fn from_str(src: &str) -> Result<ColorMode, ()> {
-        return match src {
+        return match src.to_lowercase().as_ref() {
             "auto" => Ok(ColorMode::Auto),
             "-1" => Ok(ColorMode::Auto),
             "0" => Ok(ColorMode::Off),
@@ -494,6 +494,8 @@ impl std::str::FromStr for ColorMode {
             "on" => Ok(ColorMode::On),
             "n" => Ok(ColorMode::Off),
             "y" => Ok(ColorMode::On),
+            "no" => Ok(ColorMode::Off),
+            "yes" => Ok(ColorMode::On),
             _ => Err(()),
         }
     }
