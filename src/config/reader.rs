@@ -1,6 +1,5 @@
 extern crate yaml_rust;
 use self::yaml_rust::yaml::Yaml;
-use self::yaml_rust::yaml::Array as YamlArray;
 use self::yaml_rust::yaml::Hash as YamlHash;
 use self::yaml_rust::YamlLoader;
 
@@ -618,7 +617,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
             let key = Yaml::String("garden".to_string());
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid 'trees' configuration: not a hash");
+            return Err("invalid 'garden' configuration: not a hash");
         }
     }
 
@@ -630,7 +629,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid configuration format for trees: not a hash");
+            return Err("invalid 'trees' configuration: not a hash");
         }
     }
 
