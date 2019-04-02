@@ -44,12 +44,7 @@ fn search_path() -> Vec<std::path::PathBuf> {
     }
 
     // $XDG_CONFIG_HOME/garden (typically ~/.config/garden)
-    let xdg_dirs = xdg::BaseDirectories::new().unwrap();
-    let mut home_config_dir = xdg_dirs.get_config_home().to_path_buf();
-    home_config_dir.push("garden");
-    if home_config_dir.exists() {
-        paths.push(home_config_dir);
-    }
+    paths.push(xdg_dir());
 
     // ~/etc/garden
     let mut home_etc_dir = home_dir.to_path_buf();
@@ -66,6 +61,16 @@ fn search_path() -> Vec<std::path::PathBuf> {
     }
 
     paths
+}
+
+
+/// $XDG_CONFIG_HOME/garden (typically ~/.config/garden)
+pub fn xdg_dir() -> std::path::PathBuf {
+    let xdg_dirs = xdg::BaseDirectories::new().unwrap();
+    let mut home_config_dir = xdg_dirs.get_config_home().to_path_buf();
+    home_config_dir.push("garden");
+
+    home_config_dir
 }
 
 
