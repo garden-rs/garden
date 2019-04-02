@@ -1,7 +1,5 @@
 # Ideas, New Features, Usability Enhancements
 
-- std::io::Result<(), i32> for main()
-
 - Modular/reusable garden.yaml configuration.
 
 Allow "graft" gardens by including the garden.yaml from an external garden.yaml
