@@ -634,14 +634,14 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
     }
 
     // Groups
-    good = doc["groups"].as_vec().is_some();
+    good = doc["groups"].as_hash().is_some();
     if !good {
         if let Yaml::Hash(ref mut doc_hash) = doc {
             let key = Yaml::String("groups".to_string());
             doc_hash.remove(&key);
-            doc_hash.insert(key, Yaml::Array(YamlArray::new()));
+            doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid configuration format for groups: not a hash");
+            return Err("invalid 'groups' configuration: not a hash");
         }
     }
 
@@ -653,7 +653,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid configuration format for gardens: not a hash");
+            return Err("invalid 'gardens' configuration: not a hash");
         }
     }
 
