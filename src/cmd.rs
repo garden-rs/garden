@@ -135,3 +135,27 @@ pub fn current_exe() -> String {
         Ok(path) => path.to_string_lossy().to_string(),
     }
 }
+
+/// Return codes from programs.  Cf. /usr/include/sysexits.h
+pub enum ExitCode {
+    Success,
+    Config,
+    FileExists,
+    FileNotFound,
+    IOError,
+    Usage,
+}
+
+
+impl std::convert::From<ExitCode> for i32 {
+    fn from(exit_code: ExitCode) -> Self {
+        match exit_code {
+            ExitCode::Config => 78,  // EX_CONFIG,
+            ExitCode::FileExists => 64, // EX_USAGE
+            ExitCode::FileNotFound => 74,  // EX_IOERR
+            ExitCode::IOError => 74,  // EX_IOERR
+            ExitCode::Success => 0,  // EXIT_SUCCESS
+            ExitCode::Usage => 64,  // EX_USAGE
+        }
+    }
+}
