@@ -4,10 +4,10 @@ extern crate yaml_rust;
 use std::io::Write;
 
 use self::yaml_rust::YamlEmitter;
-use self::yaml_rust::YamlLoader;
 use self::yaml_rust::yaml;
 
 use ::cmd;
+use ::config;
 use ::model;
 
 
@@ -36,14 +36,7 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
     }
 
     // Read existing configuration
-    let mut doc = match yaml_from_path(config.path.as_ref().unwrap()) {
-        Ok(doc) => {
-            doc
-        }
-        Err(err) => {
-            error!("{}", err);
-        }
-    };
+    let mut doc = config::reader::read_yaml(config.path.as_ref().unwrap());
 
     // Output filename defaults to the input filename.
     if output.is_empty() {
@@ -80,68 +73,11 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
     }
 
     // Emit the YAML configuration into a string
-    let mut out_str = String::new();
-    {
-        let mut emitter = YamlEmitter::new(&mut out_str);
-        emitter.dump(&doc).unwrap(); // dump the YAML object to a String
-    }
-    out_str += "\n";
-
-    let file_result = std::fs::File::create(&output);
-    if file_result.is_err() {
-        error!("{}: unable to create configuration: {}",
-               output, file_result.as_ref().err().unwrap());
+    if !config::writer::write_yaml(&doc, &output) {
+        return cmd::ExitCode::IOError.into();
     }
 
-    let mut file = file_result.unwrap();
-    let write_result = file.write_all(&out_str.into_bytes());
-    if write_result.is_err() {
-        error!("{}: unable to write configuration", output);
-    }
-
-    if let Err(err) = file.sync_all() {
-        error!("unable to sync files: {}", err);
-    }
-
-    0
-}
-
-
-fn yaml_from_path(path: &std::path::PathBuf) -> Result<yaml::Yaml, String> {
-    // Read existing configuration
-    let read_result = std::fs::read_to_string(path);
-    if read_result.is_err() {
-        return Err(format!(
-            "unable to read {:?}: {:?}", path, read_result.err()));
-    }
-
-    let string = read_result.unwrap();
-    let docs_result = YamlLoader::load_from_str(&string);
-    if docs_result.is_err() {
-        return Err(format!(
-            "unable to read configuration: {:?}", docs_result.err()));
-    }
-
-    let mut docs = docs_result.unwrap();
-    if docs.len() < 1 {
-        return Err(format!("empty configuration: {:?}", path));
-    }
-
-    add_trees_if_missing(&mut docs[0]);
-    Ok(docs[0].clone())
-}
-
-fn add_trees_if_missing(doc: &mut yaml::Yaml) {
-    let good = doc["trees"].as_hash().is_some();
-    if !good {
-        if let yaml::Yaml::Hash(ref mut doc_hash) = doc {
-            let key = yaml::Yaml::String("trees".to_string());
-            doc_hash.remove(&key);
-            doc_hash.insert(key, yaml::Yaml::Hash(yaml::Hash::new()));
-        } else {
-            error!("invalid configuration format: not a hash");
-        }
-    }
+    cmd::ExitCode::Success.into()
 }
 
 

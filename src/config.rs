@@ -4,7 +4,10 @@ extern crate xdg;
 use ::model;
 
 /// YAML reader
-mod reader;
+pub mod reader;
+
+/// YAML writer
+pub mod writer;
 
 
 // Search for configuration in the following locations:
