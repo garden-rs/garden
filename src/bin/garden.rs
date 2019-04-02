@@ -36,6 +36,7 @@ fn cmd_main() -> i32 {
         model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Grow => cmds::grow::main(&mut app),
         model::Command::Help => 0,  // Handled above
+        model::Command::Init => 0,  // Handled above
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
