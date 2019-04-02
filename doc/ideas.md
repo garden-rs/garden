@@ -5,7 +5,7 @@
 - Modular/reusable garden.yaml configuration.
 
 Allow "graft" gardens by including the garden.yaml from an external garden.yaml
-and placings its tree, groups, and gardens in a "custom::" namespace.
+and placings its tree, groups, and gardens in a "custom::" graft namespace.
 
     grafts:
         libs: libs/garden.yaml
