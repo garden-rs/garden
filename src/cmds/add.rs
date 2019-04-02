@@ -1,10 +1,8 @@
 extern crate subprocess;
 extern crate yaml_rust;
 
-use std::io::Write;
-
-use self::yaml_rust::YamlEmitter;
-use self::yaml_rust::yaml;
+use self::yaml_rust::yaml::Yaml;
+use self::yaml_rust::yaml::Hash as YamlHash;
 
 use ::cmd;
 use ::config;
@@ -45,8 +43,8 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
 
     {
         // Get a mutable reference to top-level document hash.
-        let doc_hash: &mut yaml::Hash = match doc {
-            yaml::Yaml::Hash(ref mut hash) => {
+        let doc_hash: &mut YamlHash = match doc {
+            Yaml::Hash(ref mut hash) => {
                 hash
             },
             _ => {
@@ -55,9 +53,9 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
         };
 
         // Get a mutable reference to the "trees" hash.
-        let key = yaml::Yaml::String("trees".to_string());
-        let trees: &mut yaml::Hash = match doc_hash.get_mut(&key) {
-            Some(yaml::Yaml::Hash(ref mut hash)) => {
+        let key = Yaml::String("trees".to_string());
+        let trees: &mut YamlHash = match doc_hash.get_mut(&key) {
+            Some(Yaml::Hash(ref mut hash)) => {
                 hash
             },
             _ => {
@@ -85,7 +83,7 @@ fn add_path(
     config: &model::Configuration,
     verbose: bool,
     raw_path: &str,
-    trees: &mut yaml::Hash)
+    trees: &mut YamlHash)
 -> Result<(), String> {
 
     // Garden root path
@@ -130,8 +128,8 @@ fn add_path(
     }
 
     // Key for the tree entry
-    let key = yaml::Yaml::String(tree_name.to_string());
-    let mut entry: yaml::Hash = yaml::Hash::new();
+    let key = Yaml::String(tree_name.to_string());
+    let mut entry: YamlHash = YamlHash::new();
 
     // Update an existing entry if it already exists.
     // Add a new entry otherwise.
@@ -143,7 +141,7 @@ fn add_path(
         }
     }
 
-    let remotes_key = yaml::Yaml::String("remotes".to_string());
+    let remotes_key = Yaml::String("remotes".to_string());
     let has_remotes = entry.contains_key(&remotes_key)
         && entry.get(&remotes_key).unwrap().as_hash().is_some();
 
@@ -185,12 +183,12 @@ fn add_path(
 
     if !remotes.is_empty() {
         if !has_remotes {
-            entry.insert(remotes_key.clone(), yaml::Yaml::Hash(yaml::Hash::new()));
+            entry.insert(remotes_key.clone(), Yaml::Hash(YamlHash::new()));
         }
 
-        let remotes_hash: &mut yaml::Hash =
+        let remotes_hash: &mut YamlHash =
             match entry.get_mut(&remotes_key) {
-            Some(yaml::Yaml::Hash(ref mut hash)) => {
+            Some(Yaml::Hash(ref mut hash)) => {
                 hash
             },
             _ => {
@@ -199,8 +197,8 @@ fn add_path(
         };
 
         for (k, v) in &remotes {
-            let remote = yaml::Yaml::String(k.to_string());
-            let value = yaml::Yaml::String(v.to_string());
+            let remote = Yaml::String(k.to_string());
+            let value = Yaml::String(v.to_string());
 
             if remotes_hash.contains_key(&remote) {
                 *(remotes_hash.get_mut(&remote).unwrap()) = value;
@@ -210,7 +208,7 @@ fn add_path(
         }
     }
 
-    let url_key = yaml::Yaml::String("url".to_string());
+    let url_key = Yaml::String("url".to_string());
     let has_url = entry.contains_key(&url_key);
     if !has_url {
         if verbose {
@@ -222,7 +220,7 @@ fn add_path(
         match cmd::capture_stdout(exec) {
             Ok(x) => {
                 let origin_url = cmd::trim_stdout(&x);
-                entry.insert(url_key, yaml::Yaml::String(origin_url));
+                entry.insert(url_key, Yaml::String(origin_url));
             }
             Err(err) => {
                 error!("{:?}", err);
@@ -232,9 +230,9 @@ fn add_path(
 
     // Move the entry into the trees container
     if trees.contains_key(&key) {
-        *(trees.get_mut(&key).unwrap()) = yaml::Yaml::Hash(entry);
+        *(trees.get_mut(&key).unwrap()) = Yaml::Hash(entry);
     } else {
-        trees.insert(key, yaml::Yaml::Hash(entry));
+        trees.insert(key, Yaml::Hash(entry));
     }
 
     Ok(())
