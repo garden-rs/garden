@@ -659,3 +659,11 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
 
     Ok(())
 }
+
+
+pub fn empty_doc() -> Yaml {
+    let mut doc = Yaml::Hash(YamlHash::new());
+    add_missing_sections(&mut doc).ok();
+
+    doc
+}
