@@ -1,6 +1,7 @@
 extern crate argparse;
 extern crate garden;
 
+use garden::cmd;
 use garden::cmds;
 use garden::config;
 use garden::model;
@@ -35,8 +36,8 @@ fn cmd_main() -> i32 {
         model::Command::Exec => cmds::exec::main(&mut app),
         model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Grow => cmds::grow::main(&mut app),
-        model::Command::Help => 0,  // Handled above
-        model::Command::Init => 0,  // Handled above
+        model::Command::Help => cmd::ExitCode::Success.into(),  // Handled above
+        model::Command::Init => cmd::ExitCode::Success.into(),  // Handled above
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
