@@ -22,6 +22,12 @@ pub fn is_tree(string: &str) -> bool {
 }
 
 
+/// Return true if `string` is a `graft::value` expression.
+pub fn is_graft(string: &str) -> bool {
+    string.contains("::")
+}
+
+
 /// Trim garden, group, and tree prefixes
 pub fn trim(string: &str) -> String {
     let mut value = string.to_string();

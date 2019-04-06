@@ -11,6 +11,13 @@ fn is_garden() {
 
 
 #[test]
+fn is_graft() {
+    assert!(syntax::is_graft("foo::bar"), "foo::bar is a graft");
+    assert!(!syntax::is_graft("foo"), "foo is not a graft");
+}
+
+
+#[test]
 fn is_group() {
     assert!(syntax::is_group("%group"), "%group is a group");
     assert!(!syntax::is_group("group"), "group is not a group");
