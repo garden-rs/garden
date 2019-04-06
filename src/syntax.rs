@@ -45,3 +45,23 @@ pub fn trim_exec(string: &str) -> String {
 
     cmd
 }
+
+
+/// Safely a string into pre and post-split references
+pub fn split_string<'a>(string: &'a str, split: &str)
+-> (bool, &'a str, &'a str) {
+    let end = string.len();
+    let split_len = split.len();
+    // split offset, everything up to this point is before the split
+    let before = string.find(split).unwrap_or(end);
+
+    let after;  // offset after the split
+    let ok = before <= (end - split_len);
+    if ok {
+        after = before + split_len;
+    } else {
+        after = before;
+    }
+
+    (ok, &string[..before], &string[after..])
+}

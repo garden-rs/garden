@@ -29,3 +29,30 @@ fn is_tree() {
     assert!(syntax::is_tree("@tree"), "@tree is a tree");
     assert!(!syntax::is_tree("tree"), "tree is not a tree");
 }
+
+
+#[test]
+fn split_string_ok() {
+    let (ok, pre, post) = syntax::split_string("foo::bar", "::");
+    assert!(ok, "split :: on foo::bar is ok");
+    assert_eq!(pre, "foo");
+    assert_eq!(post, "bar");
+}
+
+
+#[test]
+fn split_string_empty() {
+    let (ok, pre, post) = syntax::split_string("foo::", "::");
+    assert!(ok, "split :: on foo:: is ok");
+    assert_eq!(pre, "foo");
+    assert_eq!(post, "");
+}
+
+
+#[test]
+fn split_string_not_found() {
+    let (ok, pre, post) = syntax::split_string("foo", "::");
+    assert!(!ok, "split :: on foo is false");
+    assert_eq!(pre, "foo");
+    assert_eq!(post, "");
+}
