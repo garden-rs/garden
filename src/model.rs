@@ -150,6 +150,7 @@ pub struct Configuration {
     pub gardens: Vec<Garden>,
     pub groups: Vec<Group>,
     pub path: Option<std::path::PathBuf>,
+    pub dirname: Option<std::path::PathBuf>,
     pub root: Variable,
     pub root_path: std::path::PathBuf,
     pub shell: String,
@@ -299,6 +300,15 @@ impl Configuration {
         for tree in &mut self.trees {
             tree.reset_variables();
         }
+    }
+
+    /// Set the config path and the dirname fields
+    pub fn set_path(&mut self, path: std::path::PathBuf) {
+        let mut dirname = path.to_path_buf();
+        dirname.pop();
+
+        self.dirname = Some(dirname);
+        self.path = Some(path);
     }
 }
 

@@ -89,11 +89,11 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
             // If an absolute path was specified, or if the file exists,
             // short-circuit the search; the config file might be missing but
             // we shouldn't silently use a different config file.
-            cfg.path = Some(config_path.to_path_buf());
+            cfg.set_path(config_path.to_path_buf());
             found = true;
         } else {
-            // The specified path can is a basename basename or relative path
-            // to be found in the config search path.
+            // The specified path is a basename or relative path to be found
+            // in the config search path.
             basename = config_path.to_string_lossy().to_string();
         }
     }
@@ -103,7 +103,7 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
             let mut candidate = entry.to_path_buf();
             candidate.push(basename.to_string());
             if candidate.exists() {
-                cfg.path = Some(candidate);
+                cfg.set_path(candidate);
                 found = true;
                 break;
             }

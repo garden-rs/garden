@@ -46,9 +46,8 @@ pub fn parse(string: &str, verbose: bool,
         value: None,
     });
 
-    if config.path.is_some() {
-        let mut config_path_raw = config.path.as_ref().unwrap().to_path_buf();
-        config_path_raw.pop();
+    if config.dirname.is_some() {
+        let config_path_raw = config.dirname.as_ref().unwrap();
 
         // Calculate an absolute path for GARDEN_CONFIG_DIR.
         if let Ok(config_path) = config_path_raw.canonicalize() {
