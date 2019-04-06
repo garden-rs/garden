@@ -29,7 +29,7 @@ fn teardown(path: &str) {
 
 /// `garden init` clones repositories
 #[test]
-fn init_clone() {
+fn grow_clone() {
     setup("clone", "tests/tmp");
 
     // garden init examples/tree
@@ -71,7 +71,7 @@ fn init_clone() {
 
 /// `garden init` sets up remotes
 #[test]
-fn init_remotes() {
+fn grow_remotes() {
     setup("remotes", "tests/tmp");
 
     // garden init examples/tree
@@ -114,7 +114,7 @@ fn init_remotes() {
 
 /// `garden init` creates symlinks
 #[test]
-fn init_symlinks() {
+fn grow_symlinks() {
     setup("symlinks", "tests/tmp");
 
     // garden init examples/tree examples/symlink
@@ -163,7 +163,7 @@ fn init_symlinks() {
 
 /// `garden init` sets up git config settings
 #[test]
-fn init_gitconfig() {
+fn grow_gitconfig() {
     setup("gitconfig", "tests/tmp");
 
     // garden init examples/tree
@@ -248,7 +248,7 @@ fn eval_garden_config_dir() {
 fn cmd_dash_dash_arguments() {
     let cmd = [
         "./target/debug/garden",
-        "--chdir", "./tests/integration",
+        "--chdir", "tests/integration",
         "--quiet",
         "cmd", ".",
         "echo-dir", "echo-args",
@@ -273,7 +273,7 @@ fn cmd_dash_dash_arguments() {
 fn cmd_dash_dash_arguments_custom() {
     let cmd = [
         "./target/debug/garden",
-        "--chdir", "./tests/integration",
+        "--chdir", "tests/integration",
         "--quiet",
         "echo-args", ".", ".",
         "--", "d", "e", "f",
@@ -294,7 +294,7 @@ fn cmd_dash_dash_arguments_custom() {
 #[test]
 fn cmd_dot_default_no_args() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
         "echo-dir",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -309,7 +309,7 @@ fn cmd_dot_default_no_args() {
 #[test]
 fn cmd_dot_default_no_args_echo() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
         "echo-args",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -327,7 +327,7 @@ fn cmd_dot_default_no_args_echo() {
 #[test]
 fn cmd_dot_default_double_dash() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
         "echo-args", "--",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -345,7 +345,7 @@ fn cmd_dot_default_double_dash() {
 #[test]
 fn cmd_dot_default_double_dash_args() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "./tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
         "echo-args", "--", "d", "e", "f", "--", "g", "h", "i",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
