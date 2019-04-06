@@ -56,3 +56,30 @@ fn split_string_not_found() {
     assert_eq!(pre, "foo");
     assert_eq!(post, "");
 }
+
+
+#[test]
+fn split_graft_ok() {
+    let (ok, pre, post) = syntax::split_graft("foo::bar");
+    assert!(ok, "split_graft on foo::bar is ok");
+    assert_eq!(pre, "foo");
+    assert_eq!(post, "bar");
+}
+
+
+#[test]
+fn split_graft_empty() {
+    let (ok, pre, post) = syntax::split_graft("foo::");
+    assert!(ok, "split_graft on foo:: is ok");
+    assert_eq!(pre, "foo");
+    assert_eq!(post, "");
+}
+
+
+#[test]
+fn split_graft_not_found() {
+    let (ok, pre, post) = syntax::split_graft("foo");
+    assert!(!ok, "split_graft on foo is false");
+    assert_eq!(pre, "foo");
+    assert_eq!(post, "");
+}
