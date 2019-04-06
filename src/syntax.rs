@@ -26,6 +26,7 @@ pub fn is_tree(string: &str) -> bool {
 pub fn trim(string: &str) -> String {
     let mut value = string.to_string();
     value.remove(0);
+
     value
 }
 
@@ -35,5 +36,6 @@ pub fn trim_exec(string: &str) -> String {
     let mut cmd = string.to_string();
     cmd.remove(0);
     cmd.remove(0);
+
     cmd
 }
