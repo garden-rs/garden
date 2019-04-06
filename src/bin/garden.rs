@@ -71,6 +71,10 @@ fn parse_args() -> model::CommandOptions {
             .add_option(&["-d", "--debug"], argparse::Collect,
                         "enable debug categories");
 
+        ap.refer(&mut options.root)
+            .add_option(&["-r", "--root"], argparse::Store,
+                        "override the garden root");
+
         ap.refer(&mut options.variables)
             .add_option(&["-s", "--set"], argparse::Collect,
                         "override variables using name=value tokens");

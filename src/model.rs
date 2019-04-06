@@ -573,6 +573,7 @@ pub struct CommandOptions {
     pub filename_str: String,
     pub keep_going: bool,
     pub quiet: bool,
+    pub root: String,
     pub subcommand: Command,
     pub variables: Vec<String>,
     pub verbose: bool,
@@ -589,6 +590,14 @@ impl CommandOptions {
             } else {
                 self.filename = Some(path);
             }
+        }
+
+        // Override garden.root: garden --root <path>
+        if !self.root.is_empty() {
+            // Resolve the "--root" option to an absolute path
+            let root_path = std::path::PathBuf::from(&self.root);
+            self.root = root_path.canonicalize()
+                .unwrap_or(root_path).to_string_lossy().to_string();
         }
 
         // Change directories before searching for conifgs: garden --chdir <path>

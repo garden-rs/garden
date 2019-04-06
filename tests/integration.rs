@@ -243,6 +243,97 @@ fn eval_garden_config_dir() {
 }  // slow
 
 
+/// Test eval behavior around the "--root" option
+#[test]
+fn eval_root_with_root() {
+    let cmd = [
+        "./target/debug/garden",
+        "--config", "tests/integration/garden.yaml",
+        "--root", "tests/tmp",
+        "eval", "${GARDEN_ROOT}",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+
+    let output = cmd::trim_stdout(&capture.unwrap());
+    assert!(output.ends_with("/tests/tmp"));
+
+    let path = std::path::PathBuf::from(&output);
+    assert!(path.exists());
+    assert!(path.is_absolute());
+}
+
+
+/// Test eval ${GARDEN_CONFIG_DIR} behavior with both "--root" and "--chdir"
+#[test]
+fn eval_config_dir_with_chdir_and_root() {
+    let cmd = [
+        "./target/debug/garden",
+        "--chdir", "tests/tmp",
+        "--config", "tests/integration/garden.yaml",
+        "--root", "tests/tmp",
+        "eval", "${GARDEN_CONFIG_DIR}",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+
+    let output = cmd::trim_stdout(&capture.unwrap());
+    assert!(output.ends_with("/tests/integration"));
+
+    let path = std::path::PathBuf::from(&output);
+    assert!(path.exists());
+    assert!(path.is_absolute());
+}
+
+
+/// Test pwd with both "--root" and "--chdir"
+#[test]
+fn eval_exec_pwd_with_root_and_chdir() {
+    let cmd = [
+        "./target/debug/garden",
+        "--chdir", "tests/tmp",
+        "--config", "tests/integration/garden.yaml",
+        "--root", "tests/tmp",
+        "eval", "$ pwd",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+
+    let output = cmd::trim_stdout(&capture.unwrap());
+    assert!(output.ends_with("/tests/tmp"));
+
+    let path = std::path::PathBuf::from(&output);
+    assert!(path.exists());
+    assert!(path.is_absolute());
+}
+
+
+/// Test ${GARDEN_ROOT} with both "--root" and "--chdir"
+#[test]
+fn eval_root_with_root_and_chdir() {
+    let cmd = [
+        "./target/debug/garden",
+        "--chdir", "tests/tmp",
+        "--config", "tests/integration/garden.yaml",
+        "--root", "tests/tmp",
+        "eval", "${GARDEN_ROOT}",
+    ];
+    let exec = garden::cmd::exec_cmd(&cmd);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+
+    let output = cmd::trim_stdout(&capture.unwrap());
+    assert!(output.ends_with("/tests/tmp"));
+
+    let path = std::path::PathBuf::from(&output);
+    assert!(path.exists());
+    assert!(path.is_absolute());
+}
+
+
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
 fn cmd_dash_dash_arguments() {

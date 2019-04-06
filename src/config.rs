@@ -74,11 +74,16 @@ pub fn xdg_dir() -> std::path::PathBuf {
 }
 
 
-pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
+pub fn new(config: &Option<std::path::PathBuf>, root: &str, verbose: bool)
 -> model::Configuration {
 
     let mut cfg = model::Configuration::new();
     cfg.verbose = verbose;
+
+    // Override the configured garden root
+    if !root.is_empty() {
+        cfg.root.expr = root.to_string();
+    }
 
     let mut basename = "garden.yaml".to_string();
 
@@ -110,7 +115,7 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
         }
     }
     if verbose {
-        debug!("config path is {:?}{}", cfg.path,
+        debug!("config path is {:?}{} root is {:?}", cfg.path, cfg.root,
                match found {
                    true => "",
                    false => " (NOT FOUND)",
@@ -126,6 +131,11 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
         parse(&config_string, verbose, &mut cfg);
     }
 
+    if cfg.root.expr.is_empty() {
+        cfg.root.expr =
+            std::env::current_dir().unwrap().to_string_lossy().to_string();
+    }
+
     return cfg;
 }
 
@@ -134,7 +144,8 @@ pub fn new(config: &Option<std::path::PathBuf>, verbose: bool)
 
 pub fn from_options(options: &model::CommandOptions) -> model::Configuration {
     let config_verbose = options.is_debug("config::new");
-    let mut config = new(&options.filename, config_verbose);
+    let mut config = new(&options.filename, &options.root, config_verbose);
+
     if config.path.is_none() {
         error!("unable to find a configuration file -- use --config <path>");
     }

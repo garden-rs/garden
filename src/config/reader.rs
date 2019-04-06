@@ -26,7 +26,8 @@ pub fn parse(string: &str, verbose: bool,
     }
 
     // garden.root
-    if get_str(&doc["garden"]["root"], &mut config.root.expr) && verbose {
+    if (config.root.expr.is_empty()
+        || get_str(&doc["garden"]["root"], &mut config.root.expr)) && verbose {
         debug!("yaml: garden.root = {}", config.root.expr);
     }
 
