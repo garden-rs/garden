@@ -67,7 +67,7 @@ pub fn split_string<'a>(string: &'a str, split: &str)
 }
 
 
-/// Split a string into pre and post-namespace string refs
+/// Split a string into pre and post-graft namespace string refs
 pub fn split_graft(string: &str) -> (bool, &str, &str) {
     split_string(string, "::")
 }
