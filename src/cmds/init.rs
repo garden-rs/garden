@@ -128,7 +128,6 @@ fn init(
             };
 
             let root_key = Yaml::String("root".to_string());
-            garden.remove(&root_key);
             garden.insert(root_key,
                           Yaml::String(init_options.root.to_string()));
         }
