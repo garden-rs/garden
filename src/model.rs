@@ -580,10 +580,18 @@ pub struct CommandOptions {
 
 impl CommandOptions {
     pub fn update(&mut self) {
-        if self.filename_str.len() > 0 {
-            self.filename = Some(std::path::PathBuf::from(&self.filename_str));
+        // Allow specifying the config file: garden --config <path>
+        if !self.filename_str.is_empty() {
+            let path = std::path::PathBuf::from(&self.filename_str);
+            if path.exists() {
+                let canon = path.canonicalize().unwrap_or(path);
+                self.filename = Some(canon);
+            } else {
+                self.filename = Some(path);
+            }
         }
 
+        // Change directories before searching for conifgs: garden --chdir <path>
         if !self.chdir.is_empty() {
             if let Err(err) = std::env::set_current_dir(&self.chdir) {
                 error!("could not chdir to '{}': {}", self.chdir, err);

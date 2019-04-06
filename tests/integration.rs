@@ -35,8 +35,8 @@ fn grow_clone() {
     // garden init examples/tree
     let cmd = [
         "./target/debug/garden",
-        "--chdir", "./tests/tmp/clone",
-        "--config", "../../integration/garden.yaml",
+        "--chdir", "tests/tmp/clone",
+        "--config", "tests/integration/garden.yaml",
         "grow", "example/tree",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -77,8 +77,8 @@ fn grow_remotes() {
     // garden init examples/tree
     let cmd = [
         "./target/debug/garden",
-        "--chdir", "./tests/tmp/remotes",
-        "--config", "../../integration/garden.yaml",
+        "--chdir", "tests/tmp/remotes",
+        "--config", "tests/integration/garden.yaml",
         "grow", "example/tree",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -121,8 +121,8 @@ fn grow_symlinks() {
     {
         let cmd = [
             "./target/debug/garden",
-            "--chdir", "./tests/tmp/symlinks",
-            "--config", "../../integration/garden.yaml",
+            "--chdir", "tests/tmp/symlinks",
+            "--config", "tests/integration/garden.yaml",
             "grow", "example/tree", "link", "example/link",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
@@ -170,8 +170,8 @@ fn grow_gitconfig() {
     {
         let cmd = [
             "./target/debug/garden",
-            "--chdir", "./tests/tmp/gitconfig",
-            "--config", "../../integration/garden.yaml",
+            "--chdir", "tests/tmp/gitconfig",
+            "--config", "tests/integration/garden.yaml",
             "grow", "example/tree",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
@@ -225,8 +225,8 @@ fn eval_garden_config_dir() {
     {
         let cmd = [
             "./target/debug/garden",
-            "--chdir", "./tests/tmp/configdir",
-            "--config", "../../integration/garden.yaml",
+            "--chdir", "tests/tmp/configdir",
+            "--config", "tests/integration/garden.yaml",
             "eval", "${GARDEN_CONFIG_DIR}",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
