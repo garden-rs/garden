@@ -73,15 +73,15 @@ fn parse_args() -> model::CommandOptions {
 
         ap.refer(&mut options.root)
             .add_option(&["-r", "--root"], argparse::Store,
-                        "override the garden root");
+                        "set the garden tree root (${GARDEN_ROOT})");
 
         ap.refer(&mut options.variables)
             .add_option(&["-s", "--set"], argparse::Collect,
-                        "override variables using name=value tokens");
+                        "set variables using name=value tokens");
 
         ap.refer(&mut options.verbose)
-            .add_option(&["-v", "--verbose"],
-                        argparse::StoreTrue, "be verbose");
+            .add_option(&["-v", "--verbose"], argparse::StoreTrue,
+                        "be verbose");
 
         ap.refer(&mut options.quiet)
             .add_option(&["-q", "--quiet"], argparse::StoreTrue, "be quiet");
