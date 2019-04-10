@@ -36,7 +36,7 @@ fn grow_clone() {
     let cmd = [
         "./target/debug/garden",
         "--chdir", "tests/tmp/clone",
-        "--config", "tests/integration/garden.yaml",
+        "--config", "tests/data/garden.yaml",
         "grow", "example/tree",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -78,7 +78,7 @@ fn grow_remotes() {
     let cmd = [
         "./target/debug/garden",
         "--chdir", "tests/tmp/remotes",
-        "--config", "tests/integration/garden.yaml",
+        "--config", "tests/data/garden.yaml",
         "grow", "example/tree",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -122,7 +122,7 @@ fn grow_symlinks() {
         let cmd = [
             "./target/debug/garden",
             "--chdir", "tests/tmp/symlinks",
-            "--config", "tests/integration/garden.yaml",
+            "--config", "tests/data/garden.yaml",
             "grow", "example/tree", "link", "example/link",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
@@ -171,7 +171,7 @@ fn grow_gitconfig() {
         let cmd = [
             "./target/debug/garden",
             "--chdir", "tests/tmp/gitconfig",
-            "--config", "tests/integration/garden.yaml",
+            "--config", "tests/data/garden.yaml",
             "grow", "example/tree",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
@@ -226,15 +226,15 @@ fn eval_garden_config_dir() {
         let cmd = [
             "./target/debug/garden",
             "--chdir", "tests/tmp/configdir",
-            "--config", "tests/integration/garden.yaml",
+            "--config", "tests/data/garden.yaml",
             "eval", "${GARDEN_CONFIG_DIR}",
         ];
         let exec = garden::cmd::exec_cmd(&cmd);
         let capture = cmd::capture_stdout(exec);
         assert!(capture.is_ok());
         let output = cmd::trim_stdout(&capture.unwrap());
-        assert!(output.ends_with("/tests/integration"),
-                format!("{} does not end with /tests/integration", output));
+        assert!(output.ends_with("/tests/data"),
+                format!("{} does not end with /tests/data", output));
     }
 
     teardown("tests/tmp/configdir");
@@ -248,7 +248,7 @@ fn eval_garden_config_dir() {
 fn eval_root_with_root() {
     let cmd = [
         "./target/debug/garden",
-        "--config", "tests/integration/garden.yaml",
+        "--config", "tests/data/garden.yaml",
         "--root", "tests/tmp",
         "eval", "${GARDEN_ROOT}",
     ];
@@ -271,7 +271,7 @@ fn eval_config_dir_with_chdir_and_root() {
     let cmd = [
         "./target/debug/garden",
         "--chdir", "tests/tmp",
-        "--config", "tests/integration/garden.yaml",
+        "--config", "tests/data/garden.yaml",
         "--root", "tests/tmp",
         "eval", "${GARDEN_CONFIG_DIR}",
     ];
@@ -280,7 +280,7 @@ fn eval_config_dir_with_chdir_and_root() {
     assert!(capture.is_ok());
 
     let output = cmd::trim_stdout(&capture.unwrap());
-    assert!(output.ends_with("/tests/integration"));
+    assert!(output.ends_with("/tests/data"));
 
     let path = std::path::PathBuf::from(&output);
     assert!(path.exists());
@@ -294,7 +294,7 @@ fn eval_exec_pwd_with_root_and_chdir() {
     let cmd = [
         "./target/debug/garden",
         "--chdir", "tests/tmp",
-        "--config", "tests/integration/garden.yaml",
+        "--config", "tests/data/garden.yaml",
         "--root", "tests/tmp",
         "eval", "$ pwd",
     ];
@@ -317,7 +317,7 @@ fn eval_root_with_root_and_chdir() {
     let cmd = [
         "./target/debug/garden",
         "--chdir", "tests/tmp",
-        "--config", "tests/integration/garden.yaml",
+        "--config", "tests/data/garden.yaml",
         "--root", "tests/tmp",
         "eval", "${GARDEN_ROOT}",
     ];
@@ -339,7 +339,7 @@ fn eval_root_with_root_and_chdir() {
 fn cmd_dash_dash_arguments() {
     let cmd = [
         "./target/debug/garden",
-        "--chdir", "tests/integration",
+        "--chdir", "tests/data",
         "--quiet",
         "cmd", ".",
         "echo-dir", "echo-args",
@@ -353,7 +353,7 @@ fn cmd_dash_dash_arguments() {
     let output = cmd::trim_stdout(&capture.unwrap());
 
     // Repeated command names were used to operate on the tree twice.
-    let msg = format!("integration\ngarden\n{}",
+    let msg = format!("data\ngarden\n{}",
                       "arguments -- a b c -- d e f -- g h i -- x y z");
     assert_eq!(output, format!("{}\n{}", msg, msg));
 }
@@ -364,7 +364,7 @@ fn cmd_dash_dash_arguments() {
 fn cmd_dash_dash_arguments_custom() {
     let cmd = [
         "./target/debug/garden",
-        "--chdir", "tests/integration",
+        "--chdir", "tests/data",
         "--quiet",
         "echo-args", ".", ".",
         "--", "d", "e", "f",
@@ -385,14 +385,14 @@ fn cmd_dash_dash_arguments_custom() {
 #[test]
 fn cmd_dot_default_no_args() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-dir",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
-    assert_eq!(output, "integration");
+    assert_eq!(output, "data");
 }
 
 
@@ -400,7 +400,7 @@ fn cmd_dot_default_no_args() {
 #[test]
 fn cmd_dot_default_no_args_echo() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-args",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -418,7 +418,7 @@ fn cmd_dot_default_no_args_echo() {
 #[test]
 fn cmd_dot_default_double_dash() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-args", "--",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
@@ -436,7 +436,7 @@ fn cmd_dot_default_double_dash() {
 #[test]
 fn cmd_dot_default_double_dash_args() {
     let cmd = [
-        "./target/debug/garden", "--quiet", "--chdir", "tests/integration",
+        "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-args", "--", "d", "e", "f", "--", "g", "h", "i",
     ];
     let exec = garden::cmd::exec_cmd(&cmd);
