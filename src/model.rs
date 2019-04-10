@@ -256,19 +256,18 @@ impl Configuration {
 
         // Evaluate the "path" expression.
         for (idx, value) in path_values.iter().enumerate() {
-            let eval_value = eval::value(self, &value);
-            let result = Some(self.abspath(&eval_value));
+            let result = Some(self.eval_abspath(value));
             self.trees[idx].path.value = result;
         }
 
         // Evaluate the "symlink" expression.
         for (idx, value) in &symlink_values {
-            let eval_value = eval::value(self, &value);
-            let result = Some(self.abspath(&eval_value));
+            let result = Some(self.eval_abspath(value));
             self.trees[*idx].symlink.value = result;
         }
     }
 
+    /// Return a path string relative to the garden root
     fn abspath(&self, path: &str) -> String {
         if path.starts_with("/") {
             // Absolute path, nothing to do
@@ -280,6 +279,13 @@ impl Configuration {
 
             path_buf.to_string_lossy().to_string()
         }
+    }
+
+    /// Evaluate the string and return a path string relative to the garden root.
+    fn eval_abspath(&mut self, path: &str) -> String {
+        let value = eval::value(self, &path);
+
+        self.abspath(&value)
     }
 
     /// Reset resolved variables
@@ -549,23 +555,25 @@ pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
 
 
 /// Print a tree if it exists, otherwise print a missing tree
-pub fn print_tree(tree: &Tree, path: &str, verbose: bool, quiet: bool) -> bool {
+pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
     // Sparse gardens/missing trees are ok -> skip these entries.
+    let path = tree.path.value.as_ref().unwrap().to_string();
     if !std::path::PathBuf::from(&path).exists() {
         if !quiet {
             eprintln!("{}", display_missing_tree(&tree, &path, verbose));
         }
         return false;
     }
-    print_tree_quietly(tree, path, verbose, quiet);
+    print_tree_details(tree, verbose, quiet);
 
     true
 }
 
 
 /// Print a tree
-pub fn print_tree_quietly(tree: &Tree, path: &str, verbose: bool, quiet: bool) {
+pub fn print_tree_details(tree: &Tree, verbose: bool, quiet: bool) {
     if !quiet {
+        let path = tree.path.value.as_ref().unwrap().to_string();
         eprintln!("{}", display_tree(&tree, &path, verbose));
     }
 }

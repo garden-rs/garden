@@ -155,7 +155,7 @@ pub fn cmd(
             let tree = &config.trees[context.tree];
             path = tree.path.value.as_ref().unwrap().to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !model::print_tree(&tree, &path, verbose, quiet) {
+            if !model::print_tree(&tree, verbose, quiet) {
                 continue;
             }
         }

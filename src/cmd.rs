@@ -89,7 +89,7 @@ where S: AsRef<std::ffi::OsStr> {
         path = tree.path.value.as_ref().unwrap().clone();
 
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !model::print_tree(&tree, &path, verbose, quiet) {
+        if !model::print_tree(&tree, verbose, quiet) {
             return 0;
         }
     }

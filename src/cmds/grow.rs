@@ -60,9 +60,7 @@ pub fn grow(
     for ctx in &contexts {
         let path = config.trees[ctx.tree]
             .path.value.as_ref().unwrap().to_string();
-
-        model::print_tree_quietly(
-            &config.trees[ctx.tree], &path, verbose, quiet);
+        model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
 
         let pathbuf = std::path::PathBuf::from(&path);
         if !pathbuf.exists() {
