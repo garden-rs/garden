@@ -26,9 +26,20 @@ pub fn parse(string: &str, verbose: bool,
     }
 
     // garden.root
-    if (config.root.expr.is_empty()
-        || get_str(&doc["garden"]["root"], &mut config.root.expr)) && verbose {
-        debug!("yaml: garden.root = {}", config.root.expr);
+    if config.root.expr.is_empty() {
+        if !get_str(&doc["garden"]["root"], &mut config.root.expr) {
+            // Default to the current directory when garden.root is unspecified
+            // NOTE: this logic must be duplicated here for GARDEN_ROOT.
+            // TODO: move GARDEN_ROOT initialization out of this so that
+            // we can avoid this early initialization and do it in the outer
+            // config::new() call.
+            config.root.expr =
+                std::env::current_dir().unwrap().to_string_lossy().to_string();
+        }
+
+        if verbose {
+            debug!("yaml: garden.root = {}", config.root.expr);
+        }
     }
 
     // garden.shell

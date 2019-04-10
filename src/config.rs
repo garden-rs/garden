@@ -131,10 +131,12 @@ pub fn new(config: &Option<std::path::PathBuf>, root: &str, verbose: bool)
         parse(&config_string, verbose, &mut cfg);
     }
 
+    // Default to the current directory when garden.root is unspecified
     if cfg.root.expr.is_empty() {
         cfg.root.expr =
             std::env::current_dir().unwrap().to_string_lossy().to_string();
     }
+    // TODO: create ${GARDEN_ROOT} here
 
     return cfg;
 }

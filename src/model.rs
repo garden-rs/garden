@@ -141,6 +141,7 @@ pub struct Garden {
 
 impl_display!(Garden);
 
+
 // Configuration represents an instantiated garden configuration
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
@@ -171,10 +172,6 @@ impl Configuration {
             .unwrap().to_string_lossy().to_string();
         return Configuration {
             shell: "zsh".to_string(),
-            root: Variable {
-                expr: curdir,
-                value: None,
-            },
             ..std::default::Default::default()
         }
     }

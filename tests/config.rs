@@ -10,9 +10,7 @@ fn config_default() {
     let config = garden::model::Configuration::new();
     assert_eq!(config.shell, "zsh");
     assert_eq!(config.verbose, false);
-    // garden.root defaults to the current directory
-    let curdir = std::env::current_dir().unwrap().to_string_lossy().to_string();
-    assert_eq!(config.root.expr, curdir);
+    assert_eq!(config.root.expr, "");
 }
 
 
