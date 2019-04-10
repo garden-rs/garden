@@ -47,6 +47,14 @@ pub fn parse(string: &str, verbose: bool,
         debug!("yaml: garden.shell = {}", config.shell);
     }
 
+    // grafts
+    if verbose {
+        debug!("yaml: grafts");
+    }
+    if !get_variables(&doc["grafts"], &mut config.grafts) && verbose {
+        debug!("yaml: no grafts");
+    }
+
     // variables
     if verbose {
         debug!("yaml: variables");

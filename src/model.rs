@@ -149,6 +149,7 @@ pub struct Configuration {
     pub debug: std::collections::HashSet<String>,
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
+    pub grafts: Vec<NamedVariable>,
     pub groups: Vec<Group>,
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
