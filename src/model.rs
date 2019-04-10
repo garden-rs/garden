@@ -548,6 +548,7 @@ pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
 }
 
 
+/// Print a tree if it exists, otherwise print a missing tree
 pub fn print_tree(tree: &Tree, path: &str, verbose: bool, quiet: bool) -> bool {
     // Sparse gardens/missing trees are ok -> skip these entries.
     if !std::path::PathBuf::from(&path).exists() {
@@ -556,10 +557,17 @@ pub fn print_tree(tree: &Tree, path: &str, verbose: bool, quiet: bool) -> bool {
         }
         return false;
     }
+    print_tree_quietly(tree, path, verbose, quiet);
+
+    true
+}
+
+
+/// Print a tree
+pub fn print_tree_quietly(tree: &Tree, path: &str, verbose: bool, quiet: bool) {
     if !quiet {
         eprintln!("{}", display_tree(&tree, &path, verbose));
     }
-    return true;
 }
 
 

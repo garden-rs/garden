@@ -58,16 +58,11 @@ pub fn grow(
     let mut exit_status: i32 = 0;
 
     for ctx in &contexts {
-        let name = config.trees[ctx.tree].name.to_string();
-        let path = config.trees[ctx.tree].path.value.as_ref().unwrap().to_string();
+        let path = config.trees[ctx.tree]
+            .path.value.as_ref().unwrap().to_string();
 
-        if !quiet {
-            if verbose {
-                eprintln!("# {}: {}", name, path);
-            } else {
-                eprintln!("# {}", name);
-            }
-        }
+        model::print_tree_quietly(
+            &config.trees[ctx.tree], &path, verbose, quiet);
 
         let pathbuf = std::path::PathBuf::from(&path);
         if !pathbuf.exists() {
