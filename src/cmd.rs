@@ -57,7 +57,11 @@ pub fn capture_stdout(exec: subprocess::Exec)
 pub fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
     where S: AsRef<std::ffi::OsStr> {
 
-    subprocess::Exec::cmd(&command[0]).args(&command[1..])
+    if command.len() > 1 {
+        subprocess::Exec::cmd(&command[0]).args(&command[1..])
+    } else {
+        subprocess::Exec::cmd(&command[0])
+    }
 }
 
 /// Return a `subprocess::Exec` that runs a command in the specified directory.
@@ -93,6 +97,7 @@ where S: AsRef<std::ffi::OsStr> {
             return 0;
         }
     }
+
 
     // Evaluate the tree environment and run the command.
     let env = eval::environment(config, context);
