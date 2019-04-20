@@ -169,8 +169,6 @@ impl Configuration {
 
     /// Create a default Configuration
     pub fn new() -> Self {
-        let curdir = std::env::current_dir()
-            .unwrap().to_string_lossy().to_string();
         return Configuration {
             shell: "zsh".to_string(),
             ..std::default::Default::default()
