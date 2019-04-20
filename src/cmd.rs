@@ -101,7 +101,43 @@ where S: AsRef<std::ffi::OsStr> {
 
     // Evaluate the tree environment and run the command.
     let env = eval::environment(config, context);
-    let mut exec = exec_in_dir(command, &path);
+
+    // The command might be a path that only exists inside the resolved
+    // environment.  Resolve the path by looking for the presence of PATH
+    // and updating cmdpath when it exists.
+    let mut cmdpath = std::path::PathBuf::from(&command[0]);
+    if !cmdpath.is_absolute() {
+        for (name, value) in &env {
+            if name == "PATH" {
+                let fullpath = std::env::split_paths(&value).filter_map(|dir| {
+                    let full_path = dir.join(&cmdpath);
+                    if full_path.is_file() {
+                        Some(full_path)
+                    } else {
+                        None
+                    }
+                }).next();
+
+                if fullpath.is_some() {
+                    cmdpath = fullpath.unwrap().to_path_buf();
+                    break;
+                }
+            }
+        }
+    }
+
+    // Create a copy of the command so where the first entry has been replaced
+    // with a $PATH-resolved absolute path.
+    let mut command_vec: Vec<String> = Vec::new();
+    command_vec.push(cmdpath.to_string_lossy().to_string());
+    for arg in &command[1..] {
+        let curpath = std::path::PathBuf::from(arg);
+        command_vec.push(curpath.to_string_lossy().to_string());
+    }
+
+    // Create an Exec object.
+    let mut exec = exec_in_dir(&command_vec, &path);
+
     //  Update the command environment
     for (name, value) in &env {
         exec = exec.env(name, value);
