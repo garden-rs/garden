@@ -69,6 +69,9 @@ pub fn exec(
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
+    if command.is_empty() {
+        return cmd::ExitCode::Usage.into();
+    }
 
     // Loop over each context, evaluate the tree environment,
     // and run the command.
