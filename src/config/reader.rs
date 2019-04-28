@@ -408,11 +408,48 @@ fn get_trees(
 ) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
-            trees.push(get_tree(name, value, templates, hash, true));
+            if let Yaml::String(ref url) = value {
+                trees.push(get_tree_from_url(name, url));
+            } else {
+                trees.push(get_tree(name, value, templates, hash, true));
+            }
         }
         return true;
     }
     return false;
+}
+
+
+
+/// Return a tree from a simple "tree: <url>" entry
+fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
+    let mut tree = model::Tree::default();
+
+    // Tree name
+    get_str(&name, &mut tree.name);
+
+    // default to the name when "path" is unspecified
+    tree.path.expr = tree.name.to_string();
+    tree.path.value = Some(tree.name.to_string());
+
+    tree.variables.insert(0, model::NamedVariable {
+        name: "TREE_NAME".to_string(),
+        expr: tree.name.to_string(),
+        value: None,
+    });
+    tree.variables.insert(1, model::NamedVariable {
+        name: "TREE_PATH".to_string(),
+        expr: tree.path.expr.to_string(),
+        value: None,
+    });
+
+    tree.remotes.push(model::NamedVariable {
+        name: "origin".to_string(),
+        expr: url.to_string(),
+        value: None,
+    });
+
+    tree
 }
 
 

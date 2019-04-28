@@ -154,7 +154,7 @@ fn groups() {
 #[test]
 fn trees() {
     let config = common::garden_config();
-    assert_eq!(config.trees.len(), 6);
+    assert!(config.trees.len() >= 6);
 
     // git
     let ref tree0 = config.trees[0];

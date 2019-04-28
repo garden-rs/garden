@@ -41,6 +41,7 @@ pub fn garden_config() -> garden::model::Configuration {
                 PYTHONPATH: ${TREE_PATH}
         local:
             url: ${local}/${TREE_NAME}
+
     trees:
         git:
             url: https://github.com/git/git
@@ -70,7 +71,6 @@ pub fn garden_config() -> garden::model::Configuration {
         python/qtpy:
             url: git://github.com/spider-ide/qtpy.git
             templates: python
-
         tmp:
             environment:
                 EMPTY: [a, b]
@@ -78,16 +78,15 @@ pub fn garden_config() -> garden::model::Configuration {
 
             path: /tmp
             templates: local
-
         annex/data:
             url: git@example.com:git-annex/data.git
             gitconfig:
                 remote.origin.annex-ignore: true
             remotes:
                 local: ${GARDEN_ROOT}/annex/local
-
         annex/local:
             extend: annex/data
+        oneline: git@example.com:example/oneline.git
 
     groups:
         cola: [git, cola, python/qtpy]
