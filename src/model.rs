@@ -6,6 +6,15 @@ extern crate yansi;
 use ::eval;
 use ::syntax;
 
+/// Tree index into config.trees
+pub type TreeIndex = usize;
+
+/// Group index into config.groups
+pub type GroupIndex = usize;
+
+/// Garden index into config.gardens
+pub type GardenIndex = usize;
+
 
 /// Config files can define a sequence of variables that are
 /// iteratively calculated.  Variables can reference other
@@ -252,20 +261,20 @@ impl Configuration {
 
         // Evaluate the "path" expression.
         for (idx, value) in path_values.iter().enumerate() {
-            let result = Some(self.eval_abspath(value));
+            let result = Some(self.eval_tree_path(value));
             self.trees[idx].path.value = result;
         }
 
         // Evaluate the "symlink" expression.
         for (idx, value) in &symlink_values {
-            let result = Some(self.eval_abspath(value));
+            let result = Some(self.eval_tree_path(value));
             self.trees[*idx].symlink.value = result;
         }
     }
 
     /// Return a path string relative to the garden root
-    fn abspath(&self, path: &str) -> String {
-        if path.starts_with("/") {
+    pub fn tree_path(&self, path: &str) -> String {
+        if std::path::PathBuf::from(path).is_absolute() {
             // Absolute path, nothing to do
             path.to_string()
         } else {
@@ -277,12 +286,36 @@ impl Configuration {
         }
     }
 
-    /// Evaluate the string and return a path string relative to the garden root.
-    fn eval_abspath(&mut self, path: &str) -> String {
+    /// Evaluate and result a path string relative to the garden root.
+    pub fn eval_tree_path(&mut self, path: &str) -> String {
         let value = eval::value(self, &path);
 
-        self.abspath(&value)
+        self.tree_path(&value)
     }
+
+    /// Resolve a path string relative to the config dir.
+    pub fn config_path(&self, path: &str) -> String {
+        if std::path::PathBuf::from(path).is_absolute() {
+            // Absolute path, nothing to do
+            path.to_string()
+        } else if self.dirname.is_some() {
+            // Make path relative to the configuration's dirname
+            let mut path_buf = self.dirname.as_ref().unwrap().to_path_buf();
+            path_buf.push(path);
+
+            path_buf.to_string_lossy().to_string()
+        } else {
+            self.tree_path(path)
+        }
+    }
+
+    /// Evaluate and resolve a path string and relative to the config dir.
+    pub fn eval_config_path(&mut self, path: &str) -> String {
+        let value = eval::value(self, &path);
+
+        self.config_path(&value)
+    }
+
 
     /// Reset resolved variables
     pub fn reset_variables(&mut self) {
@@ -315,14 +348,7 @@ impl Configuration {
 }
 
 
-/// Tree index into config.trees
-pub type TreeIndex = usize;
 
-/// Group index into config.groups
-pub type GroupIndex = usize;
-
-/// Garden index into config.gardens
-pub type GardenIndex = usize;
 
 
 #[derive(Clone, Debug)]
