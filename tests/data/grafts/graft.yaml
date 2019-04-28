@@ -1,0 +1,20 @@
+---
+grafts:
+  deps: deps.yaml
+  test:
+    config: test.yaml
+    root: ${GARDEN_CONFIG_DIR}/test
+
+variables:
+  variable: graft value
+  repos: ../repos
+  example_url: ${repos}/example.git
+
+groups:
+  core:
+    - deps::framework
+    - core
+
+trees:
+  graft: ${example_url}
+  core: ${repos}/core.git

@@ -1,7 +1,22 @@
 ---
+grafts:
+  graft: grafts/graft.yaml
+  libs:
+    config: grafts/libs.yaml
+    root: libs
+
 variables:
   gh_ssh: "git@github.com"
   repos: ${GARDEN_ROOT}/repos
+
+gardens:
+  dev:
+    groups:
+      - libs::core
+      - graft::core
+    trees:
+      - graft::graft
+      - example/tree
 
 trees:
   # repos/example.git is created by setup.sh during the integration test.
@@ -31,3 +46,7 @@ trees:
       echo-args:
         - basename "$0"
         - echo arguments -- a b c -- "$@" -- x y z
+
+commands:
+  pwd: pwd
+  basename: basename "$(pwd)"

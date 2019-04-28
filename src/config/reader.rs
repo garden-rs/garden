@@ -51,7 +51,7 @@ pub fn parse(string: &str, verbose: bool,
     if verbose {
         debug!("yaml: grafts");
     }
-    if !get_variables(&doc["grafts"], &mut config.grafts) && verbose {
+    if !get_grafts(&doc["grafts"], &mut config.grafts) && verbose {
         debug!("yaml: no grafts");
     }
 
@@ -616,6 +616,48 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
     return false;
 }
 
+
+/// Read a grafts: block into a Vec<Graft>.
+fn get_grafts(yaml: &Yaml, grafts: &mut Vec<model::Graft>) -> bool {
+    if let Yaml::Hash(ref yaml_hash) = yaml {
+        for (name, value) in yaml_hash {
+            let mut graft = get_graft(name, value);
+            graft.index = grafts.len();
+            grafts.push(graft);
+        }
+        true
+    } else {
+        false
+    }
+}
+
+
+fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
+
+    let mut graft_name = "".to_string();
+    let mut config_expr = "".to_string();
+    let mut root = "".to_string();
+    let idx = 0;
+
+    get_str(name, &mut graft_name);
+
+    if !get_str(graft, &mut config_expr) {
+        // The root was not specified.
+        if let Yaml::Hash(ref _hash) = graft {
+            // A config expression and root might be specified.
+            get_str(&graft["config"], &mut config_expr);
+            get_str(&graft["root"], &mut root);
+        }
+    }
+
+    model::Graft {
+        name: graft_name,
+        root: root,
+        config: None,
+        config_expr: config_expr,
+        index: idx,
+    }
+}
 
 
 /// Read YAML from a file path.  Terminates on error.

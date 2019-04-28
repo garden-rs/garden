@@ -26,6 +26,3 @@ and placings its tree, groups, and gardens in a "custom::" graft namespace.
 
   The trees, gardens, and groups from lib/garden.yaml can be accessed via
   custom::tree custom::group custom::garden.
-
-
-- config::reader should read Vec<Graft>

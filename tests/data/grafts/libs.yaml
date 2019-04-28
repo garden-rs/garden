@@ -1,0 +1,6 @@
+---
+groups:
+  core: core
+
+trees:
+  core: core.git

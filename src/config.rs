@@ -136,7 +136,28 @@ pub fn new(config: &Option<std::path::PathBuf>, root: &str, verbose: bool)
         cfg.root.expr =
             std::env::current_dir().unwrap().to_string_lossy().to_string();
     }
-    // TODO: create ${GARDEN_ROOT} here
+
+    // Grafts
+    let mut exprs = Vec::new();
+    for graft in cfg.grafts.iter_mut() {
+        exprs.push(graft.config_expr.to_string());
+    }
+
+    let mut paths = Vec::new();
+    for expr in &exprs {
+        let path_str = cfg.eval_tree_path(expr);
+        paths.push(path_str);
+    }
+
+    let mut idx = 0;
+    for graft in cfg.grafts.iter_mut() {
+        let path_str = paths[idx].to_string();
+        let path = std::path::PathBuf::from(&path_str);
+        if path.exists() {
+            graft.config = Some(new(&Some(path), &graft.root, verbose));
+        }
+        idx += 1;
+    }
 
     return cfg;
 }

@@ -15,6 +15,9 @@ pub type GroupIndex = usize;
 /// Garden index into config.gardens
 pub type GardenIndex = usize;
 
+/// Graft index into config.grafts
+pub type GraftIndex = usize;
+
 
 /// Config files can define a sequence of variables that are
 /// iteratively calculated.  Variables can reference other
@@ -158,7 +161,7 @@ pub struct Configuration {
     pub debug: std::collections::HashSet<String>,
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
-    pub grafts: Vec<NamedVariable>,
+    pub grafts: Vec<Graft>,
     pub groups: Vec<Group>,
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
@@ -348,7 +351,16 @@ impl Configuration {
 }
 
 
+#[derive(Clone, Debug, Default)]
+pub struct Graft {
+    pub name: String,
+    pub root: String,
+    pub config: Option<Configuration>,
+    pub config_expr: String,
+    pub index: GraftIndex,
+}
 
+impl_display!(Graft);
 
 
 #[derive(Clone, Debug)]
