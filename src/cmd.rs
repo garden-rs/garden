@@ -188,6 +188,7 @@ pub fn current_exe() -> String {
     }
 }
 
+
 /// Return codes from programs.  Cf. /usr/include/sysexits.h
 pub enum ExitCode {
     Success,
@@ -197,7 +198,6 @@ pub enum ExitCode {
     IOError,
     Usage,
 }
-
 
 impl std::convert::From<ExitCode> for i32 {
     fn from(exit_code: ExitCode) -> Self {
