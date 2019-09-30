@@ -242,7 +242,7 @@ pub fn multi_variable(
             continue;
         }
 
-        let mut value = tree_value(
+        let value = tree_value(
             config, &var.expr,
             context.tree, context.garden);
         result.push(value);

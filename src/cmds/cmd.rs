@@ -148,7 +148,7 @@ pub fn cmd(
         }
         // Evaluate the tree environment
         let env = eval::environment(config, context);
-        let mut path;
+        let path;
 
         // Run each command in the tree's context
         {
