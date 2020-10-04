@@ -38,15 +38,15 @@ pub fn trim(string: &str) -> String {
 
 
 /// Trim the "$ " prefix from an exec expression
-pub fn trim_exec(string: &str) -> String {
+pub fn trim_exec(string: &str) -> &str {
     let prefix = "$ ";
     let prefix_len = prefix.len();
     let string_len = string.len();
 
     if string_len >= prefix_len && string.starts_with(prefix) {
-        string[prefix_len..string_len].to_string()
+        &string[prefix_len..string_len]
     } else {
-        string.to_string()
+        string
     }
 }
 
