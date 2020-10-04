@@ -6,8 +6,7 @@ description = """
 Garden Weaves Git Trees
 
 Garden makes it easy to define, create, and run commands over collections
-of configuration-defined Git worktrees.  Gardens simplifies common development
-tasks when working in a multi-worktree Git development environment.
+of configuration-defined multi-worktree Git environments.
 
 """
 keywords = ["git", "development", "sandboxes", "vcs", "worktree"]

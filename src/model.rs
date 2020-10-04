@@ -289,7 +289,7 @@ impl Configuration {
         }
     }
 
-    /// Evaluate and result a path string relative to the garden root.
+    /// Evaluate and return a path string relative to the garden root.
     pub fn eval_tree_path(&mut self, path: &str) -> String {
         let value = eval::value(self, &path);
 
