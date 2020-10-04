@@ -37,13 +37,17 @@ pub fn trim(string: &str) -> String {
 }
 
 
-/// Trim the prefix from an exec expression
+/// Trim the "$ " prefix from an exec expression
 pub fn trim_exec(string: &str) -> String {
-    let mut cmd = string.to_string();
-    cmd.remove(0);
-    cmd.remove(0);
+    let prefix = "$ ";
+    let prefix_len = prefix.len();
+    let string_len = string.len();
 
-    cmd
+    if string_len >= prefix_len && string.starts_with(prefix) {
+        string[prefix_len..string_len].to_string()
+    } else {
+        string.to_string()
+    }
 }
 
 

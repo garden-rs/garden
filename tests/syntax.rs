@@ -83,3 +83,14 @@ fn split_graft_not_found() {
     assert_eq!(pre, "foo");
     assert_eq!(post, "");
 }
+
+
+#[test]
+fn trim_exec() {
+    assert_eq!("cmd", syntax::trim_exec("$ cmd"));
+    assert_eq!("$cmd", syntax::trim_exec("$cmd"));
+    assert_eq!("cmd", syntax::trim_exec("cmd"));
+    assert_eq!("", syntax::trim_exec("$ "));
+    assert_eq!("$", syntax::trim_exec("$"));
+    assert_eq!("", syntax::trim_exec(""));
+}
