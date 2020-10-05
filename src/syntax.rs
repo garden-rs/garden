@@ -30,10 +30,9 @@ pub fn is_graft(string: &str) -> bool {
 
 /// Trim garden, group, and tree prefixes
 pub fn trim(string: &str) -> &str {
-    let string_len = string.len();
     let needs_trim = is_group(string) || is_tree(string) || is_garden(string);
-    if string_len >= 1 && needs_trim {
-        &string[1..string_len]
+    if string.len() >= 1 && needs_trim {
+        &string[1..]
     } else {
         string
     }
@@ -44,10 +43,8 @@ pub fn trim(string: &str) -> &str {
 pub fn trim_exec(string: &str) -> &str {
     let prefix = "$ ";
     let prefix_len = prefix.len();
-    let string_len = string.len();
-
-    if string_len >= prefix_len && string.starts_with(prefix) {
-        &string[prefix_len..string_len]
+    if string.len() >= prefix_len && string.starts_with(prefix) {
+        &string[prefix_len..]
     } else {
         string
     }
