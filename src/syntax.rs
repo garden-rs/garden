@@ -29,11 +29,14 @@ pub fn is_graft(string: &str) -> bool {
 
 
 /// Trim garden, group, and tree prefixes
-pub fn trim(string: &str) -> String {
-    let mut value = string.to_string();
-    value.remove(0);
-
-    value
+pub fn trim(string: &str) -> &str {
+    let string_len = string.len();
+    let needs_trim = is_group(string) || is_tree(string) || is_garden(string);
+    if string_len >= 1 && needs_trim {
+        &string[1..string_len]
+    } else {
+        string
+    }
 }
 
 

@@ -391,7 +391,6 @@ impl_display_brief!(TreeQuery);
 impl TreeQuery {
 
     pub fn new(query: &str) -> Self {
-        let mut glob_pattern = query.to_string();
         let mut is_default = false;
         let mut is_tree = false;
         let mut is_garden = false;
@@ -399,31 +398,24 @@ impl TreeQuery {
         let mut include_gardens = true;
         let mut include_groups = true;
         let mut include_trees = true;
-        let mut trim = false;
 
-        if syntax::is_garden(&glob_pattern) {
+        if syntax::is_garden(query) {
             is_garden = true;
             include_groups = false;
             include_trees = false;
-            trim = true;
-        } else if syntax::is_group(&glob_pattern) {
+        } else if syntax::is_group(query) {
             is_group = true;
             include_gardens = false;
             include_trees = false;
-            trim = true;
-        } else if syntax::is_tree(&glob_pattern) {
+        } else if syntax::is_tree(query) {
             is_tree = true;
             include_gardens = false;
             include_groups = false;
-            trim = true;
         } else {
             is_default = true;
         }
-        if trim {
-            glob_pattern = syntax::trim(&glob_pattern);
-        }
-
-        let pattern = glob::Pattern::new(glob_pattern.as_ref()).unwrap();
+        let glob_pattern = syntax::trim(query);
+        let pattern = glob::Pattern::new(glob_pattern).unwrap();
 
         return TreeQuery {
             query: query.to_string(),
