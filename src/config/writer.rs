@@ -21,34 +21,23 @@ where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
     }
     out_str += "\n";
 
-    let file_result = std::fs::File::create(&path);
-    if file_result.is_err() {
-        return Err(
-            errors::GardenError::CreateConfigurationError {
-                path: path.as_ref().into(),
-                err: file_result.err().unwrap(),
-            }.into()
-        );
-    }
+    let mut file = std::fs::File::create(&path).map_err(
+        |io_err| errors::GardenError::CreateConfigurationError {
+            path: path.as_ref().into(),
+            err: io_err,
+        }
+    )?;
 
-    let mut file = file_result.unwrap();
-    let write_result = file.write_all(&out_str.into_bytes());
-    if write_result.is_err() {
-        return Err(
-            errors::GardenError::WriteConfigurationError {
-                path: path.as_ref().into(),
-            }.into()
-        );
-    }
+    file.write_all(&out_str.into_bytes()).map_err(
+        |_| errors::GardenError::WriteConfigurationError {
+            path: path.as_ref().into(),
+        }
+    )?;
 
-    if let Err(err) = file.sync_all() {
-        return Err(
-            errors::GardenError::SyncConfigurationError {
-                path: path.as_ref().into(),
-                err: err,
-            }.into()
-        );
-    }
-
-    Ok(())
+    file.sync_all().map_err(
+        |sync_err| errors::GardenError::SyncConfigurationError {
+            path: path.as_ref().into(),
+            err: sync_err,
+        }
+    )
 }

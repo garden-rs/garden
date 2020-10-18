@@ -676,50 +676,35 @@ where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
 /// Read and parse yaml from a file.
 fn yaml_from_path<P>(path: P) -> Result<Yaml, errors::GardenError>
 where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
-    let read_result = std::fs::read_to_string(&path);
-    if read_result.is_err() {
-        return Err(
-            errors::GardenError::InvalidConfiguration {
-                msg: format!("unable to read {:?}: {:?}", path, read_result.err())
-            }.into()
-        );
-    }
 
-    let string = read_result.unwrap();
-    let docs_result = YamlLoader::load_from_str(&string);
-    if docs_result.is_err() {
-        return Err(
-            errors::GardenError::InvalidConfiguration {
-                msg: format!("unable to read configuration: {:?}", docs_result.err())
-            }
-        );
-    }
+    let string = std::fs::read_to_string(&path).map_err(
+        |io_err| errors::GardenError::ReadFile {
+            path: path.as_ref().into(),
+            err: io_err,
+        }
+    )?;
 
-    let mut docs = docs_result.unwrap();
+    let mut docs = YamlLoader::load_from_str(&string).map_err(
+        |scan_err| errors::GardenError::ReadConfig {
+            err: scan_err,
+        }
+    )?;
+
     if docs.len() < 1 {
         return Err(
-            errors::GardenError::InvalidConfiguration {
-                msg: format!("empty configuration: {:?}", path)
+            errors::GardenError::EmptyConfiguration {
+                path: path.as_ref().into(),
             }
         );
     }
 
-    // Mutable scope
-    {
-        if let Err(err) = add_missing_sections(&mut docs[0]) {
-            return Err(
-                errors::GardenError::InvalidConfiguration {
-                    msg: format!("{}", err)
-                }.into()
-            );
-        }
-    }
+    add_missing_sections(&mut docs[0])?;
 
     Ok(docs[0].clone())
 }
 
 
-fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
+fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     // Garden core
     let mut good = doc["garden"].as_hash().is_some();
     if !good {
@@ -727,7 +712,11 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
             let key = Yaml::String("garden".to_string());
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid 'garden' configuration: not a hash");
+            return Err(
+                errors::GardenError::InvalidConfiguration {
+                    msg: "document is not a hash".into(),
+                }
+            );
         }
     }
 
@@ -739,7 +728,11 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid 'trees' configuration: not a hash");
+            return Err(
+                errors::GardenError::InvalidConfiguration {
+                    msg: "'trees' is not a hash".into(),
+                }
+            );
         }
     }
 
@@ -751,7 +744,11 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid 'groups' configuration: not a hash");
+            return Err(
+                errors::GardenError::InvalidConfiguration {
+                    msg: "'groups' is not a hash".into(),
+                }
+            );
         }
     }
 
@@ -763,7 +760,11 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), &str> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err("invalid 'gardens' configuration: not a hash");
+            return Err(
+                errors::GardenError::InvalidConfiguration {
+                    msg: "'gardens' is not a hash".into(),
+                }
+            );
         }
     }
 

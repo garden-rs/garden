@@ -10,6 +10,11 @@ pub enum GardenError {
         err: std::io::Error,
     },
 
+    #[error("invalid configuration: empty document: {path:?}")]
+    EmptyConfiguration {
+        path: std::path::PathBuf,
+    },
+
     #[error("file exists")]
     FileExists,
 
@@ -17,22 +22,34 @@ pub enum GardenError {
     FileNotFound,
 
     #[error("unable to find '{garden}': No garden exists with that name")]
-    GardenNotFound { garden: String },
+    GardenNotFound {
+        garden: String,
+    },
 
     #[error("configuration IO error")]
     IOError,
 
     #[error("invalid configuration: {msg}")]
-    InvalidConfiguration { msg: String },
+    InvalidConfiguration {
+        msg: String,
+    },
 
     #[error("invalid argument: '{tree}' is not part of the '{garden}' garden")]
-    InvalidGardenArgument { tree: String, garden: String },
+    InvalidGardenArgument {
+        tree: String,
+        garden: String,
+    },
 
     #[error("unable to read configuration: {err:?}")]
-    ReadConfig { err: yaml_rust::ScanError },
+    ReadConfig {
+        err: yaml_rust::ScanError,
+    },
 
     #[error("unable to read {path:?}: {err:?}")]
-    ReadFile { path: String, err: std::io::Error },
+    ReadFile {
+        path: std::path::PathBuf,
+        err: std::io::Error,
+    },
 
     #[error("unable to sync configuration: {path:?}: {err:?}")]
     SyncConfigurationError {
@@ -47,13 +64,16 @@ pub enum GardenError {
     Usage,
 
     #[error("unable to write configuration: {path:?}")]
-    WriteConfigurationError { path: std::path::PathBuf },
+    WriteConfigurationError {
+        path: std::path::PathBuf,
+    },
 }
 
 impl std::convert::From<GardenError> for i32 {
     fn from(garden_err: GardenError) -> Self {
         match garden_err {
             GardenError::CreateConfigurationError { .. } => 78,  // EX_CONFIG,
+            GardenError::EmptyConfiguration { .. } => 78,  // EX_CONFIG,
             GardenError::FileExists => 64, // EX_USAGE
             GardenError::FileNotFound => 74,  // EX_IOERR
             GardenError::GardenNotFound { .. } => 78,  // EX_USAGE,
