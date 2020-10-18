@@ -80,7 +80,7 @@ macro_rules! unwrap_or_err {
 /// - `message`: Error message format arguments.
 #[macro_export]
 macro_rules! unwrap_or_err_return {
-    ($expr:expr, $retval:ident $(, $message:expr )* ) => {
+    ($expr:expr, $retval:expr $(, $message:expr )* ) => {
         match $expr {
             Ok(value) => value,
             Err(err) => {

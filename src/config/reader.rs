@@ -2,20 +2,26 @@ use yaml_rust::yaml::Yaml;
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::YamlLoader;
 
-use super::super::model;
 use super::super::errors;
+use super::super::model;
 
 
 // Apply YAML Configuration from a string.
-pub fn parse(string: &str, verbose: bool,
-             config: &mut model::Configuration) {
+pub fn parse(
+    string: &str, verbose: bool, config: &mut model::Configuration
+) -> Result<(), errors::GardenError> {
 
-    let docs = unwrap_or_err!(
-        YamlLoader::load_from_str(string),
-        "{:?}: {}", config.path);
-
+    let docs = YamlLoader::load_from_str(string).map_err(
+        |scan_err| errors::GardenError::ReadConfig {
+            err: scan_err,
+        }
+    )?;
     if docs.len() < 1 {
-        error!("empty yaml configuration: {:?}", config.path);
+        return Err(
+            errors::GardenError::EmptyConfiguration {
+                path: config.path.as_ref().unwrap().into(),
+            }
+        );
     }
     let doc = &docs[0];
 
@@ -123,6 +129,8 @@ pub fn parse(string: &str, verbose: bool,
     if !get_gardens(&doc["gardens"], &mut config.gardens) && verbose {
         debug!("yaml: no gardens");
     }
+
+    Ok(())
 }
 
 

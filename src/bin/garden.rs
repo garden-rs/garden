@@ -1,7 +1,3 @@
-extern crate anyhow;
-extern crate argparse;
-extern crate garden;
-
 use anyhow::Result;
 
 use garden::cmds;
@@ -38,7 +34,7 @@ fn cmd_main() -> Result<()> {
         _ => (),
     }
 
-    let config = config::from_options(&options);
+    let config = config::from_options(&options)?;
     let mut app = model::ApplicationContext::new(config, options);
 
     match app.options.subcommand.clone() {

@@ -9,7 +9,7 @@ pub fn from_string(string: &str) -> garden::model::Configuration {
     std::env::remove_var("PYTHONPATH");
 
     let mut config = garden::model::Configuration::new();
-    garden::config::parse(string, false, &mut config);
+    garden::config::parse(string, false, &mut config).ok();
 
     return config;
 }

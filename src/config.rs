@@ -1,7 +1,8 @@
 use dirs;
 use xdg;
 
-use crate::model;
+use super::errors;
+use super::model;
 
 /// YAML reader
 pub mod reader;
@@ -74,8 +75,9 @@ pub fn xdg_dir() -> std::path::PathBuf {
 }
 
 
-pub fn new(config: &Option<std::path::PathBuf>, root: &str, verbose: bool)
--> model::Configuration {
+pub fn new(
+    config: &Option<std::path::PathBuf>, root: &str, verbose: bool
+) -> Result<model::Configuration, errors::GardenError> {
 
     let mut cfg = model::Configuration::new();
     cfg.verbose = verbose;
@@ -123,12 +125,12 @@ pub fn new(config: &Option<std::path::PathBuf>, root: &str, verbose: bool)
     }
 
     if found {
-        // Read file contents.  IO errors are silenced and result in an empty
-        // configuration.
+        // Read file contents.
         let config_string = unwrap_or_err_return!(
             std::fs::read_to_string(cfg.path.as_ref().unwrap()),
-            cfg, "unable to read {:?}: {}", cfg.path.as_ref().unwrap());
-        parse(&config_string, verbose, &mut cfg);
+            Ok(cfg), "unable to read {:?}: {}", cfg.path.as_ref().unwrap());
+
+        parse(&config_string, verbose, &mut cfg)?;
     }
 
     // Default to the current directory when garden.root is unspecified
@@ -154,20 +156,22 @@ pub fn new(config: &Option<std::path::PathBuf>, root: &str, verbose: bool)
         let path_str = paths[idx].to_string();
         let path = std::path::PathBuf::from(&path_str);
         if path.exists() {
-            graft.config = Some(new(&Some(path), &graft.root, verbose));
+            graft.config = Some(new(&Some(path), &graft.root, verbose)?);
         }
         idx += 1;
     }
 
-    return cfg;
+    Ok(cfg)
 }
 
 
 /// Create a model::Configuration instance from model::CommandOptions
 
-pub fn from_options(options: &model::CommandOptions) -> model::Configuration {
+pub fn from_options(
+    options: &model::CommandOptions
+) -> Result<model::Configuration, errors::GardenError> {
     let config_verbose = options.is_debug("config::new");
-    let mut config = new(&options.filename, &options.root, config_verbose);
+    let mut config = new(&options.filename, &options.root, config_verbose)?;
 
     if config.path.is_none() {
         error!("unable to find a configuration file -- use --config <path>");
@@ -199,14 +203,17 @@ pub fn from_options(options: &model::CommandOptions) -> model::Configuration {
         );
     }
 
-    config
+    Ok(config)
 }
 
 /// Parse and apply configuration from a YAML/JSON string
-pub fn parse(config_string: &str, verbose: bool,
-             cfg: &mut model::Configuration) {
+pub fn parse(
+    config_string: &str, verbose: bool, cfg: &mut model::Configuration
+) -> Result<(), errors::GardenError> {
 
-    reader::parse(&config_string, verbose, cfg);
+    reader::parse(&config_string, verbose, cfg)?;
     // Initialize the configuration now that the values have been read.
     cfg.initialize();
+
+    Ok(())
 }
