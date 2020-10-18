@@ -30,7 +30,7 @@ fn search_path() -> Vec<std::path::PathBuf> {
     paths.push(current_dir.to_path_buf());
 
     // ./garden
-    let mut current_garden_dir  = current_dir.to_path_buf();
+    let mut current_garden_dir = current_dir.to_path_buf();
     current_garden_dir.push("garden");
     if current_garden_dir.exists() {
         paths.push(current_garden_dir);
@@ -76,7 +76,9 @@ pub fn xdg_dir() -> std::path::PathBuf {
 
 
 pub fn new(
-    config: &Option<std::path::PathBuf>, root: &str, verbose: bool
+    config: &Option<std::path::PathBuf>,
+    root: &str,
+    verbose: bool,
 ) -> Result<model::Configuration, errors::GardenError> {
 
     let mut cfg = model::Configuration::new();
@@ -117,26 +119,35 @@ pub fn new(
         }
     }
     if verbose {
-        debug!("config path is {:?}{} root is {:?}", cfg.path, cfg.root,
-               match found {
-                   true => "",
-                   false => " (NOT FOUND)",
-               });
+        debug!(
+            "config path is {:?}{} root is {:?}",
+            cfg.path,
+            cfg.root,
+            match found {
+                true => "",
+                false => " (NOT FOUND)",
+            }
+        );
     }
 
     if found {
         // Read file contents.
         let config_string = unwrap_or_err_return!(
             std::fs::read_to_string(cfg.path.as_ref().unwrap()),
-            Ok(cfg), "unable to read {:?}: {}", cfg.path.as_ref().unwrap());
+            Ok(cfg),
+            "unable to read {:?}: {}",
+            cfg.path.as_ref().unwrap()
+        );
 
         parse(&config_string, verbose, &mut cfg)?;
     }
 
     // Default to the current directory when garden.root is unspecified
     if cfg.root.expr.is_empty() {
-        cfg.root.expr =
-            std::env::current_dir().unwrap().to_string_lossy().to_string();
+        cfg.root.expr = std::env::current_dir()
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
     }
 
     // Grafts
@@ -168,7 +179,7 @@ pub fn new(
 /// Create a model::Configuration instance from model::CommandOptions
 
 pub fn from_options(
-    options: &model::CommandOptions
+    options: &model::CommandOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
     let config_verbose = options.is_debug("config::new");
     let mut config = new(&options.filename, &options.root, config_verbose)?;
@@ -195,11 +206,12 @@ pub fn from_options(
             error!("unable to split '{}'", k_eq_v);
         }
         config.variables.insert(
-            0, model::NamedVariable {
+            0,
+            model::NamedVariable {
                 name: name,
                 expr: expr,
-                value: None
-            }
+                value: None,
+            },
         );
     }
 
@@ -208,7 +220,9 @@ pub fn from_options(
 
 /// Parse and apply configuration from a YAML/JSON string
 pub fn parse(
-    config_string: &str, verbose: bool, cfg: &mut model::Configuration
+    config_string: &str,
+    verbose: bool,
+    cfg: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
 
     reader::parse(&config_string, verbose, cfg)?;
