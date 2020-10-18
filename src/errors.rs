@@ -12,6 +12,7 @@ pub enum GardenError {
     #[error("invalid configuration: empty document: {path:?}")]
     EmptyConfiguration { path: std::path::PathBuf },
 
+    /// ExitStatus is used to exit without printing an error message.
     #[error("exit status {0}")]
     ExitStatus(i32),
 
@@ -60,22 +61,30 @@ pub enum GardenError {
 
 impl std::convert::From<GardenError> for i32 {
     fn from(garden_err: GardenError) -> Self {
+        // /usr/include/sysexits.h
+        const EX_USAGE: i32 = 64;
+        const EX_DATAERR: i32 = 65;
+        const EX_SOFTWARE: i32 = 70;
+        const EX_CANTCREAT: i32 = 73;
+        const EX_IOERR: i32 = 74;
+        const EX_CONFIG: i32 = 78;
+
         match garden_err {
-            GardenError::CreateConfigurationError { .. } => 78,  // EX_CONFIG
-            GardenError::EmptyConfiguration { .. } => 78,  // EX_CONFIG
+            GardenError::CreateConfigurationError { .. } => EX_CANTCREAT,
+            GardenError::EmptyConfiguration { .. } => EX_CONFIG,
             GardenError::ExitStatus(status) => status,  // Explicit exit code
-            GardenError::FileExists => 64, // EX_USAGE
-            GardenError::FileNotFound => 74,  // EX_IOERR
-            GardenError::GardenNotFound { .. } => 78,  // EX_USAGE
-            GardenError::IOError => 74,  // EX_IOERR
-            GardenError::InvalidConfiguration { .. } => 78,  // EX_CONFIG
-            GardenError::InvalidGardenArgument { .. } => 78,  // EX_USAGE
-            GardenError::ReadConfig { .. } => 74,  // EX_IOERR
-            GardenError::ReadFile { .. } => 74,  // EX_IOERR
-            GardenError::SyncConfigurationError { .. } => 74,  // EX_IOERR
-            GardenError::TreeNotFound { .. } => 78,  // EX_USAGE
-            GardenError::Usage => 64,  // EX_USAGE
-            GardenError::WriteConfigurationError { .. } => 74,  // EX_IOERR
+            GardenError::FileExists => EX_CANTCREAT,
+            GardenError::FileNotFound => EX_IOERR,
+            GardenError::GardenNotFound { .. } => EX_USAGE,
+            GardenError::IOError => EX_IOERR,
+            GardenError::InvalidConfiguration { .. } => EX_CONFIG,
+            GardenError::InvalidGardenArgument { .. } => EX_USAGE,
+            GardenError::ReadConfig { .. } => EX_DATAERR,
+            GardenError::ReadFile { .. } => EX_IOERR,
+            GardenError::SyncConfigurationError { .. } => EX_IOERR,
+            GardenError::TreeNotFound { .. } => EX_USAGE,
+            GardenError::Usage => EX_USAGE,
+            GardenError::WriteConfigurationError { .. } => EX_CANTCREAT,
         }
     }
 }

@@ -12,7 +12,9 @@ fn main() -> Result<()> {
         let exit_status: i32 = match err.downcast::<errors::GardenError>() {
             Ok(garden_err) => {
                 match garden_err {
+                    // ExitStatus exits without printing a message.
                     errors::GardenError::ExitStatus(status) => status,
+                    // Other GardenError variants print a message before exiting.
                     _ => {
                         eprintln!("error: {:#}", garden_err);
                         garden_err.into()
