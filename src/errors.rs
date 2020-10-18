@@ -19,8 +19,8 @@ pub enum GardenError {
     #[error("exit status {0}")]
     ExitStatus(i32),
 
-    #[error("file exists")]
-    FileExists,
+    #[error("{0}")]
+    FileExists(String),
 
     #[error("file not found")]
     FileNotFound,
@@ -28,8 +28,8 @@ pub enum GardenError {
     #[error("unable to find '{garden}': No garden exists with that name")]
     GardenNotFound { garden: String },
 
-    #[error("configuration IO error")]
-    IOError,
+    #[error("{0}")]
+    IOError(String),
 
     #[error("invalid configuration: {msg}")]
     InvalidConfiguration { msg: String },
@@ -77,10 +77,10 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::CreateConfigurationError { .. } => EX_CANTCREAT,
             GardenError::EmptyConfiguration { .. } => EX_CONFIG,
             GardenError::ExitStatus(status) => status,  // Explicit exit code
-            GardenError::FileExists => EX_CANTCREAT,
+            GardenError::FileExists(_)  => EX_CANTCREAT,
             GardenError::FileNotFound => EX_IOERR,
             GardenError::GardenNotFound { .. } => EX_USAGE,
-            GardenError::IOError => EX_IOERR,
+            GardenError::IOError(_) => EX_IOERR,
             GardenError::InvalidConfiguration { .. } => EX_CONFIG,
             GardenError::InvalidGardenArgument { .. } => EX_USAGE,
             GardenError::ReadConfig { .. } => EX_DATAERR,

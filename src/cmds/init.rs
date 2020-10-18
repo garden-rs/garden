@@ -96,19 +96,19 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
     config_path.push(&init_options.filename);
 
     if !init_options.force && config_path.exists() {
-        errmsg!(
+        let error_message = format!(
             "{:?} already exists, use \"--force\" to overwrite",
             config_path.to_string_lossy()
         );
-        return Err(errors::GardenError::FileExists.into());
+        return Err(errors::GardenError::FileExists(error_message).into());
     }
 
     // Create parent directories as needed
     let parent = config_path.parent().as_ref().unwrap().to_path_buf();
     if !parent.exists() {
         if let Err(err) = std::fs::create_dir_all(&parent) {
-            errmsg!("unable to create {:?}: {}", parent, err);
-            return Err(errors::GardenError::IOError.into());
+            let error_message = format!("unable to create {:?}: {}", parent, err);
+            return Err(errors::GardenError::IOError(error_message).into());
         }
     }
 
