@@ -1,18 +1,30 @@
+extern crate anyhow;
 extern crate argparse;
 extern crate garden;
 
-use garden::cmd;
+use anyhow::Result;
+
 use garden::cmds;
 use garden::config;
+use garden::errors;
 use garden::model;
 
 
-fn main() {
-    std::process::exit(cmd_main());
+fn main() -> Result<()> {
+    // Return the appropriate exit code when a GardenError is encountered.
+    if let Err(err) = cmd_main() {
+        eprintln!("error: {:#}", err);
+        let exit_code: i32 = match err.downcast::<errors::GardenError>() {
+            Ok(garden_err) => garden_err.into(),
+            Err(_) => 1,
+        };
+        std::process::exit(exit_code);
+    }
+    Ok(())
 }
 
 
-fn cmd_main() -> i32 {
+fn cmd_main() -> Result<()> {
     let mut options = parse_args();
 
     // The following commands run without a configuration file
@@ -36,8 +48,8 @@ fn cmd_main() -> i32 {
         model::Command::Exec => cmds::exec::main(&mut app),
         model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Grow => cmds::grow::main(&mut app),
-        model::Command::Help => cmd::ExitCode::Success.into(),  // Handled above
-        model::Command::Init => cmd::ExitCode::Success.into(),  // Handled above
+        model::Command::Help => Ok(()),  // Handled above
+        model::Command::Init => Ok(()),  // Handled above
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),

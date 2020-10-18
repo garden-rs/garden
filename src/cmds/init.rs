@@ -1,11 +1,13 @@
-extern crate yaml_rust;
+use anyhow::Result;
+use argparse;
+use yaml_rust::yaml::Yaml;
+use yaml_rust::yaml::Hash as YamlHash;
 
-use self::yaml_rust::yaml::Yaml;
-use self::yaml_rust::yaml::Hash as YamlHash;
+use super::super::cmd;
+use super::super::config;
+use super::super::errors;
+use super::super::model;
 
-use ::cmd;
-use ::config;
-use ::model;
 
 struct InitOptions {
     pub dirname: std::path::PathBuf,
@@ -28,7 +30,7 @@ impl std::default::Default for InitOptions {
 }
 
 
-pub fn main(options: &mut model::CommandOptions) -> i32 {
+pub fn main(options: &mut model::CommandOptions) -> Result<()> {
 
     let mut init_options = InitOptions::default();
     {
@@ -54,9 +56,7 @@ pub fn main(options: &mut model::CommandOptions) -> i32 {
                           "config file to write (default: garden.yaml)");
 
         options.args.insert(0, "garden init".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     init(options, &mut init_options)
@@ -66,13 +66,13 @@ pub fn main(options: &mut model::CommandOptions) -> i32 {
 fn init(
     options: &model::CommandOptions,
     init_options: &mut InitOptions,
-) -> i32 {
+) -> Result<()> {
 
     let file_path = std::path::PathBuf::from(&init_options.filename);
     if file_path.is_absolute() {
         if init_options.global {
             errmsg!("'--global' cannot be used with an absolute path");
-            return cmd::ExitCode::Usage.into();
+            return Err(errors::GardenError::Usage.into());
         }
 
         init_options.dirname = file_path
@@ -90,7 +90,7 @@ fn init(
     if !init_options.force && config_path.exists() {
         errmsg!("{:?} already exists, use \"--force\" to overwrite",
                 config_path.to_string_lossy());
-        return cmd::ExitCode::FileExists.into();
+        return Err(errors::GardenError::FileExists.into());
     }
 
     // Create parent directories as needed
@@ -98,7 +98,7 @@ fn init(
     if !parent.exists() {
         if let Err(err) = std::fs::create_dir_all(&parent) {
             errmsg!("unable to create {:?}: {}", parent, err);
-            return cmd::ExitCode::IOError.into();
+            return Err(errors::GardenError::IOError.into());
         }
     }
 
@@ -122,8 +122,11 @@ fn init(
                     hash
                 },
                 _ => {
-                    errmsg!("invalid configuration: 'garden' is not a hash");
-                    return cmd::ExitCode::Config.into();
+                    return Err(
+                        errors::GardenError::InvalidConfiguration {
+                            msg: "invalid configuration: 'garden' is not a hash".into()
+                        }.into()
+                    );
                 }
             };
 
@@ -133,10 +136,7 @@ fn init(
         }
     }
 
-    if !config::writer::write_yaml(&doc, &config_path) {
-        errmsg!("unable to write configuration: {:?}", config_path);
-        return cmd::ExitCode::IOError.into();
-    }
+    config::writer::write_yaml(&doc, &config_path)?;
 
     if !options.quiet {
         if exists {
@@ -148,5 +148,5 @@ fn init(
         }
     }
 
-    cmd::ExitCode::Success.into()
+    Ok(())
 }

@@ -1,13 +1,17 @@
-use ::model;
-use ::model::Color;
-use ::query;
+use anyhow::Result;
+use argparse;
+
+use super::super::cmd;
+use super::super::model;
+use super::super::model::Color;
+use super::super::query;
 
 
 /// Main entry point for the "garden exec" command
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let options = &mut app.options;
     let config = &mut app.config;
 
@@ -23,9 +27,7 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
                           "gardens/groups/trees to exec (tree queries)");
 
         options.args.insert(0, "garden exec".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
     if query.is_empty() {
         query.push(".".to_string());
@@ -44,9 +46,7 @@ pub fn inspect(
     config: &mut model::Configuration,
     verbose: bool,
     queries: &Vec<String>,
-) -> i32 {
-
-    let mut exit_status: i32 = 0;  // Return the last error
+) -> Result<()> {
 
     for query in queries {
         // Resolve the tree query into a vector of tree contexts.
@@ -68,8 +68,6 @@ pub fn inspect(
                              Color::red("-").dimmed(),
                              Color::red(&tree.name));
                 }
-                // Missing trees trigger a non-zero status.
-                exit_status = 1;
                 continue;
             }
 
@@ -102,5 +100,5 @@ pub fn inspect(
         }
     }
 
-    exit_status
+    Ok(())
 }

@@ -1,6 +1,7 @@
 [package]
 name = "garden"
-version = "1.0.0"
+version = "1.1.0"
+edition = "2018"
 
 description = """
 Garden Weaves Git Trees
@@ -25,13 +26,15 @@ authors = ["David Aguilar <davvid@gmail.com>"]
 integration = []
 
 [dependencies]
+anyhow = "*"
 argparse = "*"
 atty = "*"
-glob = "*"
 dirs = "*"
+glob = "*"
 shellexpand = "*"
 shlex = "*"
 subprocess = "*"
+thiserror = "*"
 xdg = "*"
 yaml-rust = "*"
 yansi = "*"

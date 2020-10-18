@@ -11,6 +11,9 @@ pub mod cmds;
 /// Configuration
 pub mod config;
 
+/// Errors
+pub mod errors;
+
 /// Variable evaluation
 pub mod eval;
 

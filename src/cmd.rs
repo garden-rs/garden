@@ -1,7 +1,8 @@
-extern crate subprocess;
+use argparse;
+use subprocess;
 
-use ::eval;
-use ::model;
+use super::eval;
+use super::model;
 
 
 /// Return a subprocess::Exec instance from a command vector.
@@ -189,25 +190,9 @@ pub fn current_exe() -> String {
 }
 
 
-/// Return codes from programs.  Cf. /usr/include/sysexits.h
-pub enum ExitCode {
-    Success,
-    Config,
-    FileExists,
-    FileNotFound,
-    IOError,
-    Usage,
-}
-
-impl std::convert::From<ExitCode> for i32 {
-    fn from(exit_code: ExitCode) -> Self {
-        match exit_code {
-            ExitCode::Config => 78,  // EX_CONFIG,
-            ExitCode::FileExists => 64, // EX_USAGE
-            ExitCode::FileNotFound => 74,  // EX_IOERR
-            ExitCode::IOError => 74,  // EX_IOERR
-            ExitCode::Success => 0,  // EXIT_SUCCESS
-            ExitCode::Usage => 64,  // EX_USAGE
-        }
-    }
+/// Parse arguments or exit with an error.
+pub fn parse_args(parser: argparse::ArgumentParser, arguments: Vec<String>) {
+    parser.parse(
+        arguments, &mut std::io::stdout(), &mut std::io::stderr()
+    ).map_err(|exit_code| std::process::exit(exit_code)).ok();
 }

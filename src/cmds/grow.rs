@@ -1,14 +1,16 @@
-use ::cmd;
-use ::eval;
-use ::model;
-use ::query;
+use anyhow::Result;
+
+use super::super::cmd;
+use super::super::eval;
+use super::super::model;
+use super::super::query;
 
 
 /// Main entry point for the "garden exec" command
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let options = &mut app.options;
     let mut queries = Vec::new();
     parse_args(&mut queries, options);
@@ -24,7 +26,11 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
         }
     }
 
-    exit_status
+    if exit_status != 0 {
+        std::process::exit(exit_status);
+    }
+
+    Ok(())
 }
 
 

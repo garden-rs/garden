@@ -1,10 +1,9 @@
-extern crate yaml_rust;
-use self::yaml_rust::yaml::Yaml;
-use self::yaml_rust::yaml::Hash as YamlHash;
-use self::yaml_rust::YamlLoader;
+use yaml_rust::yaml::Yaml;
+use yaml_rust::yaml::Hash as YamlHash;
+use yaml_rust::YamlLoader;
 
-use ::cmd;
-use ::model;
+use super::super::model;
+use super::super::errors;
 
 
 // Apply YAML Configuration from a string.
@@ -675,31 +674,44 @@ where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
 
 
 /// Read and parse yaml from a file.
-fn yaml_from_path<P>(path: P) -> Result<Yaml, String>
+fn yaml_from_path<P>(path: P) -> Result<Yaml, errors::GardenError>
 where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
     let read_result = std::fs::read_to_string(&path);
     if read_result.is_err() {
-        return Err(format!(
-            "unable to read {:?}: {:?}", path, read_result.err()));
+        return Err(
+            errors::GardenError::InvalidConfiguration {
+                msg: format!("unable to read {:?}: {:?}", path, read_result.err())
+            }.into()
+        );
     }
 
     let string = read_result.unwrap();
     let docs_result = YamlLoader::load_from_str(&string);
     if docs_result.is_err() {
-        return Err(format!(
-            "unable to read configuration: {:?}", docs_result.err()));
+        return Err(
+            errors::GardenError::InvalidConfiguration {
+                msg: format!("unable to read configuration: {:?}", docs_result.err())
+            }
+        );
     }
 
     let mut docs = docs_result.unwrap();
     if docs.len() < 1 {
-        return Err(format!("empty configuration: {:?}", path));
+        return Err(
+            errors::GardenError::InvalidConfiguration {
+                msg: format!("empty configuration: {:?}", path)
+            }
+        );
     }
 
     // Mutable scope
     {
         if let Err(err) = add_missing_sections(&mut docs[0]) {
-            errmsg!("{}", err);
-            std::process::exit(cmd::ExitCode::Config.into());
+            return Err(
+                errors::GardenError::InvalidConfiguration {
+                    msg: format!("{}", err)
+                }.into()
+            );
         }
     }
 

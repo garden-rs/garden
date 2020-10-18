@@ -1,12 +1,14 @@
-extern crate shlex;
+use anyhow::Result;
+use shlex;
 
-use ::cmd;
-use ::eval;
-use ::model;
-use ::query;
+use super::super::cmd;
+use super::super::errors;
+use super::super::eval;
+use super::super::model;
+use super::super::query;
 
 
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let config = &mut app.config;
     let options = &mut app.options;
 
@@ -27,13 +29,12 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
             .add_argument("tree", argparse::Store, "tree to chdir into");
 
         options.args.insert(0, "garden shell".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     let contexts = query::resolve_trees(config, &query);
     if contexts.is_empty() {
+        // TODO errors::GardenError::TreeQueryMatchedNoTrees { query: query.into() }
         error!("tree query matched zero trees: '{}'", query);
     }
 
@@ -78,9 +79,18 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
                                  context.tree, context.garden);
 
     if let Some(value) = shlex::split(&shell) {
-        cmd::exec_in_context(
-            config, &context, /*quiet*/ true, /*verbose*/ false, &value)
+        let exit_code = cmd::exec_in_context(
+            config, &context, /*quiet*/ true, /*verbose*/ false, &value);
+        if exit_code != 0 {
+            std::process::exit(exit_code);
+        }
+
+        Ok(())
     } else {
-        error!("invalid configuration: unable to shlex::split '{}'", shell);
+        Err(
+            errors::GardenError::InvalidConfiguration {
+                msg: format!("unable to shlex::split '{}'", shell),
+            }.into()
+        )
     }
 }

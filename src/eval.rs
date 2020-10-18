@@ -1,14 +1,14 @@
-extern crate dirs;
-extern crate glob;
-extern crate shellexpand;
-extern crate subprocess;
+use dirs;
+use glob;
+use shellexpand;
+use subprocess;
 
 use std::collections::HashMap;
 
-use ::cmd;
-use ::model;
-use ::query;
-use ::syntax;
+use super::cmd;
+use super::model;
+use super::query;
+use super::syntax;
 
 
 /// Return true if the string contains 0-9 digits only

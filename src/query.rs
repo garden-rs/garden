@@ -1,5 +1,6 @@
-use ::model;
-use ::query;
+use super::errors;
+use super::model;
+use super::query;
 
 
 /// Resolve a tree query into a `Vec<garden::model::TreeContext>`.
@@ -281,7 +282,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
 
 pub fn tree_context(config: &model::Configuration,
                     tree: &str, garden: Option<String>)
--> Result<model::TreeContext, String> {
+-> Result<model::TreeContext, errors::GardenError> {
 
     let mut ctx = model::TreeContext {
         tree: 0,
@@ -291,8 +292,7 @@ pub fn tree_context(config: &model::Configuration,
     if let Some(context) = tree_from_name(&config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
-        return Err(format!(
-                "unable to find '{}': No tree exists with that name", tree));
+        return Err(errors::GardenError::TreeNotFound { tree: tree.into() }.into());
     }
 
     if garden.is_some() {
@@ -300,9 +300,11 @@ pub fn tree_context(config: &model::Configuration,
         let contexts = query::garden_trees(config, &pattern);
 
         if contexts.is_empty() {
-            return Err(format!(
-                "unable to find '{}': No garden exists with that name",
-                garden.unwrap()));
+            return Err(
+                errors::GardenError::GardenNotFound {
+                    garden: garden.unwrap()
+                }.into()
+            );
         }
 
         let mut found = false;
@@ -315,9 +317,12 @@ pub fn tree_context(config: &model::Configuration,
         }
 
         if !found {
-            return Err(format!(
-                "invalid arguments: '{}' is not part of the '{}' garden",
-                tree, garden.unwrap()));
+            return Err(
+                errors::GardenError::InvalidGardenArgument {
+                    tree: tree.into(),
+                    garden: garden.unwrap(),
+                }.into()
+            );
         }
     }
 

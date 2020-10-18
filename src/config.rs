@@ -1,7 +1,7 @@
-extern crate dirs;
-extern crate xdg;
+use dirs;
+use xdg;
 
-use ::model;
+use crate::model;
 
 /// YAML reader
 pub mod reader;

@@ -1,7 +1,9 @@
-use ::model;
+use anyhow::Result;
+
+use super::super::model;
 
 
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let config = &app.config;
 
     if !config.gardens.is_empty() {
@@ -31,5 +33,5 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
         println!("");
     }
 
-    0
+    Ok(())
 }

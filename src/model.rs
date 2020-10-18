@@ -1,10 +1,9 @@
-extern crate atty;
-extern crate dirs;
-extern crate glob;
-extern crate yansi;
+use atty;
+use glob;
+use yansi;
 
-use ::eval;
-use ::syntax;
+use super::eval;
+use super::syntax;
 
 /// Tree index into config.trees
 pub type TreeIndex = usize;

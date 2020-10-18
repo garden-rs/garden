@@ -1,13 +1,17 @@
-use ::cmd;
-use ::model;
-use ::query;
+use anyhow::Result;
+use argparse;
+
+use super::super::cmd;
+use super::super::errors;
+use super::super::model;
+use super::super::query;
 
 
 /// Main entry point for the "garden exec" command
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let options = &mut app.options;
     let config = &mut app.config;
 
@@ -30,9 +34,7 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
                           "command to run over resolved trees");
 
         options.args.insert(0, "garden exec".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     if options.is_debug("exec") {
@@ -55,7 +57,7 @@ pub fn exec(
     verbose: bool,
     query: &str,
     command: &Vec<String>,
-) -> i32 {
+) -> Result<()> {
     // Strategy: resolve the trees down to a set of tree indexes paired with an
     // an optional garden context.
     //
@@ -70,7 +72,7 @@ pub fn exec(
     let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
     if command.is_empty() {
-        return cmd::ExitCode::Usage.into();
+        return Err(errors::GardenError::Usage.into());
     }
 
     // Loop over each context, evaluate the tree environment,
@@ -88,5 +90,9 @@ pub fn exec(
     }
 
     // Return the last non-zero exit status.
-    exit_status
+    if exit_status != 0 {
+        std::process::exit(exit_status);
+    }
+
+    Ok(())
 }

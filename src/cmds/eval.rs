@@ -1,11 +1,12 @@
-extern crate glob;
+use anyhow::Result;
 
-use ::eval;
-use ::model;
-use ::query;
+use super::super::cmd;
+use super::super::eval;
+use super::super::model;
+use super::super::query;
 
 
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let config = &mut app.config;
     let options = &mut app.options;
 
@@ -30,14 +31,12 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
             .add_argument("garden", argparse::Store, "garden to evaluate");
 
         options.args.insert(0, "garden eval".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     if tree.is_empty() {
         println!("{}", eval::value(config, &expr));
-        return 0;
+        return Ok(());
     }
 
     if !garden.is_empty() {
@@ -45,15 +44,9 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
     }
 
     // Evaluate and print the garden expression.
-    match query::tree_context(config, &tree, garden_opt) {
-        Ok(ctx) => {
-            let value = eval::tree_value(config, &expr,
-                                         ctx.tree, ctx.garden);
-            println!("{}", value);
-            0
-        }
-        Err(err) => {
-            error!("{}", err);
-        }
-    }
+    let ctx = query::tree_context(config, &tree, garden_opt)?;
+    let value = eval::tree_value(config, &expr, ctx.tree, ctx.garden);
+    println!("{}", value);
+
+    Ok(())
 }

@@ -1,12 +1,15 @@
-use ::cmd;
-use ::model;
+use anyhow::Result;
+use argparse;
+
+use super::super::cmd;
+use super::super::model;
 
 
 /// Entry point for `garden help`
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
-pub fn main(options: &mut model::CommandOptions) -> i32 {
+pub fn main(options: &mut model::CommandOptions) -> Result<()> {
     let cmd_path = cmd::current_exe();
     let mut help_cmd = vec!(cmd_path);
 
@@ -20,9 +23,7 @@ pub fn main(options: &mut model::CommandOptions) -> i32 {
                           "{add, cmd, eval, exec, ls, shell}");
 
         options.args.insert(0, "garden help".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     // garden help foo -> garden foo --help
@@ -41,5 +42,10 @@ pub fn main(options: &mut model::CommandOptions) -> i32 {
         }
     }
 
-    cmd::run(&help_cmd)
+    let exit_code = cmd::run(&help_cmd);
+    if exit_code != 0 {
+        std::process::exit(exit_code);
+    }
+
+    Ok(())
 }

@@ -1,15 +1,13 @@
-extern crate subprocess;
-extern crate yaml_rust;
+use anyhow::Result;
+use yaml_rust::yaml::Yaml;
+use yaml_rust::yaml::Hash as YamlHash;
 
-use self::yaml_rust::yaml::Yaml;
-use self::yaml_rust::yaml::Hash as YamlHash;
-
-use ::cmd;
-use ::config;
-use ::model;
+use super::super::cmd;
+use super::super::config;
+use super::super::model;
 
 
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     // Parse arguments
     let options = &mut app.options;
     let config = &mut app.config;
@@ -28,9 +26,7 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
             .add_argument("paths", argparse::List, "trees to add");
 
         options.args.insert(0, "garden add".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     // Read existing configuration
@@ -71,11 +67,7 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
     }
 
     // Emit the YAML configuration into a string
-    if !config::writer::write_yaml(&doc, &output) {
-        return cmd::ExitCode::IOError.into();
-    }
-
-    cmd::ExitCode::Success.into()
+    Ok(config::writer::write_yaml(&doc, &output)?)
 }
 
 

@@ -1,13 +1,14 @@
-extern crate subprocess;
+use anyhow::Result;
+use subprocess;
 
-use ::cmd;
-use ::eval;
-use ::model;
-use ::query;
+use super::super::cmd;
+use super::super::eval;
+use super::super::model;
+use super::super::query;
 
 
 /// garden cmd <query> <command>...
-pub fn main(app: &mut model::ApplicationContext) -> i32 {
+pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let config = &mut app.config;
     let options = &mut app.options;
     let mut query = String::new();
@@ -32,9 +33,7 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
                           "commands to run over resolved trees");
 
         options.args.insert(0, "garden cmd".to_string());
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     if options.is_debug("cmd") {
@@ -57,13 +56,19 @@ pub fn main(app: &mut model::ApplicationContext) -> i32 {
         config, options.quiet, options.verbose, options.keep_going,
         &query, &commands, &arguments,
     );
+    if exit_status != 0 {
+        std::process::exit(exit_status);
+    }
 
-    exit_status
+    Ok(())
 }
 
 
 /// garden <command> <query>...
-pub fn custom(app: &mut model::ApplicationContext, command: &str) -> i32 {
+pub fn custom(
+    app: &mut model::ApplicationContext,
+    command: &str
+) -> Result<()> {
     let config = &mut app.config;
     let options = &mut app.options;
     let mut queries_and_arguments: Vec<String> = Vec::new();
@@ -83,9 +88,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> i32 {
                           "gardens/groups/trees to exec (tree queries)");
 
         options.args.insert(0, format!("garden {}", command));
-        return_on_err!(ap.parse(options.args.to_vec(),
-                                &mut std::io::stdout(),
-                                &mut std::io::stderr()));
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
     if options.is_debug("cmd") {
@@ -112,8 +115,11 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> i32 {
         config, options.quiet, options.verbose, options.keep_going,
         command, &queries, &arguments,
     );
+    if exit_status != 0 {
+        std::process::exit(exit_status);
+    }
 
-    exit_status
+    Ok(())
 }
 
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
