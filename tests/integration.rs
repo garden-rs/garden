@@ -6,13 +6,13 @@ use garden::cmd;
 #[cfg(feature = "integration")]
 mod slow {
 
-use super::garden::cmd;
+use garden::cmd;
 
 /// Cleanup and create a bare repository for cloning
 fn setup(name: &str, path: &str) {
     let cmd = ["../integration/setup.sh", name];
-    let exec = garden::cmd::exec_in_dir(&cmd, path);
-    let exit_status = garden::cmd::status(exec.join());
+    let exec = cmd::exec_in_dir(&cmd, path);
+    let exit_status = cmd::status(exec.join());
     assert_eq!(exit_status, 0);
 }
 
@@ -36,8 +36,8 @@ fn grow_clone() {
         "--config", "tests/data/garden.yaml",
         "grow", "example/tree",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
-    let exit_status = garden::cmd::status(exec.join());
+    let exec = cmd::exec_cmd(&cmd);
+    let exit_status = cmd::status(exec.join());
     assert_eq!(exit_status, 0);
 
     // Ensure the repository was created
@@ -78,8 +78,8 @@ fn grow_remotes() {
         "--config", "tests/data/garden.yaml",
         "grow", "example/tree",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
-    let exit_status = garden::cmd::status(exec.join());
+    let exec = cmd::exec_cmd(&cmd);
+    let exit_status = cmd::status(exec.join());
     assert_eq!(exit_status, 0);
 
     // remote.origin.url is a read-only git:// URL
@@ -122,8 +122,8 @@ fn grow_symlinks() {
             "--config", "tests/data/garden.yaml",
             "grow", "example/tree", "link", "example/link",
         ];
-        let exec = garden::cmd::exec_cmd(&cmd);
-        let exit_status = garden::cmd::status(exec.join());
+        let exec = cmd::exec_cmd(&cmd);
+        let exit_status = cmd::status(exec.join());
         assert_eq!(exit_status, 0);
     }
 
@@ -171,8 +171,8 @@ fn grow_gitconfig() {
             "--config", "tests/data/garden.yaml",
             "grow", "example/tree",
         ];
-        let exec = garden::cmd::exec_cmd(&cmd);
-        let exit_status = garden::cmd::status(exec.join());
+        let exec = cmd::exec_cmd(&cmd);
+        let exit_status = cmd::status(exec.join());
         assert_eq!(exit_status, 0);
     }
 
@@ -226,7 +226,7 @@ fn eval_garden_config_dir() {
             "--config", "tests/data/garden.yaml",
             "eval", "${GARDEN_CONFIG_DIR}",
         ];
-        let exec = garden::cmd::exec_cmd(&cmd);
+        let exec = cmd::exec_cmd(&cmd);
         let capture = cmd::capture_stdout(exec);
         assert!(capture.is_ok());
         let output = cmd::trim_stdout(&capture.unwrap());
@@ -249,7 +249,7 @@ fn eval_root_with_root() {
         "--root", "tests/tmp",
         "eval", "${GARDEN_ROOT}",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
 
@@ -272,7 +272,7 @@ fn eval_config_dir_with_chdir_and_root() {
         "--root", "tests/tmp",
         "eval", "${GARDEN_CONFIG_DIR}",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
 
@@ -295,7 +295,7 @@ fn eval_exec_pwd_with_root_and_chdir() {
         "--root", "tests/tmp",
         "eval", "$ pwd",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
 
@@ -318,7 +318,7 @@ fn eval_root_with_root_and_chdir() {
         "--root", "tests/tmp",
         "eval", "${GARDEN_ROOT}",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
 
@@ -344,7 +344,7 @@ fn cmd_dash_dash_arguments() {
         "--", "d", "e", "f",
         "--", "g", "h", "i",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
@@ -367,7 +367,7 @@ fn cmd_dash_dash_arguments_custom() {
         "--", "d", "e", "f",
         "--", "g", "h", "i",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
@@ -385,7 +385,7 @@ fn cmd_dot_default_no_args() {
         "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-dir",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
@@ -400,7 +400,7 @@ fn cmd_dot_default_no_args_echo() {
         "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-args",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
@@ -418,7 +418,7 @@ fn cmd_dot_default_double_dash() {
         "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-args", "--",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
@@ -436,7 +436,7 @@ fn cmd_dot_default_double_dash_args() {
         "./target/debug/garden", "--quiet", "--chdir", "tests/data",
         "echo-args", "--", "d", "e", "f", "--", "g", "h", "i",
     ];
-    let exec = garden::cmd::exec_cmd(&cmd);
+    let exec = cmd::exec_cmd(&cmd);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
