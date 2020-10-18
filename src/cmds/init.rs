@@ -76,8 +76,11 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
     let file_path = std::path::PathBuf::from(&init_options.filename);
     if file_path.is_absolute() {
         if init_options.global {
-            errmsg!("'--global' cannot be used with an absolute path");
-            return Err(errors::GardenError::Usage.into());
+            return Err(
+                errors::GardenError::Usage(
+                    "'--global' cannot be used with an absolute path".into()
+                ).into()
+            );
         }
 
         init_options.dirname = file_path.parent().as_ref().unwrap().to_path_buf();

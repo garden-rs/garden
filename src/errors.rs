@@ -55,8 +55,8 @@ pub enum GardenError {
     #[error("unable to find '{tree}': No tree exists with that name")]
     TreeNotFound { tree: String },
 
-    #[error("invalid arguments")]
-    Usage,
+    #[error("invalid arguments: {0}")]
+    Usage(String),
 
     #[error("unable to write configuration: {path:?}")]
     WriteConfigurationError { path: std::path::PathBuf },
@@ -87,7 +87,7 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::ReadFile { .. } => EX_IOERR,
             GardenError::SyncConfigurationError { .. } => EX_IOERR,
             GardenError::TreeNotFound { .. } => EX_USAGE,
-            GardenError::Usage => EX_USAGE,
+            GardenError::Usage(_) => EX_USAGE,
             GardenError::WriteConfigurationError { .. } => EX_CANTCREAT,
         }
     }

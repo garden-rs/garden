@@ -40,19 +40,6 @@ macro_rules! error {
 }
 
 
-/// Print a message to stderr with a "error: " prefix
-///
-/// Parameters:
-/// - `fmt`: A format string.
-/// - `args*`: Format string arguments.
-#[macro_export]
-macro_rules! errmsg {
-    ( $fmt:expr $(, $args:expr )* ) => {
-        $crate::macros::error(format_args!($fmt, $( $args ),*));
-    }
-}
-
-
 /// Unwrap an Option<T> and return the result; terminate if unwrappable.
 /// This variant assumes a void function and returns.
 ///

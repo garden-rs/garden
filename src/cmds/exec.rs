@@ -76,7 +76,11 @@ pub fn exec(
     let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
     if command.is_empty() {
-        return Err(errors::GardenError::Usage.into());
+        return Err(
+            errors::GardenError::Usage(
+                "a command to execute must be specified".into()
+            ).into()
+        );
     }
 
     // Loop over each context, evaluate the tree environment,
