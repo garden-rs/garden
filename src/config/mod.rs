@@ -132,12 +132,12 @@ pub fn new(
 
     if found {
         // Read file contents.
-        let config_string = unwrap_or_err_return!(
-            std::fs::read_to_string(cfg.path.as_ref().unwrap()),
-            Ok(cfg),
-            "unable to read {:?}: {}",
-            cfg.path.as_ref().unwrap()
-        );
+        let config_path = cfg.get_path()?;
+        let config_string = match std::fs::read_to_string(config_path) {
+            Ok(content) => content,
+            // Return a default Configuration If we are unable to read the file.
+            Err(_) => return Ok(cfg),
+        };
 
         parse(&config_string, verbose, &mut cfg)?;
     }

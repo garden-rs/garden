@@ -71,25 +71,6 @@ macro_rules! unwrap_or_err {
     }
 }
 
-/// Unwrap an Option<T> and return the result; terminate if unwrappable.
-/// This variant returns the specified value from the function on error.
-///
-/// Parameters:
-/// - `expr`: An expression that resolves to an Option<T>.
-/// - `retval`: The value to return from the current function on error.
-/// - `message`: Error message format arguments.
-#[macro_export]
-macro_rules! unwrap_or_err_return {
-    ($expr:expr, $retval:expr $(, $message:expr )* ) => {
-        match $expr {
-            Ok(value) => value,
-            Err(err) => {
-                errmsg!($( $message ),*, err);
-                return $retval;
-            }
-        }
-    }
-}
 
 /// Implement std::display::Display with a custom format
 /// Parameters:
