@@ -72,18 +72,18 @@ pub enum GardenError {
 impl std::convert::From<GardenError> for i32 {
     fn from(garden_err: GardenError) -> Self {
         match garden_err {
-            GardenError::CreateConfigurationError { .. } => 78,  // EX_CONFIG,
-            GardenError::EmptyConfiguration { .. } => 78,  // EX_CONFIG,
+            GardenError::CreateConfigurationError { .. } => 78,  // EX_CONFIG
+            GardenError::EmptyConfiguration { .. } => 78,  // EX_CONFIG
             GardenError::FileExists => 64, // EX_USAGE
             GardenError::FileNotFound => 74,  // EX_IOERR
-            GardenError::GardenNotFound { .. } => 78,  // EX_USAGE,
+            GardenError::GardenNotFound { .. } => 78,  // EX_USAGE
             GardenError::IOError => 74,  // EX_IOERR
-            GardenError::InvalidConfiguration { .. } => 78,  // EX_CONFIG,
-            GardenError::InvalidGardenArgument { .. } => 78,  // EX_USAGE,
+            GardenError::InvalidConfiguration { .. } => 78,  // EX_CONFIG
+            GardenError::InvalidGardenArgument { .. } => 78,  // EX_USAGE
             GardenError::ReadConfig { .. } => 74,  // EX_IOERR
             GardenError::ReadFile { .. } => 74,  // EX_IOERR
             GardenError::SyncConfigurationError { .. } => 74,  // EX_IOERR
-            GardenError::TreeNotFound { .. } => 78,  // EX_USAGE,
+            GardenError::TreeNotFound { .. } => 78,  // EX_USAGE
             GardenError::Usage => 64,  // EX_USAGE
             GardenError::WriteConfigurationError { .. } => 74,  // EX_IOERR
         }
