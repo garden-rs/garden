@@ -79,13 +79,9 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
                                  context.tree, context.garden);
 
     if let Some(value) = shlex::split(&shell) {
-        let exit_code = cmd::exec_in_context(
-            config, &context, /*quiet*/ true, /*verbose*/ false, &value);
-        if exit_code != 0 {
-            std::process::exit(exit_code);
-        }
-
-        Ok(())
+        cmd::exec_in_context(
+            config, &context, /*quiet*/ true, /*verbose*/ false, &value
+        ).map_err(|err| err.into())
     } else {
         Err(
             errors::GardenError::InvalidConfiguration {

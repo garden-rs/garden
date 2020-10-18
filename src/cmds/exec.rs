@@ -83,16 +83,12 @@ pub fn exec(
             continue;
         }
         // Run the command in the current context.
-        let status = cmd::exec_in_context(config, context, quiet, verbose, command);
-        if status != 0 {
-            exit_status = status as i32;
+        if let Err(errors::GardenError::ExitStatus(status)) =
+                cmd::exec_in_context(config, context, quiet, verbose, command) {
+            exit_status = status;
         }
     }
 
     // Return the last non-zero exit status.
-    if exit_status != 0 {
-        std::process::exit(exit_status);
-    }
-
-    Ok(())
+    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }

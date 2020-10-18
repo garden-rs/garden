@@ -9,13 +9,22 @@ use garden::model;
 fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
-        eprintln!("error: {:#}", err);
-        let exit_code: i32 = match err.downcast::<errors::GardenError>() {
-            Ok(garden_err) => garden_err.into(),
-            Err(_) => 1,
+        let exit_status: i32 = match err.downcast::<errors::GardenError>() {
+            Ok(garden_err) => match garden_err {
+                errors::GardenError::ExitStatus(status) => status,
+                _ => {
+                    eprintln!("error: {:#}", garden_err);
+                    garden_err.into()
+                }
+            },
+            Err(other_err) => {
+                eprintln!("error: {:#}", other_err);
+                1
+            }
         };
-        std::process::exit(exit_code);
+        std::process::exit(exit_status);
     }
+
     Ok(())
 }
 

@@ -15,6 +15,9 @@ pub enum GardenError {
         path: std::path::PathBuf,
     },
 
+    #[error("exit status {0}")]
+    ExitStatus(i32),
+
     #[error("file exists")]
     FileExists,
 
@@ -74,6 +77,7 @@ impl std::convert::From<GardenError> for i32 {
         match garden_err {
             GardenError::CreateConfigurationError { .. } => 78,  // EX_CONFIG
             GardenError::EmptyConfiguration { .. } => 78,  // EX_CONFIG
+            GardenError::ExitStatus(status) => status,  // Explicit exit code
             GardenError::FileExists => 64, // EX_USAGE
             GardenError::FileNotFound => 74,  // EX_IOERR
             GardenError::GardenNotFound { .. } => 78,  // EX_USAGE

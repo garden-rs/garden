@@ -1,12 +1,13 @@
 use argparse;
 use subprocess;
 
+use super::errors;
 use super::eval;
 use super::model;
 
 
 /// Return a subprocess::Exec instance from a command vector.
-pub fn run<S>(cmd: &[S]) -> i32
+pub fn run<S>(cmd: &[S]) -> Result<(), errors::GardenError>
 where S: AsRef<std::ffi::OsStr> {
     let mut exit_status: i32 = 1;
 
@@ -15,7 +16,16 @@ where S: AsRef<std::ffi::OsStr> {
         exit_status = status(p.wait());
     }
 
-    exit_status
+    result_from_exit_status(exit_status)
+}
+
+
+/// Convert an exit status to Result<(), GardenError>.
+pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
+    match exit_status {
+        0 => Ok(()),
+        _ => Err(errors::GardenError::ExitStatus(exit_status).into()),
+    }
 }
 
 
@@ -85,7 +95,7 @@ pub fn exec_in_context<S>(
     quiet: bool,
     verbose: bool,
     command: &[S],
-) -> i32
+) -> Result<(), errors::GardenError>
 where S: AsRef<std::ffi::OsStr> {
     let path;
     // Immutable scope over tree
@@ -95,7 +105,7 @@ where S: AsRef<std::ffi::OsStr> {
 
         // Sparse gardens/missing trees are ok -> skip these entries.
         if !model::print_tree(&tree, verbose, quiet) {
-            return 0;
+            return Ok(());
         }
     }
     // Evaluate the tree environment and run the command.
@@ -110,7 +120,7 @@ where S: AsRef<std::ffi::OsStr> {
         exec = exec.env(name, value);
     }
 
-    status(exec.join())
+    result_from_exit_status(status(exec.join()))
 }
 
 
@@ -194,5 +204,5 @@ pub fn current_exe() -> String {
 pub fn parse_args(parser: argparse::ArgumentParser, arguments: Vec<String>) {
     parser.parse(
         arguments, &mut std::io::stdout(), &mut std::io::stderr()
-    ).map_err(|exit_code| std::process::exit(exit_code)).ok();
+    ).map_err(|exit_status| std::process::exit(exit_status)).ok();
 }

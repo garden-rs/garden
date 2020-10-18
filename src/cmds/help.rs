@@ -42,10 +42,5 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
         }
     }
 
-    let exit_code = cmd::run(&help_cmd);
-    if exit_code != 0 {
-        std::process::exit(exit_code);
-    }
-
-    Ok(())
+    cmd::run(&help_cmd).map_err(|err| err.into())
 }

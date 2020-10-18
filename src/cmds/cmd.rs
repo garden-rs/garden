@@ -2,6 +2,7 @@ use anyhow::Result;
 use subprocess;
 
 use super::super::cmd;
+use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::query;
@@ -111,15 +112,10 @@ pub fn custom(
         debug!("arguments: {:?}", arguments);
     }
 
-    let exit_status = cmds(
+    cmds(
         config, options.quiet, options.verbose, options.keep_going,
         command, &queries, &arguments,
-    );
-    if exit_status != 0 {
-        std::process::exit(exit_status);
-    }
-
-    Ok(())
+    ).map_err(|err| err.into())
 }
 
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -227,7 +223,7 @@ pub fn cmds(
     command: &str,
     queries: &Vec<String>,
     arguments: &Vec<String>,
-) -> i32 {
+) -> std::result::Result<(), errors::GardenError> {
     let mut exit_status: i32 = 0;
 
     let mut commands: Vec<String> = Vec::new();
@@ -245,5 +241,5 @@ pub fn cmds(
     }
 
     // Return the last non-zero exit status.
-    exit_status
+    cmd::result_from_exit_status(exit_status)
 }
