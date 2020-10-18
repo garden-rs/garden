@@ -91,20 +91,6 @@ macro_rules! unwrap_or_err_return {
     }
 }
 
-/// Evaluate an expression and return the inner Err on error.
-///
-/// Parameters:
-/// - `expr`: An expression that resolves to an Option<T>.
-#[macro_export]
-macro_rules! return_on_err {
-    ($expr:expr) => {
-        if let Err(err) = $expr {
-            return err;
-        }
-    }
-}
-
-
 /// Implement std::display::Display with a custom format
 /// Parameters:
 /// - `struct_name`: The struct to extend.
