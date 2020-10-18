@@ -659,22 +659,8 @@ fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
 }
 
 
-/// Read YAML from a file path.  Terminates on error.
-pub fn read_yaml<P>(path: P) -> Yaml
-where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
-    match yaml_from_path(path) {
-        Ok(doc) => {
-            doc
-        }
-        Err(err) => {
-            error!("{}", err);
-        }
-    }
-}
-
-
-/// Read and parse yaml from a file.
-fn yaml_from_path<P>(path: P) -> Result<Yaml, errors::GardenError>
+/// Read and parse YAML from a file path.
+pub fn read_yaml<P>(path: P) -> Result<Yaml, errors::GardenError>
 where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
 
     let string = std::fs::read_to_string(&path).map_err(

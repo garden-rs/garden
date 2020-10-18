@@ -30,7 +30,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     }
 
     // Read existing configuration
-    let mut doc = config::reader::read_yaml(config.path.as_ref().unwrap());
+    let mut doc = config::reader::read_yaml(config.path.as_ref().unwrap())?;
 
     // Output filename defaults to the input filename.
     if output.is_empty() {

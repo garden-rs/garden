@@ -108,7 +108,7 @@ fn init(
     // Read or create a new document
     let mut doc;
     if exists {
-        doc = config::reader::read_yaml(&config_path);
+        doc = config::reader::read_yaml(&config_path)?;
     } else {
         doc = config::reader::empty_doc();
     }
