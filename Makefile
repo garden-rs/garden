@@ -14,10 +14,16 @@ endif
 all:: build test integration
 
 
-# make {bench,build,clean,doc,test}
-.PHONY: bench build clean doc test
-bench build clean doc test::
+# make {bench,build,test}
+.PHONY: bench build test
+bench build test::
 	$(CARGO) $@ $(CARGO_FLAGS) $(flags)
+
+
+# make {clean,doc}
+.PHONY: clean doc
+clean doc::
+	$(CARGO) $@ $(flags)
 
 
 # Installation
