@@ -40,25 +40,6 @@ macro_rules! error {
 }
 
 
-/// Unwrap an Option<T> and return the result; terminate if unwrappable.
-/// This variant assumes a void function and returns.
-///
-/// Parameters:
-/// - `expr`: An expression that resolves to an Option<T>.
-/// - `message`: Error message format arguments.
-#[macro_export]
-macro_rules! unwrap_or_err {
-    ($expr:expr $(, $message:expr )* ) => {
-        match $expr {
-            Ok(value) => value,
-            Err(err) => {
-                error!($( $message ),*, err);
-            }
-        }
-    }
-}
-
-
 /// Implement std::display::Display with a custom format
 /// Parameters:
 /// - `struct_name`: The struct to extend.
