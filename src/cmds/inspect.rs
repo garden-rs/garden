@@ -22,9 +22,11 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden inspect - query tree status");
 
-        ap.refer(&mut query)
-            .add_argument("query", argparse::List,
-                          "gardens/groups/trees to exec (tree queries)");
+        ap.refer(&mut query).add_argument(
+            "query",
+            argparse::List,
+            "gardens/groups/trees to exec (tree queries)",
+        );
 
         options.args.insert(0, "garden exec".to_string());
         cmd::parse_args(ap, options.args.to_vec());
@@ -59,42 +61,47 @@ pub fn inspect(
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !std::path::PathBuf::from(&path).exists() {
                 if verbose {
-                    println!("{} {}  {}",
-                             Color::red("-").dimmed(),
-                             Color::red(&tree.name),
-                             Color::red(&path).dimmed());
+                    println!(
+                        "{} {}  {}",
+                        Color::red("-").dimmed(),
+                        Color::red(&tree.name),
+                        Color::red(&path).dimmed()
+                    );
                 } else {
-                    println!("{} {}",
-                             Color::red("-").dimmed(),
-                             Color::red(&tree.name));
+                    println!("{} {}", Color::red("-").dimmed(), Color::red(&tree.name));
                 }
                 continue;
             }
 
             if tree.is_symlink {
                 if verbose {
-                    println!("{} {}  {} {} {}",
-                             Color::green("+"),
-                             Color::green(&tree.name).bold(),
-                             Color::green(&path),
-                             Color::yellow("->").bold(),
-                             Color::blue(&tree.symlink.value.as_ref().unwrap()).bold());
+                    println!(
+                        "{} {}  {} {} {}",
+                        Color::green("+"),
+                        Color::green(&tree.name).bold(),
+                        Color::green(&path),
+                        Color::yellow("->").bold(),
+                        Color::blue(&tree.symlink.value.as_ref().unwrap()).bold()
+                    );
                 } else {
-                    println!("{} {} {} {}",
-                             Color::green("+"),
-                             Color::green(&tree.name).bold(),
-                             Color::yellow("->").bold(),
-                             Color::blue(tree.symlink.value.as_ref().unwrap()).bold());
+                    println!(
+                        "{} {} {} {}",
+                        Color::green("+"),
+                        Color::green(&tree.name).bold(),
+                        Color::yellow("->").bold(),
+                        Color::blue(tree.symlink.value.as_ref().unwrap()).bold()
+                    );
                 }
             } else {
                 if verbose {
-                    println!("{} {}  {}",
-                             Color::green("+"),
-                             Color::green(&tree.name).bold(),
-                             Color::green(&path));
+                    println!(
+                        "{} {}  {}",
+                        Color::green("+"),
+                        Color::green(&tree.name).bold(),
+                        Color::green(&path)
+                    );
                 } else {
-                    println!("{} {}",
-                             Color::green("+"), Color::green(&tree.name).bold());
+                    println!("{} {}", Color::green("+"), Color::green(&tree.name).bold());
                 }
             }
         }

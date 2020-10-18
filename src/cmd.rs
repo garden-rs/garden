@@ -8,11 +8,12 @@ use super::model;
 
 /// Return a subprocess::Exec instance from a command vector.
 pub fn run<S>(cmd: &[S]) -> Result<(), errors::GardenError>
-where S: AsRef<std::ffi::OsStr> {
+where
+    S: AsRef<std::ffi::OsStr>,
+{
     let mut exit_status: i32 = 1;
 
-    if let Ok(mut p) = subprocess::Popen::create(
-            cmd, subprocess::PopenConfig::default()) {
+    if let Ok(mut p) = subprocess::Popen::create(cmd, subprocess::PopenConfig::default()) {
         exit_status = status(p.wait());
     }
 
@@ -58,15 +59,18 @@ pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
 
 
 /// Return a CaptureData result for a subprocess's stdout.
-pub fn capture_stdout(exec: subprocess::Exec)
--> Result<subprocess::CaptureData, subprocess::PopenError> {
+pub fn capture_stdout(
+    exec: subprocess::Exec,
+) -> Result<subprocess::CaptureData, subprocess::PopenError> {
     exec.stdout(subprocess::Redirection::Pipe).capture()
 }
 
 
 /// Return a `subprocess::Exec` for a command.
 pub fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
-    where S: AsRef<std::ffi::OsStr> {
+where
+    S: AsRef<std::ffi::OsStr>,
+{
 
     if command.len() > 1 {
         subprocess::Exec::cmd(&command[0]).args(&command[1..])
@@ -77,7 +81,10 @@ pub fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
 
 /// Return a `subprocess::Exec` that runs a command in the specified directory.
 pub fn exec_in_dir<P, S>(command: &[S], path: P) -> subprocess::Exec
-where P: AsRef<std::path::Path>, S: AsRef<std::ffi::OsStr> {
+where
+    P: AsRef<std::path::Path>,
+    S: AsRef<std::ffi::OsStr>,
+{
     exec_cmd(&command).cwd(path)
 }
 
@@ -96,7 +103,9 @@ pub fn exec_in_context<S>(
     verbose: bool,
     command: &[S],
 ) -> Result<(), errors::GardenError>
-where S: AsRef<std::ffi::OsStr> {
+where
+    S: AsRef<std::ffi::OsStr>,
+{
     let path;
     // Immutable scope over tree
     {
@@ -129,23 +138,24 @@ where S: AsRef<std::ffi::OsStr> {
 /// environment.  Resolve the path by looking for the presence of PATH
 /// and updating cmdpath when it exists.
 
-pub fn resolve_command<S>(
-    command: &[S],
-    env: &Vec<(String, String)>,
-) -> Vec<String>
-where S: AsRef<std::ffi::OsStr> {
+pub fn resolve_command<S>(command: &[S], env: &Vec<(String, String)>) -> Vec<String>
+where
+    S: AsRef<std::ffi::OsStr>,
+{
     let mut cmdpath = std::path::PathBuf::from(&command[0]);
     if !cmdpath.is_absolute() {
         for (name, value) in env {
             if name == "PATH" {
-                let fullpath = std::env::split_paths(&value).filter_map(|dir| {
-                    let full_path = dir.join(&cmdpath);
-                    if full_path.is_file() {
-                        Some(full_path)
-                    } else {
-                        None
-                    }
-                }).next();
+                let fullpath = std::env::split_paths(&value)
+                    .filter_map(|dir| {
+                        let full_path = dir.join(&cmdpath);
+                        if full_path.is_file() {
+                            Some(full_path)
+                        } else {
+                            None
+                        }
+                    })
+                    .next();
 
                 if fullpath.is_some() {
                     cmdpath = fullpath.unwrap().to_path_buf();
@@ -170,11 +180,10 @@ where S: AsRef<std::ffi::OsStr> {
 }
 
 /// Split a vector into two vectors -- pre-dash and post-dash
-pub fn split_on_dash<S>(
-    strings: &[S],
-    pre_dash: &mut Vec<String>,
-    post_dash: &mut Vec<String>,
-) where S: AsRef<std::ffi::OsStr> + std::string::ToString + std::cmp::PartialEq {
+pub fn split_on_dash<S>(strings: &[S], pre_dash: &mut Vec<String>, post_dash: &mut Vec<String>)
+where
+    S: AsRef<std::ffi::OsStr> + std::string::ToString + std::cmp::PartialEq,
+{
 
     let mut is_pre_dash = true;
     for string in strings {
@@ -202,7 +211,8 @@ pub fn current_exe() -> String {
 
 /// Parse arguments or exit with an error.
 pub fn parse_args(parser: argparse::ArgumentParser, arguments: Vec<String>) {
-    parser.parse(
-        arguments, &mut std::io::stdout(), &mut std::io::stderr()
-    ).map_err(|exit_status| std::process::exit(exit_status)).ok();
+    parser
+        .parse(arguments, &mut std::io::stdout(), &mut std::io::stderr())
+        .map_err(|exit_status| std::process::exit(exit_status))
+        .ok();
 }

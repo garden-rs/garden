@@ -3,7 +3,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum GardenError {
-
     #[error("{path:?}: unable to create configuration: {err}")]
     CreateConfigurationError {
         path: std::path::PathBuf,
@@ -11,9 +10,7 @@ pub enum GardenError {
     },
 
     #[error("invalid configuration: empty document: {path:?}")]
-    EmptyConfiguration {
-        path: std::path::PathBuf,
-    },
+    EmptyConfiguration { path: std::path::PathBuf },
 
     #[error("exit status {0}")]
     ExitStatus(i32),
@@ -25,28 +22,19 @@ pub enum GardenError {
     FileNotFound,
 
     #[error("unable to find '{garden}': No garden exists with that name")]
-    GardenNotFound {
-        garden: String,
-    },
+    GardenNotFound { garden: String },
 
     #[error("configuration IO error")]
     IOError,
 
     #[error("invalid configuration: {msg}")]
-    InvalidConfiguration {
-        msg: String,
-    },
+    InvalidConfiguration { msg: String },
 
     #[error("invalid argument: '{tree}' is not part of the '{garden}' garden")]
-    InvalidGardenArgument {
-        tree: String,
-        garden: String,
-    },
+    InvalidGardenArgument { tree: String, garden: String },
 
     #[error("unable to read configuration: {err:?}")]
-    ReadConfig {
-        err: yaml_rust::ScanError,
-    },
+    ReadConfig { err: yaml_rust::ScanError },
 
     #[error("unable to read {path:?}: {err:?}")]
     ReadFile {
@@ -67,9 +55,7 @@ pub enum GardenError {
     Usage,
 
     #[error("unable to write configuration: {path:?}")]
-    WriteConfigurationError {
-        path: std::path::PathBuf,
-    },
+    WriteConfigurationError { path: std::path::PathBuf },
 }
 
 impl std::convert::From<GardenError> for i32 {

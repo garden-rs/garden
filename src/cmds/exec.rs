@@ -25,13 +25,17 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         ap.stop_on_first_argument(true);
         ap.set_description("garden exec - run commands inside gardens");
 
-        ap.refer(&mut query).required()
-            .add_argument("query", argparse::Store,
-                          "gardens/groups/trees to exec (tree query)");
+        ap.refer(&mut query).required().add_argument(
+            "query",
+            argparse::Store,
+            "gardens/groups/trees to exec (tree query)",
+        );
 
-        ap.refer(&mut command).required()
-            .add_argument("command", argparse::List,
-                          "command to run over resolved trees");
+        ap.refer(&mut command).required().add_argument(
+            "command",
+            argparse::List,
+            "command to run over resolved trees",
+        );
 
         options.args.insert(0, "garden exec".to_string());
         cmd::parse_args(ap, options.args.to_vec());
@@ -84,7 +88,8 @@ pub fn exec(
         }
         // Run the command in the current context.
         if let Err(errors::GardenError::ExitStatus(status)) =
-                cmd::exec_in_context(config, context, quiet, verbose, command) {
+            cmd::exec_in_context(config, context, quiet, verbose, command)
+        {
             exit_status = status;
         }
     }

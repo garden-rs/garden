@@ -8,20 +8,18 @@ use super::super::model;
 
 // Apply YAML Configuration from a string.
 pub fn parse(
-    string: &str, verbose: bool, config: &mut model::Configuration
+    string: &str,
+    verbose: bool,
+    config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
 
-    let docs = YamlLoader::load_from_str(string).map_err(
-        |scan_err| errors::GardenError::ReadConfig {
-            err: scan_err,
-        }
-    )?;
+    let docs = YamlLoader::load_from_str(string).map_err(|scan_err| {
+        errors::GardenError::ReadConfig { err: scan_err }
+    })?;
     if docs.len() < 1 {
-        return Err(
-            errors::GardenError::EmptyConfiguration {
-                path: config.path.as_ref().unwrap().into(),
-            }
-        );
+        return Err(errors::GardenError::EmptyConfiguration {
+            path: config.path.as_ref().unwrap().into(),
+        });
     }
     let doc = &docs[0];
 
@@ -38,8 +36,10 @@ pub fn parse(
             // TODO: move GARDEN_ROOT initialization out of this so that
             // we can avoid this early initialization and do it in the outer
             // config::new() call.
-            config.root.expr =
-                std::env::current_dir().unwrap().to_string_lossy().to_string();
+            config.root.expr = std::env::current_dir()
+                .unwrap()
+                .to_string_lossy()
+                .to_string();
         }
 
         if verbose {
@@ -76,13 +76,11 @@ pub fn parse(
 
         // Calculate an absolute path for GARDEN_CONFIG_DIR.
         if let Ok(config_path) = config_path_raw.canonicalize() {
-            config.variables.push(
-                model::NamedVariable {
-                    name: "GARDEN_CONFIG_DIR".to_string(),
-                    expr: config_path.to_string_lossy().to_string(),
-                    value: None,
-                }
-            );
+            config.variables.push(model::NamedVariable {
+                name: "GARDEN_CONFIG_DIR".to_string(),
+                expr: config_path.to_string_lossy().to_string(),
+                value: None,
+            });
         }
     }
 
@@ -210,43 +208,36 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
         for (k, v) in hash {
             match v {
                 Yaml::String(ref yaml_str) => {
-                    vec.push(
-                        model::NamedVariable{
-                            name: k.as_str().unwrap().to_string(),
-                            expr: yaml_str.to_string(),
-                            value: None,
-                        });
+                    vec.push(model::NamedVariable {
+                        name: k.as_str().unwrap().to_string(),
+                        expr: yaml_str.to_string(),
+                        value: None,
+                    });
                 }
                 Yaml::Array(ref yaml_array) => {
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
-                            vec.push(
-                                model::NamedVariable {
-                                    name: k.as_str().unwrap().to_string(),
-                                    expr: yaml_str.to_string(),
-                                    value: None,
-                                }
-                            );
+                            vec.push(model::NamedVariable {
+                                name: k.as_str().unwrap().to_string(),
+                                expr: yaml_str.to_string(),
+                                value: None,
+                            });
                         }
                     }
                 }
                 Yaml::Integer(yaml_int) => {
-                    vec.push(
-                        model::NamedVariable {
-                            name: k.as_str().unwrap().to_string(),
-                            expr: yaml_int.to_string(),
-                            value: None,
-                        }
-                    );
+                    vec.push(model::NamedVariable {
+                        name: k.as_str().unwrap().to_string(),
+                        expr: yaml_int.to_string(),
+                        value: None,
+                    });
                 }
                 Yaml::Boolean(ref yaml_bool) => {
-                    vec.push(
-                        model::NamedVariable {
-                            name: k.as_str().unwrap().to_string(),
-                            expr: bool_to_string(yaml_bool),
-                            value: None,
-                        }
-                    );
+                    vec.push(model::NamedVariable {
+                        name: k.as_str().unwrap().to_string(),
+                        expr: bool_to_string(yaml_bool),
+                        value: None,
+                    });
                 }
                 _ => {
                     dump_node(v, 1, "");
@@ -268,55 +259,46 @@ fn bool_to_string(value: &bool) -> String {
 }
 
 /// Read MultiVariable definitions (commands, environment)
-fn get_multivariables(yaml: &Yaml,
-                      vec: &mut Vec<model::MultiVariable>) -> bool {
+fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (k, v) in hash {
             match v {
                 Yaml::String(ref yaml_str) => {
-                    vec.push(
-                        model::MultiVariable{
-                            name: k.as_str().unwrap().to_string(),
-                            values: vec!(
-                                model::Variable{
-                                    expr: yaml_str.to_string(),
-                                    value: None,
-                                }
-                            )
-                        }
-                    );
+                    vec.push(model::MultiVariable {
+                        name: k.as_str().unwrap().to_string(),
+                        values: vec![
+                            model::Variable {
+                                expr: yaml_str.to_string(),
+                                value: None,
+                            },
+                        ],
+                    });
                 }
                 Yaml::Array(ref yaml_array) => {
                     let mut values = Vec::new();
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
-                            values.push(
-                                model::Variable{
-                                    expr: yaml_str.to_string(),
-                                    value: None,
-                                }
-                            );
+                            values.push(model::Variable {
+                                expr: yaml_str.to_string(),
+                                value: None,
+                            });
                         }
                     }
-                    vec.push(
-                        model::MultiVariable{
-                            name: k.as_str().unwrap().to_string(),
-                            values: values,
-                        }
-                    );
+                    vec.push(model::MultiVariable {
+                        name: k.as_str().unwrap().to_string(),
+                        values: values,
+                    });
                 }
                 Yaml::Integer(yaml_int) => {
-                    vec.push(
-                        model::MultiVariable {
-                            name: k.as_str().unwrap().to_string(),
-                            values: vec!(
-                                model::Variable {
-                                    expr: yaml_int.to_string(),
-                                    value: Some(yaml_int.to_string()),
-                                }
-                            ),
-                        }
-                    );
+                    vec.push(model::MultiVariable {
+                        name: k.as_str().unwrap().to_string(),
+                        values: vec![
+                            model::Variable {
+                                expr: yaml_int.to_string(),
+                                value: Some(yaml_int.to_string()),
+                            },
+                        ],
+                    });
                 }
                 _ => {
                     dump_node(v, 1, "");
@@ -343,23 +325,18 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
 
 
 /// Read a single template definition
-fn get_template(
-    name: &Yaml,
-    value: &Yaml,
-    templates: &Yaml,
-) -> model::Template {
+fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template {
 
     let mut template = model::Template::default();
     get_str(&name, &mut template.name);
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
-            template.remotes.push(
-                model::NamedVariable {
-                    name: "origin".to_string(),
-                    expr: url,
-                    value: None,
-                });
+            template.remotes.push(model::NamedVariable {
+                name: "origin".to_string(),
+                expr: url,
+                value: None,
+            });
         }
     }
 
@@ -372,7 +349,8 @@ fn get_template(
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
-                templates);
+                templates,
+            );
 
             template.environment.append(&mut base.environment);
             template.gitconfig.append(&mut base.gitconfig);
@@ -396,7 +374,8 @@ fn get_template(
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
-                templates);
+                templates,
+            );
 
             template.variables.append(&mut base.variables);
             template.commands.append(&mut base.commands);
@@ -408,11 +387,7 @@ fn get_template(
 
 
 /// Read tree definitions
-fn get_trees(
-    yaml: &Yaml,
-    templates: &Yaml,
-    trees: &mut Vec<model::Tree>,
-) -> bool {
+fn get_trees(yaml: &Yaml, templates: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if let Yaml::String(ref url) = value {
@@ -439,16 +414,22 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     tree.path.expr = tree.name.to_string();
     tree.path.value = Some(tree.name.to_string());
 
-    tree.variables.insert(0, model::NamedVariable {
-        name: "TREE_NAME".to_string(),
-        expr: tree.name.to_string(),
-        value: None,
-    });
-    tree.variables.insert(1, model::NamedVariable {
-        name: "TREE_PATH".to_string(),
-        expr: tree.path.expr.to_string(),
-        value: None,
-    });
+    tree.variables.insert(
+        0,
+        model::NamedVariable {
+            name: "TREE_NAME".to_string(),
+            expr: tree.name.to_string(),
+            value: None,
+        },
+    );
+    tree.variables.insert(
+        1,
+        model::NamedVariable {
+            name: "TREE_PATH".to_string(),
+            expr: tree.path.expr.to_string(),
+            value: None,
+        },
+    );
 
     tree.remotes.push(model::NamedVariable {
         name: "origin".to_string(),
@@ -477,8 +458,8 @@ fn get_tree(
         let tree_name = Yaml::String(extend);
         if let Some(ref tree_values) = trees.get(&tree_name) {
             tree = get_tree(&tree_name, tree_values, templates, trees, false);
-            tree.remotes.truncate(1);  // Keep origin only
-            tree.templates.truncate(0);  // Parent templates have already been processed.
+            tree.remotes.truncate(1); // Keep origin only
+            tree.templates.truncate(0); // Parent templates have already been processed.
         }
     }
 
@@ -494,27 +475,32 @@ fn get_tree(
 
     // Add the TREE_NAME and TREE_PATH variables
     if variables {
-        tree.variables.insert(0, model::NamedVariable {
-            name: "TREE_NAME".to_string(),
-            expr: tree.name.to_string(),
-            value: None,
-        });
-        tree.variables.insert(1, model::NamedVariable {
-            name: "TREE_PATH".to_string(),
-            expr: tree.path.expr.to_string(),
-            value: None,
-        });
+        tree.variables.insert(
+            0,
+            model::NamedVariable {
+                name: "TREE_NAME".to_string(),
+                expr: tree.name.to_string(),
+                value: None,
+            },
+        );
+        tree.variables.insert(
+            1,
+            model::NamedVariable {
+                name: "TREE_PATH".to_string(),
+                expr: tree.path.expr.to_string(),
+                value: None,
+            },
+        );
     }
 
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
-            tree.remotes.push(
-                model::NamedVariable {
-                    name: "origin".to_string(),
-                    expr: url,
-                    value: None,
-                });
+            tree.remotes.push(model::NamedVariable {
+                name: "origin".to_string(),
+                expr: url,
+                value: None,
+            });
         }
     }
 
@@ -532,7 +518,8 @@ fn get_tree(
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
-                templates);
+                templates,
+            );
 
             tree.environment.append(&mut base.environment);
             tree.gitconfig.append(&mut base.gitconfig);
@@ -560,7 +547,8 @@ fn get_tree(
             let mut base = get_template(
                 &Yaml::String(template_name.to_string()),
                 &templates[template_name.as_ref()],
-                templates);
+                templates,
+            );
 
             tree.variables.append(&mut base.variables);
         }
@@ -577,13 +565,11 @@ fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
             if !name.as_str().is_some() || !value.as_str().is_some() {
                 continue;
             }
-            remotes.push(
-                model::NamedVariable {
-                    name: name.as_str().unwrap().to_string(),
-                    expr: value.as_str().unwrap().to_string(),
-                    value: None,
-                }
-            );
+            remotes.push(model::NamedVariable {
+                name: name.as_str().unwrap().to_string(),
+                expr: value.as_str().unwrap().to_string(),
+                value: None,
+            });
         }
     }
 }
@@ -669,27 +655,25 @@ fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
 
 /// Read and parse YAML from a file path.
 pub fn read_yaml<P>(path: P) -> Result<Yaml, errors::GardenError>
-where P: std::convert::AsRef<std::path::Path> + std::fmt::Debug {
+where
+    P: std::convert::AsRef<std::path::Path> + std::fmt::Debug,
+{
 
-    let string = std::fs::read_to_string(&path).map_err(
-        |io_err| errors::GardenError::ReadFile {
+    let string = std::fs::read_to_string(&path).map_err(|io_err| {
+        errors::GardenError::ReadFile {
             path: path.as_ref().into(),
             err: io_err,
         }
-    )?;
+    })?;
 
-    let mut docs = YamlLoader::load_from_str(&string).map_err(
-        |scan_err| errors::GardenError::ReadConfig {
-            err: scan_err,
-        }
-    )?;
+    let mut docs = YamlLoader::load_from_str(&string).map_err(|scan_err| {
+        errors::GardenError::ReadConfig { err: scan_err }
+    })?;
 
     if docs.len() < 1 {
-        return Err(
-            errors::GardenError::EmptyConfiguration {
-                path: path.as_ref().into(),
-            }
-        );
+        return Err(errors::GardenError::EmptyConfiguration {
+            path: path.as_ref().into(),
+        });
     }
 
     add_missing_sections(&mut docs[0])?;
@@ -706,11 +690,9 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
             let key = Yaml::String("garden".to_string());
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err(
-                errors::GardenError::InvalidConfiguration {
-                    msg: "document is not a hash".into(),
-                }
-            );
+            return Err(errors::GardenError::InvalidConfiguration {
+                msg: "document is not a hash".into(),
+            });
         }
     }
 
@@ -722,11 +704,9 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err(
-                errors::GardenError::InvalidConfiguration {
-                    msg: "'trees' is not a hash".into(),
-                }
-            );
+            return Err(errors::GardenError::InvalidConfiguration {
+                msg: "'trees' is not a hash".into(),
+            });
         }
     }
 
@@ -738,11 +718,9 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err(
-                errors::GardenError::InvalidConfiguration {
-                    msg: "'groups' is not a hash".into(),
-                }
-            );
+            return Err(errors::GardenError::InvalidConfiguration {
+                msg: "'groups' is not a hash".into(),
+            });
         }
     }
 
@@ -754,11 +732,9 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
-            return Err(
-                errors::GardenError::InvalidConfiguration {
-                    msg: "'gardens' is not a hash".into(),
-                }
-            );
+            return Err(errors::GardenError::InvalidConfiguration {
+                msg: "'gardens' is not a hash".into(),
+            });
         }
     }
 

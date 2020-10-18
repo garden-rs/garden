@@ -18,12 +18,17 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("add existing trees to a garden configuration");
 
-        ap.refer(&mut output)
-            .add_option(&["-o", "--output"], argparse::Store,
-                        "file to write (defaults to the config file)");
+        ap.refer(&mut output).add_option(
+            &["-o", "--output"],
+            argparse::Store,
+            "file to write (defaults to the config file)",
+        );
 
-        ap.refer(&mut paths).required()
-            .add_argument("paths", argparse::List, "trees to add");
+        ap.refer(&mut paths).required().add_argument(
+            "paths",
+            argparse::List,
+            "trees to add",
+        );
 
         options.args.insert(0, "garden add".to_string());
         cmd::parse_args(ap, options.args.to_vec());
@@ -40,20 +45,16 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     {
         // Get a mutable reference to top-level document hash.
         let doc_hash: &mut YamlHash = match doc {
-            Yaml::Hash(ref mut hash) => {
-                hash
-            },
+            Yaml::Hash(ref mut hash) => hash,
             _ => {
                 error!("invalid config: not a hash");
-            },
+            }
         };
 
         // Get a mutable reference to the "trees" hash.
         let key = Yaml::String("trees".to_string());
         let trees: &mut YamlHash = match doc_hash.get_mut(&key) {
-            Some(Yaml::Hash(ref mut hash)) => {
-                hash
-            },
+            Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
                 error!("invalid trees: not a hash");
             }
@@ -75,8 +76,8 @@ fn add_path(
     config: &model::Configuration,
     verbose: bool,
     raw_path: &str,
-    trees: &mut YamlHash)
--> Result<(), String> {
+    trees: &mut YamlHash,
+) -> Result<(), String> {
 
     // Garden root path
     let root = config.root_path.canonicalize().unwrap().to_path_buf();
@@ -95,8 +96,10 @@ fn add_path(
     // Is the path a child of the current garden root?
     if path.starts_with(&root) && path.strip_prefix(&root).is_ok() {
 
-        tree_path = path
-            .strip_prefix(&root).unwrap().to_string_lossy().to_string();
+        tree_path = path.strip_prefix(&root)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
     } else {
         tree_path = path.to_string_lossy().to_string();
     }
@@ -106,10 +109,10 @@ fn add_path(
 
     // Do we already have a tree with this tree path?
     for tree in &config.trees {
-        let cfg_tree_path_result = std::path::PathBuf::from(
-            tree.path.value.as_ref().unwrap()).canonicalize();
+        let cfg_tree_path_result = std::path::PathBuf::from(tree.path.value.as_ref().unwrap())
+            .canonicalize();
         if cfg_tree_path_result.is_err() {
-            continue;  // skip missing entries
+            continue; // skip missing entries
         }
 
         let cfg_tree_path = cfg_tree_path_result.unwrap();
@@ -125,8 +128,7 @@ fn add_path(
 
     // Update an existing entry if it already exists.
     // Add a new entry otherwise.
-    if trees.get(&key).is_some()
-    && trees.get(&key).unwrap().as_hash().is_some() {
+    if trees.get(&key).is_some() && trees.get(&key).unwrap().as_hash().is_some() {
         entry = trees.get(&key).unwrap().as_hash().unwrap().clone();
         if verbose {
             eprintln!("{}: found existing tree", tree_name);
@@ -134,8 +136,8 @@ fn add_path(
     }
 
     let remotes_key = Yaml::String("remotes".to_string());
-    let has_remotes = entry.contains_key(&remotes_key)
-        && entry.get(&remotes_key).unwrap().as_hash().is_some();
+    let has_remotes = entry.contains_key(&remotes_key) &&
+        entry.get(&remotes_key).unwrap().as_hash().is_some();
 
     // Gather remote names
     let mut remote_names: Vec<String> = Vec::new();
@@ -178,11 +180,8 @@ fn add_path(
             entry.insert(remotes_key.clone(), Yaml::Hash(YamlHash::new()));
         }
 
-        let remotes_hash: &mut YamlHash =
-            match entry.get_mut(&remotes_key) {
-            Some(Yaml::Hash(ref mut hash)) => {
-                hash
-            },
+        let remotes_hash: &mut YamlHash = match entry.get_mut(&remotes_key) {
+            Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
                 return Err("trees: not a hash".to_string());
             }

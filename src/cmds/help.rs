@@ -11,16 +11,18 @@ use super::super::model;
 
 pub fn main(options: &mut model::CommandOptions) -> Result<()> {
     let cmd_path = cmd::current_exe();
-    let mut help_cmd = vec!(cmd_path);
+    let mut help_cmd = vec![cmd_path];
 
     let mut cmd_name = String::new();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden help - command documentation");
 
-        ap.refer(&mut cmd_name)
-            .add_argument("command", argparse::Store,
-                          "{add, cmd, eval, exec, ls, shell}");
+        ap.refer(&mut cmd_name).add_argument(
+            "command",
+            argparse::Store,
+            "{add, cmd, eval, exec, ls, shell}",
+        );
 
         options.args.insert(0, "garden help".to_string());
         cmd::parse_args(ap, options.args.to_vec());

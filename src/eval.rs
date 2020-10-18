@@ -35,8 +35,11 @@ fn expand_tree_vars(
     // First check for the variable at the garden scope.
     // Garden scope overrides tree and global scope.
     if garden_idx.is_some() {
-        for (idx, var) in
-        config.gardens[garden_idx.unwrap()].variables.iter().enumerate() {
+        for (idx, var) in config.gardens[garden_idx.unwrap()]
+            .variables
+            .iter()
+            .enumerate()
+        {
             if var.name == name {
                 if var.value.is_some() {
                     return Ok(Some(var.value.as_ref().unwrap().to_string()));
@@ -48,17 +51,12 @@ fn expand_tree_vars(
         }
 
         if found {
-            let expr =
-                config
-                .gardens[garden_idx.unwrap()]
-                .variables[var_idx]
-                .expr.to_string();
+            let expr = config.gardens[garden_idx.unwrap()].variables[var_idx]
+                .expr
+                .to_string();
 
             let result = tree_value(config, &expr, tree_idx, garden_idx);
-            config
-                .gardens[garden_idx.unwrap()]
-                .variables[var_idx]
-                .value = Some(result.to_string());
+            config.gardens[garden_idx.unwrap()].variables[var_idx].value = Some(result.to_string());
             return Ok(Some(result.to_string()));
         }
     }
@@ -81,10 +79,7 @@ fn expand_tree_vars(
     if found {
         let expr = config.trees[tree_idx].variables[var_idx].expr.to_string();
         let result = tree_value(config, &expr, tree_idx, garden_idx);
-        config
-            .trees[tree_idx]
-            .variables[var_idx]
-            .value = Some(result.to_string());
+        config.trees[tree_idx].variables[var_idx].value = Some(result.to_string());
         return Ok(Some(result));
     }
 
@@ -122,10 +117,7 @@ fn expand_tree_vars(
 
 
 /// Expand variables at global scope only
-fn expand_vars(
-    config: &mut model::Configuration,
-    name: &str,
-) -> Result<Option<String>, String> {
+fn expand_vars(config: &mut model::Configuration, name: &str) -> Result<Option<String>, String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if is_digit(name) {
         return Ok(Some(format!("${}", name)));
@@ -180,10 +172,10 @@ pub fn tree_value(
     tree_idx: model::TreeIndex,
     garden_idx: Option<model::GardenIndex>,
 ) -> String {
-    let expanded = shellexpand::full_with_context(
-        expr, home_dir,
-        |x| { return expand_tree_vars(config, tree_idx, garden_idx, x); }
-        ).unwrap().to_string();
+    let expanded = shellexpand::full_with_context(expr, home_dir, |x| {
+        return expand_tree_vars(config, tree_idx, garden_idx, x);
+    }).unwrap()
+        .to_string();
 
     // TODO exec_expression_with_path() to use the tree path.
     // NOTE: an environment must not be calculated here otherwise any
@@ -195,14 +187,11 @@ pub fn tree_value(
 
 
 /// Resolve a variable in configuration/global scope
-pub fn value(
-    config: &mut model::Configuration,
-    expr: &str,
-) -> String {
-    let expanded = shellexpand::full_with_context(
-        expr, home_dir,
-        |x| { return expand_vars(config, x); }
-        ).unwrap().to_string();
+pub fn value(config: &mut model::Configuration, expr: &str) -> String {
+    let expanded =
+        shellexpand::full_with_context(expr, home_dir, |x| { return expand_vars(config, x); })
+            .unwrap()
+            .to_string();
 
     return exec_expression(&expanded);
 }
@@ -242,9 +231,7 @@ pub fn multi_variable(
             continue;
         }
 
-        let value = tree_value(
-            config, &var.expr,
-            context.tree, context.garden);
+        let value = tree_value(config, &var.expr, context.tree, context.garden);
         result.push(value);
     }
 
@@ -302,7 +289,7 @@ pub fn environment(
     for (ctx, var) in vars.iter_mut() {
         var_values.push((
             tree_value(config, &var.name, ctx.tree, ctx.garden),
-            multi_variable(config, var, ctx)
+            multi_variable(config, var, ctx),
         ));
     }
 
@@ -398,8 +385,7 @@ pub fn command(
     config: &mut model::Configuration,
     context: &model::TreeContext,
     name: &str,
-) -> Vec<Vec<String>>
-{
+) -> Vec<Vec<String>> {
     let mut vars = Vec::new();
     let pattern = glob::Pattern::new(name).unwrap();
 
@@ -428,9 +414,7 @@ pub fn command(
 
     let mut result = Vec::new();
     for var in vars.iter_mut() {
-        result.push(
-            multi_variable(config, var, context)
-        );
+        result.push(multi_variable(config, var, context));
     }
 
     return result;

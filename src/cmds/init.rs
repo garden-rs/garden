@@ -37,23 +37,31 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden init - create an empty garden.yaml");
 
-        ap.refer(&mut init_options.global)
-            .add_option(&["--global"], argparse::StoreTrue,
-                        "use the user-wide configuration directory
-                        (~/.config/garden/garden.yaml)");
+        ap.refer(&mut init_options.global).add_option(
+            &["--global"],
+            argparse::StoreTrue,
+            "use the user-wide configuration directory
+                        (~/.config/garden/garden.yaml)",
+        );
 
-        ap.refer(&mut init_options.force)
-            .add_option(&["-f", "--force"], argparse::StoreTrue,
-                        "overwrite existing config files");
+        ap.refer(&mut init_options.force).add_option(
+            &["-f", "--force"],
+            argparse::StoreTrue,
+            "overwrite existing config files",
+        );
 
-        ap.refer(&mut init_options.root)
-            .add_option(&["-r", "--root"], argparse::Store,
-                        "specify the garden root
-                        (default: ${GARDEN_CONFIG_DIR}");
+        ap.refer(&mut init_options.root).add_option(
+            &["-r", "--root"],
+            argparse::Store,
+            "specify the garden root
+                        (default: ${GARDEN_CONFIG_DIR}",
+        );
 
-        ap.refer(&mut init_options.filename)
-            .add_argument("filename", argparse::Store,
-                          "config file to write (default: garden.yaml)");
+        ap.refer(&mut init_options.filename).add_argument(
+            "filename",
+            argparse::Store,
+            "config file to write (default: garden.yaml)",
+        );
 
         options.args.insert(0, "garden init".to_string());
         cmd::parse_args(ap, options.args.to_vec());
@@ -63,10 +71,7 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
 }
 
 
-fn init(
-    options: &model::CommandOptions,
-    init_options: &mut InitOptions,
-) -> Result<()> {
+fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Result<()> {
 
     let file_path = std::path::PathBuf::from(&init_options.filename);
     if file_path.is_absolute() {
@@ -75,10 +80,13 @@ fn init(
             return Err(errors::GardenError::Usage.into());
         }
 
-        init_options.dirname = file_path
-            .parent().as_ref().unwrap().to_path_buf();
+        init_options.dirname = file_path.parent().as_ref().unwrap().to_path_buf();
         init_options.filename = file_path
-            .file_name().as_ref().unwrap().to_string_lossy().into();
+            .file_name()
+            .as_ref()
+            .unwrap()
+            .to_string_lossy()
+            .into();
     }
     if init_options.global {
         init_options.dirname = config::xdg_dir();
@@ -88,8 +96,10 @@ fn init(
     config_path.push(&init_options.filename);
 
     if !init_options.force && config_path.exists() {
-        errmsg!("{:?} already exists, use \"--force\" to overwrite",
-                config_path.to_string_lossy());
+        errmsg!(
+            "{:?} already exists, use \"--force\" to overwrite",
+            config_path.to_string_lossy()
+        );
         return Err(errors::GardenError::FileExists.into());
     }
 
@@ -118,21 +128,18 @@ fn init(
         if let Yaml::Hash(ref mut doc_hash) = doc {
             let garden_key = Yaml::String("garden".to_string());
             let garden: &mut YamlHash = match doc_hash.get_mut(&garden_key) {
-                Some(Yaml::Hash(ref mut hash)) => {
-                    hash
-                },
+                Some(Yaml::Hash(ref mut hash)) => hash,
                 _ => {
                     return Err(
                         errors::GardenError::InvalidConfiguration {
-                            msg: "invalid configuration: 'garden' is not a hash".into()
-                        }.into()
+                            msg: "invalid configuration: 'garden' is not a hash".into(),
+                        }.into(),
                     );
                 }
             };
 
             let root_key = Yaml::String("root".to_string());
-            garden.insert(root_key,
-                          Yaml::String(init_options.root.to_string()));
+            garden.insert(root_key, Yaml::String(init_options.root.to_string()));
         }
     }
 
@@ -140,11 +147,12 @@ fn init(
 
     if !options.quiet {
         if exists {
-            eprintln!("Reinitialized Garden configuration in {:?}",
-                      config_path);
+            eprintln!("Reinitialized Garden configuration in {:?}", config_path);
         } else {
-            eprintln!("Initialized empty Garden configuration in {:?}",
-                      config_path);
+            eprintln!(
+                "Initialized empty Garden configuration in {:?}",
+                config_path
+            );
         }
     }
 

@@ -27,7 +27,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     if !config.trees.is_empty() {
         println!("trees:");
         print!("    ");
-        for tree in &config.trees{
+        for tree in &config.trees {
             print!("{} ", tree.name);
         }
         println!("");

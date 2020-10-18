@@ -41,31 +41,35 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
     let mut ap = argparse::ArgumentParser::new();
     ap.set_description("garden grow - Create and update gardens");
 
-    ap.refer(queries).required()
-        .add_argument("queries", argparse::List,
-                      "gardens/groups/trees to grow (tree queries)");
+    ap.refer(queries).required().add_argument(
+        "queries",
+        argparse::List,
+        "gardens/groups/trees to grow (tree queries)",
+    );
 
-    if let Err(err) = ap.parse(options.args.to_vec(),
-                               &mut std::io::stdout(),
-                               &mut std::io::stderr()) {
+    if let Err(err) = ap.parse(
+        options.args.to_vec(),
+        &mut std::io::stdout(),
+        &mut std::io::stderr(),
+    )
+    {
         std::process::exit(err);
     }
 }
 
 
 /// Create/update trees in the evaluated tree query.
-pub fn grow(
-    config: &mut model::Configuration,
-    quiet: bool,
-    verbose: bool,
-    query: &str,
-) -> i32 {
+pub fn grow(config: &mut model::Configuration, quiet: bool, verbose: bool, query: &str) -> i32 {
     let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
 
     for ctx in &contexts {
         let path = config.trees[ctx.tree]
-            .path.value.as_ref().unwrap().to_string();
+            .path
+            .value
+            .as_ref()
+            .unwrap()
+            .to_string();
         model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
 
         let pathbuf = std::path::PathBuf::from(&path);
@@ -95,8 +99,7 @@ pub fn grow(
 
             // The first remote is "origin" by convention
             let remote = config.trees[ctx.tree].remotes[0].clone();
-            let url = eval::tree_value(config, &remote.expr,
-                                       ctx.tree, ctx.garden);
+            let url = eval::tree_value(config, &remote.expr, ctx.tree, ctx.garden);
 
             let command = ["git", "clone", url.as_ref(), path.as_ref()];
             let exec = cmd::exec_cmd(&command);
@@ -116,8 +119,7 @@ pub fn grow(
         {
             // Immutable config scope
             for remote in &config.trees[ctx.tree].remotes {
-                config_remotes.insert(remote.name.to_string(),
-                                      remote.expr.to_string());
+                config_remotes.insert(remote.name.to_string(), remote.expr.to_string());
             }
         }
 
@@ -141,14 +143,10 @@ pub fn grow(
             let exec;
             if existing_remotes.contains(k) {
                 let remote_key = format!("remote.{}.url", k);
-                let command = [
-                    "git", "config", remote_key.as_ref(), url.as_ref(),
-                ];
+                let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
                 exec = cmd::exec_in_dir(&command, &path);
             } else {
-                let command = [
-                    "git", "remote", "add", k.as_ref(), url.as_ref(),
-                ];
+                let command = ["git", "remote", "add", k.as_ref(), url.as_ref()];
                 exec = cmd::exec_in_dir(&command, &path);
             }
             let status = cmd::status(exec.join());
@@ -164,11 +162,8 @@ pub fn grow(
         }
 
         for var in &gitconfig {
-            let value = eval::tree_value(config, &var.expr,
-                                         ctx.tree, ctx.garden);
-            let command = [
-                "git", "config", var.name.as_ref(), value.as_ref(),
-            ];
+            let value = eval::tree_value(config, &var.expr, ctx.tree, ctx.garden);
+            let command = ["git", "config", var.name.as_ref(), value.as_ref()];
             let exec = cmd::exec_in_dir(&command, &path);
             let status = cmd::status(exec.join());
             if status != 0 {
@@ -184,17 +179,13 @@ pub fn grow(
 
 /// Initialize a tree symlink entry.
 
-fn init_symlink(
-    config: &model::Configuration,
-    ctx: &model::TreeContext,
-) -> i32 {
+fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> i32 {
     let tree = &config.trees[ctx.tree];
     // Invalid usage: non-symlink
-    if !tree.is_symlink
-        || tree.path.value.is_none()
-        || tree.path.value.as_ref().unwrap().is_empty()
-        || tree.symlink.value.is_none()
-        || tree.symlink.value.as_ref().unwrap().is_empty() {
+    if !tree.is_symlink || tree.path.value.is_none() ||
+        tree.path.value.as_ref().unwrap().is_empty() || tree.symlink.value.is_none() ||
+        tree.symlink.value.as_ref().unwrap().is_empty()
+    {
         return 1;
     }
 
@@ -216,8 +207,11 @@ fn init_symlink(
     let target;
     if symlink.starts_with(&parent) && symlink.strip_prefix(&parent).is_ok() {
         // If so, create the symlink using a relative path.
-        target = symlink.strip_prefix(&parent)
-                        .unwrap().to_string_lossy().to_string();
+        target = symlink
+            .strip_prefix(&parent)
+            .unwrap()
+            .to_string_lossy()
+            .to_string();
     } else {
         // Use an absolute path otherwise.
         target = symlink.to_string_lossy().to_string();

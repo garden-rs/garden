@@ -21,17 +21,23 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         ap.silence_double_dash(false);
         ap.set_description("garden cmd - run custom commands over gardens");
 
-        ap.refer(&mut options.keep_going)
-            .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
-                        "continue to the next tree when errors occur");
+        ap.refer(&mut options.keep_going).add_option(
+            &["-k", "--keep-going"],
+            argparse::StoreTrue,
+            "continue to the next tree when errors occur",
+        );
 
-        ap.refer(&mut query).required()
-            .add_argument("query", argparse::Store,
-                          "gardens/groups/trees to exec (tree query)");
+        ap.refer(&mut query).required().add_argument(
+            "query",
+            argparse::Store,
+            "gardens/groups/trees to exec (tree query)",
+        );
 
-        ap.refer(&mut commands_and_args).required()
-            .add_argument("commands", argparse::List,
-                          "commands to run over resolved trees");
+        ap.refer(&mut commands_and_args).required().add_argument(
+            "commands",
+            argparse::List,
+            "commands to run over resolved trees",
+        );
 
         options.args.insert(0, "garden cmd".to_string());
         cmd::parse_args(ap, options.args.to_vec());
@@ -54,8 +60,13 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     }
 
     let exit_status = cmd(
-        config, options.quiet, options.verbose, options.keep_going,
-        &query, &commands, &arguments,
+        config,
+        options.quiet,
+        options.verbose,
+        options.keep_going,
+        &query,
+        &commands,
+        &arguments,
     );
     if exit_status != 0 {
         std::process::exit(exit_status);
@@ -66,10 +77,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 
 /// garden <command> <query>...
-pub fn custom(
-    app: &mut model::ApplicationContext,
-    command: &str
-) -> Result<()> {
+pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
     let config = &mut app.config;
     let options = &mut app.options;
     let mut queries_and_arguments: Vec<String> = Vec::new();
@@ -80,13 +88,17 @@ pub fn custom(
         ap.silence_double_dash(false);
         ap.set_description("garden cmd - run custom commands over gardens");
 
-        ap.refer(&mut options.keep_going)
-            .add_option(&["-k", "--keep-going"], argparse::StoreTrue,
-                        "continue to the next tree when errors occur");
+        ap.refer(&mut options.keep_going).add_option(
+            &["-k", "--keep-going"],
+            argparse::StoreTrue,
+            "continue to the next tree when errors occur",
+        );
 
-        ap.refer(&mut queries_and_arguments)
-            .add_argument("queries", argparse::List,
-                          "gardens/groups/trees to exec (tree queries)");
+        ap.refer(&mut queries_and_arguments).add_argument(
+            "queries",
+            argparse::List,
+            "gardens/groups/trees to exec (tree queries)",
+        );
 
         options.args.insert(0, format!("garden {}", command));
         cmd::parse_args(ap, options.args.to_vec());
@@ -113,8 +125,13 @@ pub fn custom(
     }
 
     cmds(
-        config, options.quiet, options.verbose, options.keep_going,
-        command, &queries, &arguments,
+        config,
+        options.quiet,
+        options.verbose,
+        options.keep_going,
+        command,
+        &queries,
+        &arguments,
     ).map_err(|err| err.into())
 }
 
@@ -179,8 +196,7 @@ pub fn cmd(
             config.reset();
             for cmd_seq in &cmd_seq_vec {
                 for cmd_str in cmd_seq {
-                    let mut exec =
-                        subprocess::Exec::shell(&cmd_str)
+                    let mut exec = subprocess::Exec::shell(&cmd_str)
                         .arg(&current_exe)
                         .args(arguments)
                         .cwd(&path);
@@ -230,8 +246,15 @@ pub fn cmds(
     commands.push(command.into());
 
     for query in queries {
-        let status = cmd(config, quiet, verbose, keep_going,
-                         &query, &commands, arguments);
+        let status = cmd(
+            config,
+            quiet,
+            verbose,
+            keep_going,
+            &query,
+            &commands,
+            arguments,
+        );
         if status != 0 {
             exit_status = status;
             if !keep_going {

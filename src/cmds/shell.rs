@@ -18,15 +18,19 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
-        ap.set_description(
-            "garden shell - open a shell in a garden environment");
+        ap.set_description("garden shell - open a shell in a garden environment");
 
-        ap.refer(&mut query).required()
-            .add_argument("query", argparse::Store,
-                          "query for trees to build an environment");
+        ap.refer(&mut query).required().add_argument(
+            "query",
+            argparse::Store,
+            "query for trees to build an environment",
+        );
 
-        ap.refer(&mut tree)
-            .add_argument("tree", argparse::Store, "tree to chdir into");
+        ap.refer(&mut tree).add_argument(
+            "tree",
+            argparse::Store,
+            "tree to chdir into",
+        );
 
         options.args.insert(0, "garden shell".to_string());
         cmd::parse_args(ap, options.args.to_vec());
@@ -75,18 +79,23 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     // Evaluate garden.shell
     let shell_expr = config.shell.to_string();
-    let shell = eval::tree_value(config, &shell_expr,
-                                 context.tree, context.garden);
+    let shell = eval::tree_value(config, &shell_expr, context.tree, context.garden);
 
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(
-            config, &context, /*quiet*/ true, /*verbose*/ false, &value
+            config,
+            &context,
+            /*quiet*/
+            true,
+            /*verbose*/
+            false,
+            &value,
         ).map_err(|err| err.into())
     } else {
         Err(
             errors::GardenError::InvalidConfiguration {
                 msg: format!("unable to shlex::split '{}'", shell),
-            }.into()
+            }.into(),
         )
     }
 }

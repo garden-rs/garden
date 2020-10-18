@@ -32,7 +32,6 @@ pub type GraftIndex = usize;
 /// string expression.  An exec expression is denoted by using a "$ "
 /// (dollar-sign followed by space) before the value.  For example,
 /// using "$ echo foo" will place the value "foo" in the variable.
-
 #[derive(Clone, Debug, Default)]
 pub struct Variable {
     pub expr: String,
@@ -43,7 +42,7 @@ impl_display_brief!(Variable);
 
 // Named variables with a single value
 #[derive(Clone, Debug)]
-pub struct NamedVariable  {
+pub struct NamedVariable {
     pub name: String,
     pub expr: String,
     pub value: Option<String>,
@@ -177,13 +176,12 @@ pub struct Configuration {
 impl_display!(Configuration);
 
 impl Configuration {
-
     /// Create a default Configuration
     pub fn new() -> Self {
         return Configuration {
             shell: "zsh".to_string(),
             ..std::default::Default::default()
-        }
+        };
     }
 
     pub fn initialize(&mut self) {
@@ -388,7 +386,6 @@ pub struct TreeQuery {
 impl_display_brief!(TreeQuery);
 
 impl TreeQuery {
-
     pub fn new(query: &str) -> Self {
         let mut is_default = false;
         let mut is_tree = false;
@@ -426,7 +423,7 @@ impl TreeQuery {
             include_groups: include_groups,
             include_trees: include_trees,
             pattern: pattern,
-        }
+        };
     }
 }
 
@@ -448,13 +445,15 @@ pub enum Command {
 }
 
 impl std::default::Default for Command {
-    fn default() -> Self { Command::Help }
+    fn default() -> Self {
+        Command::Help
+    }
 }
 
 impl_display_brief!(Command);
 
 impl std::str::FromStr for Command {
-    type Err = ();  // For the FromStr trait
+    type Err = (); // For the FromStr trait
 
     fn from_str(src: &str) -> Result<Command, ()> {
         return match src {
@@ -471,7 +470,7 @@ impl std::str::FromStr for Command {
             "sh" => Ok(Command::Shell),
             "shell" => Ok(Command::Shell),
             _ => Ok(Command::Custom(src.to_string())),
-        }
+        };
     }
 }
 
@@ -481,9 +480,9 @@ impl std::str::FromStr for Command {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ColorMode {
-    Auto,  // "auto" enables color when a tty is detected.
-    Off,  // disable color
-    On,  // enable color
+    Auto, // "auto" enables color when a tty is detected.
+    Off, // disable color
+    On, // enable color
 }
 
 impl ColorMode {
@@ -517,11 +516,13 @@ impl ColorMode {
 }
 
 impl std::default::Default for ColorMode {
-    fn default() -> Self { ColorMode::Auto }
+    fn default() -> Self {
+        ColorMode::Auto
+    }
 }
 
 impl std::str::FromStr for ColorMode {
-    type Err = ();  // For the FromStr trait
+    type Err = (); // For the FromStr trait
 
     fn from_str(src: &str) -> Result<ColorMode, ()> {
         return match src.to_lowercase().as_ref() {
@@ -540,7 +541,7 @@ impl std::str::FromStr for ColorMode {
             "no" => Ok(ColorMode::Off),
             "yes" => Ok(ColorMode::On),
             _ => Err(()),
-        }
+        };
     }
 }
 
@@ -551,30 +552,34 @@ pub type Color<T> = yansi::Paint<T>;
 
 pub fn display_missing_tree(tree: &Tree, path: &str, verbose: bool) -> String {
     if verbose {
-        format!("{} {}  {} {}",
-                Color::black("#").bold(),
-                Color::black(&tree.name).bold(),
-                Color::black(&path).bold(),
-                Color::black("(skipped)").bold())
+        format!(
+            "{} {}  {} {}",
+            Color::black("#").bold(),
+            Color::black(&tree.name).bold(),
+            Color::black(&path).bold(),
+            Color::black("(skipped)").bold()
+        )
     } else {
-        format!("{} {} {}",
-                Color::black("#").bold(),
-                Color::black(&tree.name).bold(),
-                Color::black("(skipped)").bold())
+        format!(
+            "{} {} {}",
+            Color::black("#").bold(),
+            Color::black(&tree.name).bold(),
+            Color::black("(skipped)").bold()
+        )
     }
 }
 
 
 pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
     if verbose {
-        format!("{} {}  {}",
-                Color::cyan("#"),
-                Color::blue(&tree.name).bold(),
-                Color::blue(&path))
+        format!(
+            "{} {}  {}",
+            Color::cyan("#"),
+            Color::blue(&tree.name).bold(),
+            Color::blue(&path)
+        )
     } else {
-        format!("{} {}",
-                Color::cyan("#"),
-                Color::blue(&tree.name).bold())
+        format!("{} {}", Color::cyan("#"), Color::blue(&tree.name).bold())
     }
 }
 
@@ -637,8 +642,11 @@ impl CommandOptions {
         if !self.root.is_empty() {
             // Resolve the "--root" option to an absolute path
             let root_path = std::path::PathBuf::from(&self.root);
-            self.root = root_path.canonicalize()
-                .unwrap_or(root_path).to_string_lossy().to_string();
+            self.root = root_path
+                .canonicalize()
+                .unwrap_or(root_path)
+                .to_string_lossy()
+                .to_string();
         }
 
         // Change directories before searching for conifgs: garden --chdir <path>

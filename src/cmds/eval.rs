@@ -20,15 +20,23 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden eval - evaluate garden expressions");
 
-        ap.refer(&mut expr).required()
-            .add_argument("expr", argparse::Store,
-                          "garden expression to evaluate");
+        ap.refer(&mut expr).required().add_argument(
+            "expr",
+            argparse::Store,
+            "garden expression to evaluate",
+        );
 
-        ap.refer(&mut tree)
-            .add_argument("tree", argparse::Store, "tree to evaluate");
+        ap.refer(&mut tree).add_argument(
+            "tree",
+            argparse::Store,
+            "tree to evaluate",
+        );
 
-        ap.refer(&mut garden)
-            .add_argument("garden", argparse::Store, "garden to evaluate");
+        ap.refer(&mut garden).add_argument(
+            "garden",
+            argparse::Store,
+            "garden to evaluate",
+        );
 
         options.args.insert(0, "garden eval".to_string());
         cmd::parse_args(ap, options.args.to_vec());
