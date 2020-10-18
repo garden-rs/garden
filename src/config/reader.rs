@@ -18,7 +18,7 @@ pub fn parse(
     })?;
     if docs.len() < 1 {
         return Err(errors::GardenError::EmptyConfiguration {
-            path: config.path.as_ref().unwrap().into(),
+            path: config.get_path()?.into(),
         });
     }
     let doc = &docs[0];

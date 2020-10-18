@@ -188,7 +188,7 @@ pub fn from_options(
         error!("unable to find a configuration file -- use --config <path>");
     }
     if options.is_debug("config") {
-        eprintln!("config: {:?}", config.path.as_ref().unwrap());
+        eprintln!("config: {:?}", config.get_path()?);
         debug!("{}", config);
     }
 
