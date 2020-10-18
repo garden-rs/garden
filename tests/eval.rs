@@ -2,7 +2,7 @@ mod common;
 
 
 #[test]
-fn garden_root () {
+fn garden_root() {
     // The test has garden.root = ${root}
     // with variables: src = src, and root = ~/${src}
     // This should expand to $HOME/src.
@@ -18,8 +18,7 @@ fn garden_root () {
 fn tree_variable() {
     let mut config = common::garden_config();
     let tree_idx: garden::model::TreeIndex = 0;
-    let result = garden::eval::tree_value(
-        &mut config, "${prefix}", tree_idx, None);
+    let result = garden::eval::tree_value(&mut config, "${prefix}", tree_idx, None);
     assert_eq!(result, "/home/test/.local");
 }
 
@@ -29,12 +28,10 @@ fn config_variable() {
     let mut config = common::garden_config();
     let tree_idx: garden::model::TreeIndex = 0;
 
-    let test = garden::eval::tree_value(
-        &mut config, "${test}", tree_idx, None);
+    let test = garden::eval::tree_value(&mut config, "${test}", tree_idx, None);
     assert_eq!("TEST", test);
 
-    let local = garden::eval::tree_value(
-        &mut config, "${local}", tree_idx, None);
+    let local = garden::eval::tree_value(&mut config, "${local}", tree_idx, None);
     assert_eq!("TEST/local", local);
 }
 
@@ -45,8 +42,7 @@ fn tree_name() {
     let mut config = common::garden_config();
     let tree_idx: garden::model::TreeIndex = 0;
     let expect = "git";
-    let actual = garden::eval::tree_value(
-        &mut config, "${TREE_NAME}", tree_idx, None);
+    let actual = garden::eval::tree_value(&mut config, "${TREE_NAME}", tree_idx, None);
     assert_eq!(expect, actual);
 }
 
@@ -57,8 +53,7 @@ fn tree_path() {
     let mut config = common::garden_config();
     let tree_idx: garden::model::TreeIndex = 0;
     let expect = "/home/test/src/git";
-    let actual = garden::eval::tree_value(
-        &mut config, "${TREE_PATH}", tree_idx, None);
+    let actual = garden::eval::tree_value(&mut config, "${TREE_PATH}", tree_idx, None);
     assert_eq!(expect, actual);
 }
 
@@ -106,11 +101,14 @@ fn multi_variable_with_tree() {
         garden: None,
         group: None,
     };
-    let values = garden::eval::multi_variable(
-        &mut config, &mut var, &context);
-    assert_eq!(values,
-               ["/home/test/src/git-cola/local/bin",
-                "/home/test/src/git-cola/bin"]);
+    let values = garden::eval::multi_variable(&mut config, &mut var, &context);
+    assert_eq!(
+        values,
+        [
+            "/home/test/src/git-cola/local/bin",
+            "/home/test/src/git-cola/bin",
+        ]
+    );
 }
 
 #[test]
@@ -127,11 +125,14 @@ fn multi_variable_with_garden() {
         garden: Some(0),
         group: None,
     };
-    let values = garden::eval::multi_variable(
-        &mut config, &mut var, &context);
-    assert_eq!(values,
-               ["/home/test/apps/git-cola/current/bin",
-                "/home/test/src/git-cola/bin"]);
+    let values = garden::eval::multi_variable(&mut config, &mut var, &context);
+    assert_eq!(
+        values,
+        [
+            "/home/test/apps/git-cola/current/bin",
+            "/home/test/src/git-cola/bin",
+        ]
+    );
 }
 
 
@@ -139,7 +140,7 @@ fn multi_variable_with_garden() {
 fn garden_environment() {
     let mut config = common::garden_config();
     let context = garden::model::TreeContext {
-        tree: 1,  // cola
+        tree: 1, // cola
         garden: Some(0),
         group: None,
     };
@@ -147,43 +148,57 @@ fn garden_environment() {
     assert_eq!(values.len(), 7);
 
     let mut idx = 0;
-    assert_eq!(values[idx].0, "PYTHONPATH");  // ${TREE_PATH} for cola
+    assert_eq!(values[idx].0, "PYTHONPATH"); // ${TREE_PATH} for cola
     assert_eq!(values[idx].1, "/home/test/src/git-cola");
 
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // cola ${TREE_PATH}/bin
-    assert_eq!(values[idx].1,
-               "/home/test/apps/git-cola/current/bin:/usr/bin:/bin");
+    assert_eq!(values[idx].0, "PATH"); // cola ${TREE_PATH}/bin
+    assert_eq!(
+        values[idx].1,
+        "/home/test/apps/git-cola/current/bin:/usr/bin:/bin"
+    );
 
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // cola ${prefix}/bin garden prefix
-    assert_eq!(values[idx].1,
-               format!("{}:{}:/usr/bin:/bin",
-                       "/home/test/src/git-cola/bin",
-                       "/home/test/apps/git-cola/current/bin"));
+    assert_eq!(values[idx].0, "PATH"); // cola ${prefix}/bin garden prefix
+    assert_eq!(
+        values[idx].1,
+        format!(
+            "{}:{}:/usr/bin:/bin",
+            "/home/test/src/git-cola/bin",
+            "/home/test/apps/git-cola/current/bin"
+        )
+    );
 
     // cola tree ${GARDEN_ROOT}/python/send2trash, ${TREE_PATH}
     idx += 1;
     assert_eq!(values[idx].0, "PYTHONPATH");
-    assert_eq!(values[idx].1,
-               "/home/test/src/python/send2trash:/home/test/src/git-cola");
+    assert_eq!(
+        values[idx].1,
+        "/home/test/src/python/send2trash:/home/test/src/git-cola"
+    );
 
     idx += 1;
-    assert_eq!(values[idx].0, "PYTHONPATH");  // qtpy ${prefix}
-    assert_eq!(values[idx].1,
-               "/home/test/src/python/qtpy:/home/test/src/python/send2trash:/home/test/src/git-cola");
+    assert_eq!(values[idx].0, "PYTHONPATH"); // qtpy ${prefix}
+    assert_eq!(
+        values[idx].1,
+        "/home/test/src/python/qtpy:/home/test/src/python/send2trash:/home/test/src/git-cola"
+    );
 
     idx += 1;
-    assert_eq!(values[idx].0, "GIT_COLA_TRACE");  // cola garden GIT_COLA_TRACE=: full
+    assert_eq!(values[idx].0, "GIT_COLA_TRACE"); // cola garden GIT_COLA_TRACE=: full
     assert_eq!(values[idx].1, "full");
 
     idx += 1;
-    assert_eq!(values[idx].0, "PATH");  // cola garden ${prefix}/bin
-    assert_eq!(values[idx].1,
-               format!("{}:{}:/usr/bin:/bin:{}",
-                       "/home/test/src/git-cola/bin",
-                       "/home/test/apps/git-cola/current/bin",
-                       "/home/test/apps/git-cola/current/bin"));
+    assert_eq!(values[idx].0, "PATH"); // cola garden ${prefix}/bin
+    assert_eq!(
+        values[idx].1,
+        format!(
+            "{}:{}:/usr/bin:/bin:{}",
+            "/home/test/src/git-cola/bin",
+            "/home/test/apps/git-cola/current/bin",
+            "/home/test/apps/git-cola/current/bin"
+        )
+    );
 
     idx += 1;
     assert_eq!(values.len(), idx);
@@ -193,9 +208,9 @@ fn garden_environment() {
 fn group_environment() {
     let mut config = common::garden_config();
     let context = garden::model::TreeContext {
-        tree: 1,  // cola
+        tree: 1, // cola
         garden: None,
-        group: Some(0),  // cola group
+        group: Some(0), // cola group
     };
 
     let values = garden::eval::environment(&mut config, &context);
@@ -209,32 +224,43 @@ fn group_environment() {
     // cola tree ${prefix}/bin
     idx += 1;
     assert_eq!(values[idx].0, "PATH");
-    assert_eq!(values[idx].1,
-               format!("{}:/usr/bin:/bin",
-                        "/home/test/src/git-cola/local/bin"));
+    assert_eq!(
+        values[idx].1,
+        format!("{}:/usr/bin:/bin", "/home/test/src/git-cola/local/bin")
+    );
 
     // cola tree ${TREE_PATH}/bin
     idx += 1;
     assert_eq!(values[idx].0, "PATH");
-    assert_eq!(values[idx].1,
-               format!("{}:{}:/usr/bin:/bin",
-                       "/home/test/src/git-cola/bin",
-                       "/home/test/src/git-cola/local/bin"));
+    assert_eq!(
+        values[idx].1,
+        format!(
+            "{}:{}:/usr/bin:/bin",
+            "/home/test/src/git-cola/bin",
+            "/home/test/src/git-cola/local/bin"
+        )
+    );
 
     // cola tree ${GARDEN_ROOT}/python/send2trash
     idx += 1;
     assert_eq!(values[idx].0, "PYTHONPATH");
-    assert_eq!(values[idx].1,
-               "/home/test/src/python/send2trash:/home/test/src/git-cola");
+    assert_eq!(
+        values[idx].1,
+        "/home/test/src/python/send2trash:/home/test/src/git-cola"
+    );
 
     // qtpy ${prefix}
     idx += 1;
     assert_eq!(values[idx].0, "PYTHONPATH");
-    assert_eq!(values[idx].1,
-               format!("{}:{}:{}",
-                       "/home/test/src/python/qtpy",
-                       "/home/test/src/python/send2trash",
-                       "/home/test/src/git-cola"));
+    assert_eq!(
+        values[idx].1,
+        format!(
+            "{}:{}:{}",
+            "/home/test/src/python/qtpy",
+            "/home/test/src/python/send2trash",
+            "/home/test/src/git-cola"
+        )
+    );
 
     idx += 1;
     assert_eq!(values.len(), idx);
@@ -243,21 +269,20 @@ fn group_environment() {
 #[test]
 fn environment_empty_value() {
     let mut config = common::garden_config();
-    let context = garden::query::tree_from_name(&config, "tmp",
-                                                None, None).unwrap();
+    let context = garden::query::tree_from_name(&config, "tmp", None, None).unwrap();
     let values = garden::eval::environment(&mut config, &context);
     assert_eq!(values.len(), 3);
 
     let mut idx = 0;
-    assert_eq!(values[idx].0, "EMPTY");  // prepend "a", must not have a ":"
+    assert_eq!(values[idx].0, "EMPTY"); // prepend "a", must not have a ":"
     assert_eq!(values[idx].1, "a");
 
     idx += 1;
-    assert_eq!(values[idx].0, "EMPTY");  // prepend "b", must have ":"
+    assert_eq!(values[idx].0, "EMPTY"); // prepend "b", must have ":"
     assert_eq!(values[idx].1, "b:a");
 
     idx += 1;
-    assert_eq!(values[idx].0, "tmp_VALUE");  // ${TREE_NAME}_VALUE: ${TREE_PATH}
+    assert_eq!(values[idx].0, "tmp_VALUE"); // ${TREE_NAME}_VALUE: ${TREE_PATH}
     assert_eq!(values[idx].1, "/tmp");
 
     idx += 1;
@@ -331,7 +356,6 @@ fn environment_variables() {
     let mut value = garden::eval::value(&mut config, "${GARDEN_TEST_VALUE}");
     assert_eq!(value, "test");
 
-    value = garden::eval::tree_value(
-        &mut config, "${GARDEN_TEST_VALUE}", 0, None);
+    value = garden::eval::tree_value(&mut config, "${GARDEN_TEST_VALUE}", 0, None);
     assert_eq!(value, "test");
 }

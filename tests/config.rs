@@ -17,7 +17,8 @@ fn core() {
     let string = r#"
     garden:
         root: /tmp
-    "#.to_string();
+    "#
+        .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(config.root_path, std::path::PathBuf::from("/tmp"));
@@ -32,7 +33,8 @@ fn variables() {
     variables:
         foo: foo_value
         bar: ${foo}
-    "#.to_string();
+    "#
+        .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(config.variables.len(), 3);
@@ -40,7 +42,10 @@ fn variables() {
     let mut i = 0;
     assert_eq!(config.variables[i].name, "GARDEN_ROOT");
     assert_eq!(config.variables[i].expr, "/home/test/src");
-    assert_eq!(config.variables[i].value, Some("/home/test/src".to_string()));
+    assert_eq!(
+        config.variables[i].value,
+        Some("/home/test/src".to_string())
+    );
     i += 1;
 
     assert_eq!(config.variables[i].name, "foo");
@@ -62,7 +67,8 @@ fn commands() {
         test_cmd_vec:
             - echo first
             - echo second
-    "#.to_string();
+    "#
+        .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
@@ -98,7 +104,8 @@ fn templates() {
             extend: [template1, template2]
             variables:
                 foo: boo
-    "#.to_string();
+    "#
+        .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(config.templates.len(), 3);
@@ -110,7 +117,10 @@ fn templates() {
     assert_eq!(config.templates[0].environment.len(), 2);
     assert_eq!(config.templates[0].environment[0].name, "ENV=");
     assert_eq!(config.templates[0].environment[0].values.len(), 1);
-    assert_eq!(config.templates[0].environment[0].values[0].expr, "${foo}env");
+    assert_eq!(
+        config.templates[0].environment[0].values[0].expr,
+        "${foo}env"
+    );
 
     assert_eq!(config.templates[0].environment[1].name, "THEPATH");
     assert_eq!(config.templates[0].environment[1].values.len(), 2);
@@ -159,7 +169,7 @@ fn trees() {
     assert_eq!(tree0.commands.len(), 3);
 
     assert_eq!(tree0.name, "git");
-    assert_eq!(tree0.path.expr, "git");  // picks up default value
+    assert_eq!(tree0.path.expr, "git"); // picks up default value
     assert_eq!(tree0.templates, ["makefile"]);
 
     assert_eq!(tree0.remotes.len(), 1);
@@ -176,7 +186,10 @@ fn trees() {
     // TREE_PATH, highest precedence at position 0
     assert_eq!(tree0.variables[1].name, "TREE_PATH");
     assert_eq!(tree0.variables[1].expr, "/home/test/src/git");
-    assert_eq!(tree0.variables[1].value.as_ref().unwrap(), "/home/test/src/git");
+    assert_eq!(
+        tree0.variables[1].value.as_ref().unwrap(),
+        "/home/test/src/git"
+    );
 
     assert_eq!(tree0.variables[2].name, "prefix");
     assert_eq!(tree0.variables[2].expr, "~/.local");
@@ -202,7 +215,10 @@ fn trees() {
 
     assert_eq!(tree1.remotes.len(), 2);
     assert_eq!(tree1.remotes[0].name, "origin");
-    assert_eq!(tree1.remotes[0].expr, "https://github.com/git-cola/git-cola");
+    assert_eq!(
+        tree1.remotes[0].expr,
+        "https://github.com/git-cola/git-cola"
+    );
     assert_eq!(tree1.remotes[1].name, "davvid");
     assert_eq!(tree1.remotes[1].expr, "git@github.com:davvid/git-cola.git");
 
@@ -219,8 +235,10 @@ fn trees() {
 
     assert_eq!(tree1.environment[2].name, "PYTHONPATH");
     assert_eq!(tree1.environment[2].values.len(), 1);
-    assert_eq!(tree1.environment[2].values[0].expr,
-               "${GARDEN_ROOT}/python/send2trash");
+    assert_eq!(
+        tree1.environment[2].values[0].expr,
+        "${GARDEN_ROOT}/python/send2trash"
+    );
 
     assert_eq!(tree1.commands.len(), 4);
     // From the tree
@@ -302,7 +320,8 @@ fn gardens_json() {
         }
     }
 }
-    "#.to_string();
+    "#
+        .to_string();
 
     let config = common::from_string(&string);
     test_gardens(&config);
@@ -323,15 +342,18 @@ fn test_gardens(config: &garden::model::Configuration) {
     assert_eq!(config.gardens[0].commands.len(), 1);
     assert_eq!(config.gardens[0].commands[0].name, "summary");
     assert_eq!(config.gardens[0].commands[0].values.len(), 2);
-    assert_eq!(config.gardens[0].commands[0].values[0].expr,
-               "git branch");
-    assert_eq!(config.gardens[0].commands[0].values[1].expr,
-               "git status --short");
+    assert_eq!(config.gardens[0].commands[0].values[0].expr, "git branch");
+    assert_eq!(
+        config.gardens[0].commands[0].values[1].expr,
+        "git status --short"
+    );
 
     assert_eq!(config.gardens[0].variables.len(), 1);
     assert_eq!(config.gardens[0].variables[0].name, "prefix");
-    assert_eq!(config.gardens[0].variables[0].expr,
-               "~/apps/git-cola/current");
+    assert_eq!(
+        config.gardens[0].variables[0].expr,
+        "~/apps/git-cola/current"
+    );
 
     assert_eq!(config.gardens[0].environment.len(), 2);
     assert_eq!(config.gardens[0].environment[0].name, "GIT_COLA_TRACE=");
@@ -340,7 +362,10 @@ fn test_gardens(config: &garden::model::Configuration) {
 
     assert_eq!(config.gardens[0].environment[1].name, "PATH+");
     assert_eq!(config.gardens[0].environment[1].values.len(), 1);
-    assert_eq!(config.gardens[0].environment[1].values[0].expr, "${prefix}/bin");
+    assert_eq!(
+        config.gardens[0].environment[1].values[0].expr,
+        "${prefix}/bin"
+    );
 
     // "git" garden
     assert_eq!(config.gardens[1].name, "git");
@@ -365,16 +390,22 @@ fn tree_path() {
     let config = common::garden_config();
     assert!(config.trees.len() >= 4);
 
-    assert_eq!(config.trees[0].path.value.as_ref().unwrap().to_string(),
-               "/home/test/src/git");
+    assert_eq!(
+        config.trees[0].path.value.as_ref().unwrap().to_string(),
+        "/home/test/src/git"
+    );
 
     // cola is in the "git-cola" subdirectory
-    assert_eq!(config.trees[1].path.value.as_ref().unwrap().to_string(),
-               "/home/test/src/git-cola");
+    assert_eq!(
+        config.trees[1].path.value.as_ref().unwrap().to_string(),
+        "/home/test/src/git-cola"
+    );
 
     // tmp is in "/tmp"
-    assert_eq!(config.trees[2].path.value.as_ref().unwrap().to_string(),
-               "/home/test/src/python/qtpy");
+    assert_eq!(
+        config.trees[2].path.value.as_ref().unwrap().to_string(),
+        "/home/test/src/python/qtpy"
+    );
 }
 
 #[test]

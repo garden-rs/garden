@@ -61,10 +61,10 @@ fn trees_from_pattern() {
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].garden, None);
     assert_eq!(result[0].group, None);
-    assert_eq!(result[0].tree, 4);  // annex/data
+    assert_eq!(result[0].tree, 4); // annex/data
     assert_eq!(result[1].garden, None);
     assert_eq!(result[1].group, None);
-    assert_eq!(result[1].tree, 5);  // annex/local
+    assert_eq!(result[1].tree, 5); // annex/local
 }
 
 #[test]
@@ -79,10 +79,10 @@ fn trees_from_group() {
     assert_eq!(result.len(), 2);
     assert_eq!(result[0].garden, None);
     assert_eq!(result[0].group, Some(3));
-    assert_eq!(result[0].tree, 4);  // annex/data
+    assert_eq!(result[0].tree, 4); // annex/data
     assert_eq!(result[1].garden, None);
     assert_eq!(result[1].group, Some(3));
-    assert_eq!(result[1].tree, 5);  // annex/local
+    assert_eq!(result[1].tree, 5); // annex/local
 }
 
 #[test]

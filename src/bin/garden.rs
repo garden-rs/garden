@@ -10,13 +10,15 @@ fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
         let exit_status: i32 = match err.downcast::<errors::GardenError>() {
-            Ok(garden_err) => match garden_err {
-                errors::GardenError::ExitStatus(status) => status,
-                _ => {
-                    eprintln!("error: {:#}", garden_err);
-                    garden_err.into()
+            Ok(garden_err) => {
+                match garden_err {
+                    errors::GardenError::ExitStatus(status) => status,
+                    _ => {
+                        eprintln!("error: {:#}", garden_err);
+                        garden_err.into()
+                    }
                 }
-            },
+            }
             Err(other_err) => {
                 eprintln!("error: {:#}", other_err);
                 1
@@ -36,10 +38,10 @@ fn cmd_main() -> Result<()> {
     match options.subcommand {
         model::Command::Help => {
             return cmds::help::main(&mut options);
-        },
+        }
         model::Command::Init => {
             return cmds::init::main(&mut options);
-        },
+        }
         _ => (),
     }
 
@@ -73,42 +75,65 @@ fn parse_args() -> model::CommandOptions {
         ap.set_description("garden - cultivate git trees");
         ap.stop_on_first_argument(true);
 
-        ap.refer(&mut options.filename_str)
-            .add_option(&["-c", "--config"], argparse::Store,
-                        "set the config file to use");
+        ap.refer(&mut options.filename_str).add_option(
+            &["-c", "--config"],
+            argparse::Store,
+            "set the config file to use",
+        );
 
-        ap.refer(&mut options.chdir)
-            .add_option(&["-C", "--chdir"], argparse::Store,
-                        "chdir before searching for configuration");
+        ap.refer(&mut options.chdir).add_option(
+            &["-C", "--chdir"],
+            argparse::Store,
+            "chdir before searching for configuration",
+        );
 
-        ap.refer(&mut options.color_mode)
-            .add_option(&["--color"], argparse::Store, &color_help);
+        ap.refer(&mut options.color_mode).add_option(
+            &["--color"],
+            argparse::Store,
+            &color_help,
+        );
 
-        ap.refer(&mut options.debug)
-            .add_option(&["-d", "--debug"], argparse::Collect,
-                        "enable debug categories");
+        ap.refer(&mut options.debug).add_option(
+            &["-d", "--debug"],
+            argparse::Collect,
+            "enable debug categories",
+        );
 
-        ap.refer(&mut options.root)
-            .add_option(&["-r", "--root"], argparse::Store,
-                        "set the garden tree root (${GARDEN_ROOT})");
+        ap.refer(&mut options.root).add_option(
+            &["-r", "--root"],
+            argparse::Store,
+            "set the garden tree root (${GARDEN_ROOT})",
+        );
 
-        ap.refer(&mut options.variables)
-            .add_option(&["-s", "--set"], argparse::Collect,
-                        "set variables using name=value tokens");
+        ap.refer(&mut options.variables).add_option(
+            &["-s", "--set"],
+            argparse::Collect,
+            "set variables using name=value tokens",
+        );
 
-        ap.refer(&mut options.verbose)
-            .add_option(&["-v", "--verbose"], argparse::StoreTrue,
-                        "be verbose");
+        ap.refer(&mut options.verbose).add_option(
+            &["-v", "--verbose"],
+            argparse::StoreTrue,
+            "be verbose",
+        );
 
-        ap.refer(&mut options.quiet)
-            .add_option(&["-q", "--quiet"], argparse::StoreTrue, "be quiet");
+        ap.refer(&mut options.quiet).add_option(
+            &["-q", "--quiet"],
+            argparse::StoreTrue,
+            "be quiet",
+        );
 
-        ap.refer(&mut options.subcommand).required()
-            .add_argument("command", argparse::Store,
-                          "{add, cmd, eval, exec, ls, shell, <custom>}");
+        ap.refer(&mut options.subcommand).required().add_argument(
+            "command",
+            argparse::Store,
+            "{add, cmd, eval, exec, ls, shell, <custom>}",
+        );
 
-        ap.refer(&mut options.args)
-            .add_argument("arguments", argparse::List, "command arguments");
+        ap.refer(&mut options.args).add_argument(
+            "arguments",
+            argparse::List,
+            "command arguments",
+        );
 
         ap.parse_args_or_exit();
     }
