@@ -1,6 +1,3 @@
-extern crate subprocess;
-extern crate garden;
-
 use garden::cmd;
 
 

@@ -1,5 +1,3 @@
-extern crate garden;
-
 mod common;
 
 #[test]

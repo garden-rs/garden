@@ -1,6 +1,3 @@
-extern crate garden;
-
-
 pub fn from_string(string: &str) -> garden::model::Configuration {
     // Simplify testing by using a canned environment.
     std::env::set_var("HOME", "/home/test");

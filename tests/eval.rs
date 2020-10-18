@@ -1,6 +1,3 @@
-extern crate garden;
-extern crate dirs;
-
 mod common;
 
 
