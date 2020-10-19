@@ -10,13 +10,12 @@ use super::super::query;
 
 /// garden cmd <query> <command>...
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let config = &mut app.config;
-    let options = &mut app.options;
     let mut query = String::new();
     let mut commands_and_args: Vec<String> = Vec::new();
 
     // Parse arguments
     {
+        let options = &mut app.options;
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
         ap.set_description("garden cmd - run custom commands over gardens");
@@ -43,7 +42,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         cmd::parse_args(ap, options.args.to_vec());
     }
 
-    if options.is_debug("cmd") {
+    if app.options.is_debug("cmd") {
         debug!("subcommand: cmd");
         debug!("query: {}", query);
         debug!("commands_and_args: {:?}", commands_and_args);
@@ -54,41 +53,40 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut arguments = Vec::new();
     cmd::split_on_dash(&commands_and_args, &mut commands, &mut arguments);
 
-    if options.is_debug("cmd") {
+    if app.options.is_debug("cmd") {
         debug!("commands: {:?}", commands);
         debug!("arguments: {:?}", arguments);
     }
 
+    let quiet = app.options.quiet;
+    let verbose = app.options.verbose;
+    let keep_going = app.options.keep_going;
+    let config = app.get_mut_config();
+
     let exit_status = cmd(
         config,
-        options.quiet,
-        options.verbose,
-        options.keep_going,
+        quiet,
+        verbose,
+        keep_going,
         &query,
         &commands,
         &arguments,
     );
-    if exit_status != 0 {
-        std::process::exit(exit_status);
-    }
 
-    Ok(())
+    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
 
 /// garden <command> <query>...
 pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
-    let config = &mut app.config;
-    let options = &mut app.options;
     let mut queries_and_arguments: Vec<String> = Vec::new();
-
     // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
         ap.set_description("garden cmd - run custom commands over gardens");
 
-        ap.refer(&mut options.keep_going).add_option(
+        ap.refer(&mut app.options.keep_going).add_option(
             &["-k", "--keep-going"],
             argparse::StoreTrue,
             "continue to the next tree when errors occur",
@@ -100,11 +98,11 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
             "gardens/groups/trees to exec (tree queries)",
         );
 
-        options.args.insert(0, format!("garden {}", command));
-        cmd::parse_args(ap, options.args.to_vec());
+        app.options.args.insert(0, format!("garden {}", command));
+        cmd::parse_args(ap, app.options.args.to_vec());
     }
 
-    if options.is_debug("cmd") {
+    if app.options.is_debug("cmd") {
         debug!("command: {}", command);
         debug!("queries_and_arguments: {:?}", queries_and_arguments);
     }
@@ -119,16 +117,21 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
         queries.push(".".into());
     }
 
-    if options.is_debug("cmd") {
+    if app.options.is_debug("cmd") {
         debug!("queries {:?}", queries);
         debug!("arguments: {:?}", arguments);
     }
 
+    let quiet = app.options.quiet;
+    let verbose = app.options.verbose;
+    let keep_going = app.options.keep_going;
+    let config = app.get_mut_config();
+
     cmds(
         config,
-        options.quiet,
-        options.verbose,
-        options.keep_going,
+        quiet,
+        verbose,
+        keep_going,
         command,
         &queries,
         &arguments,

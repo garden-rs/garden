@@ -19,18 +19,16 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let verbose = options.verbose;
 
     let mut exit_status = 0;
+    let config = app.get_mut_config();
     for query in &queries {
-        let status = grow(&mut app.config, quiet, verbose, &query);
+        let status = grow(config, quiet, verbose, &query);
         if status != 0 {
             exit_status = status;
         }
     }
 
-    if exit_status != 0 {
-        std::process::exit(exit_status);
-    }
-
-    Ok(())
+    // Return the last non-zero exit status.
+    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
 

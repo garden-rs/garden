@@ -9,9 +9,6 @@ use super::super::model;
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     // Parse arguments
-    let options = &mut app.options;
-    let config = &mut app.config;
-
     let mut output = String::new();
     let mut paths: Vec<String> = Vec::new();
     {
@@ -30,11 +27,14 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "trees to add",
         );
 
+        let options = &mut app.options;
         options.args.insert(0, "garden add".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 
     // Read existing configuration
+    let verbose = app.options.verbose;
+    let config = app.get_mut_config();
     let mut doc = config::reader::read_yaml(config.get_path()?)?;
 
     // Output filename defaults to the input filename.
@@ -61,7 +61,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         };
 
         for path in &paths {
-            if let Err(msg) = add_path(config, options.verbose, path, trees) {
+            if let Err(msg) = add_path(config, verbose, path, trees) {
                 error!("{}", msg);
             }
         }

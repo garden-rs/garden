@@ -9,9 +9,7 @@ use super::super::query;
 
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let config = &mut app.config;
     let options = &mut app.options;
-
     let mut query = String::new();
     let mut tree = String::new();
 
@@ -36,6 +34,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         cmd::parse_args(ap, options.args.to_vec());
     }
 
+    let config = app.get_mut_config();
     let contexts = query::resolve_trees(config, &query);
     if contexts.is_empty() {
         // TODO errors::GardenError::TreeQueryMatchedNoTrees { query: query.into() }

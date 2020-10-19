@@ -12,13 +12,11 @@ use super::super::query;
 /// - options: `garden::model::CommandOptions`
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let options = &mut app.options;
-    let config = &mut app.config;
-
     let mut query: Vec<String> = Vec::new();
 
     // Parse arguments
     {
+        let options = &mut app.options;
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden inspect - query tree status");
 
@@ -35,11 +33,13 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         query.push(".".into());
     }
 
-    if options.is_debug("inspect") {
+    if app.options.is_debug("inspect") {
         debug!("query: {:?}", query);
     }
 
-    inspect(config, options.verbose, &query)
+    let verbose = app.options.verbose;
+    let config = app.get_mut_config();
+    inspect(config, verbose, &query)
 }
 
 

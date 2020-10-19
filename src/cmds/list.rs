@@ -4,7 +4,8 @@ use super::super::model;
 
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let config = &app.config;
+
+    let config = app.get_mut_config();
 
     if !config.gardens.is_empty() {
         println!("gardens:");

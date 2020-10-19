@@ -13,8 +13,6 @@ use super::super::query;
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let options = &mut app.options;
-    let config = &mut app.config;
-
     let mut query = String::new();
     let mut command: Vec<String> = Vec::new();
 
@@ -50,6 +48,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let quiet = options.quiet;
     let verbose = options.verbose;
 
+    let config = app.get_mut_config();
     exec(config, quiet, verbose, &query, &command)
 }
 

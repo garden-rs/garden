@@ -1,5 +1,6 @@
 use atty;
 use glob;
+use indextree::{Arena,NodeId};
 use yansi;
 
 use super::errors;
@@ -676,9 +677,10 @@ impl CommandOptions {
 }
 
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct ApplicationContext {
-    pub config: Configuration,
+    pub arena: Arena<Configuration>,
+    pub root_id: NodeId,
     pub options: CommandOptions,
 }
 
@@ -686,9 +688,17 @@ impl_display!(ApplicationContext);
 
 impl ApplicationContext {
     pub fn new(config: Configuration, options: CommandOptions) -> Self {
+        let mut arena = Arena::new();
+        let root_id = arena.new_node(config);
+
         ApplicationContext {
-            config: config,
+            arena: arena,
+            root_id: root_id,
             options: options,
         }
+    }
+
+    pub fn get_mut_config(&mut self) -> &mut Configuration {
+        self.arena.get_mut(self.root_id).unwrap().get_mut()
     }
 }
