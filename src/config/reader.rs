@@ -36,10 +36,7 @@ pub fn parse(
             // TODO: move GARDEN_ROOT initialization out of this so that
             // we can avoid this early initialization and do it in the outer
             // config::new() call.
-            config.root.expr = std::env::current_dir()
-                .unwrap()
-                .to_string_lossy()
-                .into();
+            config.root.expr = std::env::current_dir().unwrap().to_string_lossy().into();
         }
 
         if verbose {

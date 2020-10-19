@@ -78,8 +78,8 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
         if init_options.global {
             return Err(
                 errors::GardenError::Usage(
-                    "'--global' cannot be used with an absolute path".into()
-                ).into()
+                    "'--global' cannot be used with an absolute path".into(),
+                ).into(),
             );
         }
 

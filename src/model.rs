@@ -351,7 +351,9 @@ impl Configuration {
     /// Get the config path if it is defined.
     pub fn get_path(&self) -> Result<&std::path::PathBuf, errors::GardenError> {
         self.path.as_ref().ok_or(
-            errors::GardenError::AssertionError("cfg.path is unset".into())
+            errors::GardenError::AssertionError(
+                "cfg.path is unset".into(),
+            ),
         )
     }
 }

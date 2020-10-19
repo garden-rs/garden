@@ -144,10 +144,7 @@ pub fn new(
 
     // Default to the current directory when garden.root is unspecified
     if cfg.root.expr.is_empty() {
-        cfg.root.expr = std::env::current_dir()
-            .unwrap()
-            .to_string_lossy()
-            .into();
+        cfg.root.expr = std::env::current_dir().unwrap().to_string_lossy().into();
     }
 
     // Grafts

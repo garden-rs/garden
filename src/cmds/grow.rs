@@ -64,12 +64,7 @@ pub fn grow(config: &mut model::Configuration, quiet: bool, verbose: bool, query
     let mut exit_status: i32 = 0;
 
     for ctx in &contexts {
-        let path: String = config.trees[ctx.tree]
-            .path
-            .value
-            .as_ref()
-            .unwrap()
-            .clone();
+        let path: String = config.trees[ctx.tree].path.value.as_ref().unwrap().clone();
         model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
 
         let pathbuf = std::path::PathBuf::from(&path);

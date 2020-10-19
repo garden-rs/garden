@@ -77,7 +77,7 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::CreateConfigurationError { .. } => EX_CANTCREAT,
             GardenError::EmptyConfiguration { .. } => EX_CONFIG,
             GardenError::ExitStatus(status) => status,  // Explicit exit code
-            GardenError::FileExists(_)  => EX_CANTCREAT,
+            GardenError::FileExists(_) => EX_CANTCREAT,
             GardenError::FileNotFound => EX_IOERR,
             GardenError::GardenNotFound { .. } => EX_USAGE,
             GardenError::IOError(_) => EX_IOERR,

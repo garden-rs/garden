@@ -77,9 +77,7 @@ pub fn exec(
     let mut exit_status: i32 = 0;
     if command.is_empty() {
         return Err(
-            errors::GardenError::Usage(
-                "a command to execute must be specified".into()
-            ).into()
+            errors::GardenError::Usage("a command to execute must be specified".into()).into(),
         );
     }
 

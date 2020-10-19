@@ -96,10 +96,7 @@ fn add_path(
     // Is the path a child of the current garden root?
     if path.starts_with(&root) && path.strip_prefix(&root).is_ok() {
 
-        tree_path = path.strip_prefix(&root)
-            .unwrap()
-            .to_string_lossy()
-            .into();
+        tree_path = path.strip_prefix(&root).unwrap().to_string_lossy().into();
     } else {
         tree_path = path.to_string_lossy().into();
     }
