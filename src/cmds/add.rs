@@ -8,29 +8,9 @@ use super::super::model;
 
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    // Parse arguments
     let mut output = String::new();
     let mut paths: Vec<String> = Vec::new();
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("add existing trees to a garden configuration");
-
-        ap.refer(&mut output).add_option(
-            &["-o", "--output"],
-            argparse::Store,
-            "file to write (defaults to the config file)",
-        );
-
-        ap.refer(&mut paths).required().add_argument(
-            "paths",
-            argparse::List,
-            "trees to add",
-        );
-
-        let options = &mut app.options;
-        options.args.insert(0, "garden add".into());
-        cmd::parse_args(ap, options.args.to_vec());
-    }
+    parse_args(&mut app.options, &mut output, &mut paths);
 
     // Read existing configuration
     let verbose = app.options.verbose;
@@ -42,6 +22,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         output = config.get_path()?.to_string_lossy().into();
     }
 
+    // Mutable YAML scope.
     {
         // Get a mutable reference to top-level document hash.
         let doc_hash: &mut YamlHash = match doc {
@@ -69,6 +50,28 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     // Emit the YAML configuration into a string
     Ok(config::writer::write_yaml(&doc, &output)?)
+}
+
+fn parse_args(
+    options: &mut model::CommandOptions, output: &mut String, paths: &mut Vec<String>
+) {
+    let mut ap = argparse::ArgumentParser::new();
+    ap.set_description("add existing trees to a garden configuration");
+
+    ap.refer(output).add_option(
+        &["-o", "--output"],
+        argparse::Store,
+        "file to write (defaults to the config file)",
+    );
+
+    ap.refer(paths).required().add_argument(
+        "paths",
+        argparse::List,
+        "trees to add",
+    );
+
+    options.args.insert(0, "garden add".into());
+    cmd::parse_args(ap, options.args.to_vec());
 }
 
 

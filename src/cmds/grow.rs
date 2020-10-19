@@ -11,12 +11,11 @@ use super::super::query;
 /// - options: `garden::model::CommandOptions`
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let options = &mut app.options;
     let mut queries = Vec::new();
-    parse_args(&mut queries, options);
+    parse_args(&mut queries, &mut app.options);
 
-    let quiet = options.quiet;
-    let verbose = options.verbose;
+    let quiet = app.options.quiet;
+    let verbose = app.options.verbose;
 
     let mut exit_status = 0;
     let config = app.get_mut_config();

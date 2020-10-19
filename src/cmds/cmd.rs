@@ -11,52 +11,9 @@ use super::super::query;
 /// garden cmd <query> <command>...
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut query = String::new();
-    let mut commands_and_args: Vec<String> = Vec::new();
-
-    // Parse arguments
-    {
-        let options = &mut app.options;
-        let mut ap = argparse::ArgumentParser::new();
-        ap.silence_double_dash(false);
-        ap.set_description("garden cmd - run custom commands over gardens");
-
-        ap.refer(&mut options.keep_going).add_option(
-            &["-k", "--keep-going"],
-            argparse::StoreTrue,
-            "continue to the next tree when errors occur",
-        );
-
-        ap.refer(&mut query).required().add_argument(
-            "query",
-            argparse::Store,
-            "gardens/groups/trees to exec (tree query)",
-        );
-
-        ap.refer(&mut commands_and_args).required().add_argument(
-            "commands",
-            argparse::List,
-            "commands to run over resolved trees",
-        );
-
-        options.args.insert(0, "garden cmd".into());
-        cmd::parse_args(ap, options.args.to_vec());
-    }
-
-    if app.options.is_debug("cmd") {
-        debug!("subcommand: cmd");
-        debug!("query: {}", query);
-        debug!("commands_and_args: {:?}", commands_and_args);
-    }
-
-    // Queries and arguments are separated by a double-dash "--" marker.
     let mut commands = Vec::new();
     let mut arguments = Vec::new();
-    cmd::split_on_dash(&commands_and_args, &mut commands, &mut arguments);
-
-    if app.options.is_debug("cmd") {
-        debug!("commands: {:?}", commands);
-        debug!("arguments: {:?}", arguments);
-    }
+    parse_args(&mut app.options, &mut query, &mut commands, &mut arguments);
 
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
@@ -77,56 +34,67 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 }
 
 
-/// garden <command> <query>...
-pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
-    let mut queries_and_arguments: Vec<String> = Vec::new();
-    // Parse arguments
+/// Parse "cmd" arguments.
+fn parse_args(
+    options: &mut model::CommandOptions,
+    query: &mut String,
+    commands: &mut Vec<String>,
+    arguments: &mut Vec<String>,
+) {
+    let mut commands_and_args: Vec<String> = Vec::new();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
         ap.set_description("garden cmd - run custom commands over gardens");
 
-        ap.refer(&mut app.options.keep_going).add_option(
+        ap.refer(&mut options.keep_going).add_option(
             &["-k", "--keep-going"],
             argparse::StoreTrue,
             "continue to the next tree when errors occur",
         );
 
-        ap.refer(&mut queries_and_arguments).add_argument(
-            "queries",
-            argparse::List,
-            "gardens/groups/trees to exec (tree queries)",
+        ap.refer(query).required().add_argument(
+            "query",
+            argparse::Store,
+            "gardens/groups/trees to exec (tree query)",
         );
 
-        app.options.args.insert(0, format!("garden {}", command));
-        cmd::parse_args(ap, app.options.args.to_vec());
+        ap.refer(&mut commands_and_args).required().add_argument(
+            "commands",
+            argparse::List,
+            "commands to run over resolved trees",
+        );
+
+        options.args.insert(0, "garden cmd".into());
+        cmd::parse_args(ap, options.args.to_vec());
     }
 
-    if app.options.is_debug("cmd") {
-        debug!("command: {}", command);
-        debug!("queries_and_arguments: {:?}", queries_and_arguments);
+    if options.is_debug("cmd") {
+        debug!("subcommand: cmd");
+        debug!("query: {}", query);
+        debug!("commands_and_args: {:?}", commands_and_args);
     }
 
     // Queries and arguments are separated by a double-dash "--" marker.
-    let mut queries = Vec::new();
-    let mut arguments = Vec::new();
-    cmd::split_on_dash(&queries_and_arguments, &mut queries, &mut arguments);
+    cmd::split_on_dash(&commands_and_args, commands, arguments);
 
-    // Default to "." when no queries have been specified.
-    if queries.is_empty() {
-        queries.push(".".into());
-    }
-
-    if app.options.is_debug("cmd") {
-        debug!("queries {:?}", queries);
+    if options.is_debug("cmd") {
+        debug!("commands: {:?}", commands);
         debug!("arguments: {:?}", arguments);
     }
+}
+
+
+/// garden <command> <query>...
+pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
+    let mut queries = Vec::new();
+    let mut arguments = Vec::new();
+    parse_args_custom(command, &mut app.options, &mut queries, &mut arguments);
 
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
     let keep_going = app.options.keep_going;
     let config = app.get_mut_config();
-
     cmds(
         config,
         quiet,
@@ -136,6 +104,53 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
         &queries,
         &arguments,
     ).map_err(|err| err.into())
+}
+
+
+/// Parse custom command arguments.
+fn parse_args_custom(
+    command: &str,
+    options: &mut model::CommandOptions,
+    queries: &mut Vec<String>,
+    arguments: &mut Vec<String>,
+) {
+    let mut queries_and_arguments: Vec<String> = Vec::new();
+    let mut ap = argparse::ArgumentParser::new();
+    ap.silence_double_dash(false);
+    ap.set_description("garden cmd - run custom commands over gardens");
+
+    ap.refer(&mut options.keep_going).add_option(
+        &["-k", "--keep-going"],
+        argparse::StoreTrue,
+        "continue to the next tree when errors occur",
+    );
+
+    ap.refer(&mut queries_and_arguments).add_argument(
+        "queries",
+        argparse::List,
+        "gardens/groups/trees to exec (tree queries)",
+    );
+
+    options.args.insert(0, format!("garden {}", command));
+    cmd::parse_args(ap, options.args.to_vec());
+
+    if options.is_debug("cmd") {
+        debug!("command: {}", command);
+        debug!("queries_and_arguments: {:?}", queries_and_arguments);
+    }
+
+    // Queries and arguments are separated by a double-dash "--" marker.
+    cmd::split_on_dash(&queries_and_arguments, queries, arguments);
+
+    // Default to "." when no queries have been specified.
+    if queries.is_empty() {
+        queries.push(".".into());
+    }
+
+    if options.is_debug("cmd") {
+        debug!("queries {:?}", queries);
+        debug!("arguments: {:?}", arguments);
+    }
 }
 
 /// Strategy: resolve the trees down to a set of tree indexes paired with an

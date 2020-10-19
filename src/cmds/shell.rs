@@ -9,11 +9,9 @@ use super::super::query;
 
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let options = &mut app.options;
+    // Parse arguments
     let mut query = String::new();
     let mut tree = String::new();
-
-    // Parse arguments
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden shell - open a shell in a garden environment");
@@ -30,6 +28,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "tree to chdir into",
         );
 
+        let options = &mut app.options;
         options.args.insert(0, "garden shell".into());
         cmd::parse_args(ap, options.args.to_vec());
     }

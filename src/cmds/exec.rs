@@ -12,44 +12,48 @@ use super::super::query;
 /// - options: `garden::model::CommandOptions`
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let options = &mut app.options;
     let mut query = String::new();
     let mut command: Vec<String> = Vec::new();
+    parse_args(&mut app.options, &mut query, &mut command);
 
-    // Parse arguments
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.silence_double_dash(false);
-        ap.stop_on_first_argument(true);
-        ap.set_description("garden exec - run commands inside gardens");
+    let quiet = app.options.quiet;
+    let verbose = app.options.verbose;
+    let config = app.get_mut_config();
+    exec(config, quiet, verbose, &query, &command)
+}
 
-        ap.refer(&mut query).required().add_argument(
-            "query",
-            argparse::Store,
-            "gardens/groups/trees to exec (tree query)",
-        );
 
-        ap.refer(&mut command).required().add_argument(
-            "command",
-            argparse::List,
-            "command to run over resolved trees",
-        );
+/// Parse "exec" arguments
+fn parse_args(
+    options: &mut model::CommandOptions,
+    query: &mut String,
+    command: &mut Vec<String>,
+) {
+    let mut ap = argparse::ArgumentParser::new();
+    ap.silence_double_dash(false);
+    ap.stop_on_first_argument(true);
+    ap.set_description("garden exec - run commands inside gardens");
 
-        options.args.insert(0, "garden exec".into());
-        cmd::parse_args(ap, options.args.to_vec());
-    }
+    ap.refer(query).required().add_argument(
+        "query",
+        argparse::Store,
+        "gardens/groups/trees to exec (tree query)",
+    );
+
+    ap.refer(command).required().add_argument(
+        "command",
+        argparse::List,
+        "command to run over resolved trees",
+    );
+
+    options.args.insert(0, "garden exec".into());
+    cmd::parse_args(ap, options.args.to_vec());
 
     if options.is_debug("exec") {
         debug!("command: exec");
         debug!("query: {}", query);
         debug!("command: {:?}", command);
     }
-
-    let quiet = options.quiet;
-    let verbose = options.verbose;
-
-    let config = app.get_mut_config();
-    exec(config, quiet, verbose, &query, &command)
 }
 
 

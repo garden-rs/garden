@@ -12,11 +12,9 @@ use super::super::query;
 /// - options: `garden::model::CommandOptions`
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let mut query: Vec<String> = Vec::new();
-
     // Parse arguments
+    let mut query: Vec<String> = Vec::new();
     {
-        let options = &mut app.options;
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden inspect - query tree status");
 
@@ -26,6 +24,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "gardens/groups/trees to exec (tree queries)",
         );
 
+        let options = &mut app.options;
         options.args.insert(0, "garden exec".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
@@ -39,6 +38,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     let verbose = app.options.verbose;
     let config = app.get_mut_config();
+
     inspect(config, verbose, &query)
 }
 
