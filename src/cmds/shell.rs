@@ -9,29 +9,9 @@ use super::super::query;
 
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    // Parse arguments
     let mut query = String::new();
     let mut tree = String::new();
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden shell - open a shell in a garden environment");
-
-        ap.refer(&mut query).required().add_argument(
-            "query",
-            argparse::Store,
-            "query for trees to build an environment",
-        );
-
-        ap.refer(&mut tree).add_argument(
-            "tree",
-            argparse::Store,
-            "tree to chdir into",
-        );
-
-        let options = &mut app.options;
-        options.args.insert(0, "garden shell".into());
-        cmd::parse_args(ap, options.args.to_vec());
-    }
+    parse_args(&mut app.options, &mut query, &mut tree);
 
     let config = app.get_mut_config();
     let contexts = query::resolve_trees(config, &query);
@@ -96,4 +76,30 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             }.into(),
         )
     }
+}
+
+
+/// Parse "shell" arguments.
+fn parse_args(
+    options: &mut model::CommandOptions,
+    query: &mut String,
+    tree: &mut String,
+) {
+    let mut ap = argparse::ArgumentParser::new();
+    ap.set_description("garden shell - open a shell in a garden environment");
+
+    ap.refer(query).required().add_argument(
+        "query",
+        argparse::Store,
+        "query for trees to build an environment",
+    );
+
+    ap.refer(tree).add_argument(
+        "tree",
+        argparse::Store,
+        "tree to chdir into",
+    );
+
+    options.args.insert(0, "garden shell".into());
+    cmd::parse_args(ap, options.args.to_vec());
 }

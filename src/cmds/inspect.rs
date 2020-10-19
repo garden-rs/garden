@@ -12,34 +12,39 @@ use super::super::query;
 /// - options: `garden::model::CommandOptions`
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    // Parse arguments
     let mut query: Vec<String> = Vec::new();
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden inspect - query tree status");
+    parse_args(&mut app.options, &mut query);
 
-        ap.refer(&mut query).add_argument(
-            "query",
-            argparse::List,
-            "gardens/groups/trees to exec (tree queries)",
-        );
+    let verbose = app.options.verbose;
+    let config = app.get_mut_config();
+    inspect(config, verbose, &query)
+}
 
-        let options = &mut app.options;
-        options.args.insert(0, "garden exec".into());
-        cmd::parse_args(ap, options.args.to_vec());
-    }
+
+/// Parse "inspect" arguments.
+fn parse_args(
+    options: &mut model::CommandOptions,
+    query: &mut Vec<String>,
+) {
+    let mut ap = argparse::ArgumentParser::new();
+    ap.set_description("garden inspect - query tree status");
+
+    ap.refer(query).add_argument(
+        "query",
+        argparse::List,
+        "gardens/groups/trees to exec (tree queries)",
+    );
+
+    options.args.insert(0, "garden exec".into());
+    cmd::parse_args(ap, options.args.to_vec());
+
     if query.is_empty() {
         query.push(".".into());
     }
 
-    if app.options.is_debug("inspect") {
+    if options.is_debug("inspect") {
         debug!("query: {:?}", query);
     }
-
-    let verbose = app.options.verbose;
-    let config = app.get_mut_config();
-
-    inspect(config, verbose, &query)
 }
 
 
