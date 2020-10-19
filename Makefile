@@ -39,3 +39,13 @@ integration::
 	$(CARGO) test --features integration $(CARGO_FLAGS) $(flags)
 
 
+# Code formatting
+.PHONY: check-format
+check-format::
+	$(CARGO) fmt -- --force --write-mode diff \
+	|| echo "# Changes detected.  Run 'make format' to apply changes."
+
+
+.PHONY: format
+format::
+	$(CARGO) fmt -- --force --write-mode overwrite
