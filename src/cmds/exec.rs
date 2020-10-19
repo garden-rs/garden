@@ -37,7 +37,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "command to run over resolved trees",
         );
 
-        options.args.insert(0, "garden exec".to_string());
+        options.args.insert(0, "garden exec".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 

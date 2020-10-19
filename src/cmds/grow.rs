@@ -36,7 +36,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
     // Parse arguments
-    options.args.insert(0, "garden grow".to_string());
+    options.args.insert(0, "garden grow".into());
 
     let mut ap = argparse::ArgumentParser::new();
     ap.set_description("garden grow - Create and update gardens");
@@ -64,12 +64,12 @@ pub fn grow(config: &mut model::Configuration, quiet: bool, verbose: bool, query
     let mut exit_status: i32 = 0;
 
     for ctx in &contexts {
-        let path = config.trees[ctx.tree]
+        let path: String = config.trees[ctx.tree]
             .path
             .value
             .as_ref()
             .unwrap()
-            .to_string();
+            .clone();
         model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
 
         let pathbuf = std::path::PathBuf::from(&path);
@@ -119,7 +119,7 @@ pub fn grow(config: &mut model::Configuration, quiet: bool, verbose: bool, query
         {
             // Immutable config scope
             for remote in &config.trees[ctx.tree].remotes {
-                config_remotes.insert(remote.name.to_string(), remote.expr.to_string());
+                config_remotes.insert(remote.name.clone(), remote.expr.clone());
             }
         }
 
@@ -204,17 +204,17 @@ fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> i32 
     let parent = path.parent().as_ref().unwrap().to_path_buf();
 
     // Is the link target a child of the link's parent directory?
-    let target;
+    let target: String;
     if symlink.starts_with(&parent) && symlink.strip_prefix(&parent).is_ok() {
         // If so, create the symlink using a relative path.
         target = symlink
             .strip_prefix(&parent)
             .unwrap()
             .to_string_lossy()
-            .to_string();
+            .into();
     } else {
         // Use an absolute path otherwise.
-        target = symlink.to_string_lossy().to_string();
+        target = symlink.to_string_lossy().into();
     }
 
     if std::os::unix::fs::symlink(&target, &path).is_ok() {

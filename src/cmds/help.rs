@@ -24,16 +24,16 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
             "{add, cmd, eval, exec, ls, shell}",
         );
 
-        options.args.insert(0, "garden help".to_string());
+        options.args.insert(0, "garden help".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 
     // garden help foo -> garden foo --help
     if !cmd_name.is_empty() {
-        help_cmd.push(cmd_name.to_string());
+        help_cmd.push(cmd_name.clone());
     }
 
-    help_cmd.push("--help".to_string());
+    help_cmd.push("--help".into());
 
     if options.verbose {
         debug!("help command");

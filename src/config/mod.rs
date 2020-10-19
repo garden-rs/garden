@@ -86,10 +86,10 @@ pub fn new(
 
     // Override the configured garden root
     if !root.is_empty() {
-        cfg.root.expr = root.to_string();
+        cfg.root.expr = root.into();
     }
 
-    let mut basename = "garden.yaml".to_string();
+    let mut basename: String = "garden.yaml".into();
 
     // Find garden.yaml in the search path
     let mut found = false;
@@ -103,14 +103,14 @@ pub fn new(
         } else {
             // The specified path is a basename or relative path to be found
             // in the config search path.
-            basename = config_path.to_string_lossy().to_string();
+            basename = config_path.to_string_lossy().into();
         }
     }
 
     if !found {
         for entry in search_path() {
             let mut candidate = entry.to_path_buf();
-            candidate.push(basename.to_string());
+            candidate.push(basename.clone());
             if candidate.exists() {
                 cfg.set_path(candidate);
                 found = true;
@@ -147,13 +147,13 @@ pub fn new(
         cfg.root.expr = std::env::current_dir()
             .unwrap()
             .to_string_lossy()
-            .to_string();
+            .into();
     }
 
     // Grafts
     let mut exprs = Vec::new();
-    for graft in cfg.grafts.iter_mut() {
-        exprs.push(graft.config_expr.to_string());
+    for graft in &cfg.grafts {
+        exprs.push(graft.config_expr.clone());
     }
 
     let mut paths = Vec::new();
@@ -164,7 +164,7 @@ pub fn new(
 
     let mut idx = 0;
     for graft in cfg.grafts.iter_mut() {
-        let path_str = paths[idx].to_string();
+        let path_str = paths[idx].clone();
         let path = std::path::PathBuf::from(&path_str);
         if path.exists() {
             graft.config = Some(new(&Some(path), &graft.root, verbose)?);
@@ -198,7 +198,7 @@ pub fn from_options(
         let values: Vec<&str> = k_eq_v.splitn(2, "=").collect();
         if values.len() == 1 {
             name = values[0].into();
-            expr = "".to_string();
+            expr = "".into();
         } else if values.len() == 2 {
             name = values[0].into();
             expr = values[1].into();

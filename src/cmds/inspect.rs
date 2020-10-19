@@ -28,11 +28,11 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "gardens/groups/trees to exec (tree queries)",
         );
 
-        options.args.insert(0, "garden exec".to_string());
+        options.args.insert(0, "garden exec".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
     if query.is_empty() {
-        query.push(".".to_string());
+        query.push(".".into());
     }
 
     if options.is_debug("inspect") {

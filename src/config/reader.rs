@@ -39,7 +39,7 @@ pub fn parse(
             config.root.expr = std::env::current_dir()
                 .unwrap()
                 .to_string_lossy()
-                .to_string();
+                .into();
         }
 
         if verbose {
@@ -66,8 +66,8 @@ pub fn parse(
     }
     // Provide GARDEN_ROOT
     config.variables.push(model::NamedVariable {
-        name: "GARDEN_ROOT".to_string(),
-        expr: config.root.expr.to_string(),
+        name: "GARDEN_ROOT".into(),
+        expr: config.root.expr.clone(),
         value: None,
     });
 
@@ -77,8 +77,8 @@ pub fn parse(
         // Calculate an absolute path for GARDEN_CONFIG_DIR.
         if let Ok(config_path) = config_path_raw.canonicalize() {
             config.variables.push(model::NamedVariable {
-                name: "GARDEN_CONFIG_DIR".to_string(),
-                expr: config_path.to_string_lossy().to_string(),
+                name: "GARDEN_CONFIG_DIR".into(),
+                expr: config_path.to_string_lossy().into(),
                 value: None,
             });
         }
@@ -175,7 +175,7 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
 /// Yaml -> String
 fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     if let Yaml::String(yaml_string) = yaml {
-        *string = yaml_string.to_string();
+        *string = yaml_string.clone();
     }
 
     !string.is_empty()
@@ -186,14 +186,14 @@ fn get_str(yaml: &Yaml, string: &mut String) -> bool {
 fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
 
     if let Yaml::String(yaml_string) = yaml {
-        vec.push(yaml_string.to_string());
+        vec.push(yaml_string.clone());
         return true;
     }
 
     if let Yaml::Array(ref yaml_vec) = yaml {
         for value in yaml_vec {
             if let Yaml::String(ref value_str) = value {
-                vec.push(value_str.to_string());
+                vec.push(value_str.clone());
             }
         }
         return true;
@@ -209,8 +209,8 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
             match v {
                 Yaml::String(ref yaml_str) => {
                     vec.push(model::NamedVariable {
-                        name: k.as_str().unwrap().to_string(),
-                        expr: yaml_str.to_string(),
+                        name: k.as_str().unwrap().into(),
+                        expr: yaml_str.clone(),
                         value: None,
                     });
                 }
@@ -218,8 +218,8 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
                             vec.push(model::NamedVariable {
-                                name: k.as_str().unwrap().to_string(),
-                                expr: yaml_str.to_string(),
+                                name: k.as_str().unwrap().into(),
+                                expr: yaml_str.clone(),
                                 value: None,
                             });
                         }
@@ -227,14 +227,14 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                 }
                 Yaml::Integer(yaml_int) => {
                     vec.push(model::NamedVariable {
-                        name: k.as_str().unwrap().to_string(),
+                        name: k.as_str().unwrap().into(),
                         expr: yaml_int.to_string(),
                         value: None,
                     });
                 }
                 Yaml::Boolean(ref yaml_bool) => {
                     vec.push(model::NamedVariable {
-                        name: k.as_str().unwrap().to_string(),
+                        name: k.as_str().unwrap().into(),
                         expr: bool_to_string(yaml_bool),
                         value: None,
                     });
@@ -253,8 +253,8 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
 
 fn bool_to_string(value: &bool) -> String {
     match *value {
-        true => "true".to_string(),
-        false => "false".to_string(),
+        true => "true".into(),
+        false => "false".into(),
     }
 }
 
@@ -265,10 +265,10 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
             match v {
                 Yaml::String(ref yaml_str) => {
                     vec.push(model::MultiVariable {
-                        name: k.as_str().unwrap().to_string(),
+                        name: k.as_str().unwrap().into(),
                         values: vec![
                             model::Variable {
-                                expr: yaml_str.to_string(),
+                                expr: yaml_str.clone(),
                                 value: None,
                             },
                         ],
@@ -279,19 +279,19 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
                             values.push(model::Variable {
-                                expr: yaml_str.to_string(),
+                                expr: yaml_str.clone(),
                                 value: None,
                             });
                         }
                     }
                     vec.push(model::MultiVariable {
-                        name: k.as_str().unwrap().to_string(),
+                        name: k.as_str().unwrap().into(),
                         values: values,
                     });
                 }
                 Yaml::Integer(yaml_int) => {
                     vec.push(model::MultiVariable {
-                        name: k.as_str().unwrap().to_string(),
+                        name: k.as_str().unwrap().into(),
                         values: vec![
                             model::Variable {
                                 expr: yaml_int.to_string(),
@@ -333,7 +333,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
             template.remotes.push(model::NamedVariable {
-                name: "origin".to_string(),
+                name: "origin".into(),
                 expr: url,
                 value: None,
             });
@@ -347,7 +347,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     for template_name in &template.extend {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
-                &Yaml::String(template_name.to_string()),
+                &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
                 templates,
             );
@@ -372,7 +372,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     for template_name in template.extend.iter().rev() {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
-                &Yaml::String(template_name.to_string()),
+                &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
                 templates,
             );
@@ -411,29 +411,29 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     get_str(&name, &mut tree.name);
 
     // default to the name when "path" is unspecified
-    tree.path.expr = tree.name.to_string();
-    tree.path.value = Some(tree.name.to_string());
+    tree.path.expr = tree.name.clone();
+    tree.path.value = Some(tree.name.clone());
 
     tree.variables.insert(
         0,
         model::NamedVariable {
-            name: "TREE_NAME".to_string(),
-            expr: tree.name.to_string(),
+            name: "TREE_NAME".into(),
+            expr: tree.name.clone(),
             value: None,
         },
     );
     tree.variables.insert(
         1,
         model::NamedVariable {
-            name: "TREE_PATH".to_string(),
-            expr: tree.path.expr.to_string(),
+            name: "TREE_PATH".into(),
+            expr: tree.path.expr.clone(),
             value: None,
         },
     );
 
     tree.remotes.push(model::NamedVariable {
-        name: "origin".to_string(),
-        expr: url.to_string(),
+        name: "origin".into(),
+        expr: url.into(),
         value: None,
     });
 
@@ -469,8 +469,8 @@ fn get_tree(
     // Tree path
     if !get_str(&value["path"], &mut tree.path.expr) {
         // default to the name when "path" is unspecified
-        tree.path.expr = tree.name.to_string();
-        tree.path.value = Some(tree.name.to_string());
+        tree.path.expr = tree.name.clone();
+        tree.path.value = Some(tree.name.clone());
     }
 
     // Add the TREE_NAME and TREE_PATH variables
@@ -478,16 +478,16 @@ fn get_tree(
         tree.variables.insert(
             0,
             model::NamedVariable {
-                name: "TREE_NAME".to_string(),
-                expr: tree.name.to_string(),
+                name: "TREE_NAME".into(),
+                expr: tree.name.clone(),
                 value: None,
             },
         );
         tree.variables.insert(
             1,
             model::NamedVariable {
-                name: "TREE_PATH".to_string(),
-                expr: tree.path.expr.to_string(),
+                name: "TREE_PATH".into(),
+                expr: tree.path.expr.clone(),
                 value: None,
             },
         );
@@ -497,7 +497,7 @@ fn get_tree(
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
             tree.remotes.push(model::NamedVariable {
-                name: "origin".to_string(),
+                name: "origin".into(),
                 expr: url,
                 value: None,
             });
@@ -516,7 +516,7 @@ fn get_tree(
     for template_name in &tree.templates {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
-                &Yaml::String(template_name.to_string()),
+                &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
                 templates,
             );
@@ -545,7 +545,7 @@ fn get_tree(
     for template_name in tree.templates.iter().rev() {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let mut base = get_template(
-                &Yaml::String(template_name.to_string()),
+                &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
                 templates,
             );
@@ -566,8 +566,8 @@ fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
                 continue;
             }
             remotes.push(model::NamedVariable {
-                name: name.as_str().unwrap().to_string(),
-                expr: value.as_str().unwrap().to_string(),
+                name: name.as_str().unwrap().into(),
+                expr: value.as_str().unwrap().into(),
                 value: None,
             });
         }
@@ -687,7 +687,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     let mut good = doc["garden"].as_hash().is_some();
     if !good {
         if let Yaml::Hash(ref mut doc_hash) = doc {
-            let key = Yaml::String("garden".to_string());
+            let key = Yaml::String("garden".into());
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
             return Err(errors::GardenError::InvalidConfiguration {
@@ -700,7 +700,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     good = doc["trees"].as_hash().is_some();
     if !good {
         if let Yaml::Hash(ref mut doc_hash) = doc {
-            let key = Yaml::String("trees".to_string());
+            let key = Yaml::String("trees".into());
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
@@ -714,7 +714,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     good = doc["groups"].as_hash().is_some();
     if !good {
         if let Yaml::Hash(ref mut doc_hash) = doc {
-            let key = Yaml::String("groups".to_string());
+            let key = Yaml::String("groups".into());
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
@@ -728,7 +728,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     good = doc["gardens"].as_hash().is_some();
     if !good {
         if let Yaml::Hash(ref mut doc_hash) = doc {
-            let key = Yaml::String("gardens".to_string());
+            let key = Yaml::String("gardens".into());
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {

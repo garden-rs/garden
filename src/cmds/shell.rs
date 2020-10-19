@@ -32,7 +32,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "tree to chdir into",
         );
 
-        options.args.insert(0, "garden shell".to_string());
+        options.args.insert(0, "garden shell".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 
@@ -78,7 +78,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     }
 
     // Evaluate garden.shell
-    let shell_expr = config.shell.to_string();
+    let shell_expr = config.shell.clone();
     let shell = eval::tree_value(config, &shell_expr, context.tree, context.garden);
 
     if let Some(value) = shlex::split(&shell) {

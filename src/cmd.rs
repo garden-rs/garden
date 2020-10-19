@@ -54,7 +54,7 @@ pub fn status(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
 
 /// Take a subprocess capture and return a string without trailing whitespace.
 pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
-    capture.stdout_str().trim_end().to_string()
+    capture.stdout_str().trim_end().into()
 }
 
 
@@ -170,10 +170,10 @@ where
     let mut command_vec: Vec<String> = Vec::new();
     command_vec.reserve(command.len());
 
-    command_vec.push(cmdpath.to_string_lossy().to_string());
+    command_vec.push(cmdpath.to_string_lossy().into());
     for arg in &command[1..] {
         let curpath = std::path::PathBuf::from(arg);
-        command_vec.push(curpath.to_string_lossy().to_string());
+        command_vec.push(curpath.to_string_lossy().into());
     }
 
     command_vec
@@ -192,7 +192,7 @@ where
                 is_pre_dash = false;
                 continue;
             }
-            pre_dash.push((*string).to_string());
+            pre_dash.push(string.to_string());
         } else {
             post_dash.push(string.to_string());
         }
@@ -203,8 +203,8 @@ where
 /// Return the current executable path.
 pub fn current_exe() -> String {
     match std::env::current_exe() {
-        Err(_) => "garden".to_string(),
-        Ok(path) => path.to_string_lossy().to_string(),
+        Err(_) => "garden".into(),
+        Ok(path) => path.to_string_lossy().into(),
     }
 }
 

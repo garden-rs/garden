@@ -30,7 +30,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "trees to add",
         );
 
-        options.args.insert(0, "garden add".to_string());
+        options.args.insert(0, "garden add".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 
@@ -52,7 +52,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         };
 
         // Get a mutable reference to the "trees" hash.
-        let key = Yaml::String("trees".to_string());
+        let key = Yaml::String("trees".into());
         let trees: &mut YamlHash = match doc_hash.get_mut(&key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
@@ -99,13 +99,13 @@ fn add_path(
         tree_path = path.strip_prefix(&root)
             .unwrap()
             .to_string_lossy()
-            .to_string();
+            .into();
     } else {
-        tree_path = path.to_string_lossy().to_string();
+        tree_path = path.to_string_lossy().into();
     }
 
     // Tree name is updated when an existing tree is found.
-    let mut tree_name = tree_path.to_string();
+    let mut tree_name = tree_path.clone();
 
     // Do we already have a tree with this tree path?
     for tree in &config.trees {
@@ -118,12 +118,12 @@ fn add_path(
         let cfg_tree_path = cfg_tree_path_result.unwrap();
         if cfg_tree_path == path {
             // Tree found: take its configured name.
-            tree_name = tree.name.to_string();
+            tree_name = tree.name.clone();
         }
     }
 
     // Key for the tree entry
-    let key = Yaml::String(tree_name.to_string());
+    let key = Yaml::String(tree_name.clone());
     let mut entry: YamlHash = YamlHash::new();
 
     // Update an existing entry if it already exists.
@@ -135,7 +135,7 @@ fn add_path(
         }
     }
 
-    let remotes_key = Yaml::String("remotes".to_string());
+    let remotes_key = Yaml::String("remotes".into());
     let has_remotes = entry.contains_key(&remotes_key) &&
         entry.get(&remotes_key).unwrap().as_hash().is_some();
 
@@ -153,7 +153,7 @@ fn add_path(
                     continue;
                 }
                 // Any other remotes are part of the "remotes" hash.
-                remote_names.push(line.to_string());
+                remote_names.push(line.into());
             }
         }
     }
@@ -170,7 +170,7 @@ fn add_path(
             let exec = cmd::exec_in_dir(&command, &path);
             if let Ok(x) = cmd::capture_stdout(exec) {
                 let output = cmd::trim_stdout(&x);
-                remotes.push((remote.to_string(), output));
+                remotes.push((remote.clone(), output));
             }
         }
     }
@@ -183,13 +183,13 @@ fn add_path(
         let remotes_hash: &mut YamlHash = match entry.get_mut(&remotes_key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
-                return Err("trees: not a hash".to_string());
+                return Err("trees: not a hash".into());
             }
         };
 
         for (k, v) in &remotes {
-            let remote = Yaml::String(k.to_string());
-            let value = Yaml::String(v.to_string());
+            let remote = Yaml::String(k.clone());
+            let value = Yaml::String(v.clone());
 
             if remotes_hash.contains_key(&remote) {
                 *(remotes_hash.get_mut(&remote).unwrap()) = value;
@@ -199,7 +199,7 @@ fn add_path(
         }
     }
 
-    let url_key = Yaml::String("url".to_string());
+    let url_key = Yaml::String("url".into());
     let has_url = entry.contains_key(&url_key);
     if !has_url {
         if verbose {

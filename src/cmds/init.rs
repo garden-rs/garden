@@ -21,10 +21,10 @@ impl std::default::Default for InitOptions {
     fn default() -> Self {
         InitOptions {
             dirname: std::env::current_dir().unwrap(),
-            filename: "garden.yaml".to_string(),
+            filename: "garden.yaml".into(),
             force: false,
             global: false,
-            root: "${GARDEN_CONFIG_DIR}".to_string(),
+            root: "${GARDEN_CONFIG_DIR}".into(),
         }
     }
 }
@@ -63,7 +63,7 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
             "config file to write (default: garden.yaml)",
         );
 
-        options.args.insert(0, "garden init".to_string());
+        options.args.insert(0, "garden init".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 
@@ -129,7 +129,7 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
     // Mutable scope
     {
         if let Yaml::Hash(ref mut doc_hash) = doc {
-            let garden_key = Yaml::String("garden".to_string());
+            let garden_key = Yaml::String("garden".into());
             let garden: &mut YamlHash = match doc_hash.get_mut(&garden_key) {
                 Some(Yaml::Hash(ref mut hash)) => hash,
                 _ => {
@@ -141,8 +141,8 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
                 }
             };
 
-            let root_key = Yaml::String("root".to_string());
-            garden.insert(root_key, Yaml::String(init_options.root.to_string()));
+            let root_key = Yaml::String("root".into());
+            garden.insert(root_key, Yaml::String(init_options.root.clone()));
         }
     }
 

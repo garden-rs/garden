@@ -38,7 +38,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "garden to evaluate",
         );
 
-        options.args.insert(0, "garden eval".to_string());
+        options.args.insert(0, "garden eval".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 

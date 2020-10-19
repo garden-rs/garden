@@ -39,7 +39,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             "commands to run over resolved trees",
         );
 
-        options.args.insert(0, "garden cmd".to_string());
+        options.args.insert(0, "garden cmd".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 
@@ -116,7 +116,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
 
     // Default to "." when no queries have been specified.
     if queries.is_empty() {
-        queries.push(".".to_string());
+        queries.push(".".into());
     }
 
     if options.is_debug("cmd") {
@@ -167,12 +167,12 @@ pub fn cmd(
         }
         // Evaluate the tree environment
         let env = eval::environment(config, context);
-        let path;
+        let path: String;
 
         // Run each command in the tree's context
         {
             let tree = &config.trees[context.tree];
-            path = tree.path.value.as_ref().unwrap().to_string();
+            path = tree.path.value.as_ref().unwrap().into();
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !model::print_tree(&tree, verbose, quiet) {
                 continue;

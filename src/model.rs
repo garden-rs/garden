@@ -180,18 +180,18 @@ impl Configuration {
     /// Create a default Configuration
     pub fn new() -> Self {
         return Configuration {
-            shell: "zsh".to_string(),
+            shell: "zsh".into(),
             ..std::default::Default::default()
         };
     }
 
     pub fn initialize(&mut self) {
         // Evaluate garden.root
-        let expr = self.root.expr.to_string();
+        let expr = self.root.expr.clone();
         let value = eval::value(self, &expr);
         // Store the resolved garden.root
         self.root_path = std::path::PathBuf::from(&value);
-        self.root.value = Some(value.to_string());
+        self.root.value = Some(value);
 
         // Resolve tree paths
         self.update_tree_paths();
@@ -214,23 +214,24 @@ impl Configuration {
     fn reset_builtin_variables(&mut self) {
         // Update GARDEN_ROOT at position 0
         if !self.variables.is_empty() && self.variables[0].name == "GARDEN_ROOT" {
-            let value = self.root.value.as_ref().unwrap().to_string();
-            self.variables[0].expr = value.to_string();
-            self.variables[0].value = Some(value.to_string());
+            let value = self.root.value.as_ref().unwrap().clone();
+            self.variables[0].expr = value.clone();
+            self.variables[0].value = Some(value);
         }
 
         for tree in self.trees.iter_mut() {
-            let tree_path = tree.path.value.as_ref().unwrap().to_string();
+            let tree_path = tree.path.value.as_ref().unwrap().clone();
             if tree.variables.len() >= 2 {
                 // Update TREE_NAME at position 0
+                let tree_name = tree.name.clone();
                 if tree.variables[0].name == "TREE_NAME" {
-                    tree.variables[0].expr = tree.name.to_string();
-                    tree.variables[0].value = Some(tree.name.to_string());
+                    tree.variables[0].expr = tree_name.clone();
+                    tree.variables[0].value = Some(tree_name);
                 }
                 // Update TREE_PATH at position 1
                 if tree.variables[1].name == "TREE_PATH" {
-                    tree.variables[1].expr = tree_path.to_string();
-                    tree.variables[1].value = Some(tree_path.to_string());
+                    tree.variables[1].expr = tree_path.clone();
+                    tree.variables[1].value = Some(tree_path);
                 }
             }
         }
@@ -254,9 +255,9 @@ impl Configuration {
         let mut path_values = Vec::new();
         let mut symlink_values = Vec::new();
         for (idx, tree) in self.trees.iter().enumerate() {
-            path_values.push(tree.path.expr.to_string());
+            path_values.push(tree.path.expr.clone());
             if tree.is_symlink {
-                symlink_values.push((idx, tree.symlink.expr.to_string()));
+                symlink_values.push((idx, tree.symlink.expr.clone()));
             }
         }
 
@@ -277,13 +278,13 @@ impl Configuration {
     pub fn tree_path(&self, path: &str) -> String {
         if std::path::PathBuf::from(path).is_absolute() {
             // Absolute path, nothing to do
-            path.to_string()
+            path.into()
         } else {
             // Make path relative to root_path
             let mut path_buf = self.root_path.to_path_buf();
             path_buf.push(path);
 
-            path_buf.to_string_lossy().to_string()
+            path_buf.to_string_lossy().into()
         }
     }
 
@@ -298,13 +299,13 @@ impl Configuration {
     pub fn config_path(&self, path: &str) -> String {
         if std::path::PathBuf::from(path).is_absolute() {
             // Absolute path, nothing to do
-            path.to_string()
+            path.into()
         } else if self.dirname.is_some() {
             // Make path relative to the configuration's dirname
             let mut path_buf = self.dirname.as_ref().unwrap().to_path_buf();
             path_buf.push(path);
 
-            path_buf.to_string_lossy().to_string()
+            path_buf.to_string_lossy().into()
         } else {
             self.tree_path(path)
         }
@@ -422,7 +423,7 @@ impl TreeQuery {
         let pattern = glob::Pattern::new(glob_pattern).unwrap();
 
         return TreeQuery {
-            query: query.to_string(),
+            query: query.into(),
             is_default: is_default,
             is_garden: is_garden,
             is_group: is_group,
@@ -477,7 +478,7 @@ impl std::str::FromStr for Command {
             "ls" => Ok(Command::List),
             "sh" => Ok(Command::Shell),
             "shell" => Ok(Command::Shell),
-            _ => Ok(Command::Custom(src.to_string())),
+            _ => Ok(Command::Custom(src.into())),
         };
     }
 }
@@ -595,7 +596,7 @@ pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
 /// Print a tree if it exists, otherwise print a missing tree
 pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
     // Sparse gardens/missing trees are ok -> skip these entries.
-    let path = tree.path.value.as_ref().unwrap().to_string();
+    let path = tree.path.value.as_ref().unwrap().clone();
     if !std::path::PathBuf::from(&path).exists() {
         if !quiet {
             eprintln!("{}", display_missing_tree(&tree, &path, verbose));
@@ -611,7 +612,7 @@ pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
 /// Print a tree
 pub fn print_tree_details(tree: &Tree, verbose: bool, quiet: bool) {
     if !quiet {
-        let path = tree.path.value.as_ref().unwrap().to_string();
+        let path = tree.path.value.as_ref().unwrap().clone();
         eprintln!("{}", display_tree(&tree, &path, verbose));
     }
 }
@@ -654,7 +655,7 @@ impl CommandOptions {
                 .canonicalize()
                 .unwrap_or(root_path)
                 .to_string_lossy()
-                .to_string();
+                .into();
         }
 
         // Change directories before searching for conifgs: garden --chdir <path>
@@ -668,7 +669,7 @@ impl CommandOptions {
     }
 
     pub fn is_debug(&self, name: &str) -> bool {
-        return self.debug.contains(&name.to_string());
+        return self.debug.contains(&name.into());
     }
 }
 
