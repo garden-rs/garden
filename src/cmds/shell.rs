@@ -80,11 +80,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 
 /// Parse "shell" arguments.
-fn parse_args(
-    options: &mut model::CommandOptions,
-    query: &mut String,
-    tree: &mut String,
-) {
+fn parse_args(options: &mut model::CommandOptions, query: &mut String, tree: &mut String) {
     let mut ap = argparse::ArgumentParser::new();
     ap.set_description("garden shell - open a shell in a garden environment");
 

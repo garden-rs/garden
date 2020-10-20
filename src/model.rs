@@ -1,6 +1,6 @@
 use atty;
 use glob;
-use indextree::{Arena,NodeId};
+use indextree::{Arena, NodeId};
 use yansi;
 
 use super::errors;

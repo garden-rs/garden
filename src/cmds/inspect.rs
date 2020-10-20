@@ -22,10 +22,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 
 /// Parse "inspect" arguments.
-fn parse_args(
-    options: &mut model::CommandOptions,
-    query: &mut Vec<String>,
-) {
+fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
     let mut ap = argparse::ArgumentParser::new();
     ap.set_description("garden inspect - query tree status");
 

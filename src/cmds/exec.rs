@@ -24,11 +24,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 
 /// Parse "exec" arguments
-fn parse_args(
-    options: &mut model::CommandOptions,
-    query: &mut String,
-    command: &mut Vec<String>,
-) {
+fn parse_args(options: &mut model::CommandOptions, query: &mut String, command: &mut Vec<String>) {
     let mut ap = argparse::ArgumentParser::new();
     ap.silence_double_dash(false);
     ap.stop_on_first_argument(true);

@@ -143,32 +143,26 @@ fn tree_query() {
     // Success: "cola" is in the "git" garden.
     let tree_context_result = garden::query::tree_context(&config, "cola", Some("git"));
     assert!(tree_context_result.is_ok());
-    let tree_context =  tree_context_result.unwrap();
+    let tree_context = tree_context_result.unwrap();
     assert_eq!(tree_context.tree, 1);
     assert_eq!(tree_context.garden, Some(1));
 
     // Success: "cola" alone has a tree context with a None garden.
     let tree_context_result = garden::query::tree_context(&config, "cola", None);
     assert!(tree_context_result.is_ok());
-    let tree_context =  tree_context_result.unwrap();
+    let tree_context = tree_context_result.unwrap();
     assert_eq!(tree_context.tree, 1);
     assert_eq!(tree_context.garden, None);
 
     // "unknown" tarden is not a real garden.
-    let tree_context_result = garden::query::tree_context(
-        &config, "cola", Some("unknown-garden")
-    );
+    let tree_context_result = garden::query::tree_context(&config, "cola", Some("unknown-garden"));
     assert!(tree_context_result.is_err());
 
     // "tmp" is not in the "git" garden, and must raise an error.
-    let tree_context_result = garden::query::tree_context(
-        &config, "tmp", Some("git")
-    );
+    let tree_context_result = garden::query::tree_context(&config, "tmp", Some("git"));
     assert!(tree_context_result.is_err());
 
     // "unknown-tree" is not a real tree.
-    let tree_context_result = garden::query::tree_context(
-        &config, "unknown-tree", None
-    );
+    let tree_context_result = garden::query::tree_context(&config, "unknown-tree", None);
     assert!(tree_context_result.is_err());
 }

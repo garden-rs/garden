@@ -52,9 +52,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     Ok(config::writer::write_yaml(&doc, &output)?)
 }
 
-fn parse_args(
-    options: &mut model::CommandOptions, output: &mut String, paths: &mut Vec<String>
-) {
+fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &mut Vec<String>) {
     let mut ap = argparse::ArgumentParser::new();
     ap.set_description("add existing trees to a garden configuration");
 
