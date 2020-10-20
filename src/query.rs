@@ -1,4 +1,4 @@
-use super::errors;
+use super::errors::GardenError;
 use super::model;
 use super::query;
 
@@ -275,14 +275,14 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::T
 }
 
 
-/// Return a Result<garden::model::TreeContext, String> when the tree and
-/// optional garden are present.  Err is a String.
+/// Return a Result<garden::model::TreeContext, garden::errors::GardenError>
+/// when the tree and optional garden are present.
 
 pub fn tree_context(
     config: &model::Configuration,
     tree: &str,
-    garden: Option<String>,
-) -> Result<model::TreeContext, errors::GardenError> {
+    garden: Option<&str>,
+) -> Result<model::TreeContext, GardenError> {
 
     let mut ctx = model::TreeContext {
         tree: 0,
@@ -292,18 +292,18 @@ pub fn tree_context(
     if let Some(context) = tree_from_name(&config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
-        return Err(
-            errors::GardenError::TreeNotFound { tree: tree.into() }.into(),
-        );
+        return Err(GardenError::TreeNotFound { tree: tree.into() }.into());
     }
 
-    if garden.is_some() {
-        let pattern = glob::Pattern::new(garden.as_ref().unwrap()).unwrap();
+    if let Some(garden_name) = garden {
+        let pattern = glob::Pattern::new(garden_name).map_err(|_| {
+            GardenError::GardenPatternError { garden: garden_name.into() }
+        })?;
         let contexts = query::garden_trees(config, &pattern);
 
         if contexts.is_empty() {
             return Err(
-                errors::GardenError::GardenNotFound { garden: garden.unwrap() }.into(),
+                GardenError::GardenNotFound { garden: garden_name.into() }.into(),
             );
         }
 
@@ -318,9 +318,9 @@ pub fn tree_context(
 
         if !found {
             return Err(
-                errors::GardenError::InvalidGardenArgument {
+                GardenError::InvalidGardenArgument {
                     tree: tree.into(),
-                    garden: garden.unwrap(),
+                    garden: garden_name.into(),
                 }.into(),
             );
         }

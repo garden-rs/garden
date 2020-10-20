@@ -28,6 +28,9 @@ pub enum GardenError {
     #[error("unable to find '{garden}': No garden exists with that name")]
     GardenNotFound { garden: String },
 
+    #[error("'{garden}' is not a valid garden glob pattern")]
+    GardenPatternError { garden: String },
+
     #[error("{0}")]
     IOError(String),
 
@@ -80,6 +83,7 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::FileExists(_) => EX_CANTCREAT,
             GardenError::FileNotFound => EX_IOERR,
             GardenError::GardenNotFound { .. } => EX_USAGE,
+            GardenError::GardenPatternError { .. } => EX_DATAERR,
             GardenError::IOError(_) => EX_IOERR,
             GardenError::InvalidConfiguration { .. } => EX_CONFIG,
             GardenError::InvalidGardenArgument { .. } => EX_USAGE,

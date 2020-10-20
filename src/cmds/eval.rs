@@ -18,9 +18,9 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         return Ok(());
     }
 
-    let mut garden_opt: Option<String> = None;
+    let mut garden_opt: Option<&str> = None;
     if !garden.is_empty() {
-        garden_opt = Some(garden);
+        garden_opt = Some(&garden);
     }
 
     // Evaluate and print the garden expression.
