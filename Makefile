@@ -3,27 +3,38 @@ prefix ?= $(HOME)/.cargo
 
 # External commands and flags.
 CARGO ?= cargo
-CARGO_FLAGS = --all-targets
-ifdef release
+CARGO_FLAGS =
+
+ifndef debug
     CARGO_FLAGS += --release
 endif
 
+ifdef V
+    VERBOSE = 1
+endif
+
+ifndef VERBOSE
+.SILENT:
+else
+    CARGO_FLAGS += -v
+endif
 
 # The default "all" target builds the project and runs all tests.
 .PHONY: all
-all:: build test integration
+all:: build integration
 
 
-# make {bench,build,test}
 .PHONY: bench build test
 bench build test::
-	$(CARGO) $@ $(CARGO_FLAGS) $(flags)
+	$(CARGO) $@ --all-targets $(CARGO_FLAGS) $(flags)
 
+.PHONY: clean
+clean::
+	$(CARGO) clean $(flags)
 
-# make {clean,doc}
-.PHONY: clean doc
-clean doc::
-	$(CARGO) $@ $(flags)
+.PHONY: doc
+doc::
+	$(CARGO) doc --all --no-deps
 
 
 # Installation
@@ -39,12 +50,16 @@ integration::
 	$(CARGO) test --features integration $(CARGO_FLAGS) $(flags)
 
 
+.PHONY: coverage
+coverage::
+	cargo kcov
+
+
 # Code formatting
 .PHONY: check-format
 check-format::
 	$(CARGO) fmt -- --force --write-mode diff \
 	|| echo "# Changes detected.  Run 'make format' to apply changes."
-
 
 .PHONY: format
 format::
