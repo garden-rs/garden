@@ -35,15 +35,11 @@ fn expand_tree_vars(
 
     // First check for the variable at the garden scope.
     // Garden scope overrides tree and global scope.
-    if garden_idx.is_some() {
-        for (idx, var) in config.gardens[garden_idx.unwrap()]
-            .variables
-            .iter()
-            .enumerate()
-        {
+    if let Some(garden) = garden_idx {
+        for (idx, var) in config.gardens[garden].variables.iter().enumerate() {
             if var.name == name {
-                if var.value.is_some() {
-                    return Ok(Some(var.value.as_ref().unwrap().into()));
+                if let Some(var_value) = var.value.as_ref() {
+                    return Ok(Some(var_value.into()));
                 }
                 var_idx = idx;
                 found = true;
@@ -52,12 +48,9 @@ fn expand_tree_vars(
         }
 
         if found {
-            let expr = config.gardens[garden_idx.unwrap()].variables[var_idx]
-                .expr
-                .clone();
-
+            let expr = config.gardens[garden].variables[var_idx].expr.clone();
             let result = tree_value(config, &expr, tree_idx, garden_idx);
-            config.gardens[garden_idx.unwrap()].variables[var_idx].value = Some(result.clone());
+            config.gardens[garden].variables[var_idx].value = Some(result.clone());
             return Ok(Some(result));
         }
     }
@@ -68,8 +61,8 @@ fn expand_tree_vars(
 
     for (idx, var) in config.trees[tree_idx].variables.iter().enumerate() {
         if var.name == name {
-            if var.value.is_some() {
-                return Ok(Some(var.value.as_ref().unwrap().into()));
+            if let Some(var_value) = var.value.as_ref() {
+                return Ok(Some(var_value.into()));
             }
             found = true;
             var_idx = idx;
@@ -90,8 +83,9 @@ fn expand_tree_vars(
 
     for (idx, var) in config.variables.iter().enumerate() {
         if var.name == name {
-            if var.value.is_some() {
-                return Ok(Some(var.value.as_ref().unwrap().into()));
+            // Return the value immediately if it's already been evaluated.
+            if let Some(var_value) = var.value.as_ref() {
+                return Ok(Some(var_value.into()));
             }
             found = true;
             var_idx = idx;
@@ -128,8 +122,8 @@ fn expand_vars(config: &mut model::Configuration, name: &str) -> Result<Option<S
 
     for (idx, var) in config.variables.iter().enumerate() {
         if var.name == name {
-            if var.value.is_some() {
-                return Ok(Some(var.value.as_ref().unwrap().into()));
+            if let Some(var_value) = var.value.as_ref() {
+                return Ok(Some(var_value.into()));
             }
             var_idx = idx;
             found = true;
@@ -173,8 +167,8 @@ pub fn tree_value(
     garden_idx: Option<model::GardenIndex>,
 ) -> String {
     let expanded = shellexpand::full_with_context(expr, home_dir, |x| {
-        return expand_tree_vars(config, tree_idx, garden_idx, x);
-    }).unwrap_or(Cow::from(""))
+        expand_tree_vars(config, tree_idx, garden_idx, x)
+    }).unwrap_or(Cow::from(expr))
         .to_string();
 
     // TODO exec_expression_with_path() to use the tree path.
