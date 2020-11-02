@@ -5,6 +5,9 @@ use garden::cmd;
 // and are enabled by using "cargo test --features integration"
 #[cfg(feature = "integration")]
 mod slow {
+    use std::path::Path;
+
+    use anyhow::Result;
 
     use garden::cmd;
 
@@ -217,6 +220,140 @@ mod slow {
         }
 
         teardown("tests/tmp/gitconfig");
+    }
+
+
+    /// `garden add` adds an empty repository
+    #[test]
+    fn add_empty_repo() -> Result<()> {
+        setup("add-empty-repo", "tests/tmp");
+
+        // garden init in test/tmp/add-empty-repo
+        let cmd = [
+            "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo", "init",
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        // Empty garden.yaml should be created
+        assert!(Path::new("tests/tmp/add-empty-repo/garden.yaml").exists());
+
+        // Create tests/tmp/add-empty-repo/repo{1,2}
+        let cmd = ["git", "-C", "tests/tmp/add-empty-repo", "init", "repo1"];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        let cmd = ["git", "-C", "tests/tmp/add-empty-repo", "init", "repo2"];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        // repo1 has two remotes: "origin" and "remote-1".
+        // git remote add origin repo-1-url
+        let cmd = [
+            "git", "-C", "tests/tmp/add-empty-repo/repo1",
+            "remote", "add", "origin", "repo-1-url"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        // git remote add remote-1 remote-1-url
+        let cmd = [
+            "git", "-C", "tests/tmp/add-empty-repo/repo1",
+            "remote", "add", "remote-1", "remote-1-url"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        // garden add repo1
+        let cmd = [
+            "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo",
+            "add", "repo1"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        let path = Some(
+            std::path::PathBuf::from("tests/tmp/add-empty-repo/garden.yaml")
+        );
+
+        // Load the configuration and assert that the remotes are configured.
+        let cfg = garden::config::new(&path, "", false)?;
+        assert_eq!(cfg.trees.len(), 1);
+        assert_eq!(cfg.trees[0].name, "repo1");
+        assert_eq!(cfg.trees[0].remotes.len(), 2);
+        assert_eq!(cfg.trees[0].remotes[0].name, "origin");
+        assert_eq!(cfg.trees[0].remotes[0].expr, "repo-1-url");
+        assert_eq!(cfg.trees[0].remotes[1].name, "remote-1");
+        assert_eq!(cfg.trees[0].remotes[1].expr, "remote-1-url");
+
+        // repo2 has two remotes: "remote-1" and "remote-2".
+        // git remote add remote-1 remote-1-url
+        let cmd = [
+            "git", "-C", "tests/tmp/add-empty-repo/repo2",
+            "remote", "add", "remote-1", "remote-1-url"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        // git remote add remote-2 remote-2-url
+        let cmd = [
+            "git", "-C", "tests/tmp/add-empty-repo/repo2",
+            "remote", "add", "remote-2", "remote-2-url"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        // garden add repo2
+        let cmd = [
+            "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo",
+            "add", "repo2"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        // Load the configuration and assert that the remotes are configured.
+        let cfg = garden::config::new(&path, "", false)?;
+        assert_eq!(cfg.trees.len(), 2);  // Now we have two trees.
+        assert_eq!(cfg.trees[1].name, "repo2");
+        assert_eq!(cfg.trees[1].remotes.len(), 2);
+        assert_eq!(cfg.trees[1].remotes[0].name, "remote-1");
+        assert_eq!(cfg.trees[1].remotes[0].expr, "remote-1-url");
+        assert_eq!(cfg.trees[1].remotes[1].name, "remote-2");
+        assert_eq!(cfg.trees[1].remotes[1].expr, "remote-2-url");
+
+        // Verify that "garden add" will refresh the remote URLs
+        // for existing entries.
+
+        // Update repo1's origin url to repo-1-new-url.
+        // git config remote.origin.url repo-1-new-url
+        let cmd = [
+            "git", "-C", "tests/tmp/add-empty-repo/repo1",
+            "config", "remote.origin.url", "repo-1-new-url"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        // Update repo2's remote-2 url to remote-2-new-url.
+        // git config remote.remote-2.url remote-2-new-url
+        let cmd = [
+            "git", "-C", "tests/tmp/add-empty-repo/repo2",
+            "config", "remote.remote-2.url", "remote-2-new-url"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        // garden add repo1 repo2
+        let cmd = [
+            "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo",
+            "add", "repo1", "repo2"
+        ];
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+
+        // Load the configuration and assert that the remotes are configured.
+        let cfg = garden::config::new(&path, "", false)?;
+        assert_eq!(cfg.trees.len(), 2);
+        assert_eq!(cfg.trees[0].name, "repo1");
+        assert_eq!(cfg.trees[0].remotes.len(), 2);
+        assert_eq!(cfg.trees[0].remotes[0].name, "origin");
+        assert_eq!(cfg.trees[0].remotes[0].expr, "repo-1-new-url");  // New value.
+        assert_eq!(cfg.trees[0].remotes[1].name, "remote-1");
+        assert_eq!(cfg.trees[0].remotes[1].expr, "remote-1-url");
+
+        assert_eq!(cfg.trees[1].name, "repo2");
+        assert_eq!(cfg.trees[1].remotes.len(), 2);
+        assert_eq!(cfg.trees[1].remotes[0].name, "remote-1");
+        assert_eq!(cfg.trees[1].remotes[0].expr, "remote-1-url");
+        assert_eq!(cfg.trees[1].remotes[1].name, "remote-2");
+        assert_eq!(cfg.trees[1].remotes[1].expr, "remote-2-new-url");  // New value.
+
+        teardown("tests/tmp/add-empty-repo");
+
+        Ok(())
     }
 
 

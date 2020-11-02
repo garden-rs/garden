@@ -137,14 +137,16 @@ fn add_path(
 
     // Key for the tree entry
     let key = Yaml::String(tree_name.clone());
-    let mut entry: YamlHash = YamlHash::new();
 
-    // Update an existing entry if it already exists.
+    // Update an existing tre entry if it already exists.
     // Add a new entry otherwise.
-    if trees.get(&key).is_some() && trees.get(&key).unwrap().as_hash().is_some() {
-        entry = trees.get(&key).unwrap().as_hash().unwrap().clone();
-        if verbose {
-            eprintln!("{}: found existing tree", tree_name);
+    let mut entry: YamlHash = YamlHash::new();
+    if let Some(tree_yaml) = trees.get(&key) {
+        if let Some(tree_hash) = tree_yaml.as_hash() {
+            if verbose {
+                eprintln!("{}: found existing tree", tree_name);
+            }
+            entry = tree_hash.clone();
         }
     }
 
