@@ -88,6 +88,13 @@ pub struct Tree {
 impl_display!(Tree);
 
 impl Tree {
+
+    pub fn path_as_ref(&self) -> Result<&String, String> {
+        self.path.value.as_ref().ok_or(
+            format!("unset tree path for {}", self.name)
+        )
+    }
+
     pub fn reset_variables(&mut self) {
         // self.path is a variable but it is not reset because
         // the tree path is evaluated once when the configuration
@@ -180,10 +187,10 @@ impl_display!(Configuration);
 impl Configuration {
     /// Create a default Configuration
     pub fn new() -> Self {
-        return Configuration {
+        Configuration {
             shell: "zsh".into(),
             ..std::default::Default::default()
-        };
+        }
     }
 
     pub fn initialize(&mut self) {

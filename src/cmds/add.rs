@@ -81,23 +81,38 @@ fn add_path(
 ) -> Result<(), String> {
 
     // Garden root path
-    let root = config.root_path.canonicalize().unwrap().to_path_buf();
+    let root = config
+        .root_path
+        .canonicalize()
+        .map_err(|err| {
+            format!("unable to canonicalize config root: {:?}", err)
+        })?
+        .to_path_buf();
 
     let pathbuf = std::path::PathBuf::from(raw_path);
     if !pathbuf.exists() {
-        return Err(format!("{}: invalid tree path", raw_path));
+        return Err(format!("invalid tree path: {}", raw_path));
     }
 
     // Build the tree's path
     let tree_path: String;
 
     // Get a canonical tree path for comparison with the canonical root.
-    let path = pathbuf.canonicalize().unwrap().to_path_buf();
+    let path = pathbuf
+        .canonicalize()
+        .map_err(|err| {
+            format!("unable to canonicalize {:?}: {:?}", raw_path, err)
+        })?
+        .to_path_buf();
 
     // Is the path a child of the current garden root?
-    if path.starts_with(&root) && path.strip_prefix(&root).is_ok() {
-
-        tree_path = path.strip_prefix(&root).unwrap().to_string_lossy().into();
+    if path.starts_with(&root) {
+        tree_path = path.strip_prefix(&root)
+            .map_err(|err| {
+                format!("{:?} is not a child of {:?}: {:?}", path, root, err)
+            })?
+            .to_string_lossy()
+            .into();
     } else {
         tree_path = path.to_string_lossy().into();
     }
@@ -107,16 +122,16 @@ fn add_path(
 
     // Do we already have a tree with this tree path?
     for tree in &config.trees {
-        let cfg_tree_path_result = std::path::PathBuf::from(tree.path.value.as_ref().unwrap())
-            .canonicalize();
-        if cfg_tree_path_result.is_err() {
-            continue; // skip missing entries
-        }
-
-        let cfg_tree_path = cfg_tree_path_result.unwrap();
-        if cfg_tree_path == path {
-            // Tree found: take its configured name.
-            tree_name = tree.name.clone();
+        assert!(tree.path.value.is_some());
+        // Skip entries that do not exist on disk.
+        // Check if this tree matches the specified path.
+        let tree_path_value = tree.path_as_ref()?;
+        let tree_pathbuf = std::path::PathBuf::from(tree_path_value);
+        if let Ok(canon_path) = tree_pathbuf.canonicalize() {
+            if canon_path == path {
+                // Existing tree found: use the configured name.
+                tree_name = tree.name.clone();
+            }
         }
     }
 
@@ -134,8 +149,10 @@ fn add_path(
     }
 
     let remotes_key = Yaml::String("remotes".into());
-    let has_remotes = entry.contains_key(&remotes_key) &&
-        entry.get(&remotes_key).unwrap().as_hash().is_some();
+    let has_remotes = match entry.get(&remotes_key) {
+        Some(remotes_yaml) => remotes_yaml.as_hash().is_some(),
+        None => false,
+    };
 
     // Gather remote names
     let mut remote_names: Vec<String> = Vec::new();
@@ -189,8 +206,8 @@ fn add_path(
             let remote = Yaml::String(k.clone());
             let value = Yaml::String(v.clone());
 
-            if remotes_hash.contains_key(&remote) {
-                *(remotes_hash.get_mut(&remote).unwrap()) = value;
+            if let Some(remote_entry) = remotes_hash.get_mut(&remote) {
+                *remote_entry = value;
             } else {
                 remotes_hash.insert(remote, value);
             }
@@ -198,28 +215,23 @@ fn add_path(
     }
 
     let url_key = Yaml::String("url".into());
-    let has_url = entry.contains_key(&url_key);
-    if !has_url {
-        if verbose {
-            eprintln!("{}: no url", tree_name);
-        }
+    if verbose && entry.contains_key(&url_key) {
+        eprintln!("{}: no url", tree_name);
+    }
 
+    // Update the url field
+    {
         let command = ["git", "config", "remote.origin.url"];
         let exec = cmd::exec_in_dir(&command, &path);
-        match cmd::capture_stdout(exec) {
-            Ok(x) => {
-                let origin_url = cmd::trim_stdout(&x);
-                entry.insert(url_key, Yaml::String(origin_url));
-            }
-            Err(err) => {
-                error!("{:?}", err);
-            }
+        if let Ok(cmd_stdout) = cmd::capture_stdout(exec) {
+            let origin_url = cmd::trim_stdout(&cmd_stdout);
+            entry.insert(url_key, Yaml::String(origin_url));
         }
     }
 
     // Move the entry into the trees container
-    if trees.contains_key(&key) {
-        *(trees.get_mut(&key).unwrap()) = Yaml::Hash(entry);
+    if let Some(tree_entry) = trees.get_mut(&key) {
+        *tree_entry = Yaml::Hash(entry);
     } else {
         trees.insert(key, Yaml::Hash(entry));
     }

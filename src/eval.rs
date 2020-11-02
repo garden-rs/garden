@@ -3,6 +3,7 @@ use glob;
 use shellexpand;
 use subprocess;
 
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 use super::cmd;
@@ -173,7 +174,7 @@ pub fn tree_value(
 ) -> String {
     let expanded = shellexpand::full_with_context(expr, home_dir, |x| {
         return expand_tree_vars(config, tree_idx, garden_idx, x);
-    }).unwrap()
+    }).unwrap_or(Cow::from(""))
         .to_string();
 
     // TODO exec_expression_with_path() to use the tree path.
@@ -189,7 +190,7 @@ pub fn tree_value(
 pub fn value(config: &mut model::Configuration, expr: &str) -> String {
     let expanded =
         shellexpand::full_with_context(expr, home_dir, |x| { return expand_vars(config, x); })
-            .unwrap()
+            .unwrap_or(Cow::from(""))
             .to_string();
 
     return exec_expression(&expanded);
@@ -386,7 +387,12 @@ pub fn command(
     name: &str,
 ) -> Vec<Vec<String>> {
     let mut vars = Vec::new();
-    let pattern = glob::Pattern::new(name).unwrap();
+    let mut result = Vec::new();
+
+    let pattern = match glob::Pattern::new(name) {
+        Ok(value) => value,
+        Err(_) => return result,
+    };
 
     // Global commands
     for var in &config.commands {
@@ -411,7 +417,6 @@ pub fn command(
         }
     }
 
-    let mut result = Vec::new();
     for var in vars.iter_mut() {
         result.push(multi_variable(config, var, context));
     }
