@@ -11,9 +11,7 @@ mod slow {
     /// Cleanup and create a bare repository for cloning
     fn setup(name: &str, path: &str) {
         let cmd = ["../integration/setup.sh", name];
-        let exec = cmd::exec_in_dir(&cmd, path);
-        let exit_status = cmd::status(exec.join());
-        assert_eq!(exit_status, 0);
+        assert_eq!(cmd::status(cmd::exec_in_dir(&cmd, path).join()), 0);
     }
 
 
@@ -39,9 +37,7 @@ mod slow {
             "grow",
             "example/tree",
         ];
-        let exec = cmd::exec_cmd(&cmd);
-        let exit_status = cmd::status(exec.join());
-        assert_eq!(exit_status, 0);
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
 
         // Ensure the repository was created
         let mut repo = std::path::PathBuf::from("tests");
@@ -84,9 +80,7 @@ mod slow {
             "grow",
             "example/tree",
         ];
-        let exec = cmd::exec_cmd(&cmd);
-        let exit_status = cmd::status(exec.join());
-        assert_eq!(exit_status, 0);
+        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
 
         // remote.origin.url is a read-only git:// URL
         {
@@ -137,9 +131,7 @@ mod slow {
                 "link",
                 "example/link",
             ];
-            let exec = cmd::exec_cmd(&cmd);
-            let exit_status = cmd::status(exec.join());
-            assert_eq!(exit_status, 0);
+            assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
         }
 
         // tests/tmp/symlinks/trees/example/repo exists
@@ -191,9 +183,7 @@ mod slow {
                 "grow",
                 "example/tree",
             ];
-            let exec = cmd::exec_cmd(&cmd);
-            let exit_status = cmd::status(exec.join());
-            assert_eq!(exit_status, 0);
+            assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
         }
 
         // remote.origin.annex-ignore is true
