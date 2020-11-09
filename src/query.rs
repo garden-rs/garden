@@ -94,11 +94,10 @@ pub fn trees_from_garden(
     // Loop over the garden's groups.
     for group in &garden.groups {
         // Create a glob pattern for the group entry
-        let pattern_res = glob::Pattern::new(&group);
-        if pattern_res.is_err() {
-            continue;
-        }
-        let pattern = pattern_res.unwrap();
+        let pattern = match glob::Pattern::new(&group) {
+            Ok(value) => value,
+            Err(_) => continue,
+        };
         // Loop over configured groups to find the matching groups
         for cfg_group in &config.groups {
             if !pattern.matches(&cfg_group.name) {
@@ -194,12 +193,10 @@ pub fn trees_from_pattern(
     group_idx: Option<model::GroupIndex>,
 ) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
-
-    let pattern_res = glob::Pattern::new(tree);
-    if pattern_res.is_err() {
-        return result;
-    }
-    let pattern = pattern_res.unwrap();
+    let pattern = match glob::Pattern::new(tree) {
+        Ok(value) => value,
+        Err(_) => return result,
+    };
 
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
@@ -229,27 +226,32 @@ pub fn trees_from_pattern(
 
 /// Return a tree context for the specified filesystem path.
 
-pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model::TreeContext> {
-
-    let canon = std::path::PathBuf::from(path).canonicalize();
-    if canon.is_err() {
-        return None;
-    }
-
-    let pathbuf = canon.unwrap().to_path_buf();
+pub fn tree_from_path(config: &model::Configuration, path: &str)
+    -> Option<model::TreeContext>
+{
+    let pathbuf = match std::path::PathBuf::from(path).canonicalize() {
+        Ok(canon) => canon.to_path_buf(),
+        Err(_) => return None,
+    };
 
     for (idx, tree) in config.trees.iter().enumerate() {
-        let tree_path = tree.path.value.as_ref().unwrap();
-        let tree_canon = std::path::PathBuf::from(tree_path).canonicalize();
-        if tree_canon.is_err() {
-            continue;
-        }
-        if pathbuf == tree_canon.unwrap() {
-            return Some(model::TreeContext {
-                tree: idx as model::TreeIndex,
-                garden: None,
-                group: None,
-            });
+        let tree_path = match tree.path_as_ref() {
+            Ok(value) => value,
+            Err(_) => continue,
+        };
+
+        let tree_canon = match std::path::PathBuf::from(tree_path).canonicalize() {
+            Ok(value) => value,
+            Err(_) => continue,
+        };
+        if pathbuf == tree_canon {
+            return Some(
+                model::TreeContext {
+                    tree: idx as model::TreeIndex,
+                    garden: None,
+                    group: None,
+                }
+            );
         }
     }
 

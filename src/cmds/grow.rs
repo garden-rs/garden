@@ -20,7 +20,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut exit_status = 0;
     let config = app.get_mut_config();
     for query in &queries {
-        let status = grow(config, quiet, verbose, &query);
+        let status = grow(config, quiet, verbose, &query)?;
         if status != 0 {
             exit_status = status;
         }
@@ -48,20 +48,21 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
         options.args.to_vec(),
         &mut std::io::stdout(),
         &mut std::io::stderr(),
-    )
-    {
+    ) {
         std::process::exit(err);
     }
 }
 
 
 /// Create/update trees in the evaluated tree query.
-pub fn grow(config: &mut model::Configuration, quiet: bool, verbose: bool, query: &str) -> i32 {
+pub fn grow(
+    config: &mut model::Configuration, quiet: bool, verbose: bool, query: &str
+) -> Result<i32> {
     let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
 
     for ctx in &contexts {
-        let path: String = config.trees[ctx.tree].path.value.as_ref().unwrap().clone();
+        let path = config.trees[ctx.tree].path_as_ref()?.clone();
         model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
 
         let pathbuf = std::path::PathBuf::from(&path);
@@ -165,7 +166,7 @@ pub fn grow(config: &mut model::Configuration, quiet: bool, verbose: bool, query
     }
 
     // Return the last non-zero exit status.
-    exit_status
+    Ok(exit_status)
 }
 
 
@@ -176,12 +177,14 @@ fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> i32 
     // Invalid usage: non-symlink
     if !tree.is_symlink || tree.path.value.is_none() ||
         tree.path.value.as_ref().unwrap().is_empty() || tree.symlink.value.is_none() ||
-        tree.symlink.value.as_ref().unwrap().is_empty()
-    {
+        tree.symlink.value.as_ref().unwrap().is_empty() {
         return 1;
     }
 
-    let path_str = tree.path.value.as_ref().unwrap();
+    let path_str = match tree.path_as_ref() {
+        Ok(value) => value,
+        Err(_) => return 1,
+    };
     let path = std::path::PathBuf::from(&path_str);
 
     // Leave existing paths as-is.

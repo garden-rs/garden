@@ -6,6 +6,9 @@ pub enum GardenError {
     #[error("assertion error: {0}")]
     AssertionError(String),
 
+    #[error("configuration error: {0}")]
+    ConfigurationError(String),
+
     #[error("{path:?}: unable to create configuration: {err}")]
     CreateConfigurationError {
         path: std::path::PathBuf,
@@ -77,6 +80,7 @@ impl std::convert::From<GardenError> for i32 {
 
         match garden_err {
             GardenError::AssertionError(_) => EX_SOFTWARE,
+            GardenError::ConfigurationError(_) => EX_CONFIG,
             GardenError::CreateConfigurationError { .. } => EX_CANTCREAT,
             GardenError::EmptyConfiguration { .. } => EX_CONFIG,
             GardenError::ExitStatus(status) => status,  // Explicit exit code

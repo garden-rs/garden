@@ -89,10 +89,15 @@ impl_display!(Tree);
 
 impl Tree {
 
-    pub fn path_as_ref(&self) -> Result<&String, String> {
-        self.path.value.as_ref().ok_or(
-            format!("unset tree path for {}", self.name)
-        )
+    pub fn path_as_ref(&self) -> Result<&String, errors::GardenError> {
+        match self.path.value.as_ref() {
+            Some(value) => Ok(value),
+            None => Err(
+                errors::GardenError::ConfigurationError(
+                    format!("unset tree path for {}", self.name)
+                )
+            )
+        }
     }
 
     pub fn reset_variables(&mut self) {
