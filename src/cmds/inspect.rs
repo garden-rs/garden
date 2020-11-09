@@ -32,7 +32,7 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
         "gardens/groups/trees to exec (tree queries)",
     );
 
-    options.args.insert(0, "garden exec".into());
+    options.args.insert(0, "garden inspect".into());
     cmd::parse_args(ap, options.args.to_vec());
 
     if query.is_empty() {
@@ -58,8 +58,7 @@ pub fn inspect(
         // Loop over each context and inspect the tree.
         for context in &contexts {
             let tree = &config.trees[context.tree];
-            let path = tree.path.value.as_ref().unwrap();
-
+            let path = tree.path_as_ref()?;
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !std::path::PathBuf::from(&path).exists() {
                 if verbose {
@@ -83,7 +82,7 @@ pub fn inspect(
                         Color::green(&tree.name).bold(),
                         Color::green(&path),
                         Color::yellow("->").bold(),
-                        Color::blue(&tree.symlink.value.as_ref().unwrap()).bold()
+                        Color::blue(&tree.symlink_as_ref()?).bold()
                     );
                 } else {
                     println!(
@@ -91,7 +90,7 @@ pub fn inspect(
                         Color::green("+"),
                         Color::green(&tree.name).bold(),
                         Color::yellow("->").bold(),
-                        Color::blue(tree.symlink.value.as_ref().unwrap()).bold()
+                        Color::blue(tree.symlink_as_ref()?).bold()
                     );
                 }
             } else {

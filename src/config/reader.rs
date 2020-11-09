@@ -4,6 +4,7 @@ use yaml_rust::YamlLoader;
 
 use super::super::errors;
 use super::super::model;
+use super::super::path;
 
 
 // Apply YAML Configuration from a string.
@@ -36,7 +37,7 @@ pub fn parse(
             // TODO: move GARDEN_ROOT initialization out of this so that
             // we can avoid this early initialization and do it in the outer
             // config::new() call.
-            config.root.expr = std::env::current_dir().unwrap().to_string_lossy().into();
+            config.root.expr = path::current_dir_string();
         }
 
         if verbose {
@@ -68,14 +69,12 @@ pub fn parse(
         value: None,
     });
 
-    if config.dirname.is_some() {
-        let config_path_raw = config.dirname.as_ref().unwrap();
-
+    if let Some(config_path_raw) = config.dirname.as_ref() {
         // Calculate an absolute path for GARDEN_CONFIG_DIR.
         if let Ok(config_path) = config_path_raw.canonicalize() {
             config.variables.push(model::NamedVariable {
                 name: "GARDEN_CONFIG_DIR".into(),
-                expr: config_path.to_string_lossy().into(),
+                expr: config_path.to_string_lossy().to_string(),
                 value: None,
             });
         }
@@ -203,10 +202,14 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
 fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (k, v) in hash {
+            let key = match k.as_str() {
+                Some(key_value) => key_value.to_string(),
+                None => continue,
+            };
             match v {
                 Yaml::String(ref yaml_str) => {
                     vec.push(model::NamedVariable {
-                        name: k.as_str().unwrap().into(),
+                        name: key,
                         expr: yaml_str.clone(),
                         value: None,
                     });
@@ -215,7 +218,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
                             vec.push(model::NamedVariable {
-                                name: k.as_str().unwrap().into(),
+                                name: key.to_string(),
                                 expr: yaml_str.clone(),
                                 value: None,
                             });
@@ -224,14 +227,14 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                 }
                 Yaml::Integer(yaml_int) => {
                     vec.push(model::NamedVariable {
-                        name: k.as_str().unwrap().into(),
+                        name: key,
                         expr: yaml_int.to_string(),
                         value: None,
                     });
                 }
                 Yaml::Boolean(ref yaml_bool) => {
                     vec.push(model::NamedVariable {
-                        name: k.as_str().unwrap().into(),
+                        name: key,
                         expr: bool_to_string(yaml_bool),
                         value: None,
                     });
@@ -259,10 +262,14 @@ fn bool_to_string(value: &bool) -> String {
 fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (k, v) in hash {
+            let key = match k.as_str() {
+                Some(key_value) => key_value.to_string(),
+                None => continue,
+            };
             match v {
                 Yaml::String(ref yaml_str) => {
                     vec.push(model::MultiVariable {
-                        name: k.as_str().unwrap().into(),
+                        name: key,
                         values: vec![
                             model::Variable {
                                 expr: yaml_str.clone(),
@@ -282,13 +289,13 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
                         }
                     }
                     vec.push(model::MultiVariable {
-                        name: k.as_str().unwrap().into(),
+                        name: key,
                         values: values,
                     });
                 }
                 Yaml::Integer(yaml_int) => {
                     vec.push(model::MultiVariable {
-                        name: k.as_str().unwrap().into(),
+                        name: key,
                         values: vec![
                             model::Variable {
                                 expr: yaml_int.to_string(),
@@ -559,14 +566,13 @@ fn get_tree(
 fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
-            if !name.as_str().is_some() || !value.as_str().is_some() {
-                continue;
+            if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
+                remotes.push(model::NamedVariable {
+                    name: name_str.to_string(),
+                    expr: value_str.to_string(),
+                    value: None,
+                });
             }
-            remotes.push(model::NamedVariable {
-                name: name.as_str().unwrap().into(),
-                expr: value.as_str().unwrap().into(),
-                value: None,
-            });
         }
     }
 }

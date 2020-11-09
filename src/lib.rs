@@ -20,6 +20,9 @@ pub mod eval;
 /// Model objects
 pub mod model;
 
+/// Path utilities
+pub mod path;
+
 /// Queries, configuration lookups
 pub mod query;
 

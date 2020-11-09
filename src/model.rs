@@ -245,7 +245,10 @@ impl Configuration {
         }
 
         for tree in self.trees.iter_mut() {
-            let tree_path = tree.path.value.as_ref().unwrap().clone();
+            let tree_path = match tree.path_as_ref() {
+                Ok(path) => path,
+                Err(_) => continue,
+            }.clone();
             if tree.variables.len() >= 2 {
                 // Update TREE_NAME at position 0
                 let tree_name = tree.name.clone();
@@ -623,25 +626,31 @@ pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
 
 /// Print a tree if it exists, otherwise print a missing tree
 pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
-    // Sparse gardens/missing trees are ok -> skip these entries.
-    let path = tree.path.value.as_ref().unwrap().clone();
-    if !std::path::PathBuf::from(&path).exists() {
-        if !quiet {
-            eprintln!("{}", display_missing_tree(&tree, &path, verbose));
+    if let Ok(path) = tree.path_as_ref() {
+        // Sparse gardens/missing trees are ok -> skip these entries.
+        if !std::path::PathBuf::from(&path).exists() {
+            if !quiet {
+                eprintln!("{}", display_missing_tree(&tree, &path, verbose));
+            }
+            return false;
         }
-        return false;
-    }
-    print_tree_details(tree, verbose, quiet);
 
-    true
+        print_tree_details(tree, verbose, quiet);
+        return true;
+    } else if !quiet {
+        eprintln!("{}", display_missing_tree(&tree, "[invalid-path]", verbose));
+    }
+
+    false
 }
 
 
 /// Print a tree
 pub fn print_tree_details(tree: &Tree, verbose: bool, quiet: bool) {
     if !quiet {
-        let path = tree.path.value.as_ref().unwrap().clone();
-        eprintln!("{}", display_tree(&tree, &path, verbose));
+        if let Ok(path) = tree.path_as_ref() {
+            eprintln!("{}", display_tree(&tree, &path, verbose));
+        }
     }
 }
 

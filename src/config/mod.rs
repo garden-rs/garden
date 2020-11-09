@@ -1,8 +1,8 @@
-use dirs;
 use xdg;
 
 use super::errors;
 use super::model;
+use super::path;
 
 /// YAML reader
 pub mod reader;
@@ -23,8 +23,8 @@ fn search_path() -> Vec<std::path::PathBuf> {
     // Result: Vec<PathBufs> in priority order
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
 
-    let current_dir = std::env::current_dir().unwrap_or(std::path::PathBuf::from("."));
-    let home_dir = dirs::home_dir().unwrap_or(std::path::PathBuf::from("/"));
+    let current_dir = path::current_dir();
+    let home_dir = path::home_dir();
 
     // . Current directory
     paths.push(current_dir.to_path_buf());
@@ -72,7 +72,7 @@ pub fn xdg_dir() -> std::path::PathBuf {
     if let Ok(xdg_dirs) = xdg::BaseDirectories::new() {
         home_config_dir = xdg_dirs.get_config_home();
     } else {
-        home_config_dir = dirs::home_dir().unwrap_or(std::path::PathBuf::from("/"));
+        home_config_dir = path::home_dir();
         home_config_dir.push(".config")
     }
     home_config_dir.push("garden");
@@ -150,9 +150,7 @@ pub fn new(
 
     // Default to the current directory when garden.root is unspecified
     if cfg.root.expr.is_empty() {
-        cfg.root.expr = std::env::current_dir().unwrap_or(
-            std::path::PathBuf::from(".")
-        ).to_string_lossy().to_string();
+        cfg.root.expr = path::current_dir_string();
     }
 
     // Grafts
