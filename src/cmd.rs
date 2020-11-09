@@ -110,7 +110,7 @@ where
     // Immutable scope over tree
     {
         let tree = &config.trees[context.tree];
-        path = tree.path.value.as_ref().unwrap().clone();
+        path = tree.path_as_ref()?.clone();
 
         // Sparse gardens/missing trees are ok -> skip these entries.
         if !model::print_tree(&tree, verbose, quiet) {
@@ -136,31 +136,31 @@ where
 
 /// The command might be a path that only exists inside the resolved
 /// environment.  Resolve the path by looking for the presence of PATH
-/// and updating cmdpath when it exists.
+/// and updating the command when it exists.
 
 pub fn resolve_command<S>(command: &[S], env: &Vec<(String, String)>) -> Vec<String>
 where
     S: AsRef<std::ffi::OsStr>,
 {
-    let mut cmdpath = std::path::PathBuf::from(&command[0]);
-    if !cmdpath.is_absolute() {
+    let mut cmd_path = std::path::PathBuf::from(&command[0]);
+    // Transform cmd_path into an absolute path.
+    if !cmd_path.is_absolute() {
         for (name, value) in env {
+            // Loop until we find PATH.
             if name == "PATH" {
-                let fullpath = std::env::split_paths(&value)
-                    .filter_map(|dir| {
-                        let full_path = dir.join(&cmdpath);
+                if let Some(path_buf) = std::env::split_paths(&value).filter_map(
+                    |dir| {
+                        let full_path = dir.join(&cmd_path);
                         if full_path.is_file() {
                             Some(full_path)
                         } else {
                             None
                         }
-                    })
-                    .next();
-
-                if fullpath.is_some() {
-                    cmdpath = fullpath.unwrap().to_path_buf();
-                    break;
+                    }).next() {
+                    cmd_path = path_buf;
                 }
+                // Once we've seen $PATH we're done.
+                break;
             }
         }
     }
@@ -170,7 +170,7 @@ where
     let mut command_vec: Vec<String> = Vec::new();
     command_vec.reserve(command.len());
 
-    command_vec.push(cmdpath.to_string_lossy().into());
+    command_vec.push(cmd_path.to_string_lossy().to_string());
     for arg in &command[1..] {
         let curpath = std::path::PathBuf::from(arg);
         command_vec.push(curpath.to_string_lossy().into());

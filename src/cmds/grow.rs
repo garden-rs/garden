@@ -1,6 +1,7 @@
 use anyhow::Result;
 
 use super::super::cmd;
+use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::query;
@@ -17,11 +18,11 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
 
-    let mut exit_status = 0;
+    let mut exit_status = errors::EX_OK;
     let config = app.get_mut_config();
     for query in &queries {
         let status = grow(config, quiet, verbose, &query)?;
-        if status != 0 {
+        if status != errors::EX_OK {
             exit_status = status;
         }
     }
@@ -67,20 +68,19 @@ pub fn grow(
 
         let pathbuf = std::path::PathBuf::from(&path);
         if !pathbuf.exists() {
-            let parent = match pathbuf.parent() {
-                Some(result) => result,
-                None => {
-                    error!("unable to create parent directory for '{}'", path);
-                }
-            };
+            let parent = pathbuf.parent().ok_or_else(
+                || errors::GardenError::AssertionError(
+                    format!("unable to get parent directory for {}", path))
+                )?;
 
-            if let Err(err) = std::fs::create_dir_all(&parent) {
-                error!("unable to create '{}': {}", path, err);
-            }
+            std::fs::create_dir_all(&parent).map_err(
+                |err| errors::GardenError::OSError(
+                    format!("unable to create {}: {}", path, err))
+                )?;
 
             if config.trees[ctx.tree].is_symlink {
-                let status = init_symlink(config, ctx);
-                if status != 0 {
+                let status = init_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
+                if status != errors::EX_OK {
                     exit_status = status;
                 }
                 continue;
@@ -172,49 +172,46 @@ pub fn grow(
 
 /// Initialize a tree symlink entry.
 
-fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> i32 {
+fn init_symlink(
+    config: &model::Configuration, ctx: &model::TreeContext
+) -> Result<i32> {
     let tree = &config.trees[ctx.tree];
     // Invalid usage: non-symlink
-    if !tree.is_symlink || tree.path.value.is_none() ||
-        tree.path.value.as_ref().unwrap().is_empty() || tree.symlink.value.is_none() ||
-        tree.symlink.value.as_ref().unwrap().is_empty() {
-        return 1;
+    if !tree.is_symlink ||
+        tree.path_as_ref()?.is_empty() ||
+        tree.symlink_as_ref()?.is_empty() {
+        return Err(errors::GardenError::ConfigurationError(
+            format!("invalid symlink: {}", tree.name)).into()
+        );
     }
-
-    let path_str = match tree.path_as_ref() {
-        Ok(value) => value,
-        Err(_) => return 1,
-    };
+    let path_str = tree.path_as_ref()?;
     let path = std::path::PathBuf::from(&path_str);
 
-    // Leave existing paths as-is.
+    // Leave existing symlinks as-is.
     if std::fs::read_link(&path).is_ok() || path.exists() {
-        return 0;
+        return Ok(errors::EX_OK);
     }
 
-    let symlink_str = tree.symlink.value.as_ref().unwrap();
+    let symlink_str = tree.symlink_as_ref()?;
     let symlink = std::path::PathBuf::from(&symlink_str);
 
     // Note: parent directory was already created by the caller.
-    let parent = path.parent().as_ref().unwrap().to_path_buf();
+    let parent = path.parent().as_ref().ok_or_else(
+        || errors::GardenError::AssertionError(
+            format!("parent() failed: {:?}", path))
+    )?.to_path_buf();
 
     // Is the link target a child of the link's parent directory?
     let target: String;
     if symlink.starts_with(&parent) && symlink.strip_prefix(&parent).is_ok() {
         // If so, create the symlink using a relative path.
-        target = symlink
-            .strip_prefix(&parent)
-            .unwrap()
-            .to_string_lossy()
-            .into();
+        target = symlink.strip_prefix(&parent)?.to_string_lossy().to_string();
     } else {
         // Use an absolute path otherwise.
-        target = symlink.to_string_lossy().into();
+        target = symlink.to_string_lossy().to_string();
     }
 
-    if std::os::unix::fs::symlink(&target, &path).is_ok() {
-        0
-    } else {
-        1
-    }
+    std::os::unix::fs::symlink(&target, &path)?;
+
+    Ok(errors::EX_OK)
 }

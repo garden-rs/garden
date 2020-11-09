@@ -43,6 +43,9 @@ pub enum GardenError {
     #[error("invalid argument: '{tree}' is not part of the '{garden}' garden")]
     InvalidGardenArgument { tree: String, garden: String },
 
+    #[error("{0}")]
+    OSError(String),
+
     #[error("unable to read configuration: {err:?}")]
     ReadConfig { err: yaml_rust::ScanError },
 
@@ -68,16 +71,20 @@ pub enum GardenError {
     WriteConfigurationError { path: std::path::PathBuf },
 }
 
+
+// /usr/include/sysexits.h
+pub const EX_OK: i32 = 0;
+pub const EX_USAGE: i32 = 64;
+pub const EX_DATAERR: i32 = 65;
+pub const EX_SOFTWARE: i32 = 70;
+pub const EX_OSERR: i32 = 71;
+pub const EX_CANTCREAT: i32 = 73;
+pub const EX_IOERR: i32 = 74;
+pub const EX_CONFIG: i32 = 78;
+
+
 impl std::convert::From<GardenError> for i32 {
     fn from(garden_err: GardenError) -> Self {
-        // /usr/include/sysexits.h
-        const EX_USAGE: i32 = 64;
-        const EX_DATAERR: i32 = 65;
-        const EX_SOFTWARE: i32 = 70;
-        const EX_CANTCREAT: i32 = 73;
-        const EX_IOERR: i32 = 74;
-        const EX_CONFIG: i32 = 78;
-
         match garden_err {
             GardenError::AssertionError(_) => EX_SOFTWARE,
             GardenError::ConfigurationError(_) => EX_CONFIG,
@@ -91,6 +98,7 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::IOError(_) => EX_IOERR,
             GardenError::InvalidConfiguration { .. } => EX_CONFIG,
             GardenError::InvalidGardenArgument { .. } => EX_USAGE,
+            GardenError::OSError(_) => EX_OSERR,
             GardenError::ReadConfig { .. } => EX_DATAERR,
             GardenError::ReadFile { .. } => EX_IOERR,
             GardenError::SyncConfigurationError { .. } => EX_IOERR,

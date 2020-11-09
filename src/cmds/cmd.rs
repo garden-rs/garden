@@ -28,8 +28,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         &query,
         &commands,
         &arguments,
-    );
-
+    )?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
@@ -171,10 +170,10 @@ pub fn cmd(
     query: &str,
     commands: &Vec<String>,
     arguments: &Vec<String>,
-) -> i32 {
+) -> Result<i32> {
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
-    let mut exit_status: i32 = 0;
+    let mut exit_status: i32 = errors::EX_OK;
 
     // Loop over each context, evaluate the tree environment,
     // and run the command.
@@ -190,7 +189,7 @@ pub fn cmd(
         // Run each command in the tree's context
         {
             let tree = &config.trees[context.tree];
-            path = tree.path.value.as_ref().unwrap().into();
+            path = tree.path_as_ref()?.to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !model::print_tree(&tree, verbose, quiet) {
                 continue;
@@ -223,7 +222,7 @@ pub fn cmd(
                         exec = exec.env(k, v);
                     }
                     let status = cmd::status(exec.join());
-                    if status != 0 {
+                    if status != errors::EX_OK {
                         exit_status = status as i32;
                         error = true;
                         break;
@@ -244,7 +243,7 @@ pub fn cmd(
     }
 
     // Return the last non-zero exit status.
-    exit_status
+    Ok(exit_status)
 }
 
 
@@ -257,11 +256,11 @@ pub fn cmds(
     command: &str,
     queries: &Vec<String>,
     arguments: &Vec<String>,
-) -> std::result::Result<(), errors::GardenError> {
+) -> Result<()> {
     let mut exit_status: i32 = 0;
 
     let mut commands: Vec<String> = Vec::new();
-    commands.push(command.into());
+    commands.push(command.to_string());
 
     for query in queries {
         let status = cmd(
@@ -272,7 +271,7 @@ pub fn cmds(
             &query,
             &commands,
             arguments,
-        );
+        ).unwrap_or(errors::EX_IOERR);
         if status != 0 {
             exit_status = status;
             if !keep_going {
@@ -282,5 +281,5 @@ pub fn cmds(
     }
 
     // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status)
+    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }

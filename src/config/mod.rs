@@ -23,8 +23,8 @@ fn search_path() -> Vec<std::path::PathBuf> {
     // Result: Vec<PathBufs> in priority order
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
 
-    let current_dir = std::env::current_dir().unwrap();
-    let home_dir = dirs::home_dir().unwrap();
+    let current_dir = std::env::current_dir().unwrap_or(std::path::PathBuf::from("."));
+    let home_dir = dirs::home_dir().unwrap_or(std::path::PathBuf::from("/"));
 
     // . Current directory
     paths.push(current_dir.to_path_buf());
@@ -67,8 +67,14 @@ fn search_path() -> Vec<std::path::PathBuf> {
 
 /// $XDG_CONFIG_HOME/garden (typically ~/.config/garden)
 pub fn xdg_dir() -> std::path::PathBuf {
-    let xdg_dirs = xdg::BaseDirectories::new().unwrap();
-    let mut home_config_dir = xdg_dirs.get_config_home().to_path_buf();
+    let mut home_config_dir;
+
+    if let Ok(xdg_dirs) = xdg::BaseDirectories::new() {
+        home_config_dir = xdg_dirs.get_config_home();
+    } else {
+        home_config_dir = dirs::home_dir().unwrap_or(std::path::PathBuf::from("/"));
+        home_config_dir.push(".config")
+    }
     home_config_dir.push("garden");
 
     home_config_dir
@@ -144,7 +150,9 @@ pub fn new(
 
     // Default to the current directory when garden.root is unspecified
     if cfg.root.expr.is_empty() {
-        cfg.root.expr = std::env::current_dir().unwrap().to_string_lossy().into();
+        cfg.root.expr = std::env::current_dir().unwrap_or(
+            std::path::PathBuf::from(".")
+        ).to_string_lossy().to_string();
     }
 
     // Grafts

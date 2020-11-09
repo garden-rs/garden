@@ -123,6 +123,17 @@ impl Tree {
             }
         }
     }
+
+    pub fn symlink_as_ref(&self) -> Result<&String, errors::GardenError> {
+        match self.symlink.value.as_ref() {
+            Some(value) => Ok(value),
+            None => Err(
+                errors::GardenError::ConfigurationError(
+                    format!("unset tree path for {}", self.name)
+                )
+            )
+        }
+    }
 }
 
 
@@ -227,9 +238,10 @@ impl Configuration {
     fn reset_builtin_variables(&mut self) {
         // Update GARDEN_ROOT at position 0
         if !self.variables.is_empty() && self.variables[0].name == "GARDEN_ROOT" {
-            let value = self.root.value.as_ref().unwrap().clone();
-            self.variables[0].expr = value.clone();
-            self.variables[0].value = Some(value);
+            if let Some(value) = self.root.value.as_ref() {
+                self.variables[0].expr = value.clone();
+                self.variables[0].value = Some(value.clone());
+            }
         }
 
         for tree in self.trees.iter_mut() {
@@ -312,13 +324,14 @@ impl Configuration {
     pub fn config_path(&self, path: &str) -> String {
         if std::path::PathBuf::from(path).is_absolute() {
             // Absolute path, nothing to do
-            path.into()
-        } else if self.dirname.is_some() {
+            path.to_string()
+
+        } else if let Some(dirname) = self.dirname.as_ref() {
             // Make path relative to the configuration's dirname
-            let mut path_buf = self.dirname.as_ref().unwrap().to_path_buf();
+            let mut path_buf = dirname.to_path_buf();
             path_buf.push(path);
 
-            path_buf.to_string_lossy().into()
+            path_buf.to_string_lossy().to_string()
         } else {
             self.tree_path(path)
         }
