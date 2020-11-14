@@ -2,7 +2,7 @@ use dirs;
 
 
 pub fn current_dir() -> std::path::PathBuf {
-    std::env::current_dir().unwrap_or(std::path::PathBuf::from("."))
+    std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
 }
 
 pub fn current_dir_string() -> String {
@@ -10,5 +10,5 @@ pub fn current_dir_string() -> String {
 }
 
 pub fn home_dir() -> std::path::PathBuf {
-    dirs::home_dir().unwrap_or(std::path::PathBuf::from("/"))
+    dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("/tmp"))
 }
