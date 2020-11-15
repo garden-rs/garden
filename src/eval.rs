@@ -219,7 +219,7 @@ pub fn multi_variable(
 
     let mut result = Vec::new();
 
-    for var in &multi_var.variables {
+    for var in multi_var.iter() {
         if let Some(value) = var.get_value() {
             result.push(value.to_string());
             continue;
@@ -395,7 +395,7 @@ pub fn command(
 
     // Tree commands
     for var in &config.trees[context.tree].commands {
-        if pattern.matches(&var.name) {
+        if pattern.matches(var.get_name()) {
             vars.push(var.clone());
         }
     }
@@ -403,7 +403,7 @@ pub fn command(
     // Optional garden command scope
     if let Some(garden) = context.garden {
         for var in &config.gardens[garden].commands {
-            if pattern.matches(&var.name) {
+            if pattern.matches(var.get_name()) {
                 vars.push(var.clone());
             }
         }

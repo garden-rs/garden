@@ -118,13 +118,13 @@ fn templates() {
 
     assert_eq!(2, config.templates[0].environment.len());
     assert_eq!("ENV=", config.templates[0].environment[0].get_name());
-    assert_eq!(1, config.templates[0].environment[0].variables.len());
-    assert_eq!("${foo}env", config.templates[0].environment[0].variables[0].get_expr());
+    assert_eq!(1, config.templates[0].environment[0].len());
+    assert_eq!("${foo}env", config.templates[0].environment[0].get(0).get_expr());
 
     assert_eq!("THEPATH", config.templates[0].environment[1].get_name());
-    assert_eq!(2, config.templates[0].environment[1].variables.len());
-    assert_eq!("${foo}", config.templates[0].environment[1].variables[0].get_expr());
-    assert_eq!("${ENV}", config.templates[0].environment[1].variables[1].get_expr());
+    assert_eq!(2, config.templates[0].environment[1].len());
+    assert_eq!("${foo}", config.templates[0].environment[1].get(0).get_expr());
+    assert_eq!("${ENV}", config.templates[0].environment[1].get(1).get_expr());
 
     assert_eq!("template2", config.templates[1].get_name());
     assert_eq!(vec!["template1"], config.templates[1].extend);

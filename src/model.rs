@@ -126,8 +126,8 @@ impl NamedVariable {
 // Named variables with multiple values
 #[derive(Clone, Debug)]
 pub struct MultiVariable {
-    pub name: String,
-    pub variables: Vec<Variable>,
+    name: String,
+    variables: Vec<Variable>,
 }
 
 impl_display!(MultiVariable);
@@ -157,7 +157,12 @@ impl MultiVariable {
             var.reset();
         }
     }
+
+    pub fn iter(&self) -> std::slice::Iter<Variable> {
+        self.variables.iter()
+    }
 }
+
 
 // Trees represent a single worktree
 #[derive(Clone, Debug, Default)]

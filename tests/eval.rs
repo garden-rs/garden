@@ -94,7 +94,7 @@ fn multi_variable_with_tree() {
     assert!(config.trees[1].environment.len() > 1);
 
     let mut var = config.trees[1].environment[1].clone();
-    assert_eq!(var.name, "PATH");
+    assert_eq!("PATH", var.get_name());
 
     let context = garden::model::TreeContext {
         tree: 1,
@@ -118,7 +118,7 @@ fn multi_variable_with_garden() {
     assert!(config.trees[1].environment.len() > 1);
 
     let mut var = config.trees[1].environment[1].clone();
-    assert_eq!(var.name, "PATH");
+    assert_eq!("PATH", var.get_name());
 
     let context = garden::model::TreeContext {
         tree: 1,
