@@ -73,7 +73,7 @@ pub fn garden_trees(
     let mut result = Vec::new();
 
     for garden in &config.gardens {
-        if !pattern.matches(garden.name.as_ref()) {
+        if !pattern.matches(garden.get_name()) {
             continue;
         }
         result.append(&mut trees_from_garden(config, &garden));

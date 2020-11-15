@@ -584,7 +584,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut garden = model::Garden::default();
-            get_str(&name, &mut garden.name);
+            get_str(&name, garden.get_name_mut());
             get_vec_str(&value["groups"], &mut garden.groups);
             get_vec_str(&value["trees"], &mut garden.trees);
             get_variables(&value["variables"], &mut garden.variables);

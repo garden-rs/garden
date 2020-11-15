@@ -296,7 +296,6 @@ impl Template {
 // Gardens aggregate trees
 #[derive(Clone, Debug, Default)]
 pub struct Garden {
-    pub name: String,
     pub commands: Vec<MultiVariable>,
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
@@ -304,6 +303,7 @@ pub struct Garden {
     pub index: GardenIndex,
     pub trees: Vec<String>,
     pub variables: Vec<NamedVariable>,
+    name: String,
 }
 
 impl_display!(Garden);
@@ -311,6 +311,10 @@ impl_display!(Garden);
 impl Garden {
     pub fn get_name(&self) -> &String {
         &self.name
+    }
+
+    pub fn get_name_mut(&mut self) -> &mut String {
+        &mut self.name
     }
 }
 

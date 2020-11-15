@@ -11,7 +11,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         println!("gardens:");
         print!("    ");
         for garden in &config.gardens {
-            print!("{} ", garden.name);
+            print!("{} ", garden.get_name());
         }
         println!("");
     }
