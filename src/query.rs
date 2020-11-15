@@ -159,7 +159,7 @@ pub fn tree_from_name(
 
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
-        if *tree == cfg_tree.name {
+        if cfg_tree.get_name() == tree {
             // Tree found
             return Some(model::TreeContext {
                 tree: tree_idx,
@@ -200,7 +200,7 @@ pub fn trees_from_pattern(
 
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
-        if pattern.matches(&cfg_tree.name) {
+        if pattern.matches(cfg_tree.get_name()) {
             // Tree found
             result.push(model::TreeContext {
                 tree: tree_idx,
@@ -264,7 +264,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::T
 
     let mut result = Vec::new();
     for (tree_idx, tree) in config.trees.iter().enumerate() {
-        if pattern.matches(tree.name.as_ref()) {
+        if pattern.matches(tree.get_name()) {
             result.push(model::TreeContext {
                 tree: tree_idx,
                 garden: None,

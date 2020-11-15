@@ -141,7 +141,7 @@ fn add_path(
         if let Ok(canon_path) = tree_pathbuf.canonicalize() {
             if canon_path == path {
                 // Existing tree found: use the configured name.
-                tree_name = tree.name.clone();
+                tree_name = tree.get_name().to_string();
             }
         }
     }

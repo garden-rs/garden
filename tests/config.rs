@@ -168,7 +168,7 @@ fn trees() {
     assert_eq!(3, tree0.commands.len());
 
     assert_eq!("git", tree0.get_name());
-    assert_eq!("git", tree0.path.get_expr()); // picks up default value
+    assert_eq!("git", tree0.get_path().get_expr()); // picks up default value
     assert_eq!(vec!["makefile"], tree0.templates);
 
     assert_eq!(1, tree0.remotes.len());
@@ -206,7 +206,7 @@ fn trees() {
     assert!(tree1.gitconfig.is_empty());
 
     assert_eq!("cola", tree1.get_name());
-    assert_eq!("git-cola", tree1.path.get_expr());
+    assert_eq!("git-cola", tree1.get_path().get_expr());
     assert_eq!(vec!["makefile", "python"], tree1.templates);
 
     assert_eq!(2, tree1.remotes.len());

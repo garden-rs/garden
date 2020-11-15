@@ -26,7 +26,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     // query that was used to find it then chdir into that tree.
     // This makes it convenient to have gardens and trees with the same name.
     for ctx in &contexts {
-        if config.trees[ctx.tree].name == query {
+        if config.trees[ctx.tree].get_name() == &query {
             context.tree = ctx.tree;
             context.garden = ctx.garden;
             context.group = ctx.group;

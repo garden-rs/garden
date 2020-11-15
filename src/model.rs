@@ -171,12 +171,13 @@ pub struct Tree {
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
     pub is_symlink: bool,
-    pub name: String,
-    pub path: Variable,
     pub remotes: Vec<NamedVariable>,
     pub symlink: Variable,
     pub templates: Vec<String>,
     pub variables: Vec<NamedVariable>,
+
+    name: String,
+    path: Variable,
 }
 
 impl_display!(Tree);
@@ -187,8 +188,16 @@ impl Tree {
         &self.name
     }
 
+    pub fn get_name_mut(&mut self) -> &mut String {
+        &mut self.name
+    }
+
     pub fn get_path(&self) -> &Variable {
         &self.path
+    }
+
+    pub fn get_path_mut(&mut self) -> &mut Variable {
+        &mut self.path
     }
 
     pub fn path_is_valid(&self) -> bool {

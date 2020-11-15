@@ -65,11 +65,15 @@ pub fn inspect(
                     println!(
                         "{} {}  {}",
                         Color::red("-").dimmed(),
-                        Color::red(&tree.name),
+                        Color::red(tree.get_name()),
                         Color::red(&path).dimmed()
                     );
                 } else {
-                    println!("{} {}", Color::red("-").dimmed(), Color::red(&tree.name));
+                    println!(
+                        "{} {}",
+                        Color::red("-").dimmed(),
+                        Color::red(tree.get_name())
+                    );
                 }
                 continue;
             }
@@ -79,7 +83,7 @@ pub fn inspect(
                     println!(
                         "{} {}  {} {} {}",
                         Color::green("+"),
-                        Color::green(&tree.name).bold(),
+                        Color::green(tree.get_name()).bold(),
                         Color::green(&path),
                         Color::yellow("->").bold(),
                         Color::blue(&tree.symlink_as_ref()?).bold()
@@ -88,7 +92,7 @@ pub fn inspect(
                     println!(
                         "{} {} {} {}",
                         Color::green("+"),
-                        Color::green(&tree.name).bold(),
+                        Color::green(tree.get_name()).bold(),
                         Color::yellow("->").bold(),
                         Color::blue(tree.symlink_as_ref()?).bold()
                     );
@@ -98,11 +102,15 @@ pub fn inspect(
                     println!(
                         "{} {}  {}",
                         Color::green("+"),
-                        Color::green(&tree.name).bold(),
+                        Color::green(tree.get_name()).bold(),
                         Color::green(&path)
                     );
                 } else {
-                    println!("{} {}", Color::green("+"), Color::green(&tree.name).bold());
+                    println!(
+                        "{} {}",
+                        Color::green("+"),
+                        Color::green(tree.get_name()).bold()
+                    );
                 }
             }
         }

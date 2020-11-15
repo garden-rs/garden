@@ -184,7 +184,7 @@ fn init_symlink(
         tree.path_as_ref()?.is_empty() ||
         tree.symlink_as_ref()?.is_empty() {
         return Err(errors::GardenError::ConfigurationError(
-            format!("invalid symlink: {}", tree.name)).into()
+            format!("invalid symlink: {}", tree.get_name())).into()
         );
     }
     let path_str = tree.path_as_ref()?;

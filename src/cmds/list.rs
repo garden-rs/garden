@@ -29,7 +29,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         println!("trees:");
         print!("    ");
         for tree in &config.trees {
-            print!("{} ", tree.name);
+            print!("{} ", tree.get_name());
         }
         println!("");
     }

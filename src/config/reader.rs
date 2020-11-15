@@ -399,11 +399,12 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     let mut tree = model::Tree::default();
 
     // Tree name
-    get_str(&name, &mut tree.name);
+    get_str(&name, tree.get_name_mut());
 
     // Default to the name when "path" is unspecified.
-    tree.path.set_expr(tree.name.clone());
-    tree.path.set_value(tree.name.clone());
+    let tree_name = tree.get_name().to_string();
+    tree.get_path_mut().set_expr(tree_name.to_string());
+    tree.get_path().set_value(tree_name);
 
     // Register the ${TREE_NAME} variable.
     tree.variables.insert(
@@ -452,13 +453,14 @@ fn get_tree(
     }
 
     // Tree name
-    get_str(&name, &mut tree.name);
+    get_str(&name, tree.get_name_mut());
 
     // Tree path
-    if !get_str(&value["path"], tree.path.get_expr_mut()) {
+    if !get_str(&value["path"], tree.get_path_mut().get_expr_mut()) {
         // default to the name when "path" is unspecified
-        tree.path.set_expr(tree.name.clone());
-        tree.path.set_value(tree.name.clone());
+        let tree_name = tree.get_name().to_string();
+        tree.get_path_mut().set_expr(tree_name.to_string());
+        tree.get_path().set_value(tree_name);
     }
 
     // Add the TREE_NAME and TREE_PATH variables
