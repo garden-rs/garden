@@ -569,7 +569,7 @@ fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut group = model::Group::default();
-            get_str(&name, &mut group.name);
+            get_str(&name, group.get_name_mut());
             get_vec_str(&value, &mut group.members);
             groups.push(group);
         }

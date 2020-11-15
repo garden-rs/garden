@@ -26,7 +26,7 @@ pub fn resolve_trees(config: &model::Configuration, query: &str) -> Vec<model::T
     if tree_query.include_groups {
         for group in &config.groups {
             // Find the matching group
-            if !pattern.matches(group.name.as_ref()) {
+            if !pattern.matches(group.get_name()) {
                 continue;
             }
             // Matching group found, collect its trees
@@ -100,7 +100,7 @@ pub fn trees_from_garden(
         };
         // Loop over configured groups to find the matching groups
         for cfg_group in &config.groups {
-            if !pattern.matches(&cfg_group.name) {
+            if !pattern.matches(cfg_group.get_name()) {
                 continue;
             }
             // Match found -- take all of the discovered trees.

@@ -20,7 +20,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         println!("groups:");
         print!("    ");
         for group in &config.groups {
-            print!("{} ", group.name);
+            print!("{} ", group.get_name());
         }
         println!("");
     }
