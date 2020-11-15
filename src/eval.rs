@@ -38,8 +38,8 @@ fn expand_tree_vars(
     if let Some(garden) = garden_idx {
         for (idx, var) in config.gardens[garden].variables.iter().enumerate() {
             if var.name == name {
-                if let Some(var_value) = var.value.as_ref() {
-                    return Ok(Some(var_value.into()));
+                if let Some(var_value) = var.get_value() {
+                    return Ok(Some(var_value.to_string()));
                 }
                 var_idx = idx;
                 found = true;
@@ -48,9 +48,9 @@ fn expand_tree_vars(
         }
 
         if found {
-            let expr = config.gardens[garden].variables[var_idx].expr.clone();
+            let expr = config.gardens[garden].variables[var_idx].get_expr().to_string();
             let result = tree_value(config, &expr, tree_idx, garden_idx);
-            config.gardens[garden].variables[var_idx].value = Some(result.clone());
+            config.gardens[garden].variables[var_idx].set_value(result.clone());
             return Ok(Some(result));
         }
     }
@@ -61,8 +61,8 @@ fn expand_tree_vars(
 
     for (idx, var) in config.trees[tree_idx].variables.iter().enumerate() {
         if var.name == name {
-            if let Some(var_value) = var.value.as_ref() {
-                return Ok(Some(var_value.into()));
+            if let Some(var_value) = var.get_value() {
+                return Ok(Some(var_value.to_string()));
             }
             found = true;
             var_idx = idx;
@@ -71,9 +71,9 @@ fn expand_tree_vars(
     }
 
     if found {
-        let expr = config.trees[tree_idx].variables[var_idx].expr.clone();
+        let expr = config.trees[tree_idx].variables[var_idx].get_expr().to_string();
         let result = tree_value(config, &expr, tree_idx, garden_idx);
-        config.trees[tree_idx].variables[var_idx].value = Some(result.clone());
+        config.trees[tree_idx].variables[var_idx].set_value(result.to_string());
         return Ok(Some(result));
     }
 
@@ -84,8 +84,8 @@ fn expand_tree_vars(
     for (idx, var) in config.variables.iter().enumerate() {
         if var.name == name {
             // Return the value immediately if it's already been evaluated.
-            if let Some(var_value) = var.value.as_ref() {
-                return Ok(Some(var_value.into()));
+            if let Some(var_value) = var.get_value() {
+                return Ok(Some(var_value.to_string()));
             }
             found = true;
             var_idx = idx;
@@ -94,19 +94,19 @@ fn expand_tree_vars(
     }
 
     if found {
-        let expr = config.variables[var_idx].expr.clone();
+        let expr = config.variables[var_idx].get_expr().to_string();
         let result = tree_value(config, &expr, tree_idx, garden_idx);
-        config.variables[var_idx].value = Some(result.clone());
+        config.variables[var_idx].set_value(result.clone());
         return Ok(Some(result));
     }
 
     // If nothing was found then check for environment variables.
     if let Ok(env_value) = std::env::var(name) {
-        return Ok(Some(env_value.into()));
+        return Ok(Some(env_value.to_string()));
     }
 
     // Nothing was found -> empty value
-    return Ok(Some("".into()));
+    return Ok(Some("".to_string()));
 }
 
 
@@ -122,8 +122,8 @@ fn expand_vars(config: &mut model::Configuration, name: &str) -> Result<Option<S
 
     for (idx, var) in config.variables.iter().enumerate() {
         if var.name == name {
-            if let Some(var_value) = var.value.as_ref() {
-                return Ok(Some(var_value.into()));
+            if let Some(var_value) = var.get_value() {
+                return Ok(Some(var_value.to_string()));
             }
             var_idx = idx;
             found = true;
@@ -132,9 +132,9 @@ fn expand_vars(config: &mut model::Configuration, name: &str) -> Result<Option<S
     }
 
     if found {
-        let expr = config.variables[var_idx].expr.clone();
+        let expr = config.variables[var_idx].get_expr().to_string();
         let result = value(config, &expr);
-        config.variables[var_idx].value = Some(result.clone());
+        config.variables[var_idx].set_value(result.clone());
 
         return Ok(Some(result));
     }
@@ -219,18 +219,16 @@ pub fn multi_variable(
 
     let mut result = Vec::new();
 
-    for var in &multi_var.values {
-        if let Some(ref value) = var.value {
-            result.push(value.into());
+    for var in &multi_var.variables {
+        if let Some(value) = var.get_value() {
+            result.push(value.to_string());
             continue;
         }
 
         let value = tree_value(config, &var.expr, context.tree, context.garden);
-        result.push(value);
-    }
+        result.push(value.clone());
 
-    for (idx, value) in result.iter().enumerate() {
-        multi_var.values[idx].value = Some(value.clone());
+        var.set_value(value);
     }
 
     return result;

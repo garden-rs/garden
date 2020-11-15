@@ -208,14 +208,7 @@ pub fn from_options(
         } else {
             error!("unable to split '{}'", k_eq_v);
         }
-        config.variables.insert(
-            0,
-            model::NamedVariable {
-                name: name,
-                expr: expr,
-                value: None,
-            },
-        );
+        config.variables.insert(0, model::NamedVariable::new(name, expr, None));
     }
 
     Ok(config)

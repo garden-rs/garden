@@ -1,7 +1,9 @@
 use atty;
 use glob;
+
 use indextree::{Arena, NodeId};
 use yansi;
+use std::cell::RefCell;
 
 use super::errors;
 use super::eval;
@@ -37,20 +39,85 @@ pub type GraftIndex = usize;
 #[derive(Clone, Debug, Default)]
 pub struct Variable {
     pub expr: String,
-    pub value: Option<String>,
+    pub value: RefCell<Option<String>>,
 }
 
 impl_display_brief!(Variable);
+
+impl Variable {
+    pub fn new(expr: String, value: Option<String>) -> Self {
+        Variable {
+            expr: expr,
+            value: RefCell::new(value),
+        }
+    }
+
+    pub fn get_expr(&self) -> &String {
+        &self.expr
+    }
+
+    pub fn set_expr(&mut self, expr: String) {
+        self.expr = expr;
+    }
+
+    pub fn set_value(&self, value: String) {
+        *self.value.borrow_mut() = Some(value);
+    }
+
+    /// Transform the RefCell<Option<String>> value into an Option<&String>.
+    pub fn get_value(&self) -> Option<&String> {
+        let ptr = self.value.as_ptr();
+        unsafe {
+            (*ptr).as_ref()
+        }
+    }
+
+    pub fn reset(&self) {
+        *self.value.borrow_mut() = None;
+    }
+}
 
 // Named variables with a single value
 #[derive(Clone, Debug)]
 pub struct NamedVariable {
     pub name: String,
-    pub expr: String,
-    pub value: Option<String>,
+    pub variable: Variable,
 }
 
 impl_display_brief!(NamedVariable);
+
+impl NamedVariable {
+    pub fn new(name: String, expr: String, value: Option<String>) -> Self {
+        NamedVariable {
+            name: name,
+            variable: Variable::new(expr, value),
+        }
+    }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn get_expr(&self) -> &String {
+        self.variable.get_expr()
+    }
+
+    pub fn set_expr(&mut self, expr: String) {
+        self.variable.set_expr(expr);
+    }
+
+    pub fn set_value(&self, value: String) {
+        self.variable.set_value(value);
+    }
+
+    pub fn get_value(&self) -> Option<&String> {
+        self.variable.get_value()
+    }
+
+    pub fn reset(&self) {
+        self.variable.reset();
+    }
+}
 
 // Simple Name/Value pairs
 #[derive(Clone, Debug)]
@@ -65,10 +132,37 @@ impl_display_brief!(NamedValue);
 #[derive(Clone, Debug)]
 pub struct MultiVariable {
     pub name: String,
-    pub values: Vec<Variable>,
+    pub variables: Vec<Variable>,
 }
 
 impl_display!(MultiVariable);
+
+impl MultiVariable {
+    pub fn new(name: String, variables: Vec<Variable>) -> Self {
+        MultiVariable {
+            name: name,
+            variables: variables,
+        }
+    }
+
+    pub fn get(&self, idx: usize) -> &Variable {
+        &self.variables[idx]
+    }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn len(&self) -> usize {
+        self.variables.len()
+    }
+
+    pub fn reset(&self) {
+        for var in &self.variables {
+            var.reset();
+        }
+    }
+}
 
 // Trees represent a single worktree
 #[derive(Clone, Debug, Default)]
@@ -89,49 +183,58 @@ impl_display!(Tree);
 
 impl Tree {
 
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn get_path(&self) -> &Variable {
+        &self.path
+    }
+
+    pub fn path_is_valid(&self) -> bool {
+        self.path.get_value().is_some()
+    }
+
     pub fn path_as_ref(&self) -> Result<&String, errors::GardenError> {
-        match self.path.value.as_ref() {
+        match self.path.get_value() {
             Some(value) => Ok(value),
             None => Err(
                 errors::GardenError::ConfigurationError(
                     format!("unset tree path for {}", self.name)
                 )
             )
-        }
-    }
-
-    pub fn reset_variables(&mut self) {
-        // self.path is a variable but it is not reset because
-        // the tree path is evaluated once when the configuration
-        // is first read, and never again.
-        for var in &mut self.variables {
-            var.value = None;
-        }
-
-        for var in &mut self.gitconfig {
-            var.value = None;
-        }
-
-        for env in &mut self.environment {
-            for var in &mut env.values {
-                var.value = None;
-            }
-        }
-        for cmd in &mut self.commands {
-            for var in &mut cmd.values {
-                var.value = None;
-            }
         }
     }
 
     pub fn symlink_as_ref(&self) -> Result<&String, errors::GardenError> {
-        match self.symlink.value.as_ref() {
-            Some(value) => Ok(value),
+        match self.symlink.get_value() {
+            Some(ref value) => Ok(value),
             None => Err(
                 errors::GardenError::ConfigurationError(
                     format!("unset tree path for {}", self.name)
                 )
             )
+        }
+    }
+
+    pub fn reset_variables(&self) {
+        // self.path is a variable but it is not reset because
+        // the tree path is evaluated once when the configuration
+        // is first read, and never again.
+        for var in &self.variables {
+            var.reset();
+        }
+
+        for cfg in &self.gitconfig {
+            cfg.reset();
+        }
+
+        for env in &self.environment {
+            env.reset();
+        }
+
+        for cmd in &self.commands {
+            cmd.reset();
         }
     }
 }
@@ -146,6 +249,12 @@ pub struct Group {
 
 impl_display!(Group);
 
+impl Group {
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+}
+
 
 #[derive(Clone, Debug, Default)]
 pub struct Template {
@@ -159,6 +268,12 @@ pub struct Template {
 }
 
 impl_display!(Template);
+
+impl Template {
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+}
 
 
 // Gardens aggregate trees
@@ -175,6 +290,12 @@ pub struct Garden {
 }
 
 impl_display!(Garden);
+
+impl Garden {
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+}
 
 
 // Configuration represents an instantiated garden configuration
@@ -211,11 +332,11 @@ impl Configuration {
 
     pub fn initialize(&mut self) {
         // Evaluate garden.root
-        let expr = self.root.expr.clone();
+        let expr = self.root.get_expr().to_string();
         let value = eval::value(self, &expr);
         // Store the resolved garden.root
         self.root_path = std::path::PathBuf::from(&value);
-        self.root.value = Some(value);
+        self.root.set_value(value);
 
         // Resolve tree paths
         self.update_tree_paths();
@@ -236,30 +357,32 @@ impl Configuration {
     }
 
     fn reset_builtin_variables(&mut self) {
-        // Update GARDEN_ROOT at position 0
-        if !self.variables.is_empty() && self.variables[0].name == "GARDEN_ROOT" {
-            if let Some(value) = self.root.value.as_ref() {
-                self.variables[0].expr = value.clone();
-                self.variables[0].value = Some(value.clone());
+        // Update GARDEN_ROOT at position 0.
+        if !self.variables.is_empty() &&
+            self.variables[0].get_name() == "GARDEN_ROOT" {
+            if let Some(value) = self.root.get_value() {
+                self.variables[0].set_expr(value.to_string());
+                self.variables[0].set_value(value.to_string());
             }
         }
 
         for tree in self.trees.iter_mut() {
-            let tree_path = match tree.path_as_ref() {
-                Ok(path) => path,
-                Err(_) => continue,
-            }.clone();
             if tree.variables.len() >= 2 {
-                // Update TREE_NAME at position 0
-                let tree_name = tree.name.clone();
-                if tree.variables[0].name == "TREE_NAME" {
-                    tree.variables[0].expr = tree_name.clone();
-                    tree.variables[0].value = Some(tree_name);
+                // Extract the tree's path.  Skip invalid/unset entries.
+                let tree_path = match tree.path_as_ref() {
+                    Ok(path) => path,
+                    Err(_) => continue,
+                }.to_string();
+                // Update TREE_NAME at position 0.
+                let tree_name = tree.get_name().to_string();
+                if tree.variables[0].get_name() == "TREE_NAME" {
+                    tree.variables[0].set_expr(tree_name.to_string());
+                    tree.variables[0].set_value(tree_name.to_string());
                 }
-                // Update TREE_PATH at position 1
-                if tree.variables[1].name == "TREE_PATH" {
-                    tree.variables[1].expr = tree_path.clone();
-                    tree.variables[1].value = Some(tree_path);
+                // Update TREE_PATH at position 1.
+                if tree.variables[1].get_name() == "TREE_PATH" {
+                    tree.variables[1].set_expr(tree_path.to_string());
+                    tree.variables[1].set_value(tree_path.to_string());
                 }
             }
         }
@@ -291,14 +414,14 @@ impl Configuration {
 
         // Evaluate the "path" expression.
         for (idx, value) in path_values.iter().enumerate() {
-            let result = Some(self.eval_tree_path(value));
-            self.trees[idx].path.value = result;
+            let result = self.eval_tree_path(value);
+            self.trees[idx].path.set_value(result);
         }
 
         // Evaluate the "symlink" expression.
         for (idx, value) in &symlink_values {
-            let result = Some(self.eval_tree_path(value));
-            self.trees[*idx].symlink.value = result;
+            let result = self.eval_tree_path(value);
+            self.trees[*idx].symlink.set_value(result);
         }
     }
 
@@ -319,7 +442,6 @@ impl Configuration {
     /// Evaluate and return a path string relative to the garden root.
     pub fn eval_tree_path(&mut self, path: &str) -> String {
         let value = eval::value(self, &path);
-
         self.tree_path(&value)
     }
 
@@ -347,23 +469,18 @@ impl Configuration {
         self.config_path(&value)
     }
 
-
     /// Reset resolved variables
     pub fn reset_variables(&mut self) {
-        for var in &mut self.variables {
-            var.value = None;
+        for var in &self.variables {
+            var.reset();
         }
-        for env in &mut self.environment {
-            for var in &mut env.values {
-                var.value = None;
-            }
+        for env in &self.environment {
+            env.reset();
         }
-        for cmd in &mut self.commands {
-            for var in &mut cmd.values {
-                var.value = None;
-            }
+        for cmd in &self.commands {
+            cmd.reset();
         }
-        for tree in &mut self.trees {
+        for tree in &self.trees {
             tree.reset_variables();
         }
     }

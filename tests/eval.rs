@@ -7,9 +7,9 @@ fn garden_root() {
     // with variables: src = src, and root = ~/${src}
     // This should expand to $HOME/src.
     let config = common::garden_config();
-    let expect_src_dir = "/home/test/src";
+    let expect_src_dir = "/home/test/src".to_string();
     assert_eq!(config.root.expr, "${root}");
-    assert_eq!(config.root.value.unwrap(), expect_src_dir);
+    assert_eq!(config.root.get_value(), Some(&expect_src_dir));
     assert_eq!(config.root_path.to_string_lossy(), expect_src_dir);
 }
 

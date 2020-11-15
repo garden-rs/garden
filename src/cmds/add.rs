@@ -133,7 +133,7 @@ fn add_path(
 
     // Do we already have a tree with this tree path?
     for tree in &config.trees {
-        assert!(tree.path.value.is_some());
+        assert!(tree.path_is_valid());
         // Skip entries that do not exist on disk.
         // Check if this tree matches the specified path.
         let tree_path_value = tree.path_as_ref()?;

@@ -92,7 +92,7 @@ pub fn grow(
 
             // The first remote is "origin" by convention
             let remote = config.trees[ctx.tree].remotes[0].clone();
-            let url = eval::tree_value(config, &remote.expr, ctx.tree, ctx.garden);
+            let url = eval::tree_value(config, remote.get_expr(), ctx.tree, ctx.garden);
 
             let command = ["git", "clone", url.as_ref(), path.as_ref()];
             let exec = cmd::exec_cmd(&command);
@@ -112,7 +112,10 @@ pub fn grow(
         {
             // Immutable config scope
             for remote in &config.trees[ctx.tree].remotes {
-                config_remotes.insert(remote.name.clone(), remote.expr.clone());
+                config_remotes.insert(
+                    remote.get_name().to_string(),
+                    remote.get_expr().to_string()
+                );
             }
         }
 
@@ -155,8 +158,8 @@ pub fn grow(
         }
 
         for var in &gitconfig {
-            let value = eval::tree_value(config, &var.expr, ctx.tree, ctx.garden);
-            let command = ["git", "config", var.name.as_ref(), value.as_ref()];
+            let value = eval::tree_value(config, var.get_expr(), ctx.tree, ctx.garden);
+            let command = ["git", "config", var.get_name(), value.as_ref()];
             let exec = cmd::exec_in_dir(&command, &path);
             let status = cmd::status(exec.join());
             if status != 0 {

@@ -14,7 +14,7 @@ mod slow {
     /// Cleanup and create a bare repository for cloning
     fn setup(name: &str, path: &str) {
         let cmd = ["../integration/setup.sh", name];
-        assert_eq!(cmd::status(cmd::exec_in_dir(&cmd, path).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_in_dir(&cmd, path).join()));
     }
 
 
@@ -40,7 +40,7 @@ mod slow {
             "grow",
             "example/tree",
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // Ensure the repository was created
         let mut repo = std::path::PathBuf::from("tests");
@@ -83,12 +83,13 @@ mod slow {
             "grow",
             "example/tree",
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // remote.origin.url is a read-only git:// URL
         {
             let command = ["git", "config", "remote.origin.url"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
+            let exec = cmd::exec_in_dir(
+                &command, "tests/tmp/remotes/example/tree/repo");
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
             let output = cmd::trim_stdout(&capture.unwrap());
@@ -105,11 +106,12 @@ mod slow {
         // remote.publish.url is a ssh push URL
         {
             let command = ["git", "config", "remote.publish.url"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
+            let exec = cmd::exec_in_dir(
+                &command, "tests/tmp/remotes/example/tree/repo");
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
             let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!(output, "git@github.com:user/example.git");
+            assert_eq!("git@github.com:user/example.git", output);
         }
 
         teardown("tests/tmp/remotes");
@@ -134,7 +136,7 @@ mod slow {
                 "link",
                 "example/link",
             ];
-            assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+            assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
         }
 
         // tests/tmp/symlinks/trees/example/repo exists
@@ -150,7 +152,7 @@ mod slow {
             assert!(link.read_link().is_ok());
 
             let target = link.read_link().unwrap();
-            assert_eq!(target.to_string_lossy(), "example/tree/repo");
+            assert_eq!("example/tree/repo", target.to_string_lossy());
         }
 
         // tests/tmp/symlinks/example/link is a symlink pointing to tree/repo
@@ -163,7 +165,7 @@ mod slow {
             assert!(link.read_link().is_ok());
 
             let target = link.read_link().unwrap();
-            assert_eq!(target.to_string_lossy(), "tree/repo");
+            assert_eq!("tree/repo", target.to_string_lossy());
         }
 
         teardown("tests/tmp/symlinks");
@@ -186,7 +188,7 @@ mod slow {
                 "grow",
                 "example/tree",
             ];
-            assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+            assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
         }
 
         // remote.origin.annex-ignore is true
@@ -196,7 +198,7 @@ mod slow {
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
             let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!(output, "true");
+            assert_eq!("true", output);
         }
 
         // user.name is "A U Thor"
@@ -206,7 +208,7 @@ mod slow {
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
             let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!(output, "A U Thor");
+            assert_eq!("A U Thor", output);
         }
 
         // user.email is "author@example.com"
@@ -216,7 +218,7 @@ mod slow {
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
             let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!(output, "author@example.com");
+            assert_eq!("author@example.com", output);
         }
 
         teardown("tests/tmp/gitconfig");
@@ -232,15 +234,15 @@ mod slow {
         let cmd = [
             "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo", "init",
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
         // Empty garden.yaml should be created
         assert!(Path::new("tests/tmp/add-empty-repo/garden.yaml").exists());
 
         // Create tests/tmp/add-empty-repo/repo{1,2}
         let cmd = ["git", "-C", "tests/tmp/add-empty-repo", "init", "repo1"];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
         let cmd = ["git", "-C", "tests/tmp/add-empty-repo", "init", "repo2"];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // repo1 has two remotes: "origin" and "remote-1".
         // git remote add origin repo-1-url
@@ -248,20 +250,20 @@ mod slow {
             "git", "-C", "tests/tmp/add-empty-repo/repo1",
             "remote", "add", "origin", "repo-1-url"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
         // git remote add remote-1 remote-1-url
         let cmd = [
             "git", "-C", "tests/tmp/add-empty-repo/repo1",
             "remote", "add", "remote-1", "remote-1-url"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // garden add repo1
         let cmd = [
             "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo",
             "add", "repo1"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         let path = Some(
             std::path::PathBuf::from("tests/tmp/add-empty-repo/garden.yaml")
@@ -269,13 +271,13 @@ mod slow {
 
         // Load the configuration and assert that the remotes are configured.
         let cfg = garden::config::new(&path, "", false)?;
-        assert_eq!(cfg.trees.len(), 1);
-        assert_eq!(cfg.trees[0].name, "repo1");
-        assert_eq!(cfg.trees[0].remotes.len(), 2);
-        assert_eq!(cfg.trees[0].remotes[0].name, "origin");
-        assert_eq!(cfg.trees[0].remotes[0].expr, "repo-1-url");
-        assert_eq!(cfg.trees[0].remotes[1].name, "remote-1");
-        assert_eq!(cfg.trees[0].remotes[1].expr, "remote-1-url");
+        assert_eq!(1, cfg.trees.len());
+        assert_eq!("repo1", cfg.trees[0].get_name());
+        assert_eq!(2, cfg.trees[0].remotes.len());
+        assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
+        assert_eq!("repo-1-url", cfg.trees[0].remotes[0].get_expr());
+        assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
+        assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
 
         // repo2 has two remotes: "remote-1" and "remote-2".
         // git remote add remote-1 remote-1-url
@@ -283,30 +285,30 @@ mod slow {
             "git", "-C", "tests/tmp/add-empty-repo/repo2",
             "remote", "add", "remote-1", "remote-1-url"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
         // git remote add remote-2 remote-2-url
         let cmd = [
             "git", "-C", "tests/tmp/add-empty-repo/repo2",
             "remote", "add", "remote-2", "remote-2-url"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // garden add repo2
         let cmd = [
             "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo",
             "add", "repo2"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // Load the configuration and assert that the remotes are configured.
         let cfg = garden::config::new(&path, "", false)?;
-        assert_eq!(cfg.trees.len(), 2);  // Now we have two trees.
-        assert_eq!(cfg.trees[1].name, "repo2");
-        assert_eq!(cfg.trees[1].remotes.len(), 2);
-        assert_eq!(cfg.trees[1].remotes[0].name, "remote-1");
-        assert_eq!(cfg.trees[1].remotes[0].expr, "remote-1-url");
-        assert_eq!(cfg.trees[1].remotes[1].name, "remote-2");
-        assert_eq!(cfg.trees[1].remotes[1].expr, "remote-2-url");
+        assert_eq!(2, cfg.trees.len());  // Now we have two trees.
+        assert_eq!("repo2", cfg.trees[1].get_name());
+        assert_eq!(2, cfg.trees[1].remotes.len());
+        assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
+        assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
+        assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
+        assert_eq!("remote-2-url", cfg.trees[1].remotes[1].get_expr());
 
         // Verify that "garden add" will refresh the remote URLs
         // for existing entries.
@@ -317,7 +319,7 @@ mod slow {
             "git", "-C", "tests/tmp/add-empty-repo/repo1",
             "config", "remote.origin.url", "repo-1-new-url"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // Update repo2's remote-2 url to remote-2-new-url.
         // git config remote.remote-2.url remote-2-new-url
@@ -325,31 +327,32 @@ mod slow {
             "git", "-C", "tests/tmp/add-empty-repo/repo2",
             "config", "remote.remote-2.url", "remote-2-new-url"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // garden add repo1 repo2
         let cmd = [
             "./target/debug/garden", "--chdir", "tests/tmp/add-empty-repo",
             "add", "repo1", "repo2"
         ];
-        assert_eq!(cmd::status(cmd::exec_cmd(&cmd).join()), 0);
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // Load the configuration and assert that the remotes are configured.
         let cfg = garden::config::new(&path, "", false)?;
-        assert_eq!(cfg.trees.len(), 2);
-        assert_eq!(cfg.trees[0].name, "repo1");
-        assert_eq!(cfg.trees[0].remotes.len(), 2);
-        assert_eq!(cfg.trees[0].remotes[0].name, "origin");
-        assert_eq!(cfg.trees[0].remotes[0].expr, "repo-1-new-url");  // New value.
-        assert_eq!(cfg.trees[0].remotes[1].name, "remote-1");
-        assert_eq!(cfg.trees[0].remotes[1].expr, "remote-1-url");
+        assert_eq!(2, cfg.trees.len());
+        assert_eq!("repo1", cfg.trees[0].get_name());
+        assert_eq!(2, cfg.trees[0].remotes.len());
+        assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
+        assert_eq!("repo-1-new-url", cfg.trees[0].remotes[0].get_expr());  // New value.
+        assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
+        assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
 
-        assert_eq!(cfg.trees[1].name, "repo2");
-        assert_eq!(cfg.trees[1].remotes.len(), 2);
-        assert_eq!(cfg.trees[1].remotes[0].name, "remote-1");
-        assert_eq!(cfg.trees[1].remotes[0].expr, "remote-1-url");
-        assert_eq!(cfg.trees[1].remotes[1].name, "remote-2");
-        assert_eq!(cfg.trees[1].remotes[1].expr, "remote-2-new-url");  // New value.
+        assert_eq!("repo2", cfg.trees[1].get_name());
+        assert_eq!(2, cfg.trees[1].remotes.len());
+        assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
+        assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
+        assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
+        // New value.
+        assert_eq!("remote-2-new-url", cfg.trees[1].remotes[1].get_expr());
 
         teardown("tests/tmp/add-empty-repo");
 
@@ -559,7 +562,7 @@ fn cmd_dash_dash_arguments_custom() {
 
     // `. .` was used to operate on the tree twice.
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
-    assert_eq!(output, format!("{}\n{}", msg, msg));
+    assert_eq!(format!("{}\n{}", msg, msg), output);
 }
 
 
@@ -577,7 +580,7 @@ fn cmd_dot_default_no_args() {
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
     let output = cmd::trim_stdout(&capture.unwrap());
-    assert_eq!(output, "data");
+    assert_eq!("data", output);
 }
 
 
@@ -597,8 +600,7 @@ fn cmd_dot_default_no_args_echo() {
     let output = cmd::trim_stdout(&capture.unwrap());
 
     let msg = "garden\narguments -- a b c -- -- x y z";
-    assert_eq!(output, msg);
-
+    assert_eq!(msg, output);
 }
 
 
@@ -619,7 +621,7 @@ fn cmd_dot_default_double_dash() {
     let output = cmd::trim_stdout(&capture.unwrap());
 
     let msg = "garden\narguments -- a b c -- -- x y z";
-    assert_eq!(output, msg);
+    assert_eq!(msg, output);
 
 }
 
@@ -648,6 +650,6 @@ fn cmd_dot_default_double_dash_args() {
     let output = cmd::trim_stdout(&capture.unwrap());
 
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
-    assert_eq!(output, msg);
+    assert_eq!(msg, output);
 
 }
