@@ -123,15 +123,6 @@ impl NamedVariable {
     }
 }
 
-// Simple Name/Value pairs
-#[derive(Clone, Debug)]
-pub struct NamedValue {
-    pub name: String,
-    pub value: String,
-}
-
-impl_display_brief!(NamedValue);
-
 // Named variables with multiple values
 #[derive(Clone, Debug)]
 pub struct MultiVariable {
