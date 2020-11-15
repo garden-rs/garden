@@ -104,18 +104,24 @@ pub fn trees_from_garden(
                 continue;
             }
             // Match found -- take all of the discovered trees.
-            result.append(&mut trees_from_group(config, Some(garden.index), cfg_group));
+            result.append(
+                &mut trees_from_group(
+                    config, Some(garden.get_index()), cfg_group
+                )
+            );
         }
     }
 
     // Collect indexes for each tree in this garden
     for tree in &garden.trees {
-        result.append(&mut trees_from_pattern(
-            config,
-            tree,
-            Some(garden.index),
-            None,
-        ));
+        result.append(
+            &mut trees_from_pattern(
+                config,
+                tree,
+                Some(garden.get_index()),
+                None,
+            )
+        );
     }
 
     result
@@ -135,7 +141,7 @@ pub fn trees_from_group(
             config,
             tree,
             garden,
-            Some(group.index),
+            Some(group.get_index()),
         ));
     }
 

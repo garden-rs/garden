@@ -252,7 +252,7 @@ impl Tree {
 #[derive(Clone, Debug, Default)]
 pub struct Group {
     name: String,
-    pub index: GroupIndex,
+    index: GroupIndex,
     pub members: Vec<String>,
 }
 
@@ -265,6 +265,10 @@ impl Group {
 
     pub fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
+    }
+
+    pub fn get_index(&self) -> GardenIndex {
+        self.index
     }
 }
 
@@ -300,10 +304,10 @@ pub struct Garden {
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
     pub groups: Vec<String>,
-    pub index: GardenIndex,
     pub trees: Vec<String>,
     pub variables: Vec<NamedVariable>,
     name: String,
+    index: GardenIndex,
 }
 
 impl_display!(Garden);
@@ -315,6 +319,10 @@ impl Garden {
 
     pub fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
+    }
+
+    pub fn get_index(&self) -> GardenIndex {
+        self.index
     }
 }
 
