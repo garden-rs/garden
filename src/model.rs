@@ -38,8 +38,8 @@ pub type GraftIndex = usize;
 /// using "$ echo foo" will place the value "foo" in the variable.
 #[derive(Clone, Debug, Default)]
 pub struct Variable {
-    pub expr: String,
-    pub value: RefCell<Option<String>>,
+    expr: String,
+    value: RefCell<Option<String>>,
 }
 
 impl_display_brief!(Variable);
@@ -54,6 +54,10 @@ impl Variable {
 
     pub fn get_expr(&self) -> &String {
         &self.expr
+    }
+
+    pub fn get_expr_mut(&mut self) -> &mut String {
+        &mut self.expr
     }
 
     pub fn set_expr(&mut self, expr: String) {

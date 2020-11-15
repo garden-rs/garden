@@ -219,7 +219,7 @@ fn trees() {
     // From "python" template
     assert_eq!("PYTHONPATH", tree1.environment[0].get_name());
     assert_eq!(1, tree1.environment[0].len());
-    assert_eq!("${TREE_PATH}", tree1.environment[0].get(0).expr);
+    assert_eq!("${TREE_PATH}", tree1.environment[0].get(0).get_expr());
     // From tree
     assert_eq!("PATH", tree1.environment[1].get_name());
     assert_eq!(2, tree1.environment[1].len());

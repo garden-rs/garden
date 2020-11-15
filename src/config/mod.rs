@@ -92,7 +92,7 @@ pub fn new(
 
     // Override the configured garden root
     if !root.is_empty() {
-        cfg.root.expr = root.into();
+        cfg.root.set_expr(root.to_string());
     }
 
     let mut basename: String = "garden.yaml".into();
@@ -149,8 +149,8 @@ pub fn new(
     }
 
     // Default to the current directory when garden.root is unspecified
-    if cfg.root.expr.is_empty() {
-        cfg.root.expr = path::current_dir_string();
+    if cfg.root.get_expr().is_empty() {
+        cfg.root.set_expr(path::current_dir_string());
     }
 
     // Grafts

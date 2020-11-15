@@ -30,18 +30,18 @@ pub fn parse(
     }
 
     // garden.root
-    if config.root.expr.is_empty() {
-        if !get_str(&doc["garden"]["root"], &mut config.root.expr) {
+    if config.root.get_expr().is_empty() {
+        if !get_str(&doc["garden"]["root"], config.root.get_expr_mut()) {
             // Default to the current directory when garden.root is unspecified
             // NOTE: this logic must be duplicated here for GARDEN_ROOT.
             // TODO: move GARDEN_ROOT initialization out of this so that
             // we can avoid this early initialization and do it in the outer
             // config::new() call.
-            config.root.expr = path::current_dir_string();
+            config.root.set_expr(path::current_dir_string());
         }
 
         if verbose {
-            debug!("yaml: garden.root = {}", config.root.expr);
+            debug!("yaml: garden.root = {}", config.root.get_expr());
         }
     }
 
@@ -455,7 +455,7 @@ fn get_tree(
     get_str(&name, &mut tree.name);
 
     // Tree path
-    if !get_str(&value["path"], &mut tree.path.expr) {
+    if !get_str(&value["path"], tree.path.get_expr_mut()) {
         // default to the name when "path" is unspecified
         tree.path.set_expr(tree.name.clone());
         tree.path.set_value(tree.name.clone());
@@ -493,7 +493,7 @@ fn get_tree(
     }
 
     // Symlinks
-    tree.is_symlink = get_str(&value["symlink"], &mut tree.symlink.expr);
+    tree.is_symlink = get_str(&value["symlink"], tree.symlink.get_expr_mut());
 
     // Templates
     get_vec_str(&value["templates"], &mut tree.templates);

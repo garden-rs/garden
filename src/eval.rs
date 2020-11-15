@@ -225,7 +225,7 @@ pub fn multi_variable(
             continue;
         }
 
-        let value = tree_value(config, &var.expr, context.tree, context.garden);
+        let value = tree_value(config, var.get_expr(), context.tree, context.garden);
         result.push(value.clone());
 
         var.set_value(value);
