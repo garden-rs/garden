@@ -84,8 +84,8 @@ impl Variable {
 // Named variables with a single value
 #[derive(Clone, Debug)]
 pub struct NamedVariable {
-    pub name: String,
-    pub variable: Variable,
+    name: String,
+    variable: Variable,
 }
 
 impl_display_brief!(NamedVariable);

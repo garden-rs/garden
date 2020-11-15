@@ -37,7 +37,7 @@ fn expand_tree_vars(
     // Garden scope overrides tree and global scope.
     if let Some(garden) = garden_idx {
         for (idx, var) in config.gardens[garden].variables.iter().enumerate() {
-            if var.name == name {
+            if var.get_name() == name {
                 if let Some(var_value) = var.get_value() {
                     return Ok(Some(var_value.to_string()));
                 }
@@ -60,7 +60,7 @@ fn expand_tree_vars(
     var_idx = 0;
 
     for (idx, var) in config.trees[tree_idx].variables.iter().enumerate() {
-        if var.name == name {
+        if var.get_name() == name {
             if let Some(var_value) = var.get_value() {
                 return Ok(Some(var_value.to_string()));
             }
@@ -82,7 +82,7 @@ fn expand_tree_vars(
     var_idx = 0;
 
     for (idx, var) in config.variables.iter().enumerate() {
-        if var.name == name {
+        if var.get_name() == name {
             // Return the value immediately if it's already been evaluated.
             if let Some(var_value) = var.get_value() {
                 return Ok(Some(var_value.to_string()));
@@ -121,7 +121,7 @@ fn expand_vars(config: &mut model::Configuration, name: &str) -> Result<Option<S
     let mut found = false;
 
     for (idx, var) in config.variables.iter().enumerate() {
-        if var.name == name {
+        if var.get_name() == name {
             if let Some(var_value) = var.get_value() {
                 return Ok(Some(var_value.to_string()));
             }
@@ -280,7 +280,7 @@ pub fn environment(
     let mut var_values = Vec::new();
     for (ctx, var) in vars.iter_mut() {
         var_values.push((
-            tree_value(config, &var.name, ctx.tree, ctx.garden),
+            tree_value(config, var.get_name(), ctx.tree, ctx.garden),
             multi_variable(config, var, ctx),
         ));
     }
@@ -388,7 +388,7 @@ pub fn command(
 
     // Global commands
     for var in &config.commands {
-        if pattern.matches(&var.name) {
+        if pattern.matches(var.get_name()) {
             vars.push(var.clone());
         }
     }
