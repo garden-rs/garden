@@ -154,26 +154,17 @@ pub fn new(
     }
 
     // Grafts
-    let mut exprs = Vec::new();
-    for graft in &cfg.grafts {
-        exprs.push(graft.config_expr.clone());
-    }
-
+    /*
     let mut paths = Vec::new();
-    for expr in &exprs {
-        let path_str = cfg.eval_tree_path(expr);
-        paths.push(path_str);
-    }
-
-    let mut idx = 0;
-    for graft in cfg.grafts.iter_mut() {
-        let path_str = paths[idx].clone();
+    for graft in &cfg.grafts {
+        let config = &graft.config;
+        let path_str = cfg.eval_tree_path(config);
         let path = std::path::PathBuf::from(&path_str);
         if path.exists() {
             graft.config = Some(new(&Some(path), &graft.root, verbose)?);
         }
-        idx += 1;
     }
+    */
 
     Ok(cfg)
 }

@@ -74,3 +74,43 @@ pub fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str
 pub fn split_graft(string: &str) -> (bool, &str, &str) {
     split_string(string, "::")
 }
+
+
+/// Remove the graft basename leaving the remainder of the graft string.
+pub fn trim_graft(string: &str) -> Option<String> {
+    let (ok, _before, after) = split_graft(string);
+    if !ok {
+        return None;
+    }
+
+    let result;
+    if is_garden(string) {
+        result = ":".to_string() + after;
+    } else if is_group(string) {
+        result = "%".to_string() + after;
+    } else if is_tree(string) {
+        result = "@".to_string() + after;
+    } else {
+        result = after.to_string();
+    }
+
+    Some(result)
+}
+
+
+/// Return the graft basename.  "@foo::bar::baz" -> "foo"
+pub fn graft_basename(string: &str) -> Option<String> {
+    let (ok, before, _after) = split_graft(string);
+    if !ok {
+        return None;
+    }
+
+    let result;
+    if is_garden(string) || is_group(string) || is_tree(string) {
+        result = trim(before).to_string();
+    } else {
+        result = before.to_string();
+    }
+
+    Some(result)
+}

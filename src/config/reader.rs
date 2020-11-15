@@ -603,8 +603,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
 fn get_grafts(yaml: &Yaml, grafts: &mut Vec<model::Graft>) -> bool {
     if let Yaml::Hash(ref yaml_hash) = yaml {
         for (name, value) in yaml_hash {
-            let mut graft = get_graft(name, value);
-            graft.index = grafts.len();
+            let graft = get_graft(name, value);
             grafts.push(graft);
         }
         true
@@ -615,30 +614,22 @@ fn get_grafts(yaml: &Yaml, grafts: &mut Vec<model::Graft>) -> bool {
 
 
 fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
-
     let mut graft_name = "".to_string();
-    let mut config_expr = "".to_string();
+    let mut config = "".to_string();
     let mut root = "".to_string();
-    let idx = 0;
 
     get_str(name, &mut graft_name);
 
-    if !get_str(graft, &mut config_expr) {
+    if !get_str(graft, &mut config) {
         // The root was not specified.
         if let Yaml::Hash(ref _hash) = graft {
             // A config expression and root might be specified.
-            get_str(&graft["config"], &mut config_expr);
+            get_str(&graft["config"], &mut config);
             get_str(&graft["root"], &mut root);
         }
     }
 
-    model::Graft {
-        name: graft_name,
-        root: root,
-        config: None,
-        config_expr: config_expr,
-        index: idx,
-    }
+    model::Graft::new(graft_name, root, config)
 }
 
 

@@ -359,3 +359,17 @@ fn environment_variables() {
     value = garden::eval::tree_value(&mut config, "${GARDEN_TEST_VALUE}", 0, None);
     assert_eq!(value, "test");
 }
+
+
+#[test]
+fn graft_tree_path() {
+    let config = common::garden_config();
+    let ctx_result = garden::query::tree_context(&config, "graft::graft", None);
+    assert!(ctx_result.is_err());
+    /*
+    assert!(ctx_result.is_ok());
+    let ctx = ctx_result.unwrap();
+    let value = garden::eval::tree_value(&config, "${TREE_PATH}", ctx.tree, ctx.garden);
+    assert_eq!("/home/test/src/graft", value);
+    */
+}

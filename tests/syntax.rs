@@ -66,6 +66,15 @@ fn split_graft_ok() {
 
 
 #[test]
+fn split_graft_nested_ok() {
+    let (ok, pre, post) = syntax::split_graft("@foo::bar::baz");
+    assert!(ok, "split_graft on @foo::bar::baz is ok");
+    assert_eq!(pre, "@foo");
+    assert_eq!(post, "bar::baz");
+}
+
+
+#[test]
 fn split_graft_empty() {
     let (ok, pre, post) = syntax::split_graft("foo::");
     assert!(ok, "split_graft on foo:: is ok");
@@ -91,4 +100,79 @@ fn trim_exec() {
     assert_eq!("", syntax::trim_exec("$ "));
     assert_eq!("$", syntax::trim_exec("$"));
     assert_eq!("", syntax::trim_exec(""));
+}
+
+
+#[test]
+fn trim_graft() {
+    let value = syntax::trim_graft("foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!("bar::baz", value.unwrap());
+
+    let value = syntax::trim_graft("@foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!("@bar::baz", value.unwrap());
+
+    let value = syntax::trim_graft("%foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!("%bar::baz", value.unwrap());
+
+    let value = syntax::trim_graft(":foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!(":bar::baz", value.unwrap());
+
+    let value = syntax::trim_graft("foo::bar");
+    assert!(value.is_some());
+    assert_eq!("bar", value.unwrap());
+
+    let value = syntax::trim_graft("foo");
+    assert!(value.is_none());
+}
+
+
+#[test]
+fn graft_basename() {
+    let value = syntax::graft_basename("foo");
+    assert!(value.is_none());
+
+    let value = syntax::graft_basename(":foo");
+    assert!(value.is_none());
+
+    let value = syntax::graft_basename("%foo");
+    assert!(value.is_none());
+
+    let value = syntax::graft_basename("@foo");
+    assert!(value.is_none());
+
+    let value = syntax::graft_basename("foo::bar");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
+
+    let value = syntax::graft_basename(":foo::bar");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
+
+    let value = syntax::graft_basename("%foo::bar");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
+
+    let value = syntax::graft_basename("@foo::bar");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
+
+    let value = syntax::graft_basename("foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
+
+    let value = syntax::graft_basename(":foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
+
+    let value = syntax::graft_basename("%foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
+
+    let value = syntax::graft_basename("@foo::bar::baz");
+    assert!(value.is_some());
+    assert_eq!("foo", value.unwrap());
 }

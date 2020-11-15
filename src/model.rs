@@ -18,9 +18,6 @@ pub type GroupIndex = usize;
 /// Garden index into config.gardens
 pub type GardenIndex = usize;
 
-/// Graft index into config.grafts
-pub type GraftIndex = usize;
-
 
 /// Config files can define a sequence of variables that are
 /// iteratively calculated.  Variables can reference other
@@ -536,14 +533,24 @@ impl Configuration {
 
 #[derive(Clone, Debug, Default)]
 pub struct Graft {
+    pub id: Option<NodeId>,
     pub name: String,
     pub root: String,
-    pub config: Option<Configuration>,
-    pub config_expr: String,
-    pub index: GraftIndex,
+    pub config: String,
 }
 
 impl_display!(Graft);
+
+impl Graft {
+    pub fn new(name: String, root: String, config: String) -> Self {
+        Graft {
+            id: None,
+            name: name,
+            root: root,
+            config: config,
+        }
+    }
+}
 
 
 #[derive(Clone, Debug)]

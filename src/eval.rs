@@ -20,7 +20,7 @@ fn is_digit(string: &str) -> bool {
 
 /// Expand variables across all scopes (garden, tree, and global)
 fn expand_tree_vars(
-    config: &mut model::Configuration,
+    config: &model::Configuration,
     tree_idx: model::TreeIndex,
     garden_idx: Option<model::GardenIndex>,
     name: &str,
@@ -111,7 +111,8 @@ fn expand_tree_vars(
 
 
 /// Expand variables at global scope only
-fn expand_vars(config: &mut model::Configuration, name: &str) -> Result<Option<String>, String> {
+fn expand_vars(config: &model::Configuration, name: &str)
+    -> Result<Option<String>, String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if is_digit(name) {
         return Ok(Some(format!("${}", name)));
@@ -161,7 +162,7 @@ fn home_dir() -> Option<std::path::PathBuf> {
 
 /// Resolve a variable in a garden/tree/global scope
 pub fn tree_value(
-    config: &mut model::Configuration,
+    config: &model::Configuration,
     expr: &str,
     tree_idx: model::TreeIndex,
     garden_idx: Option<model::GardenIndex>,
@@ -181,7 +182,7 @@ pub fn tree_value(
 
 
 /// Resolve a variable in configuration/global scope
-pub fn value(config: &mut model::Configuration, expr: &str) -> String {
+pub fn value(config: &model::Configuration, expr: &str) -> String {
     let expanded =
         shellexpand::full_with_context(expr, home_dir, |x| { return expand_vars(config, x); })
             .unwrap_or(Cow::from(""))
