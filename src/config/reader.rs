@@ -321,7 +321,7 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
 fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template {
 
     let mut template = model::Template::default();
-    get_str(&name, &mut template.name);
+    get_str(&name, template.get_name_mut());
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {

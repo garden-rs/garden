@@ -275,9 +275,9 @@ pub struct Template {
     pub environment: Vec<MultiVariable>,
     pub extend: Vec<String>,
     pub gitconfig: Vec<NamedVariable>,
-    pub name: String,
     pub remotes: Vec<NamedVariable>,
     pub variables: Vec<NamedVariable>,
+    name: String,
 }
 
 impl_display!(Template);
@@ -285,6 +285,10 @@ impl_display!(Template);
 impl Template {
     pub fn get_name(&self) -> &String {
         &self.name
+    }
+
+    pub fn get_name_mut(&mut self) -> &mut String {
+        &mut self.name
     }
 }
 
