@@ -878,7 +878,7 @@ impl ApplicationContext {
         }
     }
 
-    pub fn get_mut_config(&mut self) -> &mut Configuration {
+    pub fn get_config_mut(&mut self) -> &mut Configuration {
         self.arena.get_mut(self.root_id).unwrap().get_mut()
     }
 }

@@ -18,7 +18,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
-    let config = app.get_mut_config();
+    let config = app.get_config_mut();
     exec(config, quiet, verbose, &query, &command)
 }
 

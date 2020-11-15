@@ -19,7 +19,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let verbose = app.options.verbose;
 
     let mut exit_status = errors::EX_OK;
-    let config = app.get_mut_config();
+    let config = app.get_config_mut();
     for query in &queries {
         let status = grow(config, quiet, verbose, &query)?;
         if status != errors::EX_OK {

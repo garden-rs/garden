@@ -13,7 +13,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut tree = String::new();
     parse_args(&mut app.options, &mut query, &mut tree);
 
-    let config = app.get_mut_config();
+    let config = app.get_config_mut();
     let contexts = query::resolve_trees(config, &query);
     if contexts.is_empty() {
         // TODO errors::GardenError::TreeQueryMatchedNoTrees { query: query.into() }
