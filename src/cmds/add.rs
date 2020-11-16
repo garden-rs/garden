@@ -142,6 +142,7 @@ fn add_path(
             if canon_path == path {
                 // Existing tree found: use the configured name.
                 tree_name = tree.get_name().to_string();
+                break;
             }
         }
     }
