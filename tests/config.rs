@@ -406,17 +406,19 @@ fn read_grafts() {
         let config = app.get_root_config();
         assert_eq!(2, config.grafts.len());
 
+        assert_eq!("graft", config.grafts[0].get_name());
         let graft_id = config.grafts[0].get_id();
         assert!(graft_id.is_some());
-        assert_eq!(2 as usize, graft_id.unwrap().into());
+        assert_eq!(2usize, graft_id.unwrap().into());
 
+        assert_eq!("libs", config.grafts[1].get_name());
         let graft_id = config.grafts[1].get_id();
         assert!(graft_id.is_some());
-        assert_eq!(5 as usize, graft_id.unwrap().into());
+        assert_eq!(5usize, graft_id.unwrap().into());
     }
 
     let ctx_result = garden::query::tree_context(
-        app.get_root_config_mut(), "graft::graft", None
+        app.get_root_config(), "graft::graft", None
     );
     assert!(ctx_result.is_err());
     /*
