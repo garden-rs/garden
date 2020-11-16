@@ -6,6 +6,7 @@ grafts:
     root: ${GARDEN_CONFIG_DIR}/test
 
 variables:
+  current_config: graft
   variable: graft value
   repos: ../repos
   example_url: ${repos}/example.git

@@ -6,6 +6,7 @@ grafts:
     root: libs
 
 variables:
+  current_config: main
   gh_ssh: "git@github.com"
   repos: ${GARDEN_ROOT}/repos
 
@@ -17,6 +18,10 @@ gardens:
     trees:
       - graft::graft
       - example/tree
+  graft_garden:
+    trees:
+      - graft::graft
+      - graft::core
 
 trees:
   # repos/example.git is created by setup.sh during the integration test.

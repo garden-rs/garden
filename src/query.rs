@@ -1,6 +1,7 @@
 use super::errors::GardenError;
 use super::model;
 use super::query;
+use super::syntax;
 
 
 /// Resolve a tree query into a `Vec<garden::model::TreeContext>`.
@@ -278,6 +279,9 @@ pub fn tree_context(
 ) -> Result<model::TreeContext, GardenError> {
 
     let mut ctx = model::TreeContext::new(0, None, None, None);
+    if let Some(value) = config.get_id() {
+        ctx.config = Some(*value);
+    }
     if let Some(context) = tree_from_name(&config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
@@ -316,4 +320,30 @@ pub fn tree_context(
     }
 
     Ok(ctx)
+}
+
+
+pub fn find_tree(
+    app: &model::ApplicationContext,
+    id: model::ConfigId,
+    tree: &str,
+    garden: Option<&str>,
+) -> Result<model::TreeContext, GardenError> {
+
+    {
+        let config = app.get_config(id);
+        if let Some(graft_name) = syntax::graft_basename(tree) {
+            if syntax::is_graft(tree) && config.contains_graft(&graft_name) {
+                let graft = config.get_graft(&graft_name)?;
+                let graft_config = app.get_config(graft.get_id().unwrap());
+
+                if let Some(next_graft) = syntax::trim_graft(tree) {
+                    return tree_context(graft_config, &next_graft, garden);
+                }
+            }
+        }
+    }
+
+    let config = app.get_config(id);
+    tree_context(config, tree, garden)
 }

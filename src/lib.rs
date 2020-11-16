@@ -2,6 +2,9 @@
 #[macro_use]
 pub mod macros;
 
+/// Builders
+pub mod build;
+
 /// Command utilities
 pub mod cmd;
 

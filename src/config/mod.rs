@@ -1,8 +1,8 @@
-use indextree::NodeId;
 use xdg;
 
 use super::errors;
 use super::model;
+use super::model::ConfigId;
 use super::path;
 
 /// YAML reader
@@ -86,7 +86,7 @@ pub fn new(
     config: &Option<std::path::PathBuf>,
     root: &str,
     verbose: bool,
-    parent: Option<NodeId>,
+    parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
 
     let mut cfg = model::Configuration::new();
@@ -167,15 +167,24 @@ pub fn from_path(
     path: std::path::PathBuf,
     root: &str,
     verbose: bool,
-    parent: Option<NodeId>,
+    parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
 
     new(&Some(path), root, verbose, parent)
 }
 
 
-/// Create a model::Configuration instance from model::CommandOptions
+/// Read configuration from a path string.  Wraps from_path() to simplify usage.
+pub fn from_path_string(
+    path: &str,
+    verbose: bool,
+) -> Result<model::Configuration, errors::GardenError> {
+    from_path(std::path::PathBuf::from(path), "", verbose, None)
+}
 
+
+
+/// Create a model::Configuration instance from model::CommandOptions
 pub fn from_options(
     options: &model::CommandOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
@@ -236,7 +245,7 @@ pub fn read_grafts(
 /// Read grafts into the specified configuration
 fn read_grafts_recursive(
     app: &mut model::ApplicationContext,
-    id: NodeId,
+    id: ConfigId,
 ) -> Result<(), errors::GardenError> {
 
     // Defer the recursive calls to avoid an immutable borrow from preventing us from

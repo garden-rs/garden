@@ -1,5 +1,6 @@
 use anyhow::Result;
 
+use garden::build;
 use garden::cmds;
 use garden::config;
 use garden::errors;
@@ -48,8 +49,7 @@ fn cmd_main() -> Result<()> {
     }
 
     let config = config::from_options(&options)?;
-    let mut app = model::ApplicationContext::new(config, options);
-    config::read_grafts(&mut app)?;
+    let mut app = build::context_from_config(config, options)?;
 
     match app.options.subcommand.clone() {
         model::Command::Add => cmds::add::main(&mut app),

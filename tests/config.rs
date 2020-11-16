@@ -1,5 +1,7 @@
 mod common;
 
+use anyhow::Result;
+
 
 /// Defaults
 #[test]
@@ -394,37 +396,22 @@ fn test_template_url() {
 
 
 #[test]
-fn read_grafts() {
-    let path = std::path::PathBuf::from("tests/data/garden.yaml");
-    let config = garden::config::from_path(path, "", true, None).unwrap();
-    let options = garden::model::CommandOptions::default();
-    let mut app = garden::model::ApplicationContext::new(config, options);
-    garden::config::read_grafts(&mut app).ok();
+fn read_grafts() -> Result<()> {
+    let options = garden::build::command_options().verbose(true);
+    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
 
-    // Immutable scope to validate the config grafts.
-    {
-        let config = app.get_root_config();
-        assert_eq!(2, config.grafts.len());
+    let config = app.get_root_config();
+    assert_eq!(2, config.grafts.len());
 
-        assert_eq!("graft", config.grafts[0].get_name());
-        let graft_id = config.grafts[0].get_id();
-        assert!(graft_id.is_some());
-        assert_eq!(2usize, graft_id.unwrap().into());
+    assert_eq!("graft", config.grafts[0].get_name());
+    let graft_id = config.grafts[0].get_id();
+    assert!(graft_id.is_some());
+    assert_eq!(2usize, graft_id.unwrap().into());
 
-        assert_eq!("libs", config.grafts[1].get_name());
-        let graft_id = config.grafts[1].get_id();
-        assert!(graft_id.is_some());
-        assert_eq!(5usize, graft_id.unwrap().into());
-    }
+    assert_eq!("libs", config.grafts[1].get_name());
+    let graft_id = config.grafts[1].get_id();
+    assert!(graft_id.is_some());
+    assert_eq!(5usize, graft_id.unwrap().into());
 
-    let ctx_result = garden::query::tree_context(
-        app.get_root_config(), "graft::graft", None
-    );
-    assert!(ctx_result.is_err());
-    /*
-    assert!(ctx_result.is_ok());
-    let ctx = ctx_result.unwrap();
-    let value = garden::eval::tree_value(&config, "${TREE_PATH}", ctx.tree, ctx.garden);
-    assert_eq!("/home/test/src/graft", value);
-    */
+    Ok(())
 }

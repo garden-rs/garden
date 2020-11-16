@@ -18,6 +18,9 @@ pub type GroupIndex = usize;
 /// Garden index into config.gardens
 pub type GardenIndex = usize;
 
+/// Configuration Node IDs
+pub type ConfigId = NodeId;
+
 
 /// Config files can define a sequence of variables that are
 /// iteratively calculated.  Variables can reference other
@@ -343,8 +346,8 @@ pub struct Configuration {
     pub trees: Vec<Tree>,
     pub variables: Vec<NamedVariable>,
     pub verbose: bool,
-    id: Option<NodeId>,
-    parent_id: Option<NodeId>,
+    id: Option<ConfigId>,
+    parent_id: Option<ConfigId>,
 }
 
 impl_display!(Configuration);
@@ -515,13 +518,17 @@ impl Configuration {
         }
     }
 
-    /// Set the NodeId from the Arena for this configuration.
-    pub fn set_id(&mut self, id: NodeId) {
+    /// Set the ConfigId from the Arena for this configuration.
+    pub fn set_id(&mut self, id: ConfigId) {
         self.id = Some(id);
     }
 
-    /// Set the parent NodeId from the Arena for this configuration.
-    pub fn set_parent(&mut self, id: NodeId) {
+    pub fn get_id(&self) -> &Option<ConfigId> {
+        &self.id
+    }
+
+    /// Set the parent ConfigId from the Arena for this configuration.
+    pub fn set_parent(&mut self, id: ConfigId) {
         self.parent_id = Some(id);
     }
 
@@ -542,12 +549,38 @@ impl Configuration {
             ),
         )
     }
+
+    /// Return true if the configuration contains the named graft.
+    pub fn contains_graft(&self, name: &str) -> bool {
+        let graft_name = syntax::trim(name);
+        for graft in &self.grafts {
+            if graft.get_name() == graft_name {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Return a graft by name.
+    pub fn get_graft(&self, name: &str) -> Result<&Graft, errors::GardenError> {
+        let graft_name = syntax::trim(name);
+        for graft in &self.grafts {
+            if graft.get_name() == graft_name {
+                return Ok(graft);
+            }
+        }
+        Err(
+            errors::GardenError::ConfigurationError(
+                format!("{}: no such graft", name)
+            )
+        )
+    }
 }
 
 
 #[derive(Clone, Debug, Default)]
 pub struct Graft {
-    id: Option<NodeId>,
+    id: Option<ConfigId>,
     name: String,
     pub root: String,
     pub config: String,
@@ -569,11 +602,11 @@ impl Graft {
         &self.name
     }
 
-    pub fn get_id(&self) -> &Option<NodeId> {
+    pub fn get_id(&self) -> &Option<ConfigId> {
         &self.id
     }
 
-    pub fn set_id(&mut self, id: NodeId) {
+    pub fn set_id(&mut self, id: ConfigId) {
         self.id = Some(id);
     }
 }
@@ -582,7 +615,7 @@ impl Graft {
 #[derive(Clone, Debug)]
 pub struct TreeContext {
     pub tree: TreeIndex,
-    pub config: Option<NodeId>,
+    pub config: Option<ConfigId>,
     pub garden: Option<GardenIndex>,
     pub group: Option<GroupIndex>,
 }
@@ -593,7 +626,7 @@ impl TreeContext {
     /// Construct a new TreeContext.
     pub fn new(
         tree: TreeIndex,
-        config: Option<NodeId>,
+        config: Option<ConfigId>,
         garden: Option<GardenIndex>,
         group: Option<GroupIndex>,
     ) -> Self {
@@ -869,6 +902,16 @@ pub struct CommandOptions {
 }
 
 impl CommandOptions {
+    pub fn new() -> Self {
+        CommandOptions::default()
+    }
+
+    // Builder function to update verbosity.
+    pub fn verbose(mut self, value: bool) -> Self {
+        self.verbose = value;
+        self
+    }
+
     pub fn update(&mut self) {
         // Allow specifying the config file: garden --config <path>
         if !self.filename_str.is_empty() {
@@ -912,7 +955,7 @@ impl CommandOptions {
 pub struct ApplicationContext {
     pub options: CommandOptions,
     arena: Arena<Configuration>,
-    root_id: NodeId,
+    root_id: ConfigId,
 }
 
 impl_display!(ApplicationContext);
@@ -933,15 +976,15 @@ impl ApplicationContext {
         app_context
     }
 
-    pub fn get_config(&self, id: NodeId) -> &Configuration {
+    pub fn get_config(&self, id: ConfigId) -> &Configuration {
         self.arena.get(id).unwrap().get()
     }
 
-    pub fn get_config_mut(&mut self, id: NodeId) -> &mut Configuration {
+    pub fn get_config_mut(&mut self, id: ConfigId) -> &mut Configuration {
         self.arena.get_mut(id).unwrap().get_mut()
     }
 
-    pub fn get_root_id(&self) -> NodeId {
+    pub fn get_root_id(&self) -> ConfigId {
         self.root_id
     }
 
@@ -953,8 +996,8 @@ impl ApplicationContext {
         self.get_config_mut(self.get_root_id())
     }
 
-    /// Add a child Configuration graft onto the parent NodeId.
-    pub fn add_graft(&mut self, parent: NodeId, config: Configuration) -> NodeId {
+    /// Add a child Configuration graft onto the parent ConfigId.
+    pub fn add_graft(&mut self, parent: ConfigId, config: Configuration) -> ConfigId {
         let graft_id = self.arena.new_node(config);  // Take ownership of config.
         parent.append(graft_id, &mut self.arena);
 

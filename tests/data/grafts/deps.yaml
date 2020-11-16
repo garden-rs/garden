@@ -1,3 +1,7 @@
 ---
 trees:
   framework: framework.git
+
+variables:
+  current_config: deps
+  deps_graft_value: test-graph-value

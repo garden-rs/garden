@@ -1,5 +1,7 @@
 mod common;
 
+use anyhow::Result;
+
 
 #[test]
 fn garden_root() {
@@ -338,31 +340,31 @@ fn environment_variables() {
 }
 
 
+#[test]
+fn find_tree_in_graft() -> Result<()> {
+    // See the "config.rs" tests for config-level validations.
+    let options = garden::build::command_options().verbose(true);
+    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
+    let id = app.get_root_id();
+    let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
+    assert_eq!(0, ctx.tree);
+    assert!(ctx.config.is_some());
+    assert_eq!(2usize, ctx.config.unwrap().into());
+
+    Ok(())
+}
+
 /*
 #[test]
-fn graft_tree_context() {
-    // TODO test helper function
-    let path = std::path::PathBuf::from("tests/data/garden.yaml");
-    let config = garden::config::from_path(path, "", true, None).unwrap();
-    let options = garden::model::CommandOptions::default();
-    let mut app = garden::model::ApplicationContext::new(config, options);
-    garden::config::read_grafts(&mut app).ok();
+fn eval_graft_tree() -> Result<()> {
+    let options = garden::build::command_options().verbose(true);
+    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
 
-    // Immutable scope to validate the config grafts.
-    {
-        let config = app.get_root_config();
-        assert_eq!(2, config.grafts.len());
-    }
+    let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
+    assert!(ctx.config.is_some());
 
-    let ctx_result = garden::query::tree_context(
-        app.get_root_config_mut(), "graft::graft", None
-    );
-    assert!(ctx_result.is_err());
-    /*
-    assert!(ctx_result.is_ok());
-    let ctx = ctx_result.unwrap();
+    let config = app.get_config(*ctx.config.unwrap());
     let value = garden::eval::tree_value(&config, "${TREE_PATH}", ctx.tree, ctx.garden);
     assert_eq!("/home/test/src/graft", value);
-    */
 }
 */
