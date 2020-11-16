@@ -96,11 +96,7 @@ fn multi_variable_with_tree() {
     let mut var = config.trees[1].environment[1].clone();
     assert_eq!("PATH", var.get_name());
 
-    let context = garden::model::TreeContext {
-        tree: 1,
-        garden: None,
-        group: None,
-    };
+    let context = garden::model::TreeContext::new(1, None, None, None);
     let values = garden::eval::multi_variable(&mut config, &mut var, &context);
     assert_eq!(
         values,
@@ -120,11 +116,7 @@ fn multi_variable_with_garden() {
     let mut var = config.trees[1].environment[1].clone();
     assert_eq!("PATH", var.get_name());
 
-    let context = garden::model::TreeContext {
-        tree: 1,
-        garden: Some(0),
-        group: None,
-    };
+    let context = garden::model::TreeContext::new(1, None, Some(0), None);
     let values = garden::eval::multi_variable(&mut config, &mut var, &context);
     assert_eq!(
         values,
@@ -139,11 +131,8 @@ fn multi_variable_with_garden() {
 #[test]
 fn garden_environment() {
     let mut config = common::garden_config();
-    let context = garden::model::TreeContext {
-        tree: 1, // cola
-        garden: Some(0),
-        group: None,
-    };
+    // cola tree(1) and cola garden(Some(0))
+    let context = garden::model::TreeContext::new(1, None, Some(0), None);
     let values = garden::eval::environment(&mut config, &context);
     assert_eq!(values.len(), 7);
 
@@ -207,12 +196,8 @@ fn garden_environment() {
 #[test]
 fn group_environment() {
     let mut config = common::garden_config();
-    let context = garden::model::TreeContext {
-        tree: 1, // cola
-        garden: None,
-        group: Some(0), // cola group
-    };
-
+    // cola tree(1) + cola group(Some(0))
+    let context = garden::model::TreeContext::new(1, None, None, Some(0));
     let values = garden::eval::environment(&mut config, &context);
     assert_eq!(values.len(), 5);
 
@@ -293,11 +278,7 @@ fn environment_empty_value() {
 #[test]
 fn command_garden_scope() {
     let mut config = common::garden_config();
-    let context = garden::model::TreeContext {
-        tree: 1,
-        garden: Some(0),
-        group: None,
-    };
+    let context = garden::model::TreeContext::new(1, None, Some(0), None);
 
     // Garden scope
     let values = garden::eval::command(&mut config, &context, "build");
@@ -314,11 +295,7 @@ fn command_garden_scope() {
 #[test]
 fn command_tree_scope() {
     let mut config = common::garden_config();
-    let context = garden::model::TreeContext {
-        tree: 1,
-        garden: None,
-        group: None,
-    };
+    let context = garden::model::TreeContext::new(1, None, None, None);
 
     // The ${prefix} variable should expand to the tree-local value.
     {
@@ -361,10 +338,25 @@ fn environment_variables() {
 }
 
 
+/*
 #[test]
-fn graft_tree_path() {
-    let config = common::garden_config();
-    let ctx_result = garden::query::tree_context(&config, "graft::graft", None);
+fn graft_tree_context() {
+    // TODO test helper function
+    let path = std::path::PathBuf::from("tests/data/garden.yaml");
+    let config = garden::config::from_path(path, "", true, None).unwrap();
+    let options = garden::model::CommandOptions::default();
+    let mut app = garden::model::ApplicationContext::new(config, options);
+    garden::config::read_grafts(&mut app).ok();
+
+    // Immutable scope to validate the config grafts.
+    {
+        let config = app.get_root_config();
+        assert_eq!(2, config.grafts.len());
+    }
+
+    let ctx_result = garden::query::tree_context(
+        app.get_root_config_mut(), "graft::graft", None
+    );
     assert!(ctx_result.is_err());
     /*
     assert!(ctx_result.is_ok());
@@ -373,3 +365,4 @@ fn graft_tree_path() {
     assert_eq!("/home/test/src/graft", value);
     */
 }
+*/

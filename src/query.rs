@@ -168,11 +168,7 @@ pub fn tree_from_name(
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
         if cfg_tree.get_name() == tree {
             // Tree found
-            return Some(model::TreeContext {
-                tree: tree_idx,
-                garden: garden_idx,
-                group: group_idx,
-            });
+            return Some(model::TreeContext::new(tree_idx, None, garden_idx, group_idx));
         }
     }
 
@@ -209,11 +205,7 @@ pub fn trees_from_pattern(
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
         if pattern.matches(cfg_tree.get_name()) {
             // Tree found
-            result.push(model::TreeContext {
-                tree: tree_idx,
-                garden: garden_idx,
-                group: group_idx,
-            });
+            result.push(model::TreeContext::new(tree_idx, None, garden_idx, group_idx));
         }
     }
 
@@ -252,11 +244,7 @@ pub fn tree_from_path(config: &model::Configuration, path: &str)
         };
         if pathbuf == tree_canon {
             return Some(
-                model::TreeContext {
-                    tree: idx as model::TreeIndex,
-                    garden: None,
-                    group: None,
-                }
+                model::TreeContext::new(idx as model::TreeIndex, None, None, None)
             );
         }
     }
@@ -272,11 +260,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern)
     let mut result = Vec::new();
     for (tree_idx, tree) in config.trees.iter().enumerate() {
         if pattern.matches(tree.get_name()) {
-            result.push(model::TreeContext {
-                tree: tree_idx,
-                garden: None,
-                group: None,
-            });
+            result.push(model::TreeContext::new(tree_idx, None, None, None));
         }
     }
 
@@ -293,11 +277,7 @@ pub fn tree_context(
     garden: Option<&str>,
 ) -> Result<model::TreeContext, GardenError> {
 
-    let mut ctx = model::TreeContext {
-        tree: 0,
-        garden: None,
-        group: None,
-    };
+    let mut ctx = model::TreeContext::new(0, None, None, None);
     if let Some(context) = tree_from_name(&config, tree, None, None) {
         ctx.tree = context.tree;
     } else {

@@ -391,3 +391,38 @@ fn test_template_url() {
     assert_eq!("origin", tree.remotes[0].get_name());
     assert_eq!("${local}/${TREE_NAME}", tree.remotes[0].get_expr());
 }
+
+
+#[test]
+fn read_grafts() {
+    let path = std::path::PathBuf::from("tests/data/garden.yaml");
+    let config = garden::config::from_path(path, "", true, None).unwrap();
+    let options = garden::model::CommandOptions::default();
+    let mut app = garden::model::ApplicationContext::new(config, options);
+    garden::config::read_grafts(&mut app).ok();
+
+    // Immutable scope to validate the config grafts.
+    {
+        let config = app.get_root_config();
+        assert_eq!(2, config.grafts.len());
+
+        let graft_id = config.grafts[0].get_id();
+        assert!(graft_id.is_some());
+        assert_eq!(2 as usize, graft_id.unwrap().into());
+
+        let graft_id = config.grafts[1].get_id();
+        assert!(graft_id.is_some());
+        assert_eq!(5 as usize, graft_id.unwrap().into());
+    }
+
+    let ctx_result = garden::query::tree_context(
+        app.get_root_config_mut(), "graft::graft", None
+    );
+    assert!(ctx_result.is_err());
+    /*
+    assert!(ctx_result.is_ok());
+    let ctx = ctx_result.unwrap();
+    let value = garden::eval::tree_value(&config, "${TREE_PATH}", ctx.tree, ctx.garden);
+    assert_eq!("/home/test/src/graft", value);
+    */
+}

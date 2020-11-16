@@ -18,7 +18,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
     let keep_going = app.options.keep_going;
-    let config = app.get_config_mut();
+    let config = app.get_root_config_mut();
 
     let exit_status = cmd(
         config,
@@ -93,7 +93,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
     let keep_going = app.options.keep_going;
-    let config = app.get_config_mut();
+    let config = app.get_root_config_mut();
     cmds(
         config,
         quiet,

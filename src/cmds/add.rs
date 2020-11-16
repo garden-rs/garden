@@ -15,7 +15,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     // Read existing configuration
     let verbose = app.options.verbose;
-    let config = app.get_config_mut();
+    let config = app.get_root_config_mut();
     let mut doc = config::reader::read_yaml(config.get_path()?)?;
 
     // Output filename defaults to the input filename.

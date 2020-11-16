@@ -343,6 +343,8 @@ pub struct Configuration {
     pub trees: Vec<Tree>,
     pub variables: Vec<NamedVariable>,
     pub verbose: bool,
+    id: Option<NodeId>,
+    parent_id: Option<NodeId>,
 }
 
 impl_display!(Configuration);
@@ -351,6 +353,8 @@ impl Configuration {
     /// Create a default Configuration
     pub fn new() -> Self {
         Configuration {
+            id: None,
+            parent_id: None,
             shell: "zsh".into(),
             ..std::default::Default::default()
         }
@@ -511,6 +515,16 @@ impl Configuration {
         }
     }
 
+    /// Set the NodeId from the Arena for this configuration.
+    pub fn set_id(&mut self, id: NodeId) {
+        self.id = Some(id);
+    }
+
+    /// Set the parent NodeId from the Arena for this configuration.
+    pub fn set_parent(&mut self, id: NodeId) {
+        self.parent_id = Some(id);
+    }
+
     /// Set the config path and the dirname fields
     pub fn set_path(&mut self, path: std::path::PathBuf) {
         let mut dirname = path.to_path_buf();
@@ -533,8 +547,8 @@ impl Configuration {
 
 #[derive(Clone, Debug, Default)]
 pub struct Graft {
-    pub id: Option<NodeId>,
-    pub name: String,
+    id: Option<NodeId>,
+    name: String,
     pub root: String,
     pub config: String,
 }
@@ -550,17 +564,47 @@ impl Graft {
             config: config,
         }
     }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn get_id(&self) -> &Option<NodeId> {
+        &self.id
+    }
+
+    pub fn set_id(&mut self, id: NodeId) {
+        self.id = Some(id);
+    }
 }
 
 
 #[derive(Clone, Debug)]
 pub struct TreeContext {
     pub tree: TreeIndex,
+    pub config: Option<NodeId>,
     pub garden: Option<GardenIndex>,
     pub group: Option<GroupIndex>,
 }
 
 impl_display_brief!(TreeContext);
+
+impl TreeContext {
+    /// Construct a new TreeContext.
+    pub fn new(
+        tree: TreeIndex,
+        config: Option<NodeId>,
+        garden: Option<GardenIndex>,
+        group: Option<GroupIndex>,
+    ) -> Self {
+        TreeContext {
+            tree: tree,
+            config: config,
+            garden: garden,
+            group: group,
+        }
+    }
+}
 
 
 #[derive(Debug, Default)]
@@ -866,9 +910,9 @@ impl CommandOptions {
 
 #[derive(Clone, Debug)]
 pub struct ApplicationContext {
-    pub arena: Arena<Configuration>,
-    pub root_id: NodeId,
     pub options: CommandOptions,
+    arena: Arena<Configuration>,
+    root_id: NodeId,
 }
 
 impl_display!(ApplicationContext);
@@ -878,14 +922,44 @@ impl ApplicationContext {
         let mut arena = Arena::new();
         let root_id = arena.new_node(config);
 
-        ApplicationContext {
+        let mut app_context = ApplicationContext {
             arena: arena,
             root_id: root_id,
             options: options,
-        }
+        };
+        // Record the ID in the configuration.
+        app_context.get_root_config_mut().set_id(root_id);
+
+        app_context
     }
 
-    pub fn get_config_mut(&mut self) -> &mut Configuration {
-        self.arena.get_mut(self.root_id).unwrap().get_mut()
+    pub fn get_config(&self, id: NodeId) -> &Configuration {
+        self.arena.get(id).unwrap().get()
+    }
+
+    pub fn get_config_mut(&mut self, id: NodeId) -> &mut Configuration {
+        self.arena.get_mut(id).unwrap().get_mut()
+    }
+
+    pub fn get_root_id(&self) -> NodeId {
+        self.root_id
+    }
+
+    pub fn get_root_config(&self) -> &Configuration {
+        self.get_config(self.get_root_id())
+    }
+
+    pub fn get_root_config_mut(&mut self) -> &mut Configuration {
+        self.get_config_mut(self.get_root_id())
+    }
+
+    /// Add a child Configuration graft onto the parent NodeId.
+    pub fn add_graft(&mut self, parent: NodeId, config: Configuration) -> NodeId {
+        let graft_id = self.arena.new_node(config);  // Take ownership of config.
+        parent.append(graft_id, &mut self.arena);
+
+        self.get_config_mut(graft_id).set_id(graft_id);
+
+        graft_id
     }
 }

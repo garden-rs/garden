@@ -270,7 +270,7 @@ mod slow {
         );
 
         // Load the configuration and assert that the remotes are configured.
-        let cfg = garden::config::new(&path, "", false)?;
+        let cfg = garden::config::new(&path, "", false, None)?;
         assert_eq!(1, cfg.trees.len());
         assert_eq!("repo1", cfg.trees[0].get_name());
         assert_eq!(2, cfg.trees[0].remotes.len());
@@ -301,7 +301,7 @@ mod slow {
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // Load the configuration and assert that the remotes are configured.
-        let cfg = garden::config::new(&path, "", false)?;
+        let cfg = garden::config::new(&path, "", false, None)?;
         assert_eq!(2, cfg.trees.len());  // Now we have two trees.
         assert_eq!("repo2", cfg.trees[1].get_name());
         assert_eq!(2, cfg.trees[1].remotes.len());
@@ -337,7 +337,7 @@ mod slow {
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // Load the configuration and assert that the remotes are configured.
-        let cfg = garden::config::new(&path, "", false)?;
+        let cfg = garden::config::new(&path, "", false, None)?;
         assert_eq!(2, cfg.trees.len());
         assert_eq!("repo1", cfg.trees[0].get_name());
         assert_eq!(2, cfg.trees[0].remotes.len());

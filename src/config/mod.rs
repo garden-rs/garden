@@ -1,3 +1,4 @@
+use indextree::NodeId;
 use xdg;
 
 use super::errors;
@@ -85,9 +86,13 @@ pub fn new(
     config: &Option<std::path::PathBuf>,
     root: &str,
     verbose: bool,
+    parent: Option<NodeId>,
 ) -> Result<model::Configuration, errors::GardenError> {
 
     let mut cfg = model::Configuration::new();
+    if let Some(parent_id) = parent {
+        cfg.set_parent(parent_id);
+    }
     cfg.verbose = verbose;
 
     // Override the configured garden root
@@ -153,20 +158,19 @@ pub fn new(
         cfg.root.set_expr(path::current_dir_string());
     }
 
-    // Grafts
-    /*
-    let mut paths = Vec::new();
-    for graft in &cfg.grafts {
-        let config = &graft.config;
-        let path_str = cfg.eval_tree_path(config);
-        let path = std::path::PathBuf::from(&path_str);
-        if path.exists() {
-            graft.config = Some(new(&Some(path), &graft.root, verbose)?);
-        }
-    }
-    */
-
     Ok(cfg)
+}
+
+
+/// Read configuration from a path.  Wraps new() to make the path required..
+pub fn from_path(
+    path: std::path::PathBuf,
+    root: &str,
+    verbose: bool,
+    parent: Option<NodeId>,
+) -> Result<model::Configuration, errors::GardenError> {
+
+    new(&Some(path), root, verbose, parent)
 }
 
 
@@ -176,7 +180,7 @@ pub fn from_options(
     options: &model::CommandOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
     let config_verbose = options.is_debug("config::new");
-    let mut config = new(&options.filename, &options.root, config_verbose)?;
+    let mut config = new(&options.filename, &options.root, config_verbose, None)?;
 
     if config.path.is_none() {
         error!("unable to find a configuration file -- use --config <path>");
@@ -215,6 +219,65 @@ pub fn parse(
     reader::parse(&config_string, verbose, cfg)?;
     // Initialize the configuration now that the values have been read.
     cfg.initialize();
+
+    Ok(())
+}
+
+
+/// Read grafts into the root configuration on down.
+pub fn read_grafts(
+    app: &mut model::ApplicationContext
+) -> Result<(), errors::GardenError> {
+
+    let root_id = app.get_root_id();
+    read_grafts_recursive(app, root_id)
+}
+
+/// Read grafts into the specified configuration
+fn read_grafts_recursive(
+    app: &mut model::ApplicationContext,
+    id: NodeId,
+) -> Result<(), errors::GardenError> {
+
+    // Defer the recursive calls to avoid an immutable borrow from preventing us from
+    // recursively taking an immutable borrow.
+    //
+    // We build a vector of paths inside an immutable scope and defer construction of
+    // the graft Configuration since it requires a mutable borrow against app.
+    let mut details = Vec::new();
+
+    // Immutable scope for traversing the configuration.
+    {
+        let config = app.get_config(id);  // Immutable borrow.
+        for (idx, graft) in config.grafts.iter().enumerate() {
+            let path_str = config.eval_config_path(&graft.config);
+            let path = std::path::PathBuf::from(&path_str);
+            if ! path.exists() {
+                let config_path = config.get_path()?;
+                return Err(
+                    errors::GardenError::ConfigurationError(
+                        format!(
+                            "{}: invalid graft in {:?}", graft.get_name(), config_path
+                        )
+                    )
+                );
+            }
+            details.push((idx, path, graft.root.to_string()));
+        }
+    }
+
+    // Read child grafts recursively after the immutable scope has ended.
+    let verbose = app.options.verbose;
+    for (idx, path, root) in details {
+        // Read the Configuration referenced by the graft.
+        let graft_config = from_path(path, &root, verbose, Some(id))?;
+        // The app Arena takes ownershp of the Configuration.
+        let graft_id = app.add_graft(id, graft_config);
+        // Record the config ID in the graft structure.
+        app.get_config_mut(id).grafts[idx].set_id(graft_id);
+        // Read child grafts recursively.
+        read_grafts_recursive(app, graft_id)?;
+    }
 
     Ok(())
 }

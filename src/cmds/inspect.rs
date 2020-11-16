@@ -16,7 +16,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     parse_args(&mut app.options, &mut query);
 
     let verbose = app.options.verbose;
-    let config = app.get_config_mut();
+    let config = app.get_root_config_mut();
     inspect(config, verbose, &query)
 }
 

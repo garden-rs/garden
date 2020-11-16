@@ -49,6 +49,7 @@ fn cmd_main() -> Result<()> {
 
     let config = config::from_options(&options)?;
     let mut app = model::ApplicationContext::new(config, options);
+    config::read_grafts(&mut app)?;
 
     match app.options.subcommand.clone() {
         model::Command::Add => cmds::add::main(&mut app),
