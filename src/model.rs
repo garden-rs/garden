@@ -489,7 +489,7 @@ impl Configuration {
     }
 
     /// Evaluate and resolve a path string and relative to the config dir.
-    pub fn eval_config_path(&mut self, path: &str) -> String {
+    pub fn eval_config_path(&self, path: &str) -> String {
         let value = eval::value(self, &path);
 
         self.config_path(&value)

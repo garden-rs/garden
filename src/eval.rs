@@ -213,7 +213,7 @@ pub fn exec_expression(string: &str) -> String {
 
 /// Evaluate a variable in the given context
 pub fn multi_variable(
-    config: &mut model::Configuration,
+    config: &model::Configuration,
     multi_var: &mut model::MultiVariable,
     context: &model::TreeContext,
 ) -> Vec<String> {
@@ -238,7 +238,7 @@ pub fn multi_variable(
 
 /// Evaluate environments
 pub fn environment(
-    config: &mut model::Configuration,
+    config: &model::Configuration,
     context: &model::TreeContext,
 ) -> Vec<(String, String)> {
 
