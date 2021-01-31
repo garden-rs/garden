@@ -129,7 +129,7 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.subcommand).required().add_argument(
             "command",
             argparse::Store,
-            "{add, cmd, eval, exec, ls, shell, <custom>}",
+            "{add, cmd, eval, exec, grow, help, init, inspect, ls, shell, <custom>}",
         );
 
         ap.refer(&mut options.args).add_argument(
