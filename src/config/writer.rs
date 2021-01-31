@@ -16,6 +16,7 @@ where
     let mut out_str = String::new();
     {
         let mut emitter = YamlEmitter::new(&mut out_str);
+        emitter.multiline_strings(true);
         emitter.dump(&doc).ok(); // dump the YAML object to a String
     }
     out_str += "\n";

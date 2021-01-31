@@ -37,5 +37,5 @@ shlex = "0.1"
 subprocess = "0.1"
 thiserror = "1.0"
 xdg = "2.2"
-yaml-rust = "0.4"
+yaml-rust = { git = "git://github.com/davvid/yaml-rust.git", branch = "multiline-strings" }
 yansi = "0.5"
