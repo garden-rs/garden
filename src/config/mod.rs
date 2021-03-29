@@ -131,13 +131,10 @@ pub fn new(
     }
     if verbose {
         debug!(
-            "config path is {:?}{} root is {:?}",
+            "config: path: {:?}, root: {:?}, found: {}",
             cfg.path,
             cfg.root,
-            match found {
-                true => "",
-                false => " (NOT FOUND)",
-            }
+            found
         );
     }
 

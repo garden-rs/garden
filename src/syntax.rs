@@ -1,3 +1,9 @@
+/// Return true if the string contains 0-9 digits only
+pub fn is_digit(string: &str) -> bool {
+    string.chars().all(|c| c.is_digit(10))
+}
+
+
 /// Return true if `string` is an `$ exec` expression.
 pub fn is_exec(string: &str) -> bool {
     string.starts_with("$ ")

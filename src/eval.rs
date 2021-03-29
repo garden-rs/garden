@@ -12,12 +12,6 @@ use super::query;
 use super::syntax;
 
 
-/// Return true if the string contains 0-9 digits only
-fn is_digit(string: &str) -> bool {
-    string.chars().all(|c| c.is_digit(10))
-}
-
-
 /// Expand variables across all scopes (garden, tree, and global)
 fn expand_tree_vars(
     config: &model::Configuration,
@@ -26,7 +20,7 @@ fn expand_tree_vars(
     name: &str,
 ) -> Result<Option<String>, String> {
     // Special case $0, $1, .. $N so they can be used in commands.
-    if is_digit(name) {
+    if syntax::is_digit(name) {
         return Ok(Some(format!("${}", name)));
     }
 
@@ -114,7 +108,7 @@ fn expand_tree_vars(
 fn expand_vars(config: &model::Configuration, name: &str)
     -> Result<Option<String>, String> {
     // Special case $0, $1, .. $N so they can be used in commands.
-    if is_digit(name) {
+    if syntax::is_digit(name) {
         return Ok(Some(format!("${}", name)));
     }
 
