@@ -21,6 +21,7 @@ Garden aids in common development setup steps such as setting environment
 variables, search paths, and creating arbitrary groupings of repositories for
 development.
 
+
 # Setup
 
 The following `garden init` invocation creates an empty `garden.yaml` with a
@@ -81,7 +82,7 @@ when showing examples.
       add: git add -u
       diff: GIT_PAGER= git diff
       cola: git cola
-      fetch: git pull --ff-only
+      update: git pull --ff-only
       gitk: gitk --all &
       log: git log
       pull: git pull --ff-only
@@ -201,7 +202,7 @@ when showing examples.
         trees: git*
 
 
-### Garden Root
+## Garden Root
 
 The garden root directory is configured in the `garden.root` field.
 This directory is the parent directory beneath which all trees will be cloned.
@@ -217,6 +218,7 @@ following configuration can be used:
 
     garden:
       root: ${GARDEN_CONFIG_DIR}/src
+
 
 # Variables
 
@@ -247,6 +249,7 @@ When resolving values, variables defined in a tree scope override/replace
 variables defined at the global scope.  Variables defined in garden scope
 override/replace variables defined in a tree scope.
 
+
 # Built-in variables
 
 Garden automatically defines some built-in variables that can be useful
@@ -256,6 +259,7 @@ when constructing values for variables, commands, and paths.
     GARDEN_ROOT         -   root directory for trees
     TREE_NAME           -   current tree name
     TREE_PATH           -   current tree path
+
 
 ## Environment Variables
 
@@ -292,11 +296,32 @@ Garden variables have higher precedence than environment variables when
 resolving `${variable}` references -- the environment is checked only when
 no garden variables exist by that name.
 
-### Gardens and Groups
+
+## Gardens, Groups and Trees
 
 Gardens aggregate groups and trees.  Define a group and reuse the group in
 different gardens to share tree lists between gardens.  Defining gardens
-and groups make those names available when querying for trees.
+and groups make those names available when querying and performing operations
+over trees.
+
+
+### Garden, Group, and Tree Query Syntax
+
+Gardens, groups, and trees can be referenced using the following query and
+command-line syntax in order to disambiguate between them when gardens, groups
+and trees have the same name.
+
+    @tree               -   values prefixed with "@" resolve trees only
+    %group              -   values prefixed with "%" resolve groups only
+    :garden             -   values prefixed with ":" resolve gardens only
+
+When no prefixes are specified then the names are resolved in the following
+order: gardens, groups and trees.  Gardens have the highest priority, followed
+by groups and lastly trees.
+
+Names specified on the command-line can use glob patterns to match multiple
+entries. For example, `@foo*` will match all trees that start with "foo".
+
 
 ### Templates
 
@@ -305,12 +330,14 @@ trees.  Trees can also reuse another tree definition by specifying the
 "extend" keyword with the name of another tree.  Only the first remote is used
 when extending a tree.
 
+
 ### Automagic Lists
 
 Fields that expect lists can also be specified using a single string, and the
 list will be treated like a list with a single item.  This is useful, for
 example, when defining groups using wildcards, or commands which can sometimes
 be one-lines, and multi-line at other times.
+
 
 ### Wildcards
 
@@ -338,7 +365,6 @@ defaults to a path named after the tree relative to the garden root.
 
 
 ## Commands
-
 
 ### Basics
 
@@ -376,6 +402,7 @@ named grouping mechanism.
 
 Gardens can include groups and trees, as well as environment, gitconfig, and
 custom commands in addition to the ones provided by each tree.
+
 
 #### Tree queries
 
@@ -526,6 +553,7 @@ evaluation.
 Create a new empty `garden.yaml` in the current directory, or in the
 user's global configuration directory when `--global` is specified.
 See `garden help init` for more details.
+
 
 ### garden grow
 
