@@ -354,17 +354,29 @@ fn find_tree_in_graft() -> Result<()> {
     Ok(())
 }
 
-/*
 #[test]
 fn eval_graft_tree() -> Result<()> {
-    let options = garden::build::command_options().verbose(true);
-    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
+    let mut options = garden::build::command_options().verbose(true);
+    options.update();
 
+    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
+    let id = app.get_root_id();
+
+    // Get a tree context for "graft::graft" from the outer-most config.
     let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
     assert!(ctx.config.is_some());
+    assert_eq!(2usize, ctx.config.unwrap().into());
 
-    let config = app.get_config(*ctx.config.unwrap());
-    let value = garden::eval::tree_value(&config, "${TREE_PATH}", ctx.tree, ctx.garden);
-    assert_eq!("/home/test/src/graft", value);
+    // Evaluate the value for ${current_config} using the inner grafted config.
+    let config = app.get_config(ctx.config.unwrap());
+    let path = garden::eval::tree_value(&config, "${TREE_PATH}", ctx.tree, ctx.garden);
+    assert!(path.ends_with("/graft"));
+
+    // Evaluate a local variable that is overridden in the graft.
+    let actual = garden::eval::tree_value(
+        &config, "${current_config}", ctx.tree, ctx.garden
+    );
+    assert_eq!("graft", actual);
+
+    Ok(())
 }
-*/
