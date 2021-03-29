@@ -1,16 +1,19 @@
-pub fn from_string(string: &str) -> garden::model::Configuration {
+pub fn initialize_environment() {
     // Simplify testing by using a canned environment.
     std::env::set_var("HOME", "/home/test");
     std::env::set_var("PATH", "/usr/bin:/bin");
     std::env::set_var("EMPTY", "");
     std::env::remove_var("PYTHONPATH");
+}
+
+pub fn from_string(string: &str) -> garden::model::Configuration {
+    initialize_environment();
 
     let mut config = garden::model::Configuration::new();
     garden::config::parse(string, false, &mut config).ok();
 
     return config;
 }
-
 
 pub fn garden_config() -> garden::model::Configuration {
     let string = r#"
