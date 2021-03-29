@@ -512,8 +512,8 @@ impl Configuration {
         self.id = Some(id);
     }
 
-    pub fn get_id(&self) -> &Option<ConfigId> {
-        &self.id
+    pub fn get_id(&self) -> Option<ConfigId> {
+        self.id
     }
 
     /// Set the parent ConfigId from the Arena for this configuration.

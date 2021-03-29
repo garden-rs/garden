@@ -168,7 +168,7 @@ pub fn tree_from_name(
             // Tree found
             return Some(model::TreeContext::new(
                 tree_idx,
-                None,
+                config.get_id(),
                 garden_idx,
                 group_idx,
             ));
@@ -210,7 +210,7 @@ pub fn trees_from_pattern(
             // Tree found
             result.push(model::TreeContext::new(
                 tree_idx,
-                None,
+                config.get_id(),
                 garden_idx,
                 group_idx,
             ));
@@ -252,7 +252,7 @@ pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model
         if pathbuf == tree_canon {
             return Some(model::TreeContext::new(
                 idx as model::TreeIndex,
-                None,
+                config.get_id(),
                 None,
                 None,
             ));
@@ -271,7 +271,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::T
         if pattern.matches(tree.get_name()) {
             result.push(model::TreeContext::new(
                 tree_idx,
-                *config.get_id(),
+                config.get_id(),
                 None,
                 None,
             ));
@@ -291,10 +291,8 @@ pub fn tree_context(
     garden: Option<&str>,
 ) -> Result<model::TreeContext, GardenError> {
 
-    let mut ctx = model::TreeContext::new(0, None, None, None);
-    if let Some(value) = config.get_id() {
-        ctx.config = Some(*value);
-    }
+    let mut ctx = model::TreeContext::new(0, config.get_id(), None, None);
+    // TODO: grafted trees
     if let Some(context) = tree_from_name(&config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
