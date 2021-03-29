@@ -369,7 +369,7 @@ pub fn environment(
 
 /// Evaluate commands
 pub fn command(
-    config: &mut model::Configuration,
+    config: &model::Configuration,
     context: &model::TreeContext,
     name: &str,
 ) -> Vec<Vec<String>> {
