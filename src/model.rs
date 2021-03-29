@@ -47,7 +47,7 @@ impl_display_brief!(Variable);
 impl Variable {
     pub fn new(expr: String, value: Option<String>) -> Self {
         Variable {
-            expr: expr,
+            expr,
             value: RefCell::new(value),
         }
     }
@@ -93,7 +93,7 @@ impl_display_brief!(NamedVariable);
 impl NamedVariable {
     pub fn new(name: String, expr: String, value: Option<String>) -> Self {
         NamedVariable {
-            name: name,
+            name,
             variable: Variable::new(expr, value),
         }
     }
@@ -135,8 +135,8 @@ impl_display!(MultiVariable);
 impl MultiVariable {
     pub fn new(name: String, variables: Vec<Variable>) -> Self {
         MultiVariable {
-            name: name,
-            variables: variables,
+            name,
+            variables,
         }
     }
 
@@ -592,9 +592,9 @@ impl Graft {
     pub fn new(name: String, root: String, config: String) -> Self {
         Graft {
             id: None,
-            name: name,
-            root: root,
-            config: config,
+            name,
+            root,
+            config,
         }
     }
 
@@ -631,10 +631,10 @@ impl TreeContext {
         group: Option<GroupIndex>,
     ) -> Self {
         TreeContext {
-            tree: tree,
-            config: config,
-            garden: garden,
-            group: group,
+            tree,
+            config,
+            garden,
+            group,
         }
     }
 }
@@ -685,14 +685,14 @@ impl TreeQuery {
 
         return TreeQuery {
             query: query.into(),
-            is_default: is_default,
-            is_garden: is_garden,
-            is_group: is_group,
-            is_tree: is_tree,
-            include_gardens: include_gardens,
-            include_groups: include_groups,
-            include_trees: include_trees,
-            pattern: pattern,
+            is_default,
+            is_garden,
+            is_group,
+            is_tree,
+            include_gardens,
+            include_groups,
+            include_trees,
+            pattern,
         };
     }
 }
@@ -966,9 +966,9 @@ impl ApplicationContext {
         let root_id = arena.new_node(config);
 
         let mut app_context = ApplicationContext {
-            arena: arena,
-            root_id: root_id,
-            options: options,
+            arena,
+            root_id,
+            options,
         };
         // Record the ID in the configuration.
         app_context.get_root_config_mut().set_id(root_id);
