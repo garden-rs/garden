@@ -80,19 +80,30 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
             return Err(
                 errors::GardenError::Usage(
                     "'--global' cannot be used with an absolute path".into(),
-                ).into()
+                ).into(),
             );
         }
 
-        init_options.dirname = file_path.parent().as_ref().ok_or_else(
-            || errors::GardenError::AssertionError(
-                format!("unable to get parent(): {:?}", file_path))
-        )?.to_path_buf();
+        init_options.dirname = file_path
+            .parent()
+            .as_ref()
+            .ok_or_else(|| {
+                errors::GardenError::AssertionError(
+                    format!("unable to get parent(): {:?}", file_path),
+                )
+            })?
+            .to_path_buf();
 
-        init_options.filename = file_path.file_name().as_ref().ok_or_else(
-            || errors::GardenError::AssertionError(
-                format!("unable to get file path: {:?}", file_path))
-        )?.to_string_lossy().to_string();
+        init_options.filename = file_path
+            .file_name()
+            .as_ref()
+            .ok_or_else(|| {
+                errors::GardenError::AssertionError(
+                    format!("unable to get file path: {:?}", file_path),
+                )
+            })?
+            .to_string_lossy()
+            .to_string();
     }
     if init_options.global {
         init_options.dirname = config::xdg_dir();
@@ -110,10 +121,15 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
     }
 
     // Create parent directories as needed
-    let parent = config_path.parent().as_ref().ok_or_else(
-        || errors::GardenError::AssertionError(
-            format!("unable to get parent(): {:?}", config_path))
-    )?.to_path_buf();
+    let parent = config_path
+        .parent()
+        .as_ref()
+        .ok_or_else(|| {
+            errors::GardenError::AssertionError(
+                format!("unable to get parent(): {:?}", config_path),
+            )
+        })?
+        .to_path_buf();
 
     if !parent.exists() {
         if let Err(err) = std::fs::create_dir_all(&parent) {

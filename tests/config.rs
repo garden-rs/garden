@@ -44,10 +44,7 @@ fn variables() {
     let mut i = 0;
     assert_eq!("GARDEN_ROOT", config.variables[i].get_name());
     assert_eq!("/home/test/src", config.variables[i].get_expr());
-    assert_eq!(
-        "/home/test/src",
-        *config.variables[i].get_value().unwrap()
-    );
+    assert_eq!("/home/test/src", *config.variables[i].get_value().unwrap());
     i += 1;
 
     assert_eq!("foo", config.variables[i].get_name());
@@ -121,12 +118,21 @@ fn templates() {
     assert_eq!(2, config.templates[0].environment.len());
     assert_eq!("ENV=", config.templates[0].environment[0].get_name());
     assert_eq!(1, config.templates[0].environment[0].len());
-    assert_eq!("${foo}env", config.templates[0].environment[0].get(0).get_expr());
+    assert_eq!(
+        "${foo}env",
+        config.templates[0].environment[0].get(0).get_expr()
+    );
 
     assert_eq!("THEPATH", config.templates[0].environment[1].get_name());
     assert_eq!(2, config.templates[0].environment[1].len());
-    assert_eq!("${foo}", config.templates[0].environment[1].get(0).get_expr());
-    assert_eq!("${ENV}", config.templates[0].environment[1].get(1).get_expr());
+    assert_eq!(
+        "${foo}",
+        config.templates[0].environment[1].get(0).get_expr()
+    );
+    assert_eq!(
+        "${ENV}",
+        config.templates[0].environment[1].get(1).get_expr()
+    );
 
     assert_eq!("template2", config.templates[1].get_name());
     assert_eq!(vec!["template1"], config.templates[1].extend);
@@ -187,7 +193,10 @@ fn trees() {
     // TREE_PATH, highest precedence at position 0
     assert_eq!("TREE_PATH", tree0.variables[1].get_name());
     assert_eq!("/home/test/src/git", tree0.variables[1].get_expr());
-    assert_eq!("/home/test/src/git", tree0.variables[1].get_value().unwrap());
+    assert_eq!(
+        "/home/test/src/git",
+        tree0.variables[1].get_value().unwrap()
+    );
 
     assert_eq!("prefix", tree0.variables[2].get_name());
     assert_eq!("~/.local", tree0.variables[2].get_expr());
@@ -213,9 +222,15 @@ fn trees() {
 
     assert_eq!(2, tree1.remotes.len());
     assert_eq!("origin", tree1.remotes[0].get_name());
-    assert_eq!("https://github.com/git-cola/git-cola", tree1.remotes[0].get_expr());
+    assert_eq!(
+        "https://github.com/git-cola/git-cola",
+        tree1.remotes[0].get_expr()
+    );
     assert_eq!("davvid", tree1.remotes[1].get_name());
-    assert_eq!("git@github.com:davvid/git-cola.git", tree1.remotes[1].get_expr());
+    assert_eq!(
+        "git@github.com:davvid/git-cola.git",
+        tree1.remotes[1].get_expr()
+    );
 
     assert_eq!(3, tree1.environment.len());
     // From "python" template
@@ -259,7 +274,10 @@ fn trees() {
     // remotes
     assert_eq!(2, tree3.remotes.len());
     assert_eq!("origin", tree3.remotes[0].get_name());
-    assert_eq!("git@example.com:git-annex/data.git", tree3.remotes[0].get_expr());
+    assert_eq!(
+        "git@example.com:git-annex/data.git",
+        tree3.remotes[0].get_expr()
+    );
     assert_eq!("local", tree3.remotes[1].get_name());
     assert_eq!("${GARDEN_ROOT}/annex/local", tree3.remotes[1].get_expr());
 
@@ -273,7 +291,10 @@ fn trees() {
     // remotes
     assert_eq!(1, tree4.remotes.len());
     assert_eq!("origin", tree4.remotes[0].get_name());
-    assert_eq!("git@example.com:git-annex/data.git", tree4.remotes[0].get_expr());
+    assert_eq!(
+        "git@example.com:git-annex/data.git",
+        tree4.remotes[0].get_expr()
+    );
 }
 
 
@@ -337,21 +358,36 @@ fn test_gardens(config: &garden::model::Configuration) {
     assert_eq!(1, config.gardens[0].commands.len());
     assert_eq!("summary", config.gardens[0].commands[0].get_name());
     assert_eq!(2, config.gardens[0].commands[0].len());
-    assert_eq!("git branch", config.gardens[0].commands[0].get(0).get_expr());
-    assert_eq!("git status --short", config.gardens[0].commands[0].get(1).get_expr());
+    assert_eq!(
+        "git branch",
+        config.gardens[0].commands[0].get(0).get_expr()
+    );
+    assert_eq!(
+        "git status --short",
+        config.gardens[0].commands[0].get(1).get_expr()
+    );
 
     assert_eq!(1, config.gardens[0].variables.len());
     assert_eq!("prefix", config.gardens[0].variables[0].get_name());
-    assert_eq!("~/apps/git-cola/current", config.gardens[0].variables[0].get_expr());
+    assert_eq!(
+        "~/apps/git-cola/current",
+        config.gardens[0].variables[0].get_expr()
+    );
 
     assert_eq!(2, config.gardens[0].environment.len());
-    assert_eq!("GIT_COLA_TRACE=", config.gardens[0].environment[0].get_name());
+    assert_eq!(
+        "GIT_COLA_TRACE=",
+        config.gardens[0].environment[0].get_name()
+    );
     assert_eq!(1, config.gardens[0].environment[0].len());
     assert_eq!("full", config.gardens[0].environment[0].get(0).get_expr());
 
     assert_eq!("PATH+", config.gardens[0].environment[1].get_name());
     assert_eq!(1, config.gardens[0].environment[1].len());
-    assert_eq!("${prefix}/bin", config.gardens[0].environment[1].get(0).get_expr());
+    assert_eq!(
+        "${prefix}/bin",
+        config.gardens[0].environment[1].get(0).get_expr()
+    );
 
     // "git" garden
     assert_eq!("git", config.gardens[1].get_name());
@@ -367,7 +403,10 @@ fn test_gardens(config: &garden::model::Configuration) {
     assert_eq!("user.name", config.gardens[1].gitconfig[0].get_name());
     assert_eq!("A U Thor", config.gardens[1].gitconfig[0].get_expr());
     assert_eq!("user.email", config.gardens[1].gitconfig[1].get_name());
-    assert_eq!("author@example.com", config.gardens[1].gitconfig[1].get_expr());
+    assert_eq!(
+        "author@example.com",
+        config.gardens[1].gitconfig[1].get_expr()
+    );
 }
 
 
@@ -376,10 +415,19 @@ fn tree_path() {
     let config = common::garden_config();
     assert!(config.trees.len() >= 4);
 
-    assert_eq!("/home/test/src/git", *config.trees[0].path_as_ref().unwrap());
+    assert_eq!(
+        "/home/test/src/git",
+        *config.trees[0].path_as_ref().unwrap()
+    );
     // cola is in the "git-cola" subdirectory
-    assert_eq!("/home/test/src/git-cola", *config.trees[1].path_as_ref().unwrap());
-    assert_eq!("/home/test/src/python/qtpy", *config.trees[2].path_as_ref().unwrap());
+    assert_eq!(
+        "/home/test/src/git-cola",
+        *config.trees[1].path_as_ref().unwrap()
+    );
+    assert_eq!(
+        "/home/test/src/python/qtpy",
+        *config.trees[2].path_as_ref().unwrap()
+    );
 }
 
 #[test]

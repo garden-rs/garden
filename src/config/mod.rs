@@ -209,7 +209,10 @@ pub fn from_options(
         } else {
             error!("unable to split '{}'", k_eq_v);
         }
-        config.variables.insert(0, model::NamedVariable::new(name, expr, None));
+        config.variables.insert(
+            0,
+            model::NamedVariable::new(name, expr, None),
+        );
     }
 
     Ok(config)
@@ -231,9 +234,7 @@ pub fn parse(
 
 
 /// Read grafts into the root configuration on down.
-pub fn read_grafts(
-    app: &mut model::ApplicationContext
-) -> Result<(), errors::GardenError> {
+pub fn read_grafts(app: &mut model::ApplicationContext) -> Result<(), errors::GardenError> {
 
     let root_id = app.get_root_id();
     read_grafts_recursive(app, root_id)
@@ -254,19 +255,17 @@ fn read_grafts_recursive(
 
     // Immutable scope for traversing the configuration.
     {
-        let config = app.get_config(id);  // Immutable borrow.
+        let config = app.get_config(id); // Immutable borrow.
         for (idx, graft) in config.grafts.iter().enumerate() {
             let path_str = config.eval_config_path(&graft.config);
             let path = std::path::PathBuf::from(&path_str);
-            if ! path.exists() {
+            if !path.exists() {
                 let config_path = config.get_path()?;
-                return Err(
-                    errors::GardenError::ConfigurationError(
-                        format!(
-                            "{}: invalid graft in {:?}", graft.get_name(), config_path
-                        )
-                    )
-                );
+                return Err(errors::GardenError::ConfigurationError(format!(
+                    "{}: invalid graft in {:?}",
+                    graft.get_name(),
+                    config_path
+                )));
             }
             details.push((idx, path, graft.root.to_string()));
         }

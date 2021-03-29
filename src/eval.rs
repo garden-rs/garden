@@ -42,7 +42,9 @@ fn expand_tree_vars(
         }
 
         if found {
-            let expr = config.gardens[garden].variables[var_idx].get_expr().to_string();
+            let expr = config.gardens[garden].variables[var_idx]
+                .get_expr()
+                .to_string();
             let result = tree_value(config, &expr, tree_idx, garden_idx);
             config.gardens[garden].variables[var_idx].set_value(result.clone());
             return Ok(Some(result));
@@ -65,7 +67,9 @@ fn expand_tree_vars(
     }
 
     if found {
-        let expr = config.trees[tree_idx].variables[var_idx].get_expr().to_string();
+        let expr = config.trees[tree_idx].variables[var_idx]
+            .get_expr()
+            .to_string();
         let result = tree_value(config, &expr, tree_idx, garden_idx);
         config.trees[tree_idx].variables[var_idx].set_value(result.to_string());
         return Ok(Some(result));
@@ -105,8 +109,7 @@ fn expand_tree_vars(
 
 
 /// Expand variables at global scope only
-fn expand_vars(config: &model::Configuration, name: &str)
-    -> Result<Option<String>, String> {
+fn expand_vars(config: &model::Configuration, name: &str) -> Result<Option<String>, String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if syntax::is_digit(name) {
         return Ok(Some(format!("${}", name)));
@@ -375,7 +378,10 @@ pub fn command(
 ) -> Vec<Vec<String>> {
     let mut vars = Vec::new();
     let mut result = Vec::new();
-    let config = app.get_root_config();
+    let config = match context.config {
+        Some(config_id) => app.get_config(config_id),
+        None => app.get_root_config(),
+    };
 
     let pattern = match glob::Pattern::new(name) {
         Ok(value) => value,

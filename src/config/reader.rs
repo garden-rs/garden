@@ -63,24 +63,20 @@ pub fn parse(
         debug!("yaml: variables");
     }
     // Provide GARDEN_ROOT
-    config.variables.push(
-        model::NamedVariable::new(
-            "GARDEN_ROOT".to_string(),
-            config.root.get_expr().to_string(),
-            None
-        )
-    );
+    config.variables.push(model::NamedVariable::new(
+        "GARDEN_ROOT".to_string(),
+        config.root.get_expr().to_string(),
+        None,
+    ));
 
     if let Some(config_path_raw) = config.dirname.as_ref() {
         // Calculate an absolute path for GARDEN_CONFIG_DIR.
         if let Ok(config_path) = config_path_raw.canonicalize() {
-            config.variables.push(
-                model::NamedVariable::new(
-                    "GARDEN_CONFIG_DIR".to_string(),
-                    config_path.to_string_lossy().to_string(),
-                    None
-                )
-            );
+            config.variables.push(model::NamedVariable::new(
+                "GARDEN_CONFIG_DIR".to_string(),
+                config_path.to_string_lossy().to_string(),
+                None,
+            ));
         }
     }
 
@@ -217,29 +213,29 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                 Yaml::Array(ref yaml_array) => {
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
-                            vec.push(
-                                model::NamedVariable::new(
-                                    key.to_string(), yaml_str.clone(), None
-                                )
-                            );
+                            vec.push(model::NamedVariable::new(
+                                key.to_string(),
+                                yaml_str.clone(),
+                                None,
+                            ));
                         }
                     }
                 }
                 Yaml::Integer(yaml_int) => {
                     let value = yaml_int.to_string();
-                    vec.push(
-                        model::NamedVariable::new(
-                            key, value.clone(), Some(value.clone())
-                        )
-                    );
+                    vec.push(model::NamedVariable::new(
+                        key,
+                        value.clone(),
+                        Some(value.clone()),
+                    ));
                 }
                 Yaml::Boolean(ref yaml_bool) => {
                     let value = bool_to_string(yaml_bool);
-                    vec.push(
-                        model::NamedVariable::new(
-                            key, value.clone(), Some(value.clone())
-                        )
-                    );
+                    vec.push(model::NamedVariable::new(
+                        key,
+                        value.clone(),
+                        Some(value.clone()),
+                    ));
                 }
                 _ => {
                     dump_node(v, 1, "");
@@ -270,27 +266,21 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
             };
             match v {
                 Yaml::String(ref yaml_str) => {
-                    let variables = vec![
-                        model::Variable::new(yaml_str.to_string(), None)
-                    ];
+                    let variables = vec![model::Variable::new(yaml_str.to_string(), None)];
                     vec.push(model::MultiVariable::new(key, variables));
                 }
                 Yaml::Array(ref yaml_array) => {
                     let mut variables = Vec::new();
                     for value in yaml_array {
                         if let Yaml::String(ref yaml_str) = value {
-                            variables.push(
-                                model::Variable::new(yaml_str.clone(), None)
-                            );
+                            variables.push(model::Variable::new(yaml_str.clone(), None));
                         }
                     }
                     vec.push(model::MultiVariable::new(key, variables));
                 }
                 Yaml::Integer(yaml_int) => {
                     let value = yaml_int.to_string();
-                    let variables = vec![
-                        model::Variable::new(value.clone(), Some(value)),
-                    ];
+                    let variables = vec![model::Variable::new(value.clone(), Some(value))];
                     vec.push(model::MultiVariable::new(key, variables));
                 }
                 _ => {
@@ -325,9 +315,11 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
-            template.remotes.push(
-                model::NamedVariable::new("origin".to_string(), url, None)
-            );
+            template.remotes.push(model::NamedVariable::new(
+                "origin".to_string(),
+                url,
+                None,
+            ));
         }
     }
 
@@ -409,22 +401,24 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     // Register the ${TREE_NAME} variable.
     tree.variables.insert(
         0,
-        model::NamedVariable::new(
-            "TREE_NAME".to_string(), tree.get_name().clone(), None
-        )
+        model::NamedVariable::new("TREE_NAME".to_string(), tree.get_name().clone(), None),
     );
 
     // Register the ${TREE_PATH} variable.
     tree.variables.insert(
         1,
         model::NamedVariable::new(
-            "TREE_PATH".to_string(), tree.get_path().get_expr().clone(), None
-        )
+            "TREE_PATH".to_string(),
+            tree.get_path().get_expr().clone(),
+            None,
+        ),
     );
 
-    tree.remotes.push(
-        model::NamedVariable::new("origin".to_string(), url.to_string(), None)
-    );
+    tree.remotes.push(model::NamedVariable::new(
+        "origin".to_string(),
+        url.to_string(),
+        None,
+    ));
 
     tree
 }
@@ -471,8 +465,8 @@ fn get_tree(
             model::NamedVariable::new(
                 "TREE_NAME".to_string(),
                 tree.get_name().clone(),
-                None
-            )
+                None,
+            ),
         );
         // Register the ${TREE_PATH} variable.
         tree.variables.insert(
@@ -480,17 +474,19 @@ fn get_tree(
             model::NamedVariable::new(
                 "TREE_PATH".to_string(),
                 tree.get_path().get_expr().clone(),
-                None
-            )
+                None,
+            ),
         );
     }
 
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
-            tree.remotes.push(
-                model::NamedVariable::new("origin".to_string(), url, None)
-            );
+            tree.remotes.push(model::NamedVariable::new(
+                "origin".to_string(),
+                url,
+                None,
+            ));
         }
     }
 
@@ -553,11 +549,11 @@ fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
-                remotes.push(
-                    model::NamedVariable::new(
-                        name_str.to_string(), value_str.to_string(), None
-                    )
-                );
+                remotes.push(model::NamedVariable::new(
+                    name_str.to_string(),
+                    value_str.to_string(),
+                    None,
+                ));
             }
         }
     }

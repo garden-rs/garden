@@ -71,9 +71,7 @@ impl Variable {
     /// Transform the RefCell<Option<String>> value into an Option<&String>.
     pub fn get_value(&self) -> Option<&String> {
         let ptr = self.value.as_ptr();
-        unsafe {
-            (*ptr).as_ref()
-        }
+        unsafe { (*ptr).as_ref() }
     }
 
     pub fn reset(&self) {
@@ -134,10 +132,7 @@ impl_display!(MultiVariable);
 
 impl MultiVariable {
     pub fn new(name: String, variables: Vec<Variable>) -> Self {
-        MultiVariable {
-            name,
-            variables,
-        }
+        MultiVariable { name, variables }
     }
 
     pub fn get(&self, idx: usize) -> &Variable {
@@ -183,7 +178,6 @@ pub struct Tree {
 impl_display!(Tree);
 
 impl Tree {
-
     pub fn get_name(&self) -> &String {
         &self.name
     }
@@ -207,22 +201,18 @@ impl Tree {
     pub fn path_as_ref(&self) -> Result<&String, errors::GardenError> {
         match self.path.get_value() {
             Some(value) => Ok(value),
-            None => Err(
-                errors::GardenError::ConfigurationError(
-                    format!("unset tree path for {}", self.name)
-                )
-            )
+            None => Err(errors::GardenError::ConfigurationError(
+                format!("unset tree path for {}", self.name),
+            )),
         }
     }
 
     pub fn symlink_as_ref(&self) -> Result<&String, errors::GardenError> {
         match self.symlink.get_value() {
             Some(ref value) => Ok(value),
-            None => Err(
-                errors::GardenError::ConfigurationError(
-                    format!("unset tree path for {}", self.name)
-                )
-            )
+            None => Err(errors::GardenError::ConfigurationError(
+                format!("unset tree path for {}", self.name),
+            )),
         }
     }
 
@@ -391,8 +381,7 @@ impl Configuration {
 
     fn reset_builtin_variables(&mut self) {
         // Update GARDEN_ROOT at position 0.
-        if !self.variables.is_empty() &&
-            self.variables[0].get_name() == "GARDEN_ROOT" {
+        if !self.variables.is_empty() && self.variables[0].get_name() == "GARDEN_ROOT" {
             if let Some(value) = self.root.get_value() {
                 self.variables[0].set_expr(value.to_string());
                 self.variables[0].set_value(value.to_string());
@@ -569,11 +558,9 @@ impl Configuration {
                 return Ok(graft);
             }
         }
-        Err(
-            errors::GardenError::ConfigurationError(
-                format!("{}: no such graft", name)
-            )
-        )
+        Err(errors::GardenError::ConfigurationError(
+            format!("{}: no such graft", name),
+        ))
     }
 }
 
@@ -998,7 +985,7 @@ impl ApplicationContext {
 
     /// Add a child Configuration graft onto the parent ConfigId.
     pub fn add_graft(&mut self, parent: ConfigId, config: Configuration) -> ConfigId {
-        let graft_id = self.arena.new_node(config);  // Take ownership of config.
+        let graft_id = self.arena.new_node(config); // Take ownership of config.
         parent.append(graft_id, &mut self.arena);
 
         self.get_config_mut(graft_id).set_id(graft_id);

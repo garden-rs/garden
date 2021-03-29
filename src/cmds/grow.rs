@@ -49,7 +49,8 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
         options.args.to_vec(),
         &mut std::io::stdout(),
         &mut std::io::stderr(),
-    ) {
+    )
+    {
         std::process::exit(err);
     }
 }
@@ -57,7 +58,10 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
 
 /// Create/update trees in the evaluated tree query.
 pub fn grow(
-    config: &mut model::Configuration, quiet: bool, verbose: bool, query: &str
+    config: &mut model::Configuration,
+    quiet: bool,
+    verbose: bool,
+    query: &str,
 ) -> Result<i32> {
     let contexts = query::resolve_trees(config, query);
     let mut exit_status: i32 = 0;
@@ -68,15 +72,15 @@ pub fn grow(
 
         let pathbuf = std::path::PathBuf::from(&path);
         if !pathbuf.exists() {
-            let parent = pathbuf.parent().ok_or_else(
-                || errors::GardenError::AssertionError(
-                    format!("unable to get parent directory for {}", path))
-                )?;
+            let parent = pathbuf.parent().ok_or_else(|| {
+                errors::GardenError::AssertionError(
+                    format!("unable to get parent directory for {}", path),
+                )
+            })?;
 
-            std::fs::create_dir_all(&parent).map_err(
-                |err| errors::GardenError::OSError(
-                    format!("unable to create {}: {}", path, err))
-                )?;
+            std::fs::create_dir_all(&parent).map_err(|err| {
+                errors::GardenError::OSError(format!("unable to create {}: {}", path, err))
+            })?;
 
             if config.trees[ctx.tree].is_symlink {
                 let status = init_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
@@ -112,10 +116,7 @@ pub fn grow(
         {
             // Immutable config scope
             for remote in &config.trees[ctx.tree].remotes {
-                config_remotes.insert(
-                    remote.get_name().to_string(),
-                    remote.get_expr().to_string()
-                );
+                config_remotes.insert(remote.get_name().to_string(), remote.get_expr().to_string());
             }
         }
 
@@ -175,16 +176,14 @@ pub fn grow(
 
 /// Initialize a tree symlink entry.
 
-fn init_symlink(
-    config: &model::Configuration, ctx: &model::TreeContext
-) -> Result<i32> {
+fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {
     let tree = &config.trees[ctx.tree];
     // Invalid usage: non-symlink
-    if !tree.is_symlink ||
-        tree.path_as_ref()?.is_empty() ||
-        tree.symlink_as_ref()?.is_empty() {
-        return Err(errors::GardenError::ConfigurationError(
-            format!("invalid symlink: {}", tree.get_name())).into()
+    if !tree.is_symlink || tree.path_as_ref()?.is_empty() || tree.symlink_as_ref()?.is_empty() {
+        return Err(
+            errors::GardenError::ConfigurationError(
+                format!("invalid symlink: {}", tree.get_name()),
+            ).into(),
         );
     }
     let path_str = tree.path_as_ref()?;
@@ -199,10 +198,12 @@ fn init_symlink(
     let symlink = std::path::PathBuf::from(&symlink_str);
 
     // Note: parent directory was already created by the caller.
-    let parent = path.parent().as_ref().ok_or_else(
-        || errors::GardenError::AssertionError(
-            format!("parent() failed: {:?}", path))
-    )?.to_path_buf();
+    let parent = path.parent()
+        .as_ref()
+        .ok_or_else(|| {
+            errors::GardenError::AssertionError(format!("parent() failed: {:?}", path))
+        })?
+        .to_path_buf();
 
     // Is the link target a child of the link's parent directory?
     let target: String;

@@ -87,7 +87,7 @@ fn add_path(
         .canonicalize()
         .map_err(|err| {
             GardenError::ConfigurationError(
-                format!("unable to canonicalize config root: {:?}", err)
+                format!("unable to canonicalize config root: {:?}", err),
             )
         })?
         .to_path_buf();
@@ -95,9 +95,7 @@ fn add_path(
     let pathbuf = std::path::PathBuf::from(raw_path);
     if !pathbuf.exists() {
         return Err(
-            GardenError::ConfigurationError(
-                format!("invalid tree path: {}", raw_path)
-            ).into()
+            GardenError::ConfigurationError(format!("invalid tree path: {}", raw_path)).into(),
         );
     }
 
@@ -109,7 +107,7 @@ fn add_path(
         .canonicalize()
         .map_err(|err| {
             GardenError::ConfigurationError(
-                format!("unable to canonicalize {:?}: {:?}", raw_path, err)
+                format!("unable to canonicalize {:?}: {:?}", raw_path, err),
             )
         })?
         .to_path_buf();
@@ -118,9 +116,12 @@ fn add_path(
     if path.starts_with(&root) {
         tree_path = path.strip_prefix(&root)
             .map_err(|err| {
-                GardenError::ConfigurationError(
-                    format!("{:?} is not a child of {:?}: {:?}", path, root, err)
-                )
+                GardenError::ConfigurationError(format!(
+                    "{:?} is not a child of {:?}: {:?}",
+                    path,
+                    root,
+                    err
+                ))
             })?
             .to_string_lossy()
             .into();
@@ -213,9 +214,7 @@ fn add_path(
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
                 return Err(
-                    GardenError::ConfigurationError(
-                        "trees: not a hash".to_string()
-                    ).into()
+                    GardenError::ConfigurationError("trees: not a hash".to_string()).into(),
                 );
             }
         };

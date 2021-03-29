@@ -12,8 +12,7 @@ use super::syntax;
 /// Returns:
 /// - `Vec<garden::model::TreeContext>`
 
-pub fn resolve_trees(config: &model::Configuration, query: &str)
-    -> Vec<model::TreeContext> {
+pub fn resolve_trees(config: &model::Configuration, query: &str) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
     let tree_query = model::TreeQuery::new(query);
     let ref pattern = tree_query.pattern;
@@ -106,24 +105,22 @@ pub fn trees_from_garden(
                 continue;
             }
             // Match found -- take all of the discovered trees.
-            result.append(
-                &mut trees_from_group(
-                    config, Some(garden.get_index()), cfg_group
-                )
-            );
+            result.append(&mut trees_from_group(
+                config,
+                Some(garden.get_index()),
+                cfg_group,
+            ));
         }
     }
 
     // Collect indexes for each tree in this garden
     for tree in &garden.trees {
-        result.append(
-            &mut trees_from_pattern(
-                config,
-                tree,
-                Some(garden.get_index()),
-                None,
-            )
-        );
+        result.append(&mut trees_from_pattern(
+            config,
+            tree,
+            Some(garden.get_index()),
+            None,
+        ));
     }
 
     result
@@ -169,7 +166,12 @@ pub fn tree_from_name(
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
         if cfg_tree.get_name() == tree {
             // Tree found
-            return Some(model::TreeContext::new(tree_idx, None, garden_idx, group_idx));
+            return Some(model::TreeContext::new(
+                tree_idx,
+                None,
+                garden_idx,
+                group_idx,
+            ));
         }
     }
 
@@ -206,7 +208,12 @@ pub fn trees_from_pattern(
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
         if pattern.matches(cfg_tree.get_name()) {
             // Tree found
-            result.push(model::TreeContext::new(tree_idx, None, garden_idx, group_idx));
+            result.push(model::TreeContext::new(
+                tree_idx,
+                None,
+                garden_idx,
+                group_idx,
+            ));
         }
     }
 
@@ -226,8 +233,7 @@ pub fn trees_from_pattern(
 
 /// Return a tree context for the specified filesystem path.
 
-pub fn tree_from_path(config: &model::Configuration, path: &str)
-    -> Option<model::TreeContext> {
+pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model::TreeContext> {
     let pathbuf = match std::path::PathBuf::from(path).canonicalize() {
         Ok(canon) => canon.to_path_buf(),
         Err(_) => return None,
@@ -244,9 +250,12 @@ pub fn tree_from_path(config: &model::Configuration, path: &str)
             Err(_) => continue,
         };
         if pathbuf == tree_canon {
-            return Some(
-                model::TreeContext::new(idx as model::TreeIndex, None, None, None)
-            );
+            return Some(model::TreeContext::new(
+                idx as model::TreeIndex,
+                None,
+                None,
+                None,
+            ));
         }
     }
 
@@ -255,13 +264,17 @@ pub fn tree_from_path(config: &model::Configuration, path: &str)
 
 /// Returns tree contexts matching the specified pattern
 
-fn trees(config: &model::Configuration, pattern: &glob::Pattern)
-    -> Vec<model::TreeContext> {
+fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::TreeContext> {
 
     let mut result = Vec::new();
     for (tree_idx, tree) in config.trees.iter().enumerate() {
         if pattern.matches(tree.get_name()) {
-            result.push(model::TreeContext::new(tree_idx, None, None, None));
+            result.push(model::TreeContext::new(
+                tree_idx,
+                *config.get_id(),
+                None,
+                None,
+            ));
         }
     }
 

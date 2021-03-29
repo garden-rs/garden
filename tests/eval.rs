@@ -380,9 +380,7 @@ fn eval_graft_tree() -> Result<()> {
     assert!(path.ends_with("/graft"));
 
     // Evaluate a local variable that is overridden in the graft.
-    let actual = garden::eval::tree_value(
-        &config, "${current_config}", ctx.tree, ctx.garden
-    );
+    let actual = garden::eval::tree_value(&config, "${current_config}", ctx.tree, ctx.garden);
     assert_eq!("graft", actual);
 
     // Get a TreeContext for "example/tree".
@@ -393,15 +391,17 @@ fn eval_graft_tree() -> Result<()> {
     let example_config = app.get_config(example_ctx.config.unwrap());
     // Evaluate "${current_config}" from the context of "example/tree".
     let actual = garden::eval::tree_value(
-        &example_config, "${current_config}", example_ctx.tree, example_ctx.garden
+        &example_config,
+        "${current_config}",
+        example_ctx.tree,
+        example_ctx.garden,
     );
     assert_eq!("main", actual);
 
     // Evaluate a grafted variable from the context of "example/tree" from
     // the main configuration.
-    let actual = garden::eval::tree_value(
-        &config, "${graft::current_config}", ctx.tree, ctx.garden
-    );
+    let actual =
+        garden::eval::tree_value(&config, "${graft::current_config}", ctx.tree, ctx.garden);
     // TODO: this should evaluate to "graft".
     //assert_eq!("graft", actual);
     assert_eq!("${graft::current_config}", actual);
