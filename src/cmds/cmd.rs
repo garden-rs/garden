@@ -18,10 +18,8 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
     let keep_going = app.options.keep_going;
-    let config = app.get_root_config_mut();
-
     let exit_status = cmd(
-        config,
+        app,
         quiet,
         verbose,
         keep_going,
@@ -93,9 +91,8 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
     let keep_going = app.options.keep_going;
-    let config = app.get_root_config_mut();
     cmds(
-        config,
+        app,
         quiet,
         verbose,
         keep_going,
@@ -163,7 +160,7 @@ fn parse_args_custom(
 /// with no garden context.
 
 pub fn cmd(
-    config: &mut model::Configuration,
+    app: &mut model::ApplicationContext,
     quiet: bool,
     verbose: bool,
     keep_going: bool,
@@ -172,22 +169,34 @@ pub fn cmd(
     arguments: &Vec<String>,
 ) -> Result<i32> {
     // Resolve the tree query into a vector of tree contexts.
-    let contexts = query::resolve_trees(config, query);
+    let contexts;
     let mut exit_status: i32 = errors::EX_OK;
+    // Mutable scope for app.get_root_config_mut()
+    {
+        let config = app.get_root_config_mut();
+        contexts = query::resolve_trees(config, query);
+    }
 
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in &contexts {
         // Skip symlink trees.
-        if config.trees[context.tree].is_symlink {
-            continue;
+        {
+            let config = app.get_root_config();
+            if config.trees[context.tree].is_symlink {
+                continue;
+            }
         }
         // Evaluate the tree environment
-        let env = eval::environment(config, context);
-        let path: String;
+        let env;
+        {
+            env = eval::environment(app.get_root_config(), context);
+        }
 
         // Run each command in the tree's context
+        let path: String;
         {
+            let config = app.get_root_config();
             let tree = &config.trees[context.tree];
             path = tree.path_as_ref()?.to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
@@ -209,8 +218,9 @@ pub fn cmd(
             // are included.  When the scope includes a gardens,
             // its matching commands are appended to the end.
             error = false;
-            let cmd_seq_vec = eval::command(config, context, &name);
-            config.reset();
+            let cmd_seq_vec = eval::command(app, context, &name);
+            app.get_root_config_mut().reset();
+
             for cmd_seq in &cmd_seq_vec {
                 for cmd_str in cmd_seq {
                     let mut exec = subprocess::Exec::shell(&cmd_str)
@@ -249,7 +259,7 @@ pub fn cmd(
 
 /// Run cmd() over a Vec of tree queries
 pub fn cmds(
-    config: &mut model::Configuration,
+    app: &mut model::ApplicationContext,
     quiet: bool,
     verbose: bool,
     keep_going: bool,
@@ -264,7 +274,7 @@ pub fn cmds(
 
     for query in queries {
         let status = cmd(
-            config,
+            app,
             quiet,
             verbose,
             keep_going,

@@ -12,7 +12,7 @@ pub fn from_string(string: &str) -> garden::model::Configuration {
     let mut config = garden::model::Configuration::new();
     garden::config::parse(string, false, &mut config).ok();
 
-    return config;
+    config
 }
 
 pub fn garden_config() -> garden::model::Configuration {
@@ -123,5 +123,5 @@ pub fn garden_config() -> garden::model::Configuration {
     "#
         .to_string();
 
-    return from_string(&string);
+    from_string(&string)
 }

@@ -369,12 +369,13 @@ pub fn environment(
 
 /// Evaluate commands
 pub fn command(
-    config: &model::Configuration,
+    app: &model::ApplicationContext,
     context: &model::TreeContext,
     name: &str,
 ) -> Vec<Vec<String>> {
     let mut vars = Vec::new();
     let mut result = Vec::new();
+    let config = app.get_root_config();
 
     let pattern = match glob::Pattern::new(name) {
         Ok(value) => value,

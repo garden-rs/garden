@@ -278,12 +278,14 @@ fn environment_empty_value() {
 
 
 #[test]
-fn command_garden_scope() {
+fn command_garden_scope() -> Result<()> {
     let config = common::garden_config();
+    let options = garden::build::command_options().verbose(true);
+    let app = garden::build::context_from_config(config, options)?;
     let context = garden::model::TreeContext::new(1, None, Some(0), None);
 
     // Garden scope
-    let values = garden::eval::command(&config, &context, "build");
+    let values = garden::eval::command(&app, &context, "build");
     assert_eq!(values.len(), 1);
 
     let cmd_vec = &values[0];
@@ -291,17 +293,22 @@ fn command_garden_scope() {
 
     let cmd = &cmd_vec[0];
     assert_eq!(cmd, "make -j prefix=/home/test/apps/git-cola/current all");
+
+    Ok(())
 }
 
 
 #[test]
-fn command_tree_scope() {
+fn command_tree_scope() -> Result<()> {
+    let options = garden::build::command_options().verbose(true);
     let config = common::garden_config();
+    let app = garden::build::context_from_config(config, options)?;
+
     let context = garden::model::TreeContext::new(1, None, None, None);
 
     // The ${prefix} variable should expand to the tree-local value.
     {
-        let values = garden::eval::command(&config, &context, "build");
+        let values = garden::eval::command(&app, &context, "build");
         assert_eq!(values.len(), 1);
         assert_eq!(values[0].len(), 1);
 
@@ -312,7 +319,7 @@ fn command_tree_scope() {
     // Commands should include the template commands followed by the
     // tree-specific commands.
     {
-        let values = garden::eval::command(&config, &context, "test");
+        let values = garden::eval::command(&app, &context, "test");
         assert_eq!(values.len(), 2);
 
         assert_eq!(values[0].len(), 1);
@@ -323,6 +330,8 @@ fn command_tree_scope() {
         assert_eq!(values[1][1], "make tox");
 
     }
+
+    Ok(())
 }
 
 
