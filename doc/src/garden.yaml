@@ -1,0 +1,72 @@
+garden:
+  root: ${GARDEN_CONFIG_DIR}
+
+# The following variables are used in the custom commands below.
+variables:
+  # A virtualenv is created in the ./dist directory.
+  prefix: ${GARDEN_ROOT}/dist
+  num_procs: $ nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 8
+  python: python3
+
+commands:
+  add-all: git add --update
+  diff: GIT_PAGER= git diff --patience --color-words "$@"
+  lol: git log --decorate --graph --oneline "$@" && echo
+  status:
+    - git status --short
+    - git branch
+  run: vx ${prefix} git cola "$@"
+
+templates:
+  bin:
+    environment:
+      PATH: ${TREE_PATH}/bin
+  python:
+    environment:
+      PYTHONPATH: ${TREE_PATH}
+  makefile:
+    commands:
+      build: make -j ${num_procs} prefix="${prefix}" "$@" all
+      install: make -j ${num_procs} prefix="${prefix}" "$@" install
+      test: make -j ${num_procs} prefix="${prefix}" "$@" test
+      doc: make -j ${num_procs} prefix="${prefix}" "$@" doc
+
+trees:
+  git:
+    url: git://github.com/git/git.git
+    templates: makefile
+    environment:
+      PATH: ${TREE_PATH}/bin-wrappers
+  git-cola:
+    path: git-cola
+    url: git://github.com/git-cola/git-cola.git
+    templates: [bin, makefile, python]
+    commands:
+      setup:
+        - ${python} -m venv ${prefix}
+        - vx ${prefix} make requirements
+        - vx ${prefix} make requirements-dev
+        - vx ${prefix} pip install PyQt5
+  qtpy:
+    url: git://github.com/spyder-ide/qtpy.git
+    templates: python
+  vx:
+    url: git://github.com/davvid/vx.git
+    environment:
+      PATH: ${TREE_PATH}
+  # This tree allows the "run" command to be run from any directory.
+  cwd:
+    path: ${PWD}
+
+groups:
+  cola-grp:
+    - git
+    - git-cola
+    - qtpy
+    - vx
+
+gardens:
+  cola:
+    groups: cola-grp
+    environment:
+      PATH: ${prefix}/bin

@@ -1,586 +1,176 @@
-# garden -- grow and cultivate collections of Git trees
+# Garden
 
-Garden makes it easy to run operations over arbitrary collections of
-self-contained Git trees.
+Garden grows and cultivates collections of Git trees.
+
+Garden makes it easy to perform development tasks over collections of
+self-contained and inter-dependent Git worktrees.
+
+## Code Status
+
+[![Build Status](https://travis-ci.com/davvid/garden.svg?branch=main)](https://travis-ci.com/davvid/garden)
+[![MIT License](https://img.shields.io/github/license/davvid/garden.svg)](MIT License)
+
+While Garden is under heavy development and not yet feature complete, it is
+quite stable and works well for day to day use.
+
+The [ideas][doc/ideas.md] page contains a list of ideas to explore in the future.
 
 
-## Use cases
+## Documentation
 
-* Make it easy to define collections of independent Git repositories and
-  group them into cohesive development gardens.
+Read the [Garden User Guide](https://davvid.github.io/garden)
+for details on how to use and configure Garden.
 
-* Build/test/install interdependent projects in self-contained sandboxes.
+Read the [Garden API Documentation](https://docs.rs/garden-tools/)
+for details on how to use the Garden APIs for developing Garden.
 
-* Bootstrap development environments from simple configuration.
 
-* Make it easy to recreate complex Git-based development environments from
-  scratch using a simple configuration file.
+## Features
 
-Garden helps weave together development environments directly from Git trees.
+* Bootstrap complex Git-based development environments from source.
+
+* Define arbitrary collections of Git repositories for performing operations.
+
+* Define environment variables scoped to specific projects or trees.
+
+* Define custom commands and workflows in a simple declarative config file.
+
+* Develop, build and test inter-dependent projects in self-contained sandboxes.
+
+Garden weaves together arbitrarily complex development environments from
+independent Git worktrees.
+
 Garden aids in common development setup steps such as setting environment
-variables, search paths, and creating arbitrary groupings of repositories for
-development.
-
-
-# Setup
-
-The following `garden init` invocation creates an empty `garden.yaml` with a
-root directory of `~/src` in the user's home confiuration directory.
-
-    garden init --global --root '~/src'
-
-Garden is used by creating a configuration file and defining a directory
-structure for git trees.  Existing trees can be added to the configuration
-using `garden add`.
-
-The `garden init` command creates an empty `garden.yaml` file from
-scratch in the current directory, or in the user-global
-`~/.config/garden/garden.yaml` directory.  The global configuration
-is used when `garden.yaml` is not found under the current directory.
-
-The `garden grow` command is used to bring trees into existence from an
-existing `garden.yaml`.
-
-Garden commands can be used to operate over sets of trees once a
-configuration has been defined using `garden add <repo>` or `$EDITOR`.
-
-
-# Configuration
-
-Garden is configured through a garden configuration file, typically called
-"garden.yaml".  You can specify a config file by specifying
-`-c|--config <filename>` when running garden, or by allowing garden to find
-`garden.yaml` in current directory or in specific locations on the filesystem.
-
-Garden searches for `garden.yaml` in the following locations by default.
-
-    # Relative to the current directory
-    ./garden.yaml
-    ./garden/garden.yaml
-    ./etc/garden/garden.yaml
-
-    # Relative to $HOME
-    ~/.config/garden/garden.yaml
-    ~/etc/garden/garden.yaml
-
-    # Global configuration
-    /etc/garden/garden.yaml
-
-
-The following example `garden.yaml` is referred to by the documentation
-when showing examples.
-
-    garden:
-      root: ~/src
-
-    variables:
-      flavor: debug
-      prefix: ${TREE_PATH}/target/${flavor}
-      num_procs: $ nprocs 2>/dev/null || echo 4
-
-    commands:
-      add: git add -u
-      diff: GIT_PAGER= git diff
-      cola: git cola
-      update: git pull --ff-only
-      gitk: gitk --all &
-      log: git log
-      pull: git pull --ff-only
-      push: git push
-      status:
-        - git branch
-        - git status --short
-
-    templates:
-      annex:
-        gitconfig:
-          remote.origin.annex-ignore: true
-        commands:
-          sync:
-            - git fetch && git rebase origin/master
-            - git annex sync --content
-      rust:
-        environment:
-          PATH: ${TREE_PATH}/target/${rust_flavor}
-        commands:
-          build: cargo build "$@"
-          test: cargo test "$@"
-          doc: cargo doc "$@"
-          run: cargo run "$@"
-      bin:
-        environment:
-          PATH: ${TREE_PATH}/bin
-      python:
-        environment:
-          PYTHONPATH: ${TREE_PATH}
-      makefile:
-        commands:
-          build: make -j${num_procs} prefix="${prefix}" "$@" all
-          install: make -j${num_procs} prefix="${prefix}" "$@" install
-          test: make -j${num_procs} prefix="${prefix}" "$@" test
-          doc: make -j${num_procs} prefix="${prefix}" "$@" doc
-
-    trees:
-      cola:
-        path: git-cola
-        url: git://github.com/git-cola/git-cola.git
-        environment: {GIT_COLA_TRACE=: 1}
-        templates: [bin, makefile, python]
-        remotes:
-          gitlab:
-            url: git@gitlab.com:git-cola/git-cola.git
-
-      garden:
-        url: git://github.com/davvid/garden.git
-        templates: rust
-
-      garden/release:
-        extend: garden
-        path: garden
-        variables:
-          flavor: release
-
-      git:
-        url: git://github.com/git/git.git
-        templates: makefile
-        environment:
-          PATH: ${TREE_PATH}/bin-wrappers
-
-      gitk:
-        url: git://ozlabs.org/~paulus/gitk.git
-        templates: makefile
-        environment:
-          PATH: ${TREE_PATH}
-
-      qtpy:
-        url: git://github.com/spyder-ide/qtpy.git
-        templates: python
-
-      vx:
-        url: git://github.com/davvid/vx.git
-        environment:
-          PATH: ${TREE_PATH}
-
-      annex/music:
-        url: git://git.example.com/music.git
-        remotes:
-          backup: user@backup:music
-        templates: annex
-
-      annex/movies:
-        url: git://git.example.com/movies.git
-        remotes:
-          backup: user@backup:movies
-        templates: annex
-
-    groups:
-      annex: annex/*
-      cola: [cola, git, qtpy, vx]
-      git-all:
-       - cola
-       - git*
-
-    gardens:
-      annex:
-        trees: annex/*
-      cola27:
-        groups: cola
-        commands:
-          setup27:
-            - virtualenv --system-site-packages env27
-            - vx env27 make requirements
-            - vx env27 make requirements-dev
-          build27: vx env27 make "$@" all
-          doc27: vx env27 make "$@" doc
-          test27: vx env27 make "$@" test
-          run27: vx env27 git cola "$@"
-      gitdev:
-        variables:
-          prefix: ~/apps/gitdev
-        environment:
-          PATH: ~/apps/gitdev/bin
-        trees: git*
-
-
-## Garden Root
-
-The garden root directory is configured in the `garden.root` field.
-This directory is the parent directory beneath which all trees will be cloned.
-Slashes in tree paths will create new directories on disk as needed.
-`garden.root` defaults to the current directory when unspecified.
-
-
-The built-in `${GARDEN_CONFIG_DIR}` variable can be used to create relocatable
-setups that define a `garden.root` relative to the config file itself.
-
-To place all trees in a `src` directory sibling to the `garden.yaml` file, the
-following configuration can be used:
-
-    garden:
-      root: ${GARDEN_CONFIG_DIR}/src
-
-
-# Variables
-
-Garden configuration contains a "variables" block that allows defining
-variables that are can be referenced by other garden values.
+variables, configuring search paths, and creating arbitrary groupings of
+repositories for development.
 
-    variables:
-      flavor: debug
-      home: ~
-      user: $ whoami
-      libdir: $ test -e /usr/lib64 && echo lib64 || echo lib
-      nproc: $ nproc
-      prefix: ${TREE_PATH}/target/${flavor}
-      py_ver_code: from sys import version_info as v; print("%s.%s" % v[:2])
-      py_ver: $ python -c '${py_ver_code}'
-      py_site: ${libdir}/python${py_ver}/site-packages
 
-Variables definitions can reference environment variables and other garden
-variables.
+## Installation
 
-Variable references use shell `${variable}` syntax.
+There are multiple ways to install garden.
 
-Values that start with dollar-sign+space (`$ `) are called "exec expressions".
-Exec expressions are run through a shell after evaluation and replaced with
-the output of the evaluated command.
+* **From Crates.io**
 
-When resolving values, variables defined in a tree scope override/replace
-variables defined at the global scope.  Variables defined in garden scope
-override/replace variables defined in a tree scope.
+  This requires at least Rust 1.45 and Cargo to be installed. Once you have
+  installed Rust, type the following in the terminal:
 
+  ```
+  cargo install garden-tools
+  ```
 
-# Built-in variables
+  This will download and compile garden for you. The only thing left to do is
+  to add the Cargo `bin/` directory (typically `$HOME/.cargo/bin`) to `$PATH`.
 
-Garden automatically defines some built-in variables that can be useful
-when constructing values for variables, commands, and paths.
+* **From Git**
 
-    GARDEN_CONFIG_DIR   -   directory containing the "garden.yaml" config file
-    GARDEN_ROOT         -   root directory for trees
-    TREE_NAME           -   current tree name
-    TREE_PATH           -   current tree path
+  The version published to crates.io will often be slightly behind the source
+  code repository. If you need the latest version then you can build
+  the Git version of Garden yourself. Cargo makes this super easy!
 
+  ```
+  cargo install --git https://github.com/davvid/garden.git garden-tools
+  ```
 
-## Environment Variables
+  Again, make sure to add the Cargo `bin/` directory to your `$PATH`.
 
-The "environment" block defines variables that are stored in the environment.
-Names with an equals sign (`=`) suffix are treated as literal values and
-stored in the environment as-is.  Otherwise, the variable names are prepended
-to using colons (`:`).  Use a plus sign (`+`) suffix in the name to append
-to a variable instead of prepending.
+* **For Development**
 
-Environment variables are resolved in the same order as the garden variables:
-global scope, tree scope, and garden scope.  This allows gardens to
-prepend/append variables after a tree, thus allowing for customization
-of behavior from the garden scope.
+  If you would like to develop features and contribute to Garden then you will
+  have to clone the repository on your local machine.
 
-Environment variables are resolved after garden variables.  This allows
-the use of garden variables when defining environment variable values.
+  ```
+  git clone git://github.com/davvid/garden.git
+  cd garden
+  cargo build
+  ```
 
-Environment variable names can use garden `${variable}` syntax when defining
-their name, for example,
+  The resulting `garden` binary will be located in `target/debug/`.
 
-    trees:
-      foo:
-        environment:
-          ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 
-exports a variable called `foo_LOCATION` with the location of the `foo` tree.
+## Usage
 
+Garden is primarily used as a command-line tool, even though it exposes all of
+its functionality as a Rust crate.
 
-### OS Environment Variables
+Here are the main commands you will want to run. For a more exhaustive
+explanation, check out the [User Guide].
 
-OS-level environment variables that are present in garden's runtime
-environment can be referenced using garden `${variable}` expression syntax.
-Garden variables have higher precedence than environment variables when
-resolving `${variable}` references -- the environment is checked only when
-no garden variables exist by that name.
+- `garden init [<filename>]`
 
+    The init command will create an empty Garden YAML file with the minimal
+    boilerplate to start using garden. If the `<filename>` parameter is
+    omitted, "garden.yaml" in the current directory will be used.
 
-## Gardens, Groups and Trees
+    This is typically run without specifying a filename, eg. `garden init`.
 
-Gardens aggregate groups and trees.  Define a group and reuse the group in
-different gardens to share tree lists between gardens.  Defining gardens
-and groups make those names available when querying and performing operations
-over trees.
+    ```
+    current-directory/
+    └── garden.yaml
+    ```
 
+- `garden grow {tree,group,garden}`
 
-### Garden, Group, and Tree Query Syntax
+    If you have a "garden.yaml" file, either one that you authored yourself or
+    one that was provided to you, then you will need to grow the Git trees
+    into existence. The grow command clones either individual trees, or
+    collections of trees when a group or garden name is specified.
 
-Gardens, groups, and trees can be referenced using the following query and
-command-line syntax in order to disambiguate between them when gardens, groups
-and trees have the same name.
+- `garden add <worktree>`
 
-    @tree               -   values prefixed with "@" resolve trees only
-    %group              -   values prefixed with "%" resolve groups only
-    :garden             -   values prefixed with ":" resolve gardens only
+    Add an existing Git worktree to an existing "garden.yaml".
+    The "trees" section in the configuration file will be updated with details
+    about the new tree.
 
-When no prefixes are specified then the names are resolved in the following
-order: gardens, groups and trees.  Gardens have the highest priority, followed
-by groups and lastly trees.
+- `garden exec <tree-query> <command-arguments>...`
 
-Names specified on the command-line can use glob patterns to match multiple
-entries. For example, `@foo*` will match all trees that start with "foo".
+    Run arbitrary commands over the queried trees, groups or gardens.
+    When the `<tree-query>` resolves to a garden then the environment
+    is configured for the command using the garden's context.
 
+    The specified command is run on each tree in the resolved query.
 
-### Templates
+- `garden shell <tree-query> [<tree>]`
 
-Templates allow sharing of variables, gitconfig, and environments between
-trees.  Trees can also reuse another tree definition by specifying the
-"extend" keyword with the name of another tree.  Only the first remote is used
-when extending a tree.
+    Configure the environment and launch a shell inside a garden environment.
+    If `<tree>` is specified then the current directory will be set to the
+    tree's directory.
 
+- `garden cmd <tree-query> <command> [<command>]...`
 
-### Automagic Lists
+    Run one or more user-defined commands over the gardens, groups or trees
+    that match the specified tree query.
 
-Fields that expect lists can also be specified using a single string, and the
-list will be treated like a list with a single item.  This is useful, for
-example, when defining groups using wildcards, or commands which can sometimes
-be one-lines, and multi-line at other times.
+    For example, if you have a group called "my-group" and two custom commands
+    called "build" and "test", then running `garden cmd my-group build test`
+    will run the custom "build" and "test" commands over all of the trees in
+    "my-group".
 
+- `garden <command> <tree-query> [<tree-query>]*`
 
-### Wildcards
+    This form is another way to execute user-defined `<command>`s. This form
+    allows you to specify multiple queries rather than multiple commands.
 
-The names in garden `tree` and `group` lists, and group member names accept glob
-wildcard patterns.
+    Using the same example as above, `garden build my-group my-other-group`
+    will run our user-defined "build" command over both "my-group" and
+    "my-other-group".
 
-The "annex" group definition is: `annex/*`.   This matches all trees that
-start with "annex/".  The "git-all" group has two entries -- `git*` and
-`cola`.  the first matches all trees that start with "git", and the second one
-matches "cola" only.
+- `garden eval 'string-with-$vars'`
 
+    Evaluate the specified string using Garden's variable substitution logic.
+    The resulting value is printed to stdout.
 
-### Symlinks
+- `garden help <command>`
 
-Symlink trees create a symlink on the filesystem during `garden init`.
-`garden exec`, and custom `garden cmd` commands ignore symlink trees.
+    Show the usage help screen for `<command>`. This only works for built-in
+    commands and is equivalent to `garden <command> --help`.
 
-    trees:
-      media:
-        path: ~/media
-        symlink: /media/${USER}
 
-The "path" entry behaves like the tree "path" entry -- when unspecified it
-defaults to a path named after the tree relative to the garden root.
+## Acknowledgements
 
+The structure and content of the README and documentation was heavily inspired
+by the the [mdbook](https://github.com/rust-lang/mdBook) documentation.
 
-## Commands
-
-### Basics
-
-All garden commands have this basic syntax:
-
-    garden [options] <command> [command-options] [command-arguments]*
-
-The following options are specified before `<command>`, and are
-global to all `garden` commands.
-
-    -c | --config <path>
-
-Specify a garden config file to use instead of searching for `garden.yaml`.
-The path can either be the path to an actual config file, or it can be
-the basename of a file in the configuration search path.
-
-    -v | --verbose
-
-Enable verbose debugging output.
-
-
-    -s | --set  name=value
-
-Override a configured variable by passing a `name=value` string to
-the `--set` option.  The variable named `name` will be updated with the
-garden expression `value`.  Multiple variables can be set by specifying the
-flag multiple times.
-
-
-#### Gardens, Groups and Trees
-
-Trees are Git repositories with configuration that allows for the
-specification of arbitrary commands and workflows.  Groups are a simple
-named grouping mechanism.
-
-Gardens can include groups and trees, as well as environment, gitconfig, and
-custom commands in addition to the ones provided by each tree.
-
-
-#### Tree queries
-
-Command arguments with explicit garden names, `@tree` references,
-`%group` syntax, and wildcards are all referred to as "tree queries".
-Tree queries are strings that resolve to a set of trees.
-
-Glob  wildcards in tree queries allows operations to span over ad-hoc gardens,
-groups, and trees.  A garden.yaml configuration can be carefully crafted for
-maximum glob-ability.
-
-For example, `garden exec 'annex/*' operates on all the `annex/` repositories.
-
-Garden commands take tree query arguments that specify which trees to
-operate on.  When a name is mentioned on the command-line, garden will use the
-first matching garden, group, or tree, in that order, when determining which
-trees to operate on.  When a garden or group is matched, all of its associated
-trees are included in the operation.
-
-Paths can be specified as well, but the filesystem has the lowest priority
-relative to gardens, groups, and trees.  When specifyiing paths they must
-resolve to a configured tree.  For example,
-
-    garden build . -- --verbose
-
-builds the tree in the current directory, verbosely.
-
-In the following example, the "cola" group is found
-in the example configuration, and the commands are run over multiple repos.
-
-    garden exec cola git status -s
-    garden status cola
-    garden cmd cola status build
-
-If you have groups, gardens, and trees with the same name then you can use the
-`@tree`, `%group`, and `:garden` syntax to disambiguate the name.
-
-    garden init @tree      # initialize the tree called "tree"
-    garden init %group     # initialize the group called "group"
-    garden init :garden    # initialize the garden called "garden"
-
-Gardens have highest priority, so the ":garden" query is rarely needed
-in practice.  "%group" and "@tree" queries refer to groups and trees only, but
-not gardens which have the same name.
-
-Garden understands shell wildcards, so multiple trees, gardens, or
-groups can be matched by using wildcards.  For example,
-
-    garden init '@annex/*'
-
-initializes all trees that start with "annex/".
-
-
-### garden add
-
-    garden add <path>
-
-    # example
-    garden add src/repo
-
-Add an existing Git tree at `<path>` to `garden.yaml`.
-
-
-### garden cmd
-
-    garden cmd <query> <command>... [-- <arguments>..]
-
-    # example
-    garden cmd cola build test -- V=1
-
-Run commands over the trees matched by `<query>`.
-
-`garden cmd` and `garden <command>` interact with custom commands that are
-configured in the "commands" section for templates, trees, gardens,
-and the global top-level scope.
-
-Custom commands can be defined at either the tree or garden level.
-Commands defined at the garden level extend commands defined on a tree.
-
-Commands are executed in a shell, so shell expressions can be used in commands.
-Each command runs under `["sh", "-c", "<command>"]` with the resolved
-environment from the corresponding garden, group, or tree.
-
-Optional command-line `<arguments>` specified after a double-dash (`--`)
-end-of-options marker are forwarded to each command.
-
-`"$0"` in a custom command points to the current garden executable and can be
-used to rerun garden from within a garden command.
-
-Optional arguments are available to command strings by using the traditional
-`"$@"` shell expression syntax.  When optional arguments are present `"$1"`,
-`"$2"`, and subsequent variables will be set according to each argument.
-
-
-### garden custom sub-commands
-
-    garden <command> <query>... [-- <arguments>...]
-
-    # example
-    garden status @cola .
-    garden build . git -- V=1
-
-When no builtin command exists by the specified name then garden will
-use custom commands defined in a "commands" block at the corresponding
-garden or tree scope.
-
-This is complementary to `garden cmd <query> <command>...`.
-That form can run multiple commands; this form operates over multiple queries.
-
-
-### garden exec
-
-    garden exec <query> <command> <arguments>...
-
-    # example
-    garden exec cola git status -s
-
-Execute a command on all of the trees matched by `<query>`.
-
-
-### garden eval
-
-    garden eval <expression> [<tree>] [<garden>]
-
-    # example
-    garden eval '${GARDEN_ROOT}'
-    garden eval '${TREE_PATH}' cola
-
-Evaluate a garden expression in the specified tree context.
-If no tree is given then the variable scope includes the top-level variables
-block only.
-
-When a tree is given then its variables are considered as well.
-When a garden is specified then the garden's variables are also available for
-evaluation.
-
-
-### garden init
-
-    garden init [options]
-
-    # create a local garden config rooted at the current directory
-    garden init --root '${GARDEN_CONFIG_DIR}'
-
-    # create a global garden config rooted at ~/src
-    garden init --global --root '~/src'
-
-Create a new empty `garden.yaml` in the current directory, or in the
-user's global configuration directory when `--global` is specified.
-See `garden help init` for more details.
-
-
-### garden grow
-
-    garden grow <query>
-
-    # example
-    garden grow cola
-
-Update or create the tree(s) referenced by the `<query>`.
-
-It is safe to re-run the `grow` command.  Existing trees will have their git
-configuration updated to match the configured remotes.  Missing repositories
-are created by cloning the configured tree url.
-
-
-### garden shell
-
-    garden shell <query> [<tree>]
-
-    # example
-    garden shell cola
-
-Launch a shell inside the environment formed by the tree query.
-The optional tree argument specifies which tree to chdir into.
-
-If the resolved tree query contains a tree whose name exactly matches the
-query string then that tree's directory will be used when opening the shell.
-The optional tree argument is not needed for the common case where a garden
-and tree share a name -- garden will chdir into that same-named tree when
-creating the shell.
+The [yaml-rust parser used by Garden](https://github.com/davvid/yaml-rust)
+is [@davvid](https://github.com/davvid)'s fork of the
+[original yaml-rust](https://github.com/chyh1990/yaml-rust) crate by
+[@chyh1990](https://github.com/chyh1990).

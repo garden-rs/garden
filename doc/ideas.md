@@ -1,31 +1,54 @@
 # Ideas, New Features, Usability Enhancements
 
+- grow: make --depth optional and configurable.
+- grow: add "grow: branch: clone-branch" and let it be overridden per-graden
+  using "gardens: <garden>: branch: <tree>: branch-name"
+
 - config::reader should stop creating `${TREE_NAME}`, `${GARDEN_ROOT}`,
   and `${GARDEN_CONFIG_DIR}`.  config.rs should create the NamedVariables.
 
 - Modular/reusable garden.yaml configuration.
 
+- Make it possible to full-on include another garden config file inline
+  into a garden file so that we can reuse variables and commands across
+  garden files.
+
+    garden:
+        root: "${GARDEN_CONFIG_DIR}"
+        include:
+          - "${GARDEN_CONFIG_DIR}/etc/garden/commands.yaml"
+          - "${GARDEN_CONFIG_DIR}/etc/garden/variables.yaml"
+
+This reader will have to be changed to first parse the includes in the
+listed order copy their contents into the main configuration.
+This seems like this should be possible to attain through refactoring that
+allows the configuration to be iteratively updated by a config reader.
 Allow "graft" gardens by including the garden.yaml from an external garden.yaml
 and placings its tree, groups, and gardens in a "custom::" graft namespace.
 
+## Grafts (WIP)
+
+Make it possible to graft configuration from one graden file into another.
+Trees, variables and groups are available under a "<graft>::" namespace
+that can be evaluated from the scope of the main garden file.
+Grafts are nestable, as a config inside a namespace can itself have grafts.
+
     grafts:
         libs: libs/garden.yaml
-        deps:
-            config: deps/deps.yaml
-            root: deps
+        internal:
+            path: libs/internal.yaml
+            root: libs/internal
 
     trees:
-        server:
-            url: ${vcs}/server
-        client:
-            url: ${vcs}/client
+        server: ${vcs}/server
+        client: ${vcs}/client
 
     groups:
-        app: [libs::lib1, libs::lib2, server, client]
+        app: [libs::http, libs::rest, internal::auth, server, client]
 
 
-The trees, gardens, and groups from lib/garden.yaml can be accessed via
-custom::tree custom::group custom::garden.
+The trees, gardens, and groups from libs/garden.yaml can be accessed via
+`libs::*`. Its root is "libs/" by default.
 
 In order to resolve variables, we have to start at the leaf-most
 Configuration and walk up the parent Configurations until the variable is
@@ -52,6 +75,8 @@ recorded into the parent Configuration's graft entry.
 
 When an Option<NodeId> is present in the tree context then the value must
 be evaluated using the Configuration corresponding to the NodeId.
+The NodeId looks up the Configurtion for that context.
+
 
 - Strategy for evaluating values
 
@@ -66,3 +91,35 @@ and the query is resolved in the context of that configuration.
 GardenIndex and GroupIndex values are relative to their local configuration.
 The corresponding configuration must be used when resolving these values
 to actual Gardens and Groups.
+
+These are the call graphs that have to be adjusted to support graft evaluation.
+
+    eval::value():
+        src/eval.rs:
+            [ ] environment() ->
+            [ ] multi_variable() ->
+            [ ] tree_value() ->
+            [ ] value()
+    eval::environment():
+        src/cmd.rs:
+            [ ] exec_in_context() ->
+            [ ] environment() -> ...
+        src/cmds/cmd.rs:
+            [ ] cmd() ->
+            [ ] environment()
+    cmd::exec_in_context():
+        src/cmd.rs:
+            [ ] exec_in_context() ->
+            [ ] environment() -> ...
+        src/cmds/exec.rs:
+            [ ] exec() ->
+            [ ] exec_in_context() ->
+            [ ] environment() -> ...
+        src/cmds/exec.rs:
+            [ ] exec() ->
+            [ ] exec_in_context() ->
+            [ ] environment() -. ...
+        src/cmds/shell.rs:
+            [ ] main() ->
+            [ ] exec_in_context() ->
+            [ ] environment() -. ...

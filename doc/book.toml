@@ -1,0 +1,31 @@
+[book]
+title = "Garden User Guide"
+description = "Garden grows and cultivates Git trees"
+authors = ["David Aguilar"]
+language = "en"
+
+[rust]
+edition = "2018"
+
+[output.html]
+mathjax-support = true
+site-url = "/garden/"
+git-repository-url = "https://github.com/davvid/garden/tree/main/doc"
+edit-url-template = "https://github.com/davvid/garden/edit/main/doc/{path}"
+
+[output.html.fold]
+enable = false
+level = 0
+
+[output.html.playground]
+editable = true
+line-numbers = true
+
+[output.html.search]
+limit-results = 20
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 2
+boost-paragraph = 1
+expand = true
+heading-split-level = 2
