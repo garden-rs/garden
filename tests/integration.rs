@@ -18,7 +18,7 @@ mod slow {
 
     fn teardown(path: &str) {
         if let Err(err) = std::fs::remove_dir_all(path) {
-            assert!(false, format!("unable to remove '{}': {}", path, err));
+            assert!(false, "unable to remove '{}': {}", path, err);
         }
     }
 
@@ -90,10 +90,9 @@ mod slow {
             let output = cmd::trim_stdout(&capture.unwrap());
             assert!(
                 output.ends_with("/tests/tmp/remotes/repos/example.git"),
-                format!(
-                    "{} does not end with {}",
-                    output, "/tests/tmp/clone/repos/example.git"
-                )
+                "{} does not end with {}",
+                output,
+                "/tests/tmp/clone/repos/example.git"
             );
         }
 
@@ -412,7 +411,8 @@ mod slow {
             let output = cmd::trim_stdout(&capture.unwrap());
             assert!(
                 output.ends_with("/tests/data"),
-                format!("{} does not end with /tests/data", output)
+                "{} does not end with /tests/data",
+                output
             );
         }
 
