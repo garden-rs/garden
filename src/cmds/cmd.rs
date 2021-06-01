@@ -252,9 +252,7 @@ pub fn cmds(
 ) -> Result<()> {
     let mut exit_status: i32 = 0;
 
-    let commands: Vec<String> = vec![
-        command.to_string()
-    ];
+    let commands: Vec<String> = vec![command.to_string()];
 
     for query in queries {
         let status = cmd(
