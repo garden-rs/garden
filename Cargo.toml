@@ -1,5 +1,5 @@
 [package]
-name = "garden"
+name = "garden-tools"
 version = "0.1.0"
 edition = "2018"
 
@@ -39,3 +39,11 @@ thiserror = "1.0"
 xdg = "2.2"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 yansi = "0.5"
+
+[lib]
+name = "garden"
+
+[[bin]]
+name = "garden"
+doc = false
+test = false
