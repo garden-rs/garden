@@ -1,0 +1,23 @@
+language: rust
+
+matrix:
+  include:
+    - rust: stable
+    - rust: beta
+    - rust: nightly
+    - rust: 1.45.0
+    - rust: nightly
+      script: |
+          if rustup component add clippy-preview
+          then
+              cargo clippy --all -- -D warnings
+          fi
+
+script:
+  - rustup component add rustfmt
+  - cargo install mdbook
+  - make all
+  - make doc
+  - make test
+  - make test-integration
+  - make check-format
