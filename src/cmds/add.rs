@@ -175,10 +175,11 @@ fn add_path(
     let mut remotes: Vec<(String, String)> = Vec::new();
     {
         for remote in &remote_names {
-            let mut command: Vec<String> = Vec::new();
-            command.push("git".into());
-            command.push("config".into());
-            command.push("remote.".to_string() + remote + ".url");
+            let command: Vec<String> = vec![
+                "git".into(),
+                "config".into(),
+                "remote.".to_string() + remote + ".url",
+            ];
 
             let exec = cmd::exec_in_dir(&command, &path);
             if let Ok(x) = cmd::capture_stdout(exec) {
