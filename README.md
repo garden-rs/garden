@@ -8,12 +8,12 @@ self-contained and inter-dependent Git worktrees.
 ## Code Status
 
 [![Build Status](https://travis-ci.com/davvid/garden.svg?branch=main)](https://travis-ci.com/davvid/garden)
-[![MIT License](https://img.shields.io/github/license/davvid/garden.svg)](MIT License)
+[![MIT License](https://img.shields.io/github/license/davvid/garden.svg)](LICENSE)
 
 While Garden is under heavy development and not yet feature complete, it is
 quite stable and works well for day to day use.
 
-The [ideas][doc/ideas.md] page contains a list of ideas to explore in the future.
+The [ideas](doc/ideas.md) page contains a list of ideas to explore in the future.
 
 
 ## Documentation

@@ -13,11 +13,13 @@
   into a garden file so that we can reuse variables and commands across
   garden files.
 
-    garden:
-        root: "${GARDEN_CONFIG_DIR}"
-        include:
-          - "${GARDEN_CONFIG_DIR}/etc/garden/commands.yaml"
-          - "${GARDEN_CONFIG_DIR}/etc/garden/variables.yaml"
+```yaml
+garden:
+    root: "${GARDEN_CONFIG_DIR}"
+    include:
+      - "${GARDEN_CONFIG_DIR}/etc/garden/commands.yaml"
+      - "${GARDEN_CONFIG_DIR}/etc/garden/variables.yaml"
+```
 
 This reader will have to be changed to first parse the includes in the
 listed order copy their contents into the main configuration.
