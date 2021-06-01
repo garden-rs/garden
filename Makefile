@@ -7,7 +7,7 @@ CARGO_FLAGS =
 MDBOOK ?= mdbook
 
 CARGO_PACKAGE = garden-tools
-ifndef debug
+ifdef release
     CARGO_FLAGS += --release
 endif
 
