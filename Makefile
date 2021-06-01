@@ -4,6 +4,7 @@ prefix ?= $(HOME)/.cargo
 # External commands and flags.
 CARGO ?= cargo
 CARGO_FLAGS =
+CARGO_PACKAGE = garden-tools
 
 ifndef debug
     CARGO_FLAGS += --release
@@ -21,7 +22,7 @@ endif
 
 # The default "all" target builds the project and runs all tests.
 .PHONY: all
-all:: build integration
+all:: build
 
 
 .PHONY: bench build test
@@ -34,7 +35,7 @@ clean::
 
 .PHONY: doc
 doc::
-	$(CARGO) doc --all --no-deps
+	$(CARGO) doc --no-deps --package $(CARGO_PACKAGE)
 
 
 # Installation
@@ -45,22 +46,27 @@ install::
 
 
 # Integration tests
-.PHONY: integration
-integration::
+.PHONY: test-integration
+test-integration::
 	$(CARGO) test --features integration $(CARGO_FLAGS) $(flags)
 
 
 .PHONY: coverage
 coverage::
-	cargo kcov
+	cargo kcov --verbose
+
+
+.PHONY:check
+check::
+	cargo clippy --all -- -D warnings
 
 
 # Code formatting
 .PHONY: check-format
 check-format::
-	$(CARGO) fmt -- --force --write-mode diff \
+	$(CARGO) fmt -- --check \
 	|| echo "# Changes detected.  Run 'make format' to apply changes."
 
 .PHONY: format
 format::
-	$(CARGO) fmt -- --force --write-mode overwrite
+	$(CARGO) fmt
