@@ -4,8 +4,9 @@ prefix ?= $(HOME)/.cargo
 # External commands and flags.
 CARGO ?= cargo
 CARGO_FLAGS =
-CARGO_PACKAGE = garden-tools
+MDBOOK ?= mdbook
 
+CARGO_PACKAGE = garden-tools
 ifndef debug
     CARGO_FLAGS += --release
 endif
@@ -36,6 +37,7 @@ clean::
 .PHONY: doc
 doc::
 	$(CARGO) doc --no-deps --package $(CARGO_PACKAGE)
+	cd doc && $(MDBOOK) build
 
 
 # Installation
@@ -43,6 +45,12 @@ doc::
 .PHONY: install
 install::
 	$(CARGO) install --path . --root '$(DESTDIR)$(prefix)'
+
+
+.PHONY: install-doc
+install-doc:: doc
+	mkdir -p $(DESTDIR)$(prefix)/share/doc/garden
+	rsync -r doc/book/ $(DESTDIR)$(prefix)/share/doc/garden/
 
 
 # Integration tests
