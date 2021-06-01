@@ -18,6 +18,24 @@ fn expand_tree_vars(
         return Ok(Some(format!("${}", name)));
     }
 
+    // Special-case evaluation of ${graft::values}.
+    if syntax::is_graft(name) {
+        // TODO: make the error messages more precise by including the tree
+        // details by looking up the tree in the configuration.
+        let (ok, graft_name, _remainder) = syntax::split_graft(name);
+        if !ok {
+            return Err(format!("Invalid graft: {}", name));
+        }
+
+        let graft = config
+            .get_graft(graft_name)
+            .map_err(|_err| format!("Invalid graft: {}", graft_name))?;
+
+        // TODO recurse on the remainder and evaluate it using the ConfigId
+        // for the graft.
+        let _graft_id = graft.get_id().ok_or(format!("Invalid graft: {}", name))?;
+    }
+
     let mut var_idx: usize = 0;
     let mut found = false;
 
@@ -101,6 +119,14 @@ fn expand_tree_vars(
     Ok(Some("".to_string()))
 }
 
+/// Expand variables using a tree context.
+fn _expand_tree_context_vars(
+    _app: &model::ApplicationContext,
+    _tree_context: &model::TreeContext,
+    _name: &str,
+) -> Result<Option<String>, String> {
+    Ok(None)
+}
 
 /// Expand variables at global scope only
 fn expand_vars(config: &model::Configuration, name: &str) -> Result<Option<String>, String> {

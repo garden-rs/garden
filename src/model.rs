@@ -592,6 +592,33 @@ impl Graft {
     }
 }
 
+// TODO EvalContext
+#[derive(Clone, Debug)]
+pub struct EvalContext {
+    pub config: ConfigId,
+    pub tree: Option<TreeIndex>,
+    pub garden: Option<GardenIndex>,
+    pub group: Option<GroupIndex>,
+}
+
+impl_display_brief!(EvalContext);
+
+impl EvalContext {
+    /// Construct a new EvalContext.
+    pub fn new(
+        config: ConfigId,
+        tree: Option<TreeIndex>,
+        garden: Option<GardenIndex>,
+        group: Option<GroupIndex>,
+    ) -> Self {
+        EvalContext {
+            config,
+            tree,
+            garden,
+            group,
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct TreeContext {
