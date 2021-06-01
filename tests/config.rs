@@ -2,7 +2,6 @@ mod common;
 
 use anyhow::Result;
 
-
 /// Defaults
 #[test]
 fn config_default() {
@@ -12,7 +11,6 @@ fn config_default() {
     assert_eq!("", config.root.get_expr());
 }
 
-
 /// Core garden settings
 #[test]
 fn core() {
@@ -20,7 +18,7 @@ fn core() {
     garden:
         root: /tmp
     "#
-        .to_string();
+    .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(std::path::PathBuf::from("/tmp"), config.root_path);
@@ -36,7 +34,7 @@ fn variables() {
         foo: foo_value
         bar: ${foo}
     "#
-        .to_string();
+    .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(3, config.variables.len());
@@ -67,7 +65,7 @@ fn commands() {
             - echo first
             - echo second
     "#
-        .to_string();
+    .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(2, config.commands.len());
@@ -81,7 +79,6 @@ fn commands() {
     assert_eq!("echo first", config.commands[1].get(0).get_expr());
     assert_eq!("echo second", config.commands[1].get(1).get_expr());
 }
-
 
 /// Templates
 #[test]
@@ -106,7 +103,7 @@ fn templates() {
             variables:
                 foo: boo
     "#
-        .to_string();
+    .to_string();
 
     let config = common::from_string(&string);
     assert_eq!(3, config.templates.len());
@@ -150,7 +147,6 @@ fn templates() {
     assert_eq!("foo", config.templates[2].variables[0].get_name());
     assert_eq!("boo", config.templates[2].variables[0].get_expr());
 }
-
 
 /// Groups
 #[test]
@@ -297,7 +293,6 @@ fn trees() {
     );
 }
 
-
 /// Gardens
 #[test]
 fn gardens() {
@@ -337,7 +332,7 @@ fn gardens_json() {
     }
 }
     "#
-        .to_string();
+    .to_string();
 
     let config = common::from_string(&string);
     test_gardens(&config);
@@ -409,7 +404,6 @@ fn test_gardens(config: &garden::model::Configuration) {
     );
 }
 
-
 #[test]
 fn tree_path() {
     let config = common::garden_config();
@@ -441,7 +435,6 @@ fn test_template_url() {
     assert_eq!("origin", tree.remotes[0].get_name());
     assert_eq!("${local}/${TREE_NAME}", tree.remotes[0].get_expr());
 }
-
 
 #[test]
 fn read_grafts() -> Result<()> {

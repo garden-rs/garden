@@ -39,7 +39,6 @@ macro_rules! error {
     }
 }
 
-
 /// Implement std::display::Display with a custom format
 /// Parameters:
 /// - `struct_name`: The struct to extend.
@@ -48,14 +47,12 @@ macro_rules! error {
 macro_rules! impl_display_fmt {
     ($struct_name:ident, $format:expr) => {
         impl std::fmt::Display for $struct_name {
-            fn fmt(&self, formatter: &mut std::fmt::Formatter)
-            -> std::fmt::Result {
+            fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
                 return write!(formatter, $format, self);
             }
         }
-    }
+    };
 }
-
 
 /// Implement std::display::Display with a pretty-print format
 /// Parameters:
@@ -64,9 +61,8 @@ macro_rules! impl_display_fmt {
 macro_rules! impl_display {
     ($x:ident) => {
         impl_display_fmt!($x, "{:#?}");
-    }
+    };
 }
-
 
 /// Implement std::display::Display with a brief debug format
 /// Parameters:
@@ -75,5 +71,5 @@ macro_rules! impl_display {
 macro_rules! impl_display_brief {
     ($x:ident) => {
         impl_display_fmt!($x, "{:?}");
-    }
+    };
 }

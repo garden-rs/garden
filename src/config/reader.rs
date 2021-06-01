@@ -1,11 +1,10 @@
-use yaml_rust::yaml::Yaml;
 use yaml_rust::yaml::Hash as YamlHash;
+use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
 
 use super::super::errors;
 use super::super::model;
 use super::super::path;
-
 
 // Apply YAML Configuration from a string.
 pub fn parse(
@@ -13,11 +12,9 @@ pub fn parse(
     verbose: bool,
     config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-
-    let docs = YamlLoader::load_from_str(string).map_err(|scan_err| {
-        errors::GardenError::ReadConfig { err: scan_err }
-    })?;
-    if docs.len() < 1 {
+    let docs = YamlLoader::load_from_str(string)
+        .map_err(|scan_err| errors::GardenError::ReadConfig { err: scan_err })?;
+    if docs.is_empty() {
         return Err(errors::GardenError::EmptyConfiguration {
             path: config.get_path()?.into(),
         });
@@ -127,13 +124,11 @@ pub fn parse(
     Ok(())
 }
 
-
 fn print_indent(indent: usize) {
     for _ in 0..indent {
         print!("    ");
     }
 }
-
 
 fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
     match *doc {
@@ -167,7 +162,6 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
     }
 }
 
-
 /// Yaml -> String
 fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     if let Yaml::String(yaml_string) = yaml {
@@ -177,10 +171,8 @@ fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     !string.is_empty()
 }
 
-
 /// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
 fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
-
     if let Yaml::String(yaml_string) = yaml {
         vec.push(yaml_string.clone());
         return true;
@@ -194,9 +186,9 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
         }
         return true;
     }
-    return false;
-}
 
+    false
+}
 
 /// Read NamedVariable definitions (variables)
 fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
@@ -245,9 +237,9 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
         }
         return true;
     }
-    return false;
-}
 
+    false
+}
 
 fn bool_to_string(value: &bool) -> String {
     match *value {
@@ -291,9 +283,9 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
         }
         return true;
     }
-    return false;
-}
 
+    false
+}
 
 /// Read template definitions
 fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
@@ -303,23 +295,20 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
         }
         return true;
     }
-    return false;
-}
 
+    false
+}
 
 /// Read a single template definition
 fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template {
-
     let mut template = model::Template::default();
     get_str(&name, template.get_name_mut());
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
-            template.remotes.push(model::NamedVariable::new(
-                "origin".to_string(),
-                url,
-                None,
-            ));
+            template
+                .remotes
+                .push(model::NamedVariable::new("origin".to_string(), url, None));
         }
     }
 
@@ -365,9 +354,8 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
         }
     }
 
-    return template;
+    template
 }
-
 
 /// Read tree definitions
 fn get_trees(yaml: &Yaml, templates: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
@@ -381,10 +369,9 @@ fn get_trees(yaml: &Yaml, templates: &Yaml, trees: &mut Vec<model::Tree>) -> boo
         }
         return true;
     }
-    return false;
+
+    false
 }
-
-
 
 /// Return a tree from a simple "tree: <url>" entry
 fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
@@ -423,7 +410,6 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     tree
 }
 
-
 /// Read a single tree definition
 fn get_tree(
     name: &Yaml,
@@ -432,7 +418,6 @@ fn get_tree(
     trees: &YamlHash,
     variables: bool,
 ) -> model::Tree {
-
     let mut tree = model::Tree::default();
 
     // Allow extending an existing tree by specifying "extend".
@@ -462,11 +447,7 @@ fn get_tree(
         // Register the ${TREE_NAME} variable.
         tree.variables.insert(
             0,
-            model::NamedVariable::new(
-                "TREE_NAME".to_string(),
-                tree.get_name().clone(),
-                None,
-            ),
+            model::NamedVariable::new("TREE_NAME".to_string(), tree.get_name().clone(), None),
         );
         // Register the ${TREE_PATH} variable.
         tree.variables.insert(
@@ -482,11 +463,8 @@ fn get_tree(
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
-            tree.remotes.push(model::NamedVariable::new(
-                "origin".to_string(),
-                url,
-                None,
-            ));
+            tree.remotes
+                .push(model::NamedVariable::new("origin".to_string(), url, None));
         }
     }
 
@@ -543,7 +521,6 @@ fn get_tree(
     tree
 }
 
-
 /// Read Git remote repository definitions
 fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
     if let Yaml::Hash(ref hash) = yaml {
@@ -559,7 +536,6 @@ fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
     }
 }
 
-
 /// Read group definitions
 fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
@@ -571,9 +547,9 @@ fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
         }
         return true;
     }
-    return false;
-}
 
+    false
+}
 
 /// Read garden definitions
 fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
@@ -591,9 +567,9 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
         }
         return true;
     }
-    return false;
-}
 
+    false
+}
 
 /// Read a grafts: block into a Vec<Graft>.
 fn get_grafts(yaml: &Yaml, grafts: &mut Vec<model::Graft>) -> bool {
@@ -607,7 +583,6 @@ fn get_grafts(yaml: &Yaml, grafts: &mut Vec<model::Graft>) -> bool {
         false
     }
 }
-
 
 fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
     let mut graft_name = "".to_string();
@@ -628,25 +603,21 @@ fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
     model::Graft::new(graft_name, root, config)
 }
 
-
 /// Read and parse YAML from a file path.
 pub fn read_yaml<P>(path: P) -> Result<Yaml, errors::GardenError>
 where
     P: std::convert::AsRef<std::path::Path> + std::fmt::Debug,
 {
-
-    let string = std::fs::read_to_string(&path).map_err(|io_err| {
-        errors::GardenError::ReadFile {
+    let string =
+        std::fs::read_to_string(&path).map_err(|io_err| errors::GardenError::ReadFile {
             path: path.as_ref().into(),
             err: io_err,
-        }
-    })?;
+        })?;
 
-    let mut docs = YamlLoader::load_from_str(&string).map_err(|scan_err| {
-        errors::GardenError::ReadConfig { err: scan_err }
-    })?;
+    let mut docs = YamlLoader::load_from_str(&string)
+        .map_err(|scan_err| errors::GardenError::ReadConfig { err: scan_err })?;
 
-    if docs.len() < 1 {
+    if docs.is_empty() {
         return Err(errors::GardenError::EmptyConfiguration {
             path: path.as_ref().into(),
         });
@@ -656,7 +627,6 @@ where
 
     Ok(docs[0].clone())
 }
-
 
 fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     // Garden core
@@ -716,7 +686,6 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
 
     Ok(())
 }
-
 
 pub fn empty_doc() -> Yaml {
     let mut doc = Yaml::Hash(YamlHash::new());

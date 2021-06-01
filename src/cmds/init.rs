@@ -1,14 +1,12 @@
 use anyhow::Result;
-use argparse;
-use yaml_rust::yaml::Yaml;
 use yaml_rust::yaml::Hash as YamlHash;
+use yaml_rust::yaml::Yaml;
 
 use super::super::cmd;
 use super::super::config;
 use super::super::errors;
 use super::super::model;
 use super::super::path;
-
 
 struct InitOptions {
     pub dirname: std::path::PathBuf,
@@ -30,9 +28,7 @@ impl std::default::Default for InitOptions {
     }
 }
 
-
 pub fn main(options: &mut model::CommandOptions) -> Result<()> {
-
     let mut init_options = InitOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
@@ -71,26 +67,24 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
     init(options, &mut init_options)
 }
 
-
 fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Result<()> {
-
     let file_path = std::path::PathBuf::from(&init_options.filename);
     if file_path.is_absolute() {
         if init_options.global {
-            return Err(
-                errors::GardenError::Usage(
-                    "'--global' cannot be used with an absolute path".into(),
-                ).into(),
-            );
+            return Err(errors::GardenError::Usage(
+                "'--global' cannot be used with an absolute path".into(),
+            )
+            .into());
         }
 
         init_options.dirname = file_path
             .parent()
             .as_ref()
             .ok_or_else(|| {
-                errors::GardenError::AssertionError(
-                    format!("unable to get parent(): {:?}", file_path),
-                )
+                errors::GardenError::AssertionError(format!(
+                    "unable to get parent(): {:?}",
+                    file_path
+                ))
             })?
             .to_path_buf();
 
@@ -98,9 +92,10 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
             .file_name()
             .as_ref()
             .ok_or_else(|| {
-                errors::GardenError::AssertionError(
-                    format!("unable to get file path: {:?}", file_path),
-                )
+                errors::GardenError::AssertionError(format!(
+                    "unable to get file path: {:?}",
+                    file_path
+                ))
             })?
             .to_string_lossy()
             .to_string();
@@ -125,9 +120,10 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
         .parent()
         .as_ref()
         .ok_or_else(|| {
-            errors::GardenError::AssertionError(
-                format!("unable to get parent(): {:?}", config_path),
-            )
+            errors::GardenError::AssertionError(format!(
+                "unable to get parent(): {:?}",
+                config_path
+            ))
         })?
         .to_path_buf();
 
@@ -156,11 +152,10 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
             let garden: &mut YamlHash = match doc_hash.get_mut(&garden_key) {
                 Some(Yaml::Hash(ref mut hash)) => hash,
                 _ => {
-                    return Err(
-                        errors::GardenError::InvalidConfiguration {
-                            msg: "invalid configuration: 'garden' is not a hash".into(),
-                        }.into(),
-                    );
+                    return Err(errors::GardenError::InvalidConfiguration {
+                        msg: "invalid configuration: 'garden' is not a hash".into(),
+                    }
+                    .into());
                 }
             };
 

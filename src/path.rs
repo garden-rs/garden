@@ -1,6 +1,3 @@
-use dirs;
-
-
 pub fn current_dir() -> std::path::PathBuf {
     std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
 }

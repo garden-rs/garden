@@ -1,9 +1,7 @@
 use anyhow::Result;
-use argparse;
 
 use super::super::cmd;
 use super::super::model;
-
 
 /// Entry point for `garden help`
 /// Parameters:
@@ -30,17 +28,15 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
 
     // garden help foo -> garden foo --help
     if !cmd_name.is_empty() {
-        help_cmd.push(cmd_name.clone());
+        help_cmd.push(cmd_name);
     }
 
     help_cmd.push("--help".into());
 
     if options.verbose {
         debug!("help command");
-        let mut i: i32 = 0;
-        for arg in &help_cmd {
+        for (i, arg) in help_cmd.iter().enumerate() {
             debug!("help_cmd[{:02}] = {:?}", i, arg);
-            i += 1;
         }
     }
 

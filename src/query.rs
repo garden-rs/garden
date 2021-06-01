@@ -3,7 +3,6 @@ use super::model;
 use super::query;
 use super::syntax;
 
-
 /// Resolve a tree query into a `Vec<garden::model::TreeContext>`.
 ///
 /// Parameters:
@@ -15,11 +14,11 @@ use super::syntax;
 pub fn resolve_trees(config: &model::Configuration, query: &str) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
     let tree_query = model::TreeQuery::new(query);
-    let ref pattern = tree_query.pattern;
+    let pattern = &tree_query.pattern;
 
     if tree_query.include_gardens {
         result = garden_trees(config, pattern);
-        if result.len() > 0 {
+        if !result.is_empty() {
             return result;
         }
     }
@@ -33,7 +32,7 @@ pub fn resolve_trees(config: &model::Configuration, query: &str) -> Vec<model::T
             // Matching group found, collect its trees
             result.append(&mut trees_from_group(config, None, group));
         }
-        if result.len() > 0 {
+        if !result.is_empty() {
             return result;
         }
     }
@@ -42,7 +41,7 @@ pub fn resolve_trees(config: &model::Configuration, query: &str) -> Vec<model::T
     // Search for matching trees.
     if tree_query.include_trees {
         result.append(&mut trees(config, pattern));
-        if result.len() > 0 {
+        if !result.is_empty() {
             return result;
         }
     }
@@ -60,7 +59,6 @@ pub fn resolve_trees(config: &model::Configuration, query: &str) -> Vec<model::T
     result
 }
 
-
 /// Return tree contexts for every garden matching the specified pattern.
 /// Parameters:
 /// - config: `&garden::model::Configuration`
@@ -70,7 +68,6 @@ pub fn garden_trees(
     config: &model::Configuration,
     pattern: &glob::Pattern,
 ) -> Vec<model::TreeContext> {
-
     let mut result = Vec::new();
 
     for garden in &config.gardens {
@@ -83,13 +80,11 @@ pub fn garden_trees(
     result
 }
 
-
 /// Return the tree contexts for a garden
 pub fn trees_from_garden(
     config: &model::Configuration,
     garden: &model::Garden,
 ) -> Vec<model::TreeContext> {
-
     let mut result = Vec::new();
 
     // Loop over the garden's groups.
@@ -147,7 +142,6 @@ pub fn trees_from_group(
     result
 }
 
-
 /// Find a tree by name
 /// Parameters:
 /// - config: `&garden::model::Configuration`
@@ -160,8 +154,6 @@ pub fn tree_from_name(
     garden_idx: Option<model::GardenIndex>,
     group_idx: Option<model::GroupIndex>,
 ) -> Option<model::TreeContext> {
-
-
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
         if cfg_tree.get_name() == tree {
@@ -226,16 +218,14 @@ pub fn trees_from_pattern(
         }
     }
 
-
     result
 }
-
 
 /// Return a tree context for the specified filesystem path.
 
 pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model::TreeContext> {
     let pathbuf = match std::path::PathBuf::from(path).canonicalize() {
-        Ok(canon) => canon.to_path_buf(),
+        Ok(canon) => canon,
         Err(_) => return None,
     };
 
@@ -265,7 +255,6 @@ pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model
 /// Returns tree contexts matching the specified pattern
 
 fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::TreeContext> {
-
     let mut result = Vec::new();
     for (tree_idx, tree) in config.trees.iter().enumerate() {
         if pattern.matches(tree.get_name()) {
@@ -281,7 +270,6 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::T
     result
 }
 
-
 /// Return a Result<garden::model::TreeContext, garden::errors::GardenError>
 /// when the tree and optional garden are present.
 
@@ -290,25 +278,25 @@ pub fn tree_context(
     tree: &str,
     garden: Option<&str>,
 ) -> Result<model::TreeContext, GardenError> {
-
     let mut ctx = model::TreeContext::new(0, config.get_id(), None, None);
     // TODO: grafted trees
     if let Some(context) = tree_from_name(&config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
-        return Err(GardenError::TreeNotFound { tree: tree.into() }.into());
+        return Err(GardenError::TreeNotFound { tree: tree.into() });
     }
 
     if let Some(garden_name) = garden {
-        let pattern = glob::Pattern::new(garden_name).map_err(|_| {
-            GardenError::GardenPatternError { garden: garden_name.into() }
-        })?;
+        let pattern =
+            glob::Pattern::new(garden_name).map_err(|_| GardenError::GardenPatternError {
+                garden: garden_name.into(),
+            })?;
         let contexts = query::garden_trees(config, &pattern);
 
         if contexts.is_empty() {
-            return Err(
-                GardenError::GardenNotFound { garden: garden_name.into() }.into(),
-            );
+            return Err(GardenError::GardenNotFound {
+                garden: garden_name.into(),
+            });
         }
 
         let mut found = false;
@@ -321,18 +309,15 @@ pub fn tree_context(
         }
 
         if !found {
-            return Err(
-                GardenError::InvalidGardenArgument {
-                    tree: tree.into(),
-                    garden: garden_name.into(),
-                }.into(),
-            );
+            return Err(GardenError::InvalidGardenArgument {
+                tree: tree.into(),
+                garden: garden_name.into(),
+            });
         }
     }
 
     Ok(ctx)
 }
-
 
 pub fn find_tree(
     app: &model::ApplicationContext,
@@ -340,7 +325,6 @@ pub fn find_tree(
     tree: &str,
     garden: Option<&str>,
 ) -> Result<model::TreeContext, GardenError> {
-
     {
         let config = app.get_config(id);
         if let Some(graft_name) = syntax::graft_basename(tree) {

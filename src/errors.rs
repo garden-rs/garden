@@ -1,6 +1,5 @@
 use thiserror::Error;
 
-
 #[derive(Error, Debug)]
 pub enum GardenError {
     #[error("assertion error: {0}")]
@@ -71,7 +70,6 @@ pub enum GardenError {
     WriteConfigurationError { path: std::path::PathBuf },
 }
 
-
 // /usr/include/sysexits.h
 pub const EX_OK: i32 = 0;
 pub const EX_USAGE: i32 = 64;
@@ -82,7 +80,6 @@ pub const EX_CANTCREAT: i32 = 73;
 pub const EX_IOERR: i32 = 74;
 pub const EX_CONFIG: i32 = 78;
 
-
 impl std::convert::From<GardenError> for i32 {
     fn from(garden_err: GardenError) -> Self {
         match garden_err {
@@ -90,7 +87,7 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::ConfigurationError(_) => EX_CONFIG,
             GardenError::CreateConfigurationError { .. } => EX_CANTCREAT,
             GardenError::EmptyConfiguration { .. } => EX_CONFIG,
-            GardenError::ExitStatus(status) => status,  // Explicit exit code
+            GardenError::ExitStatus(status) => status, // Explicit exit code
             GardenError::FileExists(_) => EX_CANTCREAT,
             GardenError::FileNotFound => EX_IOERR,
             GardenError::GardenNotFound { .. } => EX_USAGE,

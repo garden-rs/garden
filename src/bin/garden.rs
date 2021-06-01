@@ -6,7 +6,6 @@ use garden::config;
 use garden::errors;
 use garden::model;
 
-
 fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
@@ -33,7 +32,6 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-
 fn cmd_main() -> Result<()> {
     let mut options = parse_args();
 
@@ -58,17 +56,15 @@ fn cmd_main() -> Result<()> {
         model::Command::Exec => cmds::exec::main(&mut app),
         model::Command::Eval => cmds::eval::main(&mut app),
         model::Command::Grow => cmds::grow::main(&mut app),
-        model::Command::Help => Ok(()),  // Handled above
-        model::Command::Init => Ok(()),  // Handled above
+        model::Command::Help => Ok(()), // Handled above
+        model::Command::Init => Ok(()), // Handled above
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
     }
 }
 
-
 fn parse_args() -> model::CommandOptions {
-
     let color_names = model::ColorMode::names();
     let color_help = format!("set color mode {{{}}}", color_names);
 
@@ -90,11 +86,8 @@ fn parse_args() -> model::CommandOptions {
             "chdir before searching for configuration",
         );
 
-        ap.refer(&mut options.color_mode).add_option(
-            &["--color"],
-            argparse::Store,
-            &color_help,
-        );
+        ap.refer(&mut options.color_mode)
+            .add_option(&["--color"], argparse::Store, &color_help);
 
         ap.refer(&mut options.debug).add_option(
             &["-d", "--debug"],
@@ -132,11 +125,8 @@ fn parse_args() -> model::CommandOptions {
             "{add, cmd, eval, exec, grow, help, init, inspect, ls, shell, <custom>}",
         );
 
-        ap.refer(&mut options.args).add_argument(
-            "arguments",
-            argparse::List,
-            "command arguments",
-        );
+        ap.refer(&mut options.args)
+            .add_argument("arguments", argparse::List, "command arguments");
 
         ap.parse_args_or_exit();
     }

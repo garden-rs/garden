@@ -2,7 +2,6 @@ mod common;
 
 use anyhow::Result;
 
-
 #[test]
 fn garden_root() {
     // The test has garden.root = ${root}
@@ -15,7 +14,6 @@ fn garden_root() {
     assert_eq!(expect_src_dir, config.root_path.to_string_lossy());
 }
 
-
 #[test]
 fn tree_variable() {
     let config = common::garden_config();
@@ -23,7 +21,6 @@ fn tree_variable() {
     let result = garden::eval::tree_value(&config, "${prefix}", tree_idx, None);
     assert_eq!(result, "/home/test/.local");
 }
-
 
 #[test]
 fn config_variable() {
@@ -37,7 +34,6 @@ fn config_variable() {
     assert_eq!("TEST/local", local);
 }
 
-
 /// ${TREE_NAME} should be set to the current tree's name
 #[test]
 fn tree_name() {
@@ -47,7 +43,6 @@ fn tree_name() {
     let actual = garden::eval::tree_value(&config, "${TREE_NAME}", tree_idx, None);
     assert_eq!(expect, actual);
 }
-
 
 /// ${TREE_PATH} should be set to the current tree's path
 #[test]
@@ -59,7 +54,6 @@ fn tree_path() {
     assert_eq!(expect, actual);
 }
 
-
 /// ${GARDEN_ROOT} should be set to the garden.root configuration
 #[test]
 fn garden_path() {
@@ -68,7 +62,6 @@ fn garden_path() {
     let actual = garden::eval::value(&config, "${GARDEN_ROOT}");
     assert_eq!(expect, actual);
 }
-
 
 #[test]
 fn exec_expression() {
@@ -87,7 +80,6 @@ fn exec_expression() {
     let value = garden::eval::value(&config, "${echo_cmd_exec}");
     assert_eq!(value, "cmd");
 }
-
 
 #[test]
 fn multi_variable_with_tree() {
@@ -129,7 +121,6 @@ fn multi_variable_with_garden() {
     );
 }
 
-
 #[test]
 fn garden_environment() {
     let config = common::garden_config();
@@ -155,8 +146,7 @@ fn garden_environment() {
         values[idx].1,
         format!(
             "{}:{}:/usr/bin:/bin",
-            "/home/test/src/git-cola/bin",
-            "/home/test/apps/git-cola/current/bin"
+            "/home/test/src/git-cola/bin", "/home/test/apps/git-cola/current/bin"
         )
     );
 
@@ -223,8 +213,7 @@ fn group_environment() {
         values[idx].1,
         format!(
             "{}:{}:/usr/bin:/bin",
-            "/home/test/src/git-cola/bin",
-            "/home/test/src/git-cola/local/bin"
+            "/home/test/src/git-cola/bin", "/home/test/src/git-cola/local/bin"
         )
     );
 
@@ -276,7 +265,6 @@ fn environment_empty_value() {
     assert_eq!(values.len(), idx);
 }
 
-
 #[test]
 fn command_garden_scope() -> Result<()> {
     let config = common::garden_config();
@@ -296,7 +284,6 @@ fn command_garden_scope() -> Result<()> {
 
     Ok(())
 }
-
 
 #[test]
 fn command_tree_scope() -> Result<()> {
@@ -328,12 +315,10 @@ fn command_tree_scope() -> Result<()> {
         assert_eq!(values[1].len(), 2);
         assert_eq!(values[1][0], "git status --short");
         assert_eq!(values[1][1], "make tox");
-
     }
 
     Ok(())
 }
-
 
 #[test]
 fn environment_variables() {
@@ -347,7 +332,6 @@ fn environment_variables() {
     let value = garden::eval::tree_value(&config, "${GARDEN_TEST_VALUE}", 0, None);
     assert_eq!(value, "test");
 }
-
 
 #[test]
 fn find_tree_in_graft() -> Result<()> {

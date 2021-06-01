@@ -13,7 +13,6 @@ fn resolve_trees_default_query_finds_garden() {
     assert_eq!(2, result[2].tree);
 }
 
-
 #[test]
 fn resolve_trees_tree_query_wildcard() {
     let config = common::garden_config();
@@ -23,7 +22,6 @@ fn resolve_trees_tree_query_wildcard() {
     assert_eq!(None, result[0].group);
     assert_eq!(1, result[0].tree);
 }
-
 
 #[test]
 fn resolve_trees_group_query() {

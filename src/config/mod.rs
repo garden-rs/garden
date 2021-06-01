@@ -1,5 +1,3 @@
-use xdg;
-
 use super::errors;
 use super::model;
 use super::model::ConfigId;
@@ -10,7 +8,6 @@ pub mod reader;
 
 /// YAML writer
 pub mod writer;
-
 
 // Search for configuration in the following locations:
 //  .
@@ -28,17 +25,17 @@ fn search_path() -> Vec<std::path::PathBuf> {
     let home_dir = path::home_dir();
 
     // . Current directory
-    paths.push(current_dir.to_path_buf());
+    paths.push(current_dir.clone());
 
     // ./garden
-    let mut current_garden_dir = current_dir.to_path_buf();
+    let mut current_garden_dir = current_dir.clone();
     current_garden_dir.push("garden");
     if current_garden_dir.exists() {
         paths.push(current_garden_dir);
     }
 
     // ./etc/garden
-    let mut current_etc_garden_dir = current_dir.to_path_buf();
+    let mut current_etc_garden_dir = current_dir;
     current_etc_garden_dir.push("etc");
     current_etc_garden_dir.push("garden");
     if current_etc_garden_dir.exists() {
@@ -49,7 +46,7 @@ fn search_path() -> Vec<std::path::PathBuf> {
     paths.push(xdg_dir());
 
     // ~/etc/garden
-    let mut home_etc_dir = home_dir.to_path_buf();
+    let mut home_etc_dir = home_dir;
     home_etc_dir.push("etc");
     home_etc_dir.push("garden");
     if home_etc_dir.exists() {
@@ -64,7 +61,6 @@ fn search_path() -> Vec<std::path::PathBuf> {
 
     paths
 }
-
 
 /// $XDG_CONFIG_HOME/garden (typically ~/.config/garden)
 pub fn xdg_dir() -> std::path::PathBuf {
@@ -81,14 +77,12 @@ pub fn xdg_dir() -> std::path::PathBuf {
     home_config_dir
 }
 
-
 pub fn new(
     config: &Option<std::path::PathBuf>,
     root: &str,
     verbose: bool,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
-
     let mut cfg = model::Configuration::new();
     if let Some(parent_id) = parent {
         cfg.set_parent(parent_id);
@@ -132,9 +126,7 @@ pub fn new(
     if verbose {
         debug!(
             "config: path: {:?}, root: {:?}, found: {}",
-            cfg.path,
-            cfg.root,
-            found
+            cfg.path, cfg.root, found
         );
     }
 
@@ -158,7 +150,6 @@ pub fn new(
     Ok(cfg)
 }
 
-
 /// Read configuration from a path.  Wraps new() to make the path required..
 pub fn from_path(
     path: std::path::PathBuf,
@@ -166,10 +157,8 @@ pub fn from_path(
     verbose: bool,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
-
     new(&Some(path), root, verbose, parent)
 }
-
 
 /// Read configuration from a path string.  Wraps from_path() to simplify usage.
 pub fn from_path_string(
@@ -178,8 +167,6 @@ pub fn from_path_string(
 ) -> Result<model::Configuration, errors::GardenError> {
     from_path(std::path::PathBuf::from(path), "", verbose, None)
 }
-
-
 
 /// Create a model::Configuration instance from model::CommandOptions
 pub fn from_options(
@@ -199,7 +186,7 @@ pub fn from_options(
     for k_eq_v in &options.variables {
         let name: String;
         let expr: String;
-        let values: Vec<&str> = k_eq_v.splitn(2, "=").collect();
+        let values: Vec<&str> = k_eq_v.splitn(2, '=').collect();
         if values.len() == 1 {
             name = values[0].into();
             expr = "".into();
@@ -209,10 +196,9 @@ pub fn from_options(
         } else {
             error!("unable to split '{}'", k_eq_v);
         }
-        config.variables.insert(
-            0,
-            model::NamedVariable::new(name, expr, None),
-        );
+        config
+            .variables
+            .insert(0, model::NamedVariable::new(name, expr, None));
     }
 
     Ok(config)
@@ -224,7 +210,6 @@ pub fn parse(
     verbose: bool,
     cfg: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-
     reader::parse(&config_string, verbose, cfg)?;
     // Initialize the configuration now that the values have been read.
     cfg.initialize();
@@ -232,10 +217,8 @@ pub fn parse(
     Ok(())
 }
 
-
 /// Read grafts into the root configuration on down.
 pub fn read_grafts(app: &mut model::ApplicationContext) -> Result<(), errors::GardenError> {
-
     let root_id = app.get_root_id();
     read_grafts_recursive(app, root_id)
 }
@@ -245,7 +228,6 @@ fn read_grafts_recursive(
     app: &mut model::ApplicationContext,
     id: ConfigId,
 ) -> Result<(), errors::GardenError> {
-
     // Defer the recursive calls to avoid an immutable borrow from preventing us from
     // recursively taking an immutable borrow.
     //

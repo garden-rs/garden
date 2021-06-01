@@ -1,12 +1,10 @@
 use garden::syntax;
 
-
 #[test]
 fn is_garden() {
     assert!(syntax::is_garden(":garden"), ":garden is a garden");
     assert!(!syntax::is_garden("garden"), "garden is not a garden");
 }
-
 
 #[test]
 fn is_graft() {
@@ -14,20 +12,17 @@ fn is_graft() {
     assert!(!syntax::is_graft("foo"), "foo is not a graft");
 }
 
-
 #[test]
 fn is_group() {
     assert!(syntax::is_group("%group"), "%group is a group");
     assert!(!syntax::is_group("group"), "group is not a group");
 }
 
-
 #[test]
 fn is_tree() {
     assert!(syntax::is_tree("@tree"), "@tree is a tree");
     assert!(!syntax::is_tree("tree"), "tree is not a tree");
 }
-
 
 #[test]
 fn split_string_ok() {
@@ -37,7 +32,6 @@ fn split_string_ok() {
     assert_eq!(post, "bar");
 }
 
-
 #[test]
 fn split_string_empty() {
     let (ok, pre, post) = syntax::split_string("foo::", "::");
@@ -45,7 +39,6 @@ fn split_string_empty() {
     assert_eq!(pre, "foo");
     assert_eq!(post, "");
 }
-
 
 #[test]
 fn split_string_not_found() {
@@ -55,7 +48,6 @@ fn split_string_not_found() {
     assert_eq!(post, "");
 }
 
-
 #[test]
 fn split_graft_ok() {
     let (ok, pre, post) = syntax::split_graft("foo::bar");
@@ -63,7 +55,6 @@ fn split_graft_ok() {
     assert_eq!(pre, "foo");
     assert_eq!(post, "bar");
 }
-
 
 #[test]
 fn split_graft_nested_ok() {
@@ -73,7 +64,6 @@ fn split_graft_nested_ok() {
     assert_eq!(post, "bar::baz");
 }
 
-
 #[test]
 fn split_graft_empty() {
     let (ok, pre, post) = syntax::split_graft("foo::");
@@ -82,7 +72,6 @@ fn split_graft_empty() {
     assert_eq!(post, "");
 }
 
-
 #[test]
 fn split_graft_not_found() {
     let (ok, pre, post) = syntax::split_graft("foo");
@@ -90,7 +79,6 @@ fn split_graft_not_found() {
     assert_eq!(pre, "foo");
     assert_eq!(post, "");
 }
-
 
 #[test]
 fn trim_exec() {
@@ -101,7 +89,6 @@ fn trim_exec() {
     assert_eq!("$", syntax::trim_exec("$"));
     assert_eq!("", syntax::trim_exec(""));
 }
-
 
 #[test]
 fn trim_graft() {
@@ -128,7 +115,6 @@ fn trim_graft() {
     let value = syntax::trim_graft("foo");
     assert!(value.is_none());
 }
-
 
 #[test]
 fn graft_basename() {

@@ -1,10 +1,6 @@
-use argparse;
-use subprocess;
-
 use super::errors;
 use super::eval;
 use super::model;
-
 
 /// Return a subprocess::Exec instance from a command vector.
 pub fn run<S>(cmd: &[S]) -> Result<(), errors::GardenError>
@@ -20,15 +16,13 @@ where
     result_from_exit_status(exit_status)
 }
 
-
 /// Convert an exit status to Result<(), GardenError>.
 pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
     match exit_status {
         0 => Ok(()),
-        _ => Err(errors::GardenError::ExitStatus(exit_status).into()),
+        _ => Err(errors::GardenError::ExitStatus(exit_status)),
     }
 }
-
 
 /// Extract the return status from subprocess::Result<subprocess::ExitStatus>.
 pub fn status(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
@@ -57,7 +51,6 @@ pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
     capture.stdout_str().trim_end().into()
 }
 
-
 /// Return a CaptureData result for a subprocess's stdout.
 pub fn capture_stdout(
     exec: subprocess::Exec,
@@ -65,13 +58,11 @@ pub fn capture_stdout(
     exec.stdout(subprocess::Redirection::Pipe).capture()
 }
 
-
 /// Return a `subprocess::Exec` for a command.
 pub fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
 where
     S: AsRef<std::ffi::OsStr>,
 {
-
     if command.len() > 1 {
         subprocess::Exec::cmd(&command[0]).args(&command[1..])
     } else {
@@ -132,13 +123,11 @@ where
     result_from_exit_status(status(exec.join()))
 }
 
-
-
 /// The command might be a path that only exists inside the resolved
 /// environment.  Resolve the path by looking for the presence of PATH
 /// and updating the command when it exists.
 
-pub fn resolve_command<S>(command: &[S], env: &Vec<(String, String)>) -> Vec<String>
+pub fn resolve_command<S>(command: &[S], env: &[(String, String)]) -> Vec<String>
 where
     S: AsRef<std::ffi::OsStr>,
 {
@@ -186,7 +175,6 @@ pub fn split_on_dash<S>(strings: &[S], pre_dash: &mut Vec<String>, post_dash: &m
 where
     S: AsRef<std::ffi::OsStr> + std::string::ToString + std::cmp::PartialEq,
 {
-
     let mut is_pre_dash = true;
     for string in strings {
         if is_pre_dash {
@@ -201,7 +189,6 @@ where
     }
 }
 
-
 /// Return the current executable path.
 pub fn current_exe() -> String {
     match std::env::current_exe() {
@@ -209,7 +196,6 @@ pub fn current_exe() -> String {
         Ok(path) => path.to_string_lossy().into(),
     }
 }
-
 
 /// Parse arguments or exit with an error.
 pub fn parse_args(parser: argparse::ArgumentParser, arguments: Vec<String>) {

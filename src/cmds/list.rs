@@ -2,9 +2,7 @@ use anyhow::Result;
 
 use super::super::model;
 
-
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-
     let config = app.get_root_config_mut();
 
     if !config.gardens.is_empty() {
@@ -13,7 +11,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         for garden in &config.gardens {
             print!("{} ", garden.get_name());
         }
-        println!("");
+        println!();
     }
 
     if !config.groups.is_empty() {
@@ -22,7 +20,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         for group in &config.groups {
             print!("{} ", group.get_name());
         }
-        println!("");
+        println!();
     }
 
     if !config.trees.is_empty() {
@@ -31,7 +29,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         for tree in &config.trees {
             print!("{} ", tree.get_name());
         }
-        println!("");
+        println!();
     }
 
     Ok(())

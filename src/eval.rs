@@ -1,8 +1,3 @@
-use dirs;
-use glob;
-use shellexpand;
-use subprocess;
-
 use std::borrow::Cow;
 use std::collections::HashMap;
 
@@ -10,7 +5,6 @@ use super::cmd;
 use super::model;
 use super::query;
 use super::syntax;
-
 
 /// Expand variables across all scopes (garden, tree, and global)
 fn expand_tree_vars(
@@ -100,11 +94,11 @@ fn expand_tree_vars(
 
     // If nothing was found then check for environment variables.
     if let Ok(env_value) = std::env::var(name) {
-        return Ok(Some(env_value.to_string()));
+        return Ok(Some(env_value));
     }
 
     // Nothing was found -> empty value
-    return Ok(Some("".to_string()));
+    Ok(Some("".to_string()))
 }
 
 
@@ -139,13 +133,12 @@ fn expand_vars(config: &model::Configuration, name: &str) -> Result<Option<Strin
 
     // If nothing was found then check for environment variables.
     if let Ok(env_value) = std::env::var(name) {
-        return Ok(Some(env_value.into()));
+        return Ok(Some(env_value));
     }
 
     // Nothing was found -> empty value
-    return Ok(Some("".into()));
+    Ok(Some("".into()))
 }
-
 
 /// Resolve ~ to the current user's home directory
 fn home_dir() -> Option<std::path::PathBuf> {
@@ -153,9 +146,8 @@ fn home_dir() -> Option<std::path::PathBuf> {
     if let Ok(home) = std::env::var("HOME") {
         return Some(std::path::PathBuf::from(home));
     }
-    return dirs::home_dir();
+    dirs::home_dir()
 }
-
 
 /// Resolve a variable in a garden/tree/global scope
 pub fn tree_value(
@@ -166,28 +158,26 @@ pub fn tree_value(
 ) -> String {
     let expanded = shellexpand::full_with_context(expr, home_dir, |x| {
         expand_tree_vars(config, tree_idx, garden_idx, x)
-    }).unwrap_or(Cow::from(expr))
-        .to_string();
+    })
+    .unwrap_or_else(|_| Cow::from(expr))
+    .to_string();
 
     // TODO exec_expression_with_path() to use the tree path.
     // NOTE: an environment must not be calculated here otherwise any
     // exec expression will implicitly depend on the entire environment,
     // and potentially many variables (including itself).  Exec expressions
     // always use the default environment.
-    return exec_expression(&expanded);
+    exec_expression(&expanded)
 }
-
 
 /// Resolve a variable in configuration/global scope
 pub fn value(config: &model::Configuration, expr: &str) -> String {
-    let expanded =
-        shellexpand::full_with_context(expr, home_dir, |x| { return expand_vars(config, x); })
-            .unwrap_or(Cow::from(""))
-            .to_string();
+    let expanded = shellexpand::full_with_context(expr, home_dir, |x| expand_vars(config, x))
+        .unwrap_or_else(|_| Cow::from(""))
+        .to_string();
 
-    return exec_expression(&expanded);
+    exec_expression(&expanded)
 }
-
 
 /// Evaluate "$ <command>" command strings, AKA "exec expressions".
 /// The result of the expression is the stdout output from the command.
@@ -207,14 +197,12 @@ pub fn exec_expression(string: &str) -> String {
     string.into()
 }
 
-
 /// Evaluate a variable in the given context
 pub fn multi_variable(
     config: &model::Configuration,
     multi_var: &mut model::MultiVariable,
     context: &model::TreeContext,
 ) -> Vec<String> {
-
     let mut result = Vec::new();
 
     for var in multi_var.iter() {
@@ -229,16 +217,14 @@ pub fn multi_variable(
         var.set_value(value);
     }
 
-    return result;
+    result
 }
-
 
 /// Evaluate environments
 pub fn environment(
     config: &model::Configuration,
     context: &model::TreeContext,
 ) -> Vec<(String, String)> {
-
     let mut result = Vec::new();
     let mut vars = Vec::new();
     let mut ready = false;
@@ -256,7 +242,6 @@ pub fn environment(
             vars.push((context.clone(), var.clone()));
         }
         ready = true;
-
     } else if let Some(idx) = context.group {
         // Evaluate group environments.
         let group = &config.groups[idx];
@@ -296,11 +281,11 @@ pub fn environment(
         let mut is_assign = false;
         let mut is_append = false;
 
-        if name.ends_with("=") {
+        if name.ends_with('=') {
             is_assign = true;
         }
 
-        if name.ends_with("+") {
+        if name.ends_with('+') {
             is_append = true;
         }
 
@@ -321,7 +306,7 @@ pub fn environment(
                 // Not found, try to get the current value from the environment
                 let mut has_env = false;
                 if let Ok(env_value) = std::env::var(&name) {
-                    let env_str: String = env_value.into();
+                    let env_str: String = env_value;
                     // Empty values are treated as not existing to prevent ":foo" or
                     // "foo:" in the final result.
                     if !env_str.is_empty() {
@@ -366,9 +351,8 @@ pub fn environment(
         }
     }
 
-    return result;
+    result
 }
-
 
 /// Evaluate commands
 pub fn command(
@@ -415,5 +399,5 @@ pub fn command(
         result.push(multi_variable(config, var, context));
     }
 
-    return result;
+    result
 }

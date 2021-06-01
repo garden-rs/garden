@@ -1,12 +1,10 @@
 use anyhow::Result;
-use shlex;
 
 use super::super::cmd;
 use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::query;
-
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut query = String::new();
@@ -61,23 +59,16 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(
-            config,
-            &context,
-            /*quiet*/
-            true,
-            /*verbose*/
-            false,
-            &value,
-        ).map_err(|err| err.into())
-    } else {
-        Err(
-            errors::GardenError::InvalidConfiguration {
-                msg: format!("unable to shlex::split '{}'", shell),
-            }.into(),
+            config, &context, /*quiet*/ true, /*verbose*/ false, &value,
         )
+        .map_err(|err| err.into())
+    } else {
+        Err(errors::GardenError::InvalidConfiguration {
+            msg: format!("unable to shlex::split '{}'", shell),
+        }
+        .into())
     }
 }
-
 
 /// Parse "shell" arguments.
 fn parse_args(options: &mut model::CommandOptions, query: &mut String, tree: &mut String) {
@@ -90,11 +81,8 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut String, tree: &mu
         "query for trees to build an environment",
     );
 
-    ap.refer(tree).add_argument(
-        "tree",
-        argparse::Store,
-        "tree to chdir into",
-    );
+    ap.refer(tree)
+        .add_argument("tree", argparse::Store, "tree to chdir into");
 
     options.args.insert(0, "garden shell".into());
     cmd::parse_args(ap, options.args.to_vec());

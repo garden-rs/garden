@@ -1,12 +1,11 @@
 use anyhow::Result;
-use yaml_rust::yaml::Yaml;
 use yaml_rust::yaml::Hash as YamlHash;
+use yaml_rust::yaml::Yaml;
 
 use super::super::cmd;
 use super::super::config;
 use super::super::errors::GardenError;
 use super::super::model;
-
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut output = String::new();
@@ -63,16 +62,13 @@ fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &
         "file to write (defaults to the config file)",
     );
 
-    ap.refer(paths).required().add_argument(
-        "paths",
-        argparse::List,
-        "trees to add",
-    );
+    ap.refer(paths)
+        .required()
+        .add_argument("paths", argparse::List, "trees to add");
 
     options.args.insert(0, "garden add".into());
     cmd::parse_args(ap, options.args.to_vec());
 }
-
 
 fn add_path(
     config: &model::Configuration,
@@ -80,17 +76,10 @@ fn add_path(
     raw_path: &str,
     trees: &mut YamlHash,
 ) -> Result<()> {
-
     // Garden root path
-    let root = config
-        .root_path
-        .canonicalize()
-        .map_err(|err| {
-            GardenError::ConfigurationError(
-                format!("unable to canonicalize config root: {:?}", err),
-            )
-        })?
-        .to_path_buf();
+    let root = config.root_path.canonicalize().map_err(|err| {
+        GardenError::ConfigurationError(format!("unable to canonicalize config root: {:?}", err))
+    })?;
 
     let pathbuf = std::path::PathBuf::from(raw_path);
     if !pathbuf.exists() {
@@ -103,24 +92,18 @@ fn add_path(
     let tree_path: String;
 
     // Get a canonical tree path for comparison with the canonical root.
-    let path = pathbuf
-        .canonicalize()
-        .map_err(|err| {
-            GardenError::ConfigurationError(
-                format!("unable to canonicalize {:?}: {:?}", raw_path, err),
-            )
-        })?
-        .to_path_buf();
+    let path = pathbuf.canonicalize().map_err(|err| {
+        GardenError::ConfigurationError(format!("unable to canonicalize {:?}: {:?}", raw_path, err))
+    })?;
 
     // Is the path a child of the current garden root?
     if path.starts_with(&root) {
-        tree_path = path.strip_prefix(&root)
+        tree_path = path
+            .strip_prefix(&root)
             .map_err(|err| {
                 GardenError::ConfigurationError(format!(
                     "{:?} is not a child of {:?}: {:?}",
-                    path,
-                    root,
-                    err
+                    path, root, err
                 ))
             })?
             .to_string_lossy()
@@ -130,7 +113,7 @@ fn add_path(
     }
 
     // Tree name is updated when an existing tree is found.
-    let mut tree_name = tree_path.clone();
+    let mut tree_name = tree_path;
 
     // Do we already have a tree with this tree path?
     for tree in &config.trees {

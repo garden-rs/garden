@@ -1,6 +1,5 @@
 use garden::cmd;
 
-
 // Slow or filesystem/IO-heavy integration tests go in the slow namespace
 // and are enabled by using "cargo test --features integration"
 #[cfg(feature = "integration")]
@@ -17,13 +16,11 @@ mod slow {
         assert_eq!(0, cmd::status(cmd::exec_in_dir(&cmd, path).join()));
     }
 
-
     fn teardown(path: &str) {
         if let Err(err) = std::fs::remove_dir_all(path) {
             assert!(false, format!("unable to remove '{}': {}", path, err));
         }
     }
-
 
     /// `garden init` clones repositories
     #[test]
@@ -67,7 +64,6 @@ mod slow {
         teardown("tests/tmp/clone");
     }
 
-
     /// `garden init` sets up remotes
     #[test]
     fn grow_remotes() {
@@ -96,8 +92,7 @@ mod slow {
                 output.ends_with("/tests/tmp/remotes/repos/example.git"),
                 format!(
                     "{} does not end with {}",
-                    output,
-                    "/tests/tmp/clone/repos/example.git"
+                    output, "/tests/tmp/clone/repos/example.git"
                 )
             );
         }
@@ -114,7 +109,6 @@ mod slow {
 
         teardown("tests/tmp/remotes");
     }
-
 
     /// `garden init` creates symlinks
     #[test]
@@ -169,7 +163,6 @@ mod slow {
         teardown("tests/tmp/symlinks");
     }
 
-
     /// `garden init` sets up git config settings
     #[test]
     fn grow_gitconfig() {
@@ -221,7 +214,6 @@ mod slow {
 
         teardown("tests/tmp/gitconfig");
     }
-
 
     /// `garden add` adds an empty repository
     #[test]
@@ -398,7 +390,6 @@ mod slow {
         Ok(())
     }
 
-
     /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
     #[test]
     fn eval_garden_config_dir() {
@@ -427,9 +418,7 @@ mod slow {
 
         teardown("tests/tmp/configdir");
     }
-
 } // slow
-
 
 /// Test eval behavior around the "--root" option
 #[test]
@@ -454,7 +443,6 @@ fn eval_root_with_root() {
     assert!(path.exists());
     assert!(path.is_absolute());
 }
-
 
 /// Test eval ${GARDEN_CONFIG_DIR} behavior with both "--root" and "--chdir"
 #[test]
@@ -482,7 +470,6 @@ fn eval_config_dir_with_chdir_and_root() {
     assert!(path.is_absolute());
 }
 
-
 /// Test pwd with both "--root" and "--chdir"
 #[test]
 fn eval_exec_pwd_with_root_and_chdir() {
@@ -509,7 +496,6 @@ fn eval_exec_pwd_with_root_and_chdir() {
     assert!(path.is_absolute());
 }
 
-
 /// Test ${GARDEN_ROOT} with both "--root" and "--chdir"
 #[test]
 fn eval_root_with_root_and_chdir() {
@@ -535,7 +521,6 @@ fn eval_root_with_root_and_chdir() {
     assert!(path.exists());
     assert!(path.is_absolute());
 }
-
 
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
@@ -573,7 +558,6 @@ fn cmd_dash_dash_arguments() {
     assert_eq!(output, format!("{}\n{}", msg, msg));
 }
 
-
 /// Test dash-dash arguments in custom commands via "garden <custom> ..."
 #[test]
 fn cmd_dash_dash_arguments_custom() {
@@ -604,7 +588,6 @@ fn cmd_dash_dash_arguments_custom() {
     assert_eq!(format!("{}\n{}", msg, msg), output);
 }
 
-
 /// Test "." default for custom "garden <command>" with no arguments
 #[test]
 fn cmd_dot_default_no_args() {
@@ -621,7 +604,6 @@ fn cmd_dot_default_no_args() {
     let output = cmd::trim_stdout(&capture.unwrap());
     assert_eq!("data", output);
 }
-
 
 /// Test "." default for "garden <command>" with no arguments and echo
 #[test]
@@ -642,7 +624,6 @@ fn cmd_dot_default_no_args_echo() {
     assert_eq!(msg, output);
 }
 
-
 /// Test "." default for "garden <command>" with double-dash
 #[test]
 fn cmd_dot_default_double_dash() {
@@ -661,9 +642,7 @@ fn cmd_dot_default_double_dash() {
 
     let msg = "garden\narguments -- a b c -- -- x y z";
     assert_eq!(msg, output);
-
 }
-
 
 /// Test "." default for "garden <command>" with extra arguments
 #[test]
@@ -690,5 +669,4 @@ fn cmd_dot_default_double_dash_args() {
 
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
     assert_eq!(msg, output);
-
 }

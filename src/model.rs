@@ -1,8 +1,4 @@
-use atty;
-use glob;
-
 use indextree::{Arena, NodeId};
-use yansi;
 use std::cell::RefCell;
 
 use super::errors;
@@ -20,7 +16,6 @@ pub type GardenIndex = usize;
 
 /// Configuration Node IDs
 pub type ConfigId = NodeId;
-
 
 /// Config files can define a sequence of variables that are
 /// iteratively calculated.  Variables can reference other
@@ -147,6 +142,10 @@ impl MultiVariable {
         self.variables.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.variables.is_empty()
+    }
+
     pub fn reset(&self) {
         for var in &self.variables {
             var.reset();
@@ -157,7 +156,6 @@ impl MultiVariable {
         self.variables.iter()
     }
 }
-
 
 // Trees represent a single worktree
 #[derive(Clone, Debug, Default)]
@@ -201,18 +199,20 @@ impl Tree {
     pub fn path_as_ref(&self) -> Result<&String, errors::GardenError> {
         match self.path.get_value() {
             Some(value) => Ok(value),
-            None => Err(errors::GardenError::ConfigurationError(
-                format!("unset tree path for {}", self.name),
-            )),
+            None => Err(errors::GardenError::ConfigurationError(format!(
+                "unset tree path for {}",
+                self.name
+            ))),
         }
     }
 
     pub fn symlink_as_ref(&self) -> Result<&String, errors::GardenError> {
         match self.symlink.get_value() {
             Some(ref value) => Ok(value),
-            None => Err(errors::GardenError::ConfigurationError(
-                format!("unset tree path for {}", self.name),
-            )),
+            None => Err(errors::GardenError::ConfigurationError(format!(
+                "unset tree path for {}",
+                self.name
+            ))),
         }
     }
 
@@ -238,7 +238,6 @@ impl Tree {
     }
 }
 
-
 #[derive(Clone, Debug, Default)]
 pub struct Group {
     name: String,
@@ -262,7 +261,6 @@ impl Group {
     }
 }
 
-
 #[derive(Clone, Debug, Default)]
 pub struct Template {
     pub commands: Vec<MultiVariable>,
@@ -285,7 +283,6 @@ impl Template {
         &mut self.name
     }
 }
-
 
 // Gardens aggregate trees
 #[derive(Clone, Debug, Default)]
@@ -315,7 +312,6 @@ impl Garden {
         self.index
     }
 }
-
 
 // Configuration represents an instantiated garden configuration
 #[derive(Clone, Debug, Default)]
@@ -394,7 +390,8 @@ impl Configuration {
                 let tree_path = match tree.path_as_ref() {
                     Ok(path) => path,
                     Err(_) => continue,
-                }.to_string();
+                }
+                .to_string();
                 // Update TREE_NAME at position 0.
                 let tree_name = tree.get_name().to_string();
                 if tree.variables[0].get_name() == "TREE_NAME" {
@@ -472,7 +469,6 @@ impl Configuration {
         if std::path::PathBuf::from(path).is_absolute() {
             // Absolute path, nothing to do
             path.to_string()
-
         } else if let Some(dirname) = self.dirname.as_ref() {
             // Make path relative to the configuration's dirname
             let mut path_buf = dirname.to_path_buf();
@@ -523,7 +519,7 @@ impl Configuration {
 
     /// Set the config path and the dirname fields
     pub fn set_path(&mut self, path: std::path::PathBuf) {
-        let mut dirname = path.to_path_buf();
+        let mut dirname = path.clone();
         dirname.pop();
 
         self.dirname = Some(dirname);
@@ -532,11 +528,9 @@ impl Configuration {
 
     /// Get the config path if it is defined.
     pub fn get_path(&self) -> Result<&std::path::PathBuf, errors::GardenError> {
-        self.path.as_ref().ok_or(
-            errors::GardenError::AssertionError(
-                "cfg.path is unset".into(),
-            ),
-        )
+        self.path
+            .as_ref()
+            .ok_or_else(|| errors::GardenError::AssertionError("cfg.path is unset".into()))
     }
 
     /// Return true if the configuration contains the named graft.
@@ -558,12 +552,12 @@ impl Configuration {
                 return Ok(graft);
             }
         }
-        Err(errors::GardenError::ConfigurationError(
-            format!("{}: no such graft", name),
-        ))
+        Err(errors::GardenError::ConfigurationError(format!(
+            "{}: no such graft",
+            name
+        )))
     }
 }
-
 
 #[derive(Clone, Debug, Default)]
 pub struct Graft {
@@ -626,7 +620,6 @@ impl TreeContext {
     }
 }
 
-
 #[derive(Debug, Default)]
 pub struct TreeQuery {
     pub query: String,
@@ -670,7 +663,7 @@ impl TreeQuery {
         let glob_pattern = syntax::trim(query);
         let pattern = glob::Pattern::new(glob_pattern).unwrap();
 
-        return TreeQuery {
+        TreeQuery {
             query: query.into(),
             is_default,
             is_garden,
@@ -680,10 +673,9 @@ impl TreeQuery {
             include_groups,
             include_trees,
             pattern,
-        };
+        }
     }
 }
-
 
 // Commands
 #[derive(Clone, Debug)]
@@ -713,7 +705,7 @@ impl std::str::FromStr for Command {
     type Err = (); // For the FromStr trait
 
     fn from_str(src: &str) -> Result<Command, ()> {
-        return match src {
+        match src {
             "add" => Ok(Command::Add),
             "cmd" => Ok(Command::Cmd),
             "exec" => Ok(Command::Exec),
@@ -727,10 +719,9 @@ impl std::str::FromStr for Command {
             "sh" => Ok(Command::Shell),
             "shell" => Ok(Command::Shell),
             _ => Ok(Command::Custom(src.into())),
-        };
+        }
     }
 }
-
 
 // Is color enabled?
 // --color=<auto,on,off> overrides the default "auto" value.
@@ -738,8 +729,8 @@ impl std::str::FromStr for Command {
 #[derive(Clone, Debug, PartialEq)]
 pub enum ColorMode {
     Auto, // "auto" enables color when a tty is detected.
-    Off, // disable color
-    On, // enable color
+    Off,  // disable color
+    On,   // enable color
 }
 
 impl ColorMode {
@@ -782,7 +773,7 @@ impl std::str::FromStr for ColorMode {
     type Err = (); // For the FromStr trait
 
     fn from_str(src: &str) -> Result<ColorMode, ()> {
-        return match src.to_lowercase().as_ref() {
+        match src.to_lowercase().as_ref() {
             "auto" => Ok(ColorMode::Auto),
             "-1" => Ok(ColorMode::Auto),
             "0" => Ok(ColorMode::Off),
@@ -798,14 +789,12 @@ impl std::str::FromStr for ColorMode {
             "no" => Ok(ColorMode::Off),
             "yes" => Ok(ColorMode::On),
             _ => Err(()),
-        };
+        }
     }
 }
 
-
 // Color is an alias for yansi::Paint.
 pub type Color<T> = yansi::Paint<T>;
-
 
 pub fn display_missing_tree(tree: &Tree, path: &str, verbose: bool) -> String {
     if verbose {
@@ -826,7 +815,6 @@ pub fn display_missing_tree(tree: &Tree, path: &str, verbose: bool) -> String {
     }
 }
 
-
 pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
     if verbose {
         format!(
@@ -839,7 +827,6 @@ pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
         format!("{} {}", Color::cyan("#"), Color::blue(&tree.name).bold())
     }
 }
-
 
 /// Print a tree if it exists, otherwise print a missing tree
 pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
@@ -861,7 +848,6 @@ pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
     false
 }
 
-
 /// Print a tree
 pub fn print_tree_details(tree: &Tree, verbose: bool, quiet: bool) {
     if !quiet {
@@ -870,7 +856,6 @@ pub fn print_tree_details(tree: &Tree, verbose: bool, quiet: bool) {
         }
     }
 }
-
 
 #[derive(Clone, Debug, Default)]
 pub struct CommandOptions {
@@ -933,10 +918,9 @@ impl CommandOptions {
     }
 
     pub fn is_debug(&self, name: &str) -> bool {
-        return self.debug.contains(&name.into());
+        self.debug.contains(&name.into())
     }
 }
-
 
 #[derive(Clone, Debug)]
 pub struct ApplicationContext {

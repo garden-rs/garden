@@ -121,7 +121,7 @@ pub fn garden_config() -> garden::model::Configuration {
         annex/wildcard-trees:
             trees: annex/*
     "#
-        .to_string();
+    .to_string();
 
     from_string(&string)
 }

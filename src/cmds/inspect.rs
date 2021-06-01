@@ -1,11 +1,9 @@
 use anyhow::Result;
-use argparse;
 
 use super::super::cmd;
 use super::super::model;
 use super::super::model::Color;
 use super::super::query;
-
 
 /// Main entry point for the "garden exec" command
 /// Parameters:
@@ -19,7 +17,6 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let config = app.get_root_config_mut();
     inspect(config, verbose, &query)
 }
-
 
 /// Parse "inspect" arguments.
 fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
@@ -44,14 +41,8 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
     }
 }
 
-
 /// Execute a command over every tree in the evaluated tree query.
-pub fn inspect(
-    config: &mut model::Configuration,
-    verbose: bool,
-    queries: &Vec<String>,
-) -> Result<()> {
-
+pub fn inspect(config: &mut model::Configuration, verbose: bool, queries: &[String]) -> Result<()> {
     for query in queries {
         // Resolve the tree query into a vector of tree contexts.
         let contexts = query::resolve_trees(config, query);
@@ -97,21 +88,19 @@ pub fn inspect(
                         Color::blue(tree.symlink_as_ref()?).bold()
                     );
                 }
+            } else if verbose {
+                println!(
+                    "{} {}  {}",
+                    Color::green("+"),
+                    Color::green(tree.get_name()).bold(),
+                    Color::green(&path)
+                );
             } else {
-                if verbose {
-                    println!(
-                        "{} {}  {}",
-                        Color::green("+"),
-                        Color::green(tree.get_name()).bold(),
-                        Color::green(&path)
-                    );
-                } else {
-                    println!(
-                        "{} {}",
-                        Color::green("+"),
-                        Color::green(tree.get_name()).bold()
-                    );
-                }
+                println!(
+                    "{} {}",
+                    Color::green("+"),
+                    Color::green(tree.get_name()).bold()
+                );
             }
         }
     }

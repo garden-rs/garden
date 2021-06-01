@@ -5,7 +5,6 @@ use super::super::eval;
 use super::super::model;
 use super::super::query;
 
-
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut expr = String::new();
     let mut tree = String::new();
@@ -31,7 +30,6 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     Ok(())
 }
 
-
 /// Parse "eval" arguments.
 fn parse_args(
     options: &mut model::CommandOptions,
@@ -48,17 +46,11 @@ fn parse_args(
         "garden expression to evaluate",
     );
 
-    ap.refer(tree).add_argument(
-        "tree",
-        argparse::Store,
-        "tree to evaluate",
-    );
+    ap.refer(tree)
+        .add_argument("tree", argparse::Store, "tree to evaluate");
 
-    ap.refer(garden).add_argument(
-        "garden",
-        argparse::Store,
-        "garden to evaluate",
-    );
+    ap.refer(garden)
+        .add_argument("garden", argparse::Store, "garden to evaluate");
 
     options.args.insert(0, "garden eval".into());
     cmd::parse_args(ap, options.args.to_vec());

@@ -1,11 +1,9 @@
 use anyhow::Result;
-use argparse;
 
 use super::super::cmd;
 use super::super::errors;
 use super::super::model;
 use super::super::query;
-
 
 /// Main entry point for the "garden exec" command
 /// Parameters:
@@ -21,7 +19,6 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let config = app.get_root_config_mut();
     exec(config, quiet, verbose, &query, &command)
 }
-
 
 /// Parse "exec" arguments
 fn parse_args(options: &mut model::CommandOptions, query: &mut String, command: &mut Vec<String>) {
@@ -52,14 +49,13 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut String, command: 
     }
 }
 
-
 /// Execute a command over every tree in the evaluated tree query.
 pub fn exec(
     config: &mut model::Configuration,
     quiet: bool,
     verbose: bool,
     query: &str,
-    command: &Vec<String>,
+    command: &[String],
 ) -> Result<()> {
     // Strategy: resolve the trees down to a set of tree indexes paired with an
     // an optional garden context.

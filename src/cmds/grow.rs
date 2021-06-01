@@ -6,7 +6,6 @@ use super::super::eval;
 use super::super::model;
 use super::super::query;
 
-
 /// Main entry point for the "garden exec" command
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
@@ -31,7 +30,6 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
-
 fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
     // Parse arguments
     options.args.insert(0, "garden grow".into());
@@ -49,12 +47,10 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
         options.args.to_vec(),
         &mut std::io::stdout(),
         &mut std::io::stderr(),
-    )
-    {
+    ) {
         std::process::exit(err);
     }
 }
-
 
 /// Create/update trees in the evaluated tree query.
 pub fn grow(
@@ -73,9 +69,10 @@ pub fn grow(
         let pathbuf = std::path::PathBuf::from(&path);
         if !pathbuf.exists() {
             let parent = pathbuf.parent().ok_or_else(|| {
-                errors::GardenError::AssertionError(
-                    format!("unable to get parent directory for {}", path),
-                )
+                errors::GardenError::AssertionError(format!(
+                    "unable to get parent directory for {}",
+                    path
+                ))
             })?;
 
             std::fs::create_dir_all(&parent).map_err(|err| {
@@ -173,18 +170,17 @@ pub fn grow(
     Ok(exit_status)
 }
 
-
 /// Initialize a tree symlink entry.
 
 fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {
     let tree = &config.trees[ctx.tree];
     // Invalid usage: non-symlink
     if !tree.is_symlink || tree.path_as_ref()?.is_empty() || tree.symlink_as_ref()?.is_empty() {
-        return Err(
-            errors::GardenError::ConfigurationError(
-                format!("invalid symlink: {}", tree.get_name()),
-            ).into(),
-        );
+        return Err(errors::GardenError::ConfigurationError(format!(
+            "invalid symlink: {}",
+            tree.get_name()
+        ))
+        .into());
     }
     let path_str = tree.path_as_ref()?;
     let path = std::path::PathBuf::from(&path_str);
@@ -198,11 +194,10 @@ fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Resu
     let symlink = std::path::PathBuf::from(&symlink_str);
 
     // Note: parent directory was already created by the caller.
-    let parent = path.parent()
+    let parent = path
+        .parent()
         .as_ref()
-        .ok_or_else(|| {
-            errors::GardenError::AssertionError(format!("parent() failed: {:?}", path))
-        })?
+        .ok_or_else(|| errors::GardenError::AssertionError(format!("parent() failed: {:?}", path)))?
         .to_path_buf();
 
     // Is the link target a child of the link's parent directory?

@@ -1,12 +1,10 @@
 use anyhow::Result;
-use subprocess;
 
 use super::super::cmd;
 use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::query;
-
 
 /// garden cmd <query> <command>...
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
@@ -19,17 +17,10 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let verbose = app.options.verbose;
     let keep_going = app.options.keep_going;
     let exit_status = cmd(
-        app,
-        quiet,
-        verbose,
-        keep_going,
-        &query,
-        &commands,
-        &arguments,
+        app, quiet, verbose, keep_going, &query, &commands, &arguments,
     )?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
-
 
 /// Parse "cmd" arguments.
 fn parse_args(
@@ -81,7 +72,6 @@ fn parse_args(
     }
 }
 
-
 /// garden <command> <query>...
 pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
     let mut queries = Vec::new();
@@ -92,16 +82,10 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
     let verbose = app.options.verbose;
     let keep_going = app.options.keep_going;
     cmds(
-        app,
-        quiet,
-        verbose,
-        keep_going,
-        command,
-        &queries,
-        &arguments,
-    ).map_err(|err| err.into())
+        app, quiet, verbose, keep_going, command, &queries, &arguments,
+    )
+    .map_err(|err| err)
 }
-
 
 /// Parse custom command arguments.
 fn parse_args_custom(
@@ -165,8 +149,8 @@ pub fn cmd(
     verbose: bool,
     keep_going: bool,
     query: &str,
-    commands: &Vec<String>,
-    arguments: &Vec<String>,
+    commands: &[String],
+    arguments: &[String],
 ) -> Result<i32> {
     // Resolve the tree query into a vector of tree contexts.
     let contexts;
@@ -256,7 +240,6 @@ pub fn cmd(
     Ok(exit_status)
 }
 
-
 /// Run cmd() over a Vec of tree queries
 pub fn cmds(
     app: &mut model::ApplicationContext,
@@ -264,8 +247,8 @@ pub fn cmds(
     verbose: bool,
     keep_going: bool,
     command: &str,
-    queries: &Vec<String>,
-    arguments: &Vec<String>,
+    queries: &[String],
+    arguments: &[String],
 ) -> Result<()> {
     let mut exit_status: i32 = 0;
 
@@ -274,14 +257,9 @@ pub fn cmds(
 
     for query in queries {
         let status = cmd(
-            app,
-            quiet,
-            verbose,
-            keep_going,
-            &query,
-            &commands,
-            arguments,
-        ).unwrap_or(errors::EX_IOERR);
+            app, quiet, verbose, keep_going, &query, &commands, arguments,
+        )
+        .unwrap_or(errors::EX_IOERR);
         if status != 0 {
             exit_status = status;
             if !keep_going {

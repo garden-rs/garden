@@ -1,10 +1,9 @@
 use std::io::Write;
 
-use yaml_rust::YamlEmitter;
 use yaml_rust::Yaml;
+use yaml_rust::YamlEmitter;
 
 use super::super::errors;
-
 
 /// Write a Yaml object to a file
 
@@ -29,13 +28,14 @@ where
     })?;
 
     file.write_all(&out_str.into_bytes()).map_err(|_| {
-        errors::GardenError::WriteConfigurationError { path: path.as_ref().into() }
+        errors::GardenError::WriteConfigurationError {
+            path: path.as_ref().into(),
+        }
     })?;
 
-    file.sync_all().map_err(|sync_err| {
-        errors::GardenError::SyncConfigurationError {
+    file.sync_all()
+        .map_err(|sync_err| errors::GardenError::SyncConfigurationError {
             path: path.as_ref().into(),
             err: sync_err,
-        }
-    })
+        })
 }
