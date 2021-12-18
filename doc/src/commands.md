@@ -33,14 +33,45 @@ garden expression `value`.  Multiple variables can be set by specifying the
 flag multiple times.
 
 
-## garden add
+## garden init
 
-    garden add <path>
+    garden init [options]
+
+    # create a local garden config rooted at the current directory
+    garden init --root '${GARDEN_CONFIG_DIR}'
+
+    # create a global garden config rooted at ~/src
+    garden init --global --root '~/src'
+
+Create a new empty `garden.yaml` in the current directory, or in the
+user's global configuration directory when `--global` is specified.
+See `garden help init` for more details.
+
+
+## garden plant
+
+    garden plant <path>
 
     # example
-    garden add src/repo
+    garden plant src/repo
 
 Add an existing Git tree at `<path>` to `garden.yaml`.
+
+
+## garden grow
+
+    garden grow <query>
+
+    # example
+    garden grow cola
+
+Update or create the tree(s) referenced by the `<query>`.
+This command clones repositories and places them into the paths
+defined by the garden file.
+
+It is safe to re-run the `grow` command and re-grow a tree.  Existing trees will
+have their git configuration updated to match the configured remotes.  Missing
+repositories are created by cloning the configured tree url.
 
 
 ## garden cmd
@@ -58,20 +89,26 @@ and the global top-level scope.
 
 Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level extend commands defined on a tree.
+If both a tree and the garden containing that tree defines a command called
+"test" then "garden test" will first run the tree's "test" command followed
+by the garden's "test" command.
 
 Commands are executed in a shell, so shell expressions can be used in commands.
 Each command runs under `["sh", "-c", "<command>"]` with the resolved
 environment from the corresponding garden, group, or tree.
 
-Optional command-line `<arguments>` specified after a double-dash (`--`)
+Additional command-line `<arguments>` specified after a double-dash (`--`)
 end-of-options marker are forwarded to each command.
 
 `"$0"` in a custom command points to the current garden executable and can be
 used to rerun garden from within a garden command.
 
-Optional arguments are available to command strings by using the traditional
-`"$@"` shell expression syntax.  When optional arguments are present `"$1"`,
-`"$2"`, and subsequent variables will be set according to each argument.
+Additional arguments are available to command strings by using the traditional
+`"$@"` shell syntax.  When additional arguments are present `"$1"`, `"$2"`, and
+subsequent variables will be set according to each argument.
+
+    # example
+    garden test cola -- V=1
 
 
 ### Custom Commands
@@ -115,35 +152,6 @@ block only.
 When a tree is given then its variables are considered as well.
 When a garden is specified then the garden's variables are also available for
 evaluation.
-
-
-## garden init
-
-    garden init [options]
-
-    # create a local garden config rooted at the current directory
-    garden init --root '${GARDEN_CONFIG_DIR}'
-
-    # create a global garden config rooted at ~/src
-    garden init --global --root '~/src'
-
-Create a new empty `garden.yaml` in the current directory, or in the
-user's global configuration directory when `--global` is specified.
-See `garden help init` for more details.
-
-
-## garden grow
-
-    garden grow <query>
-
-    # example
-    garden grow cola
-
-Update or create the tree(s) referenced by the `<query>`.
-
-It is safe to re-run the `grow` command.  Existing trees will have their git
-configuration updated to match the configured remotes.  Missing repositories
-are created by cloning the configured tree url.
 
 
 ## garden shell
