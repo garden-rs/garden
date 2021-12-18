@@ -1,7 +1,4 @@
-/// Add command
-pub mod add;
-
-/// Preset commands
+/// Configuration-defined commands
 pub mod cmd;
 
 /// Exec command
@@ -24,6 +21,9 @@ pub mod inspect;
 
 /// List command
 pub mod list;
+
+/// Plant command
+pub mod plant;
 
 /// Shell command
 pub mod shell;

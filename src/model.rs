@@ -707,7 +707,6 @@ impl TreeQuery {
 // Commands
 #[derive(Clone, Debug)]
 pub enum Command {
-    Add,
     Cmd,
     Custom(String),
     Exec,
@@ -717,6 +716,7 @@ pub enum Command {
     Init,
     Inspect,
     List,
+    Plant,
     Shell,
 }
 
@@ -733,7 +733,6 @@ impl std::str::FromStr for Command {
 
     fn from_str(src: &str) -> Result<Command, ()> {
         match src {
-            "add" => Ok(Command::Add),
             "cmd" => Ok(Command::Cmd),
             "exec" => Ok(Command::Exec),
             "eval" => Ok(Command::Eval),
@@ -743,6 +742,7 @@ impl std::str::FromStr for Command {
             "inspect" => Ok(Command::Inspect),
             "list" => Ok(Command::List),
             "ls" => Ok(Command::List),
+            "plant" => Ok(Command::Plant),
             "sh" => Ok(Command::Shell),
             "shell" => Ok(Command::Shell),
             _ => Ok(Command::Custom(src.into())),

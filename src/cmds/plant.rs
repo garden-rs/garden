@@ -42,7 +42,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         };
 
         for path in &paths {
-            if let Err(msg) = add_path(config, verbose, path, trees) {
+            if let Err(msg) = plant_path(config, verbose, path, trees) {
                 error!("{}", msg);
             }
         }
@@ -54,7 +54,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &mut Vec<String>) {
     let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("add existing trees to a garden configuration");
+    ap.set_description("add pre-existing worktrees to a garden configuration");
 
     ap.refer(output).add_option(
         &["-o", "--output"],
@@ -66,11 +66,11 @@ fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &
         .required()
         .add_argument("paths", argparse::List, "trees to add");
 
-    options.args.insert(0, "garden add".into());
+    options.args.insert(0, "garden plant".into());
     cmd::parse_args(ap, options.args.to_vec());
 }
 
-fn add_path(
+fn plant_path(
     config: &model::Configuration,
     verbose: bool,
     raw_path: &str,

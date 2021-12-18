@@ -214,26 +214,26 @@ mod slow {
         teardown("tests/tmp/gitconfig");
     }
 
-    /// `garden add` adds an empty repository
+    /// `garden plant` adds an empty repository
     #[test]
-    fn add_empty_repo() -> Result<()> {
-        setup("add-empty-repo", "tests/tmp");
+    fn plant_empty_repo() -> Result<()> {
+        setup("plant-empty-repo", "tests/tmp");
 
-        // garden init in test/tmp/add-empty-repo
+        // garden init in test/tmp/plant-empty-repo
         let cmd = [
             "./target/debug/garden",
             "--chdir",
-            "tests/tmp/add-empty-repo",
+            "tests/tmp/plant-empty-repo",
             "init",
         ];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
         // Empty garden.yaml should be created
-        assert!(Path::new("tests/tmp/add-empty-repo/garden.yaml").exists());
+        assert!(Path::new("tests/tmp/plant-empty-repo/garden.yaml").exists());
 
-        // Create tests/tmp/add-empty-repo/repo{1,2}
-        let cmd = ["git", "-C", "tests/tmp/add-empty-repo", "init", "repo1"];
+        // Create tests/tmp/plant-empty-repo/repo{1,2}
+        let cmd = ["git", "-C", "tests/tmp/plant-empty-repo", "init", "repo1"];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        let cmd = ["git", "-C", "tests/tmp/add-empty-repo", "init", "repo2"];
+        let cmd = ["git", "-C", "tests/tmp/plant-empty-repo", "init", "repo2"];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         // repo1 has two remotes: "origin" and "remote-1".
@@ -241,7 +241,7 @@ mod slow {
         let cmd = [
             "git",
             "-C",
-            "tests/tmp/add-empty-repo/repo1",
+            "tests/tmp/plant-empty-repo/repo1",
             "remote",
             "add",
             "origin",
@@ -252,7 +252,7 @@ mod slow {
         let cmd = [
             "git",
             "-C",
-            "tests/tmp/add-empty-repo/repo1",
+            "tests/tmp/plant-empty-repo/repo1",
             "remote",
             "add",
             "remote-1",
@@ -260,18 +260,18 @@ mod slow {
         ];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
-        // garden add repo1
+        // garden plant repo1
         let cmd = [
             "./target/debug/garden",
             "--chdir",
-            "tests/tmp/add-empty-repo",
-            "add",
+            "tests/tmp/plant-empty-repo",
+            "plant",
             "repo1",
         ];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
         let path = Some(std::path::PathBuf::from(
-            "tests/tmp/add-empty-repo/garden.yaml",
+            "tests/tmp/plant-empty-repo/garden.yaml",
         ));
 
         // Load the configuration and assert that the remotes are configured.
@@ -289,7 +289,7 @@ mod slow {
         let cmd = [
             "git",
             "-C",
-            "tests/tmp/add-empty-repo/repo2",
+            "tests/tmp/plant-empty-repo/repo2",
             "remote",
             "add",
             "remote-1",
@@ -300,7 +300,7 @@ mod slow {
         let cmd = [
             "git",
             "-C",
-            "tests/tmp/add-empty-repo/repo2",
+            "tests/tmp/plant-empty-repo/repo2",
             "remote",
             "add",
             "remote-2",
@@ -312,8 +312,8 @@ mod slow {
         let cmd = [
             "./target/debug/garden",
             "--chdir",
-            "tests/tmp/add-empty-repo",
-            "add",
+            "tests/tmp/plant-empty-repo",
+            "plant",
             "repo2",
         ];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
@@ -328,7 +328,7 @@ mod slow {
         assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
         assert_eq!("remote-2-url", cfg.trees[1].remotes[1].get_expr());
 
-        // Verify that "garden add" will refresh the remote URLs
+        // Verify that "garden plant" will refresh the remote URLs
         // for existing entries.
 
         // Update repo1's origin url to repo-1-new-url.
@@ -336,7 +336,7 @@ mod slow {
         let cmd = [
             "git",
             "-C",
-            "tests/tmp/add-empty-repo/repo1",
+            "tests/tmp/plant-empty-repo/repo1",
             "config",
             "remote.origin.url",
             "repo-1-new-url",
@@ -348,19 +348,19 @@ mod slow {
         let cmd = [
             "git",
             "-C",
-            "tests/tmp/add-empty-repo/repo2",
+            "tests/tmp/plant-empty-repo/repo2",
             "config",
             "remote.remote-2.url",
             "remote-2-new-url",
         ];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
-        // garden add repo1 repo2
+        // garden plant repo1 repo2
         let cmd = [
             "./target/debug/garden",
             "--chdir",
-            "tests/tmp/add-empty-repo",
-            "add",
+            "tests/tmp/plant-empty-repo",
+            "plant",
             "repo1",
             "repo2",
         ];
@@ -384,7 +384,7 @@ mod slow {
         // New value.
         assert_eq!("remote-2-new-url", cfg.trees[1].remotes[1].get_expr());
 
-        teardown("tests/tmp/add-empty-repo");
+        teardown("tests/tmp/plant-empty-repo");
 
         Ok(())
     }

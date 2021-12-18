@@ -50,7 +50,6 @@ fn cmd_main() -> Result<()> {
     let mut app = build::context_from_config(config, options)?;
 
     match app.options.subcommand.clone() {
-        model::Command::Add => cmds::add::main(&mut app),
         model::Command::Cmd => cmds::cmd::main(&mut app),
         model::Command::Custom(cmd) => cmds::cmd::custom(&mut app, &cmd),
         model::Command::Exec => cmds::exec::main(&mut app),
@@ -60,6 +59,7 @@ fn cmd_main() -> Result<()> {
         model::Command::Init => Ok(()), // Handled above
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
+        model::Command::Plant => cmds::plant::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
     }
 }
@@ -122,7 +122,7 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.subcommand).required().add_argument(
             "command",
             argparse::Store,
-            "{add, cmd, eval, exec, grow, help, init, inspect, ls, shell, <custom>}",
+            "{cmd, eval, exec, grow, help, init, inspect, ls, plant, shell, <custom>}",
         );
 
         ap.refer(&mut options.args)
