@@ -115,7 +115,7 @@ explanation, check out the [User Guide].
     into existence. The grow command clones either individual trees, or
     collections of trees when a group or garden name is specified.
 
-- `garden add <worktree>`
+- `garden plant <worktree>`
 
     Add an existing Git worktree to an existing "garden.yaml".
     The "trees" section in the configuration file will be updated with details
