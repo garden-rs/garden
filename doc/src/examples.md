@@ -13,12 +13,15 @@ To see this in action, runs the following commands from a clone of
 mkdir -p cola && cd cola
 
 # Download and audit the garden file we're going to run.
-wget https://raw.githubusercontent.com/davvid/garden/main/src/doc/garden.yaml
+wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the repos in the "cola" garden and run a custom
 # "setup" command to initialize the development environment.
+# "garden grow" is a garden built-in command.
 garden grow cola
+
+# The "setup" command is defined in garden.yaml.
 garden setup cola
 
 # Daily development workflow: run "make" to build each repository in-place.

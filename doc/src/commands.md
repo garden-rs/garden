@@ -7,14 +7,23 @@ most useful Garden features.
 
 ## Command-Line Conventions
 
-All builtin garden commands have this basic syntax:
+Usage instructions can be displayed for all commands.
+
+    garden help <command>
+    garden <command> --help
+
+Built-in commands use this basic syntax:
 
     garden [options] <command> [command-options] [command-arguments]*
 
-The following options are specified before `<command>`, and are
-global to all `garden` commands.
+The following options come before `<command>` and are common to all commands.
 
-    -c | --config <path>
+    -C | --chdir <directory>
+
+chdir to the specified directory before searching for configuration.
+This is modeled after `make -C <path> ...` or `git -C <path> ...`.
+
+    -c | --config <filename>
 
 Specify a garden config file to use instead of searching for `garden.yaml`.
 The path can either be the path to an actual config file, or it can be
@@ -25,7 +34,7 @@ the basename of a file in the configuration search path.
 Enable verbose debugging output.
 
 
-    -s | --set  name=value
+    -s | --set name=value
 
 Override a configured variable by passing a `name=value` string to
 the `--set` option.  The variable named `name` will be updated with the
@@ -45,17 +54,16 @@ flag multiple times.
 
 Create a new empty `garden.yaml` in the current directory, or in the
 user's global configuration directory when `--global` is specified.
-See `garden help init` for more details.
 
 
 ## garden plant
 
-    garden plant <path>
+    garden plant <tree>
 
     # example
     garden plant src/repo
 
-Add an existing Git tree at `<path>` to `garden.yaml`.
+Add an existing Git worktree at `<path>` to `garden.yaml`.
 
 
 ## garden grow
