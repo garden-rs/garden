@@ -24,7 +24,7 @@ mod slow {
 
     /// `garden init` clones repositories
     #[test]
-    fn grow_clone() {
+    fn grow_clone() -> Result<()> {
         setup("clone", "tests/tmp");
 
         // garden init examples/tree
@@ -61,7 +61,15 @@ mod slow {
         repo.push(".git");
         assert!(repo.exists());
 
+        {
+            let command = ["git", "rev-parse", "origin/dev", "origin/default"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+
         teardown("tests/tmp/clone");
+
+        Ok(())
     }
 
     /// `garden init` sets up remotes

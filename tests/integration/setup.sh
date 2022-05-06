@@ -14,7 +14,9 @@ mkdir -p "$1" && (
         # Create an empty commit
         cd ./repos/example.git &&
         tree=$(git write-tree) &&
-        git commit-tree -m "$1" "$tree" >refs/heads/master
+        git commit-tree -m "$1" "$tree" >refs/heads/default &&
+        echo 'ref: refs/heads/default' > HEAD &&
+        git rev-parse HEAD >refs/heads/dev
     )
 )
 

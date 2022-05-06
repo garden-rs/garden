@@ -35,7 +35,7 @@ trees:
     path: example/tree/repo
     remotes:
       publish: "${gh_ssh}:user/example.git"
-    url: ${repos}/example.git
+    url: file://${repos}/example.git
 
   example/link:
     symlink: example/tree/repo
