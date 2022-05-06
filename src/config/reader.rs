@@ -171,6 +171,16 @@ fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     !string.is_empty()
 }
 
+/// Yaml -> i64
+fn get_i64(yaml: &Yaml, value: &mut i64) -> bool {
+    let mut result = false;
+    if let Yaml::Integer(yaml_integer) = *yaml {
+        *value = yaml_integer;
+        result = true;
+    }
+    result
+}
+
 /// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
 fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
     if let Yaml::String(yaml_string) = yaml {
@@ -314,7 +324,8 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
 
     // "environment" follow last-set-wins semantics.
     // Process the base templates in the specified order before processing
-    // the template itself.
+    // the template itself. Any "VAR=" variables will be overridden
+    // by the tree entry itself, or the last template processed.
     get_vec_str(&value["extend"], &mut template.extend);
     for template_name in &template.extend {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
@@ -331,6 +342,9 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
             if template.remotes.is_empty() {
                 template.remotes.append(&mut base.remotes);
             }
+
+            // The last clone depth set is the one that wins.
+            template.clone_depth = base.clone_depth;
         }
     }
 
@@ -338,6 +352,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     get_variables(&value["gitconfig"], &mut template.gitconfig);
     get_multivariables(&value["environment"], &mut template.environment);
     get_multivariables(&value["commands"], &mut template.commands);
+    get_i64(&value["depth"], &mut template.clone_depth);
 
     // These follow first-found semantics; process the base templates in
     // reverse order.
@@ -493,6 +508,7 @@ fn get_tree(
             if tree.remotes.is_empty() {
                 tree.remotes.append(&mut base.remotes);
             }
+            tree.clone_depth = base.clone_depth;
         }
     }
 
@@ -500,6 +516,7 @@ fn get_tree(
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables(&value["commands"], &mut tree.commands);
+    get_i64(&value["depth"], &mut tree.clone_depth);
 
     // Remotes
     get_remotes(&value["remotes"], &mut tree.remotes);

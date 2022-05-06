@@ -81,6 +81,15 @@ It is safe to re-run the `grow` command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
 repositories are created by cloning the configured tree url.
 
+The `depth: <integer>` tree parameter is used to create shallow clones.
+
+    trees:
+      example:
+        depth: 42
+        url: <url>
+
+`garden grow example` clones the repository using `git clone --depth=42 <url>`.
+
 
 ## garden cmd
 

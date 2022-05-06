@@ -52,6 +52,11 @@ trees:
         - basename "$0"
         - echo arguments -- a b c -- "$@" -- x y z
 
+  example/shallow:
+    path: example/tree/shallow
+    url: file://${repos}/example.git
+    depth: 1
+
 commands:
   pwd: pwd
   basename: basename "$(pwd)"

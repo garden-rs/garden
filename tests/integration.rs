@@ -22,7 +22,7 @@ mod slow {
         }
     }
 
-    /// `garden init` clones repositories
+    /// `garden grow` clones repositories
     #[test]
     fn grow_clone() -> Result<()> {
         setup("clone", "tests/tmp");
@@ -61,6 +61,7 @@ mod slow {
         repo.push(".git");
         assert!(repo.exists());
 
+        // The repository must have all branches by default.
         {
             let command = ["git", "rev-parse", "origin/dev", "origin/default"];
             let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
@@ -68,6 +69,65 @@ mod slow {
         }
 
         teardown("tests/tmp/clone");
+
+        Ok(())
+    }
+
+    /// `garden grow` can create shallow clones with depth: 1.
+    #[test]
+    fn grow_clone_shallow() -> Result<()> {
+        setup("shallow", "tests/tmp");
+
+        // garden init examples/tree
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir",
+            "tests/tmp/shallow",
+            "--config",
+            "tests/data/garden.yaml",
+            "grow",
+            "example/shallow",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        // Ensure the repository was created
+        let mut repo = std::path::PathBuf::from("tests");
+        assert!(repo.exists());
+        // tests/tmp
+        repo.push("tmp");
+        repo.push("shallow");
+        repo.push("example");
+        repo.push("tree");
+        repo.push("shallow");
+        // tests/tmp/shallow/example/tree/repo/.git
+        repo.push(".git");
+        assert!(repo.exists());
+
+        // The repository must have the default branches.
+        {
+            let command = ["git", "rev-parse", "origin/default"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+        // The dev branch must not exist because we cloned with --depth=1.
+        {
+            let command = ["git", "rev-parse", "origin/dev"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
+            assert!(0 != cmd::status(exec.join()));
+        }
+        // Only one commit must be cloned because of "depth: 1".
+        {
+            let command = ["git", "rev-list", "HEAD"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            let output = cmd::trim_stdout(&capture.unwrap());
+            let lines = output.split("\n").collect::<Vec<&str>>();
+            assert_eq!(lines.len(), 1);  // One commit only!
+        }
+
+        teardown("tests/tmp/shallow");
 
         Ok(())
     }

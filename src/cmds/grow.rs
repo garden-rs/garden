@@ -95,7 +95,14 @@ pub fn grow(
             let remote = config.trees[ctx.tree].remotes[0].clone();
             let url = eval::tree_value(config, remote.get_expr(), ctx.tree, ctx.garden);
 
-            let command = ["git", "clone", url.as_ref(), path.as_ref()];
+            let mut command: Vec<String> = vec!["git".to_string(), "clone".to_string()];
+            let clone_depth = config.trees[ctx.tree].clone_depth;
+            if clone_depth > 0 {
+                command.push(format!("--depth={}", clone_depth));
+            }
+            command.push(url);
+            command.push(path.to_string());
+
             let exec = cmd::exec_cmd(&command);
             let status = cmd::status(exec.join());
             if status != 0 {

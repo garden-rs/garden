@@ -52,6 +52,7 @@ trees:
     templates: python
   vx:
     url: git://github.com/davvid/vx.git
+    depth: 1  # Create a shallow clone using "git clone --depth=1"
     environment:
       PATH: ${TREE_PATH}
   # This tree allows the "run" command to be run from any directory.

@@ -168,6 +168,7 @@ pub struct Tree {
     pub symlink: Variable,
     pub templates: Vec<String>,
     pub variables: Vec<NamedVariable>,
+    pub clone_depth: i64,
 
     name: String,
     path: Variable,
@@ -269,6 +270,7 @@ pub struct Template {
     pub gitconfig: Vec<NamedVariable>,
     pub remotes: Vec<NamedVariable>,
     pub variables: Vec<NamedVariable>,
+    pub clone_depth: i64,
     name: String,
 }
 
