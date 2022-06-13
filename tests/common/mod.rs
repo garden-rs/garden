@@ -69,7 +69,7 @@ pub fn garden_config() -> garden::model::Configuration {
             remotes:
                 davvid: git@github.com:davvid/git-cola.git
         python/qtpy:
-            url: git://github.com/spider-ide/qtpy.git
+            url: https://github.com/spider-ide/qtpy.git
             templates: python
         tmp:
             environment:

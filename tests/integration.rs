@@ -149,7 +149,7 @@ mod slow {
         ];
         assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
 
-        // remote.origin.url is a read-only git:// URL
+        // remote.origin.url is a read-only https:// URL
         {
             let command = ["git", "config", "remote.origin.url"];
             let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
