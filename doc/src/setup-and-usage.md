@@ -36,19 +36,17 @@ absolute path) will use the `alt.yaml` garden file.
 
 ## Usage
 
-Garden is used by creating a configuration file and defining a directory
-structure for git trees.
+Now that we know how to create a `garden.yaml` we can start using garden to
+track our development repositories.
 
-Existing trees can be added to the configuration using `garden add`.
+When we have a `~/src/garden.yaml` file with Git worktrees alongside it in the
+`~/src` directory then we can start adding those trees to the garden file.
+Existing trees are added to a garden file using `garden plant <tree>`.
 
-The `garden init` command creates an empty `garden.yaml` file from scratch in
-the current directory, or in the user-global `~/.config/garden/garden.yaml`
-directory if `--global`  is specified.  The global configuration is used when
-`garden.yaml` is not found under the current directory.
+Once we have a garden file with trees in it then we can use the garden file to
+recreate our setup using `garden grow`. The `garden grow` command brings trees
+into existence by cloning trees that have been configured in a garden file.
 
-The `garden grow` command is used to bring trees into existence from an
-existing `garden.yaml`.
-
-Garden commands can be used to operate over sets of trees once a configuration
-has been defined using `garden add <repo>` or by adding the tree to
-`garden.yaml` using your favorite editor.
+Garden commands are used to operate over sets of trees once a configuration
+has been defined. See the [Garden Commands Documentation](commands.md) for
+detailed information about the built-in garden commands.
