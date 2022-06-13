@@ -15,7 +15,7 @@ mkdir -p "$1" && (
         cd ./repos/example.git &&
         tree=$(git write-tree) &&
         git commit-tree -m "$1" "$tree" >refs/heads/default &&
-        echo 'ref: refs/heads/default' >HEAD &&
+        git symbolic-ref HEAD refs/heads/default &&
         git commit-tree -m "$1 commit 2" -p "$(git rev-parse HEAD)" "$tree" >refs/heads/default &&
         git rev-parse HEAD >refs/heads/dev
     )
