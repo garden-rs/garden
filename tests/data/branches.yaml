@@ -1,0 +1,16 @@
+---
+variables:
+  repos: ${GARDEN_ROOT}/repos
+  dev_branch: dev
+
+templates:
+  shared-url: file://${repos}/example.git
+
+trees:
+  default:
+    templates: shared-url
+    branch: default
+
+  dev:
+    templates: shared-url
+    branch: ${dev_branch}

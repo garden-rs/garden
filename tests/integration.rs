@@ -197,6 +197,83 @@ mod slow {
         Ok(())
     }
 
+    #[test]
+    fn grow_branch_default() -> Result<()> {
+        setup("branches", "tests/tmp");
+
+        // garden grow default dev
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir",
+            "tests/tmp/branches",
+            "--config",
+            "tests/data/branches.yaml",
+            "grow",
+            "default",
+            "dev",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        // Ensure the repository was created
+        let mut repo = std::path::PathBuf::from("tests");
+        assert!(repo.exists());
+        // tests/tmp
+        repo.push("tmp");
+        repo.push("branches");
+        repo.push("default");
+        // tests/tmp/branches/default/.git
+        repo.push(".git");
+        assert!(repo.exists());
+
+        // The "default" repository must have a branch called "default" checked-out.
+        {
+            let command = ["git", "symbolic-ref", "--short", "HEAD"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/default");
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            let output = cmd::trim_stdout(&capture.unwrap());
+            let lines = output.split("\n").collect::<Vec<&str>>();
+            assert_eq!(lines.len(), 1);
+            assert_eq!(lines[0], "default");
+        }
+
+        // The "dev" repository must have a branch called "dev" checked-out.
+        {
+            let command = ["git", "symbolic-ref", "--short", "HEAD"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/dev");
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            let output = cmd::trim_stdout(&capture.unwrap());
+            let lines = output.split("\n").collect::<Vec<&str>>();
+            assert_eq!(lines.len(), 1);
+            assert_eq!(lines[0], "dev");
+        }
+        // The origin/dev and origin/default branches must exist because we cloned with
+        // --no-single-branch.
+        {
+            let command = ["git", "rev-parse", "origin/default"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/default");
+            assert!(0 == cmd::status(exec.join()));
+
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/dev");
+            assert!(0 == cmd::status(exec.join()));
+        }
+        {
+            let command = ["git", "rev-parse", "origin/dev"];
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/default");
+            assert!(0 == cmd::status(exec.join()));
+
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/dev");
+            assert!(0 == cmd::status(exec.join()));
+        }
+
+        teardown("tests/tmp/branches");
+
+        Ok(())
+    }
+
     /// `garden init` sets up remotes
     #[test]
     fn grow_remotes() {

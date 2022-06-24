@@ -210,6 +210,16 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
     false
 }
 
+// Yaml::String -> Variable
+fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
+    let mut result = false;
+    if let Yaml::String(yaml_string) = yaml {
+        value.set_expr(yaml_string.to_string());
+        result = true;
+    }
+    result
+}
+
 /// Read NamedVariable definitions (variables)
 fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
@@ -369,6 +379,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
             // The last clone depth set is the one that wins.
             template.clone_depth = base.clone_depth;
             template.is_single_branch = base.is_single_branch;
+            template.branch = base.branch;
         }
     }
 
@@ -376,6 +387,8 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     get_variables(&value["gitconfig"], &mut template.gitconfig);
     get_multivariables(&value["environment"], &mut template.environment);
     get_multivariables(&value["commands"], &mut template.commands);
+
+    get_variable(&value["branch"], &mut template.branch);
     get_i64(&value["depth"], &mut template.clone_depth);
     get_bool(&value["single-branch"], &mut template.is_single_branch);
 
@@ -548,6 +561,7 @@ fn get_tree(
             }
             tree.clone_depth = base.clone_depth;
             tree.is_single_branch = base.is_single_branch;
+            tree.branch = base.branch;
         }
     }
 
@@ -555,6 +569,8 @@ fn get_tree(
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables(&value["commands"], &mut tree.commands);
+
+    get_variable(&value["branch"], &mut tree.branch);
     get_i64(&value["depth"], &mut tree.clone_depth);
     get_bool(&value["single-branch"], &mut tree.is_single_branch);
 

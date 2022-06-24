@@ -99,6 +99,13 @@ pub fn grow(
             let mut command: Vec<String> = vec!["git".to_string(), "clone".to_string()];
 
             // [options]
+            //
+            // "git clone --branch=name" clones the named branch.
+            let branch_var = config.trees[ctx.tree].branch.clone();
+            let branch = eval::tree_value(config, branch_var.get_expr(), ctx.tree, ctx.garden);
+            if !branch.is_empty() {
+                command.push(format!("--branch={}", branch));
+            }
             // "git clone --depth=N" creates shallow clones with truncated history.
             let clone_depth = config.trees[ctx.tree].clone_depth;
             if clone_depth > 0 {
@@ -114,6 +121,7 @@ pub fn grow(
             } else {
                 command.push("--no-single-branch".to_string());
             }
+
             // <url> <path>
             command.push(url);
             command.push(path.to_string());
