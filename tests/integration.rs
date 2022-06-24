@@ -27,7 +27,7 @@ mod slow {
     fn grow_clone() -> Result<()> {
         setup("clone", "tests/tmp");
 
-        // garden init examples/tree
+        // garden grow examples/tree
         let cmd = [
             "./target/debug/garden",
             "--chdir",
@@ -78,7 +78,7 @@ mod slow {
     fn grow_clone_shallow() -> Result<()> {
         setup("shallow", "tests/tmp");
 
-        // garden init examples/tree
+        // garden grow examples/shallow
         let cmd = [
             "./target/debug/garden",
             "--chdir",
@@ -137,7 +137,7 @@ mod slow {
     fn grow_clone_single_branch() -> Result<()> {
         setup("single-branch", "tests/tmp");
 
-        // garden init examples/tree
+        // garden grow examples/single-branch
         let cmd = [
             "./target/debug/garden",
             "--chdir",
@@ -274,12 +274,12 @@ mod slow {
         Ok(())
     }
 
-    /// `garden init` sets up remotes
+    /// `garden grow` sets up remotes
     #[test]
     fn grow_remotes() {
         setup("remotes", "tests/tmp");
 
-        // garden init examples/tree
+        // garden grow examples/tree
         let cmd = [
             "./target/debug/garden",
             "--chdir",
@@ -319,12 +319,12 @@ mod slow {
         teardown("tests/tmp/remotes");
     }
 
-    /// `garden init` creates symlinks
+    /// `garden grow` creates symlinks
     #[test]
     fn grow_symlinks() {
         setup("symlinks", "tests/tmp");
 
-        // garden init examples/tree examples/symlink
+        // garden grow examples/tree examples/link
         {
             let cmd = [
                 "./target/debug/garden",
@@ -372,12 +372,12 @@ mod slow {
         teardown("tests/tmp/symlinks");
     }
 
-    /// `garden init` sets up git config settings
+    /// `garden grow` sets up git config settings
     #[test]
     fn grow_gitconfig() {
         setup("gitconfig", "tests/tmp");
 
-        // garden init examples/tree
+        // garden grow examples/tree
         {
             let cmd = [
                 "./target/debug/garden",
@@ -429,7 +429,7 @@ mod slow {
     fn plant_empty_repo() -> Result<()> {
         setup("plant-empty-repo", "tests/tmp");
 
-        // garden init in test/tmp/plant-empty-repo
+        // garden plant in test/tmp/plant-empty-repo
         let cmd = [
             "./target/debug/garden",
             "--chdir",
