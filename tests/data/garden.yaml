@@ -57,6 +57,12 @@ trees:
     url: file://${repos}/example.git
     depth: 1
 
+  example/single-branch:
+    path: example/tree/single-branch
+    url: file://${repos}/example.git
+    depth: 1
+    single-branch: true
+
 commands:
   pwd: pwd
   basename: basename "$(pwd)"

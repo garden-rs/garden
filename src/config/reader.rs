@@ -181,6 +181,16 @@ fn get_i64(yaml: &Yaml, value: &mut i64) -> bool {
     result
 }
 
+/// Yaml -> bool
+fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
+    let mut result = false;
+    if let Yaml::Boolean(yaml_bool) = *yaml {
+        *value = yaml_bool;
+        result = true;
+    }
+    result
+}
+
 /// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
 fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
     if let Yaml::String(yaml_string) = yaml {
@@ -313,8 +323,21 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
 fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template {
     let mut template = model::Template::default();
     get_str(&name, template.get_name_mut());
+
     {
         let mut url = String::new();
+        // If the YAML configuration is just a single string value then the template
+        // expands out to url: <string-value> only.
+        // templates:
+        //   example: git://git.example.org/example/repo.git
+        if get_str(value, &mut url) {
+            template
+                .remotes
+                .push(model::NamedVariable::new("origin".to_string(), url, None));
+            return template;
+        }
+        // If a <url> is configured then populate the "origin" remote.
+        // The first remote is "origin" by convention.
         if get_str(&value["url"], &mut url) {
             template
                 .remotes
@@ -345,6 +368,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
 
             // The last clone depth set is the one that wins.
             template.clone_depth = base.clone_depth;
+            template.is_single_branch = base.is_single_branch;
         }
     }
 
@@ -353,6 +377,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     get_multivariables(&value["environment"], &mut template.environment);
     get_multivariables(&value["commands"], &mut template.commands);
     get_i64(&value["depth"], &mut template.clone_depth);
+    get_bool(&value["single-branch"], &mut template.is_single_branch);
 
     // These follow first-found semantics; process the base templates in
     // reverse order.
@@ -493,7 +518,20 @@ fn get_tree(
     // Process the base templates in the specified order before processing
     // the template itself.
     for template_name in &tree.templates {
-        if let Yaml::Hash(_) = templates[template_name.as_ref()] {
+        let yaml_template = &templates[template_name.as_ref()];
+
+        // Templates defined with just a string value can only specify a single
+        // "origin" remote and nothing more.
+        if let Yaml::String(_) = yaml_template {
+            let mut base = get_template(
+                &Yaml::String(template_name.clone()),
+                &templates[template_name.as_ref()],
+                templates,
+            );
+            if tree.remotes.is_empty() {
+                tree.remotes.append(&mut base.remotes);
+            }
+        } else if let Yaml::Hash(_) = yaml_template {
             let mut base = get_template(
                 &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
@@ -509,6 +547,7 @@ fn get_tree(
                 tree.remotes.append(&mut base.remotes);
             }
             tree.clone_depth = base.clone_depth;
+            tree.is_single_branch = base.is_single_branch;
         }
     }
 
@@ -517,6 +556,7 @@ fn get_tree(
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables(&value["commands"], &mut tree.commands);
     get_i64(&value["depth"], &mut tree.clone_depth);
+    get_bool(&value["single-branch"], &mut tree.is_single_branch);
 
     // Remotes
     get_remotes(&value["remotes"], &mut tree.remotes);

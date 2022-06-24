@@ -95,11 +95,26 @@ pub fn grow(
             let remote = config.trees[ctx.tree].remotes[0].clone();
             let url = eval::tree_value(config, remote.get_expr(), ctx.tree, ctx.garden);
 
+            // git clone [options] <url> <path>
             let mut command: Vec<String> = vec!["git".to_string(), "clone".to_string()];
+
+            // [options]
+            // "git clone --depth=N" creates shallow clones with truncated history.
             let clone_depth = config.trees[ctx.tree].clone_depth;
             if clone_depth > 0 {
                 command.push(format!("--depth={}", clone_depth));
             }
+            // "git clone --depth=N" clones a single branch by default.
+            // We generally want all branches available in our clones so we default to
+            // "single-branch: false" so that "--no-single-branch" is used. This makes
+            // all branches available by default.
+            let is_single_branch = config.trees[ctx.tree].is_single_branch;
+            if is_single_branch {
+                command.push("--single-branch".to_string());
+            } else {
+                command.push("--no-single-branch".to_string());
+            }
+            // <url> <path>
             command.push(url);
             command.push(path.to_string());
 

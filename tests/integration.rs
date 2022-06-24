@@ -109,11 +109,11 @@ mod slow {
             let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
             assert_eq!(0, cmd::status(exec.join()));
         }
-        // The dev branch must not exist because we cloned with --depth=1.
+        // The dev branch must exist because we cloned with --no-single-branch.
         {
             let command = ["git", "rev-parse", "origin/dev"];
             let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
-            assert!(0 != cmd::status(exec.join()));
+            assert!(0 == cmd::status(exec.join()));
         }
         // Only one commit must be cloned because of "depth: 1".
         {
@@ -128,6 +128,71 @@ mod slow {
         }
 
         teardown("tests/tmp/shallow");
+
+        Ok(())
+    }
+
+    /// `garden grow` clones a single branch with "single-branch: true".
+    #[test]
+    fn grow_clone_single_branch() -> Result<()> {
+        setup("single-branch", "tests/tmp");
+
+        // garden init examples/tree
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir",
+            "tests/tmp/single-branch",
+            "--config",
+            "tests/data/garden.yaml",
+            "grow",
+            "example/single-branch",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        // Ensure the repository was created
+        let mut repo = std::path::PathBuf::from("tests");
+        assert!(repo.exists());
+        // tests/tmp
+        repo.push("tmp");
+        repo.push("single-branch");
+        repo.push("example");
+        repo.push("tree");
+        repo.push("single-branch");
+        // tests/tmp/single-branch/example/tree/single-branch/.git
+        repo.push(".git");
+        assert!(repo.exists());
+
+        // The repository must have the default branches.
+        {
+            let command = ["git", "rev-parse", "origin/default"];
+            let exec = cmd::exec_in_dir(
+                &command, "tests/tmp/single-branch/example/tree/single-branch"
+            );
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+        // The dev branch must not exist because we cloned with --single-branch.
+        {
+            let command = ["git", "rev-parse", "origin/dev"];
+            let exec = cmd::exec_in_dir(
+                &command, "tests/tmp/single-branch/example/tree/single-branch"
+            );
+            assert!(0 != cmd::status(exec.join()));
+        }
+        // Only one commit must be cloned because of "depth: 1".
+        {
+            let command = ["git", "rev-list", "HEAD"];
+            let exec = cmd::exec_in_dir(
+                &command, "tests/tmp/single-branch/example/tree/single-branch"
+            );
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            let output = cmd::trim_stdout(&capture.unwrap());
+            let lines = output.split("\n").collect::<Vec<&str>>();
+            assert_eq!(lines.len(), 1);  // One commit only!
+        }
+
+        teardown("tests/tmp/single-branch");
 
         Ok(())
     }
