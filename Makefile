@@ -37,7 +37,9 @@ clean::
 .PHONY: doc
 doc::
 	$(CARGO) doc --no-deps --package $(CARGO_PACKAGE)
-	cd doc && $(MDBOOK) build
+	cd doc && $(MDBOOK) build --dest-dir book.new
+	rsync -r --delete --exclude=.git doc/book.new/ doc/book/
+	rm -rf doc/book.new
 
 
 # Installation
