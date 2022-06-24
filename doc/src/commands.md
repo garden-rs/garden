@@ -106,6 +106,17 @@ It is safe to re-run the `grow` command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
 repositories are created by cloning the configured tree url.
 
+The `branch: <branch-name>` tree variable is used to specify which branch should be
+cloned and checked out when the tree is grown.
+
+    trees:
+      example:
+        branch: dev
+        url: <url>
+
+`graden grow example` clones the repository using `git clone --branch=dev`.
+The `branch` setting is a tree variable and supports `${variable}` expressions.
+
 The `depth: <integer>` tree parameter is used to create shallow clones.
 
     trees:
@@ -113,11 +124,32 @@ The `depth: <integer>` tree parameter is used to create shallow clones.
         depth: 42
         url: <url>
 
-`garden grow example` clones the repository using `git clone --depth=42 <url>`.
+`garden grow example` clones the repository using:
 
+    git clone --depth=42 --no-single-branch
+
+Even though a shallow clone is created, all of the remote tracking branches
+(eg. `origin/*`) are available because we clone the repository using
+the `--no-single-branch` option.
+
+The `single-branch: true` tree parameter is used to create clones that contain
+a single branch only. This is useful if you want to limit the on-disk footprint
+of repositories by only having a single branch available.
+
+This paramter is typically used in conjunction with `branch: <branch-name>` and
+`depth: 1` to create a 1-commit shallow clone with a single branch.
+
+    trees:
+      example:
+        branch: dev
+        depth: 1
+        single-branch: true
+        url: <url>
+
+Wildcards are supported in the trees queries supported by `garden grow`.
 `garden grow 'glob*'` grows the gardens, groups or trees that start with "glob".
 
-If "garden.yaml" contains "gardens" whose name matches the query then the trees
+If `garden.yaml` contains `gardens` whose name matches the query then the trees
 associated with each garden are grown.
 
 If no gardens are found then garden will search for "groups" that match
