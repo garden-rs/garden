@@ -100,7 +100,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">3.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">5.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">6.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">7.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -179,10 +179,9 @@
 <p>Garden streamlines development workflows that involve a loosely-coupled set of
 multiple, independent Git trees.</p>
 <p>Garden allows you to define dynamic relationships and workflows between these
-repositories using a declarative YAML config file that can be easily shared
-and used as a bootstrapping mechanism for getting a auditable, from-source
-project cloned, built, installed, and running with minimal efforts for
-consumers of a Garden file.</p>
+repositories using a declarative YAML config file that can be shared and used as
+a bootstrapping mechanism for getting a auditable, from-source project cloned,
+built, installed and running with minimal effort for consumers of a Garden file.</p>
 <p>Garden sits above any individual project's build scripts and conventions.
 Garden is all about making it easy to remix and reuse libraries maintained
 in seperate Git repositories.</p>
@@ -217,6 +216,33 @@ Git repositories for any purposes.</p>
 are either available to any tree or scoped to specific gardens only.</p>
 <p>Groups are lighter-weight than a garden. They group trees together into named
 collections that can be referenced by gardens and commands.</p>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<p>There are multiple ways to install garden.</p>
+<h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
+<p>This requires at least Rust 1.45 and Cargo to be installed. Once you have
+installed Rust, type the following in the terminal:</p>
+<pre><code>cargo install garden-tools
+</code></pre>
+<p>This will download and compile garden for you. The only thing left to do is
+to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</code>.</p>
+<h2 id="latest-using-cargo"><a class="header" href="#latest-using-cargo">Latest using Cargo</a></h2>
+<p>The version published to crates.io will sometimes be behind the source
+code repository. If you want to install the latest pre-release version then you can
+build the Git version of Garden yourself using <code>cargo</code>.</p>
+<pre><code>cargo install --git https://github.com/davvid/garden garden-tools
+</code></pre>
+<h2 id="build-and-install-from-source-for-development"><a class="header" href="#build-and-install-from-source-for-development">Build and Install from Source for Development</a></h2>
+<p>If you would like to develop features and contribute to Garden then you will
+have to clone the repository on your local machine.</p>
+<pre><code>git clone https://github.com/davvid/garden
+cd garden
+
+# Build ./target/debug/garden
+cargo build
+
+# Install $HOME/.cargo/bin/garden
+cargo install
+</code></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="setup-and-usage"><a class="header" href="#setup-and-usage">Setup and Usage</a></h1>
 <h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
 <p>A garden can be created in any directory. Run <code>garden init</code> to create
@@ -241,29 +267,87 @@ perform garden operations without needing to <code>cd</code> into <code>~/src/</
 using <code>garden -c alt.yaml ...</code> from <em><strong>any</strong></em> directory (without specifying an
 absolute path) will use the <code>alt.yaml</code> garden file.</p>
 <h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
-<p>Garden is used by creating a configuration file and defining a directory
-structure for git trees.</p>
-<p>Existing trees can be added to the configuration using <code>garden add</code>.</p>
-<p>The <code>garden init</code> command creates an empty <code>garden.yaml</code> file from scratch in
-the current directory, or in the user-global <code>~/.config/garden/garden.yaml</code>
-directory if <code>--global</code>  is specified.  The global configuration is used when
-<code>garden.yaml</code> is not found under the current directory.</p>
-<p>The <code>garden grow</code> command is used to bring trees into existence from an
-existing <code>garden.yaml</code>.</p>
-<p>Garden commands can be used to operate over sets of trees once a configuration
-has been defined using <code>garden add &lt;repo&gt;</code> or by adding the tree to
-<code>garden.yaml</code> using your favorite editor.</p>
+<p>Now that we know how to create a <code>garden.yaml</code> we can start using garden to
+track our development repositories.</p>
+<p>When we have a <code>~/src/garden.yaml</code> file with Git worktrees alongside it in the
+<code>~/src</code> directory then we can start adding those trees to the garden file.
+Existing trees are added to a garden file using <code>garden plant &lt;tree&gt;</code>.</p>
+<p>Once we have a garden file with trees in it then we can use the garden file to
+recreate our setup using <code>garden grow</code>. The <code>garden grow</code> command brings trees
+into existence by cloning trees that have been configured in a garden file.</p>
+<p>Garden commands are used to operate over sets of trees once a configuration
+has been defined. See the <a href="commands.html">Garden Commands Documentation</a> for
+detailed information about the built-in garden commands.</p>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="tree-queries"><a class="header" href="#tree-queries">Tree Queries</a></h1>
+<p>Garden commands take arguments that specify which groups, gardens or trees to
+operate on. Tree queries are strings that resolve to a set of trees.</p>
+<p>Command arguments with garden, group or tree names, <code>@tree</code> references,
+<code>%group</code> references, <code>:garden</code> references and wildcards are all referred to as
+&quot;tree queries&quot;.</p>
+<p>When a name is specified, garden will use the first matching garden, group or
+tree, in that order, when determining which trees to operate on.  When a
+garden or group is matched, all of its associated trees are used.</p>
+<h2 id="resolving-trees-groups-or-gardens-only"><a class="header" href="#resolving-trees-groups-or-gardens-only">Resolving Trees, Groups or Gardens Only</a></h2>
+<p>If you have groups, gardens, and trees with the same name then you can use the
+<code>@tree</code>, <code>%group</code>, and <code>:garden</code> syntax to disambiguate between them.</p>
+<ul>
+<li><em><strong>@tree</strong></em> - values prefixed with <code>@</code> resolve trees only</li>
+<li><em><strong>%group</strong></em> - values prefixed with <code>%</code> resolve groups only</li>
+<li><em><strong>:garden</strong></em> - values prefixed with <code>:</code> resolve gardens only</li>
+</ul>
+<pre><code class="language-bash">garden grow @tree      # grow the tree called &quot;tree&quot;
+garden grow %group     # grow the group called &quot;group&quot;
+garden grow :garden    # grow the garden called &quot;garden&quot;
+</code></pre>
+<p>When no prefixes are specified then the names are resolved in the following
+order: gardens, groups and trees.</p>
+<p>Gardens have the highest priority, followed by groups and lastly trees. If
+your trees, groups and gardens are named uniquely then no prefixes are needed.</p>
+<h2 id="tree-queries-resolve-to-multiple-trees"><a class="header" href="#tree-queries-resolve-to-multiple-trees">Tree Queries Resolve to Multiple Trees</a></h2>
+<p>In the following example, the &quot;cola&quot; garden is found in the example
+configuration. Each command is run over every tree in that garden.</p>
+<pre><code class="language-bash">garden exec cola git status -s
+garden status cola
+garden cmd cola status build
+</code></pre>
+<h2 id="paths"><a class="header" href="#paths">Paths</a></h2>
+<p>Paths can be specified as well, but the filesystem has the lowest priority
+relative to gardens, groups, and trees.  When specifyiing paths they must
+resolve to a configured tree.  For example,</p>
+<pre><code class="language-bash">garden build . -- --verbose
+</code></pre>
+<p>runs the <code>build</code> command on the tree in the current directory and passes the
+<code>--verbose</code> flag to the configured <code>build</code> command.</p>
+<h2 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h2>
+<p>Garden understands shell wildcards.  Glob wildcards in tree queries allows
+operations to span over ad-hoc gardens, groups and trees.</p>
+<p>This following examples show how wildcards might be used:</p>
+<pre><code class="language-bash"># Grow all all trees whose names start with &quot;git&quot; by cloning them.
+garden grow '@git*'
+
+# Run &quot;pwd&quot; in all of the same trees.
+garden exec '@git*' pwd
+</code></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="commands"><a class="header" href="#commands">Commands</a></h1>
-<p>Garden has a handful of built-in commands and provides a flexible way to
-extend it with user-defined commands. User-defined commands are one of the
-most useful Garden features.</p>
+<p>Garden includes a set of built-in commands and can be flexibly extended
+with user-defined commands. User-defined commands are one Garden's most
+useful features.</p>
 <h2 id="command-line-conventions"><a class="header" href="#command-line-conventions">Command-Line Conventions</a></h2>
-<p>All builtin garden commands have this basic syntax:</p>
+<p>Run <code>garden help</code> to display usage information for garden commands.
+The usage information is where the command-line options are documented.</p>
+<pre><code>garden help
+garden help &lt;command&gt;
+garden &lt;command&gt; --help
+</code></pre>
+<p>Built-in commands use this basic syntax:</p>
 <pre><code>garden [options] &lt;command&gt; [command-options] [command-arguments]*
 </code></pre>
-<p>The following options are specified before <code>&lt;command&gt;</code>, and are
-global to all <code>garden</code> commands.</p>
-<pre><code>-c | --config &lt;path&gt;
+<p>The following options come before <code>&lt;command&gt;</code> and are common to all commands.</p>
+<pre><code>-C | --chdir &lt;directory&gt;
+</code></pre>
+<p>chdir to the specified directory before searching for configuration.
+This is modeled after <code>make -C &lt;path&gt; ...</code> or <code>git -C &lt;path&gt; ...</code>.</p>
+<pre><code>-c | --config &lt;filename&gt;
 </code></pre>
 <p>Specify a garden config file to use instead of searching for <code>garden.yaml</code>.
 The path can either be the path to an actual config file, or it can be
@@ -271,75 +355,14 @@ the basename of a file in the configuration search path.</p>
 <pre><code>-v | --verbose
 </code></pre>
 <p>Enable verbose debugging output.</p>
-<pre><code>-s | --set  name=value
+<pre><code>-s | --set name=value
 </code></pre>
 <p>Override a configured variable by passing a <code>name=value</code> string to
 the <code>--set</code> option.  The variable named <code>name</code> will be updated with the
 garden expression <code>value</code>.  Multiple variables can be set by specifying the
 flag multiple times.</p>
-<h2 id="garden-add"><a class="header" href="#garden-add">garden add</a></h2>
-<pre><code>garden add &lt;path&gt;
-
-# example
-garden add src/repo
-</code></pre>
-<p>Add an existing Git tree at <code>&lt;path&gt;</code> to <code>garden.yaml</code>.</p>
-<h2 id="garden-cmd"><a class="header" href="#garden-cmd">garden cmd</a></h2>
-<pre><code>garden cmd &lt;query&gt; &lt;command&gt;... [-- &lt;arguments&gt;..]
-
-# example
-garden cmd cola build test -- V=1
-</code></pre>
-<p>Run commands over the trees matched by <code>&lt;query&gt;</code>.</p>
-<p><code>garden cmd</code> and <code>garden &lt;command&gt;</code> interact with custom commands that are
-configured in the &quot;commands&quot; section for templates, trees, gardens,
-and the global top-level scope.</p>
-<p>Custom commands can be defined at either the tree or garden level.
-Commands defined at the garden level extend commands defined on a tree.</p>
-<p>Commands are executed in a shell, so shell expressions can be used in commands.
-Each command runs under <code>[&quot;sh&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> with the resolved
-environment from the corresponding garden, group, or tree.</p>
-<p>Optional command-line <code>&lt;arguments&gt;</code> specified after a double-dash (<code>--</code>)
-end-of-options marker are forwarded to each command.</p>
-<p><code>&quot;$0&quot;</code> in a custom command points to the current garden executable and can be
-used to rerun garden from within a garden command.</p>
-<p>Optional arguments are available to command strings by using the traditional
-<code>&quot;$@&quot;</code> shell expression syntax.  When optional arguments are present <code>&quot;$1&quot;</code>,
-<code>&quot;$2&quot;</code>, and subsequent variables will be set according to each argument.</p>
-<h3 id="custom-commands"><a class="header" href="#custom-commands">Custom Commands</a></h3>
-<pre><code>garden &lt;command&gt; &lt;query&gt;... [-- &lt;arguments&gt;...]
-
-# example
-garden status @git-cola .
-garden build cola -- V=1
-</code></pre>
-<p>When no builtin command exists by the specified name then garden will
-use custom commands defined in a &quot;commands&quot; block at the corresponding
-garden or tree scope.</p>
-<p>This is complementary to <code>garden cmd &lt;query&gt; &lt;command&gt;...</code>.
-That form can run multiple commands; this form operates over multiple queries.</p>
-<h2 id="garden-exec"><a class="header" href="#garden-exec">garden exec</a></h2>
-<pre><code>garden exec &lt;query&gt; &lt;command&gt; [&lt;arguments&gt;]*
-
-# example
-garden exec cola git status -s
-</code></pre>
-<p>Execute arbitrary commands on all of the trees matched by <code>&lt;query&gt;</code>.</p>
-<h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
-<pre><code>garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
-
-# example
-garden eval '${GARDEN_ROOT}'
-garden eval '${TREE_PATH}' cola
-</code></pre>
-<p>Evaluate a garden expression in the specified tree context.
-If no tree is given then the variable scope includes the top-level variables
-block only.</p>
-<p>When a tree is given then its variables are considered as well.
-When a garden is specified then the garden's variables are also available for
-evaluation.</p>
 <h2 id="garden-init"><a class="header" href="#garden-init">garden init</a></h2>
-<pre><code>garden init [options]
+<pre><code>garden init [options] [&lt;filename&gt;]
 
 # create a local garden config rooted at the current directory
 garden init --root '${GARDEN_CONFIG_DIR}'
@@ -347,30 +370,170 @@ garden init --root '${GARDEN_CONFIG_DIR}'
 # create a global garden config rooted at ~/src
 garden init --global --root '~/src'
 </code></pre>
-<p>Create a new empty <code>garden.yaml</code> in the current directory, or in the
-user's global configuration directory when <code>--global</code> is specified.
-See <code>garden help init</code> for more details.</p>
+<p>The init command will create an empty Garden YAML file with the minimal
+boilerplate to start using garden. If no <code>&lt;filename&gt;</code> is specified,
+<code>garden.yaml</code> in the current directory will be written.</p>
+<p>The Garden file is written to the user's <code>~/.config/garden/</code> global configuration
+directory when <code>--global</code> is specified.</p>
+<p>This command is typically run without specifying a filename.
+After <code>garden init</code> the following files are created.</p>
+<pre><code>current-directory/
+└── garden.yaml
+</code></pre>
+<h2 id="garden-plant"><a class="header" href="#garden-plant">garden plant</a></h2>
+<pre><code>garden plant &lt;tree&gt;
+</code></pre>
+<p>Add a pre-existing Git worktree to <code>garden.yaml</code>.</p>
+<p>The <code>trees</code> section in the <code>garden.yaml</code> file will be updated with details
+about the new tree.</p>
+<h2 id="garden--tree-query"><a class="header" href="#garden--tree-query">garden ... [tree-query]</a></h2>
+<p>Garden commands accept <a href="tree-queries.html">tree query</a> strings that are used to
+refer to sets of trees.</p>
+<p>Tree queries are glob string patterns that can be used to match the gardens,
+groups or trees defined in &quot;garden.yaml&quot;.</p>
 <h2 id="garden-grow"><a class="header" href="#garden-grow">garden grow</a></h2>
-<pre><code>garden grow &lt;query&gt;
+<pre><code>garden grow &lt;tree-query&gt;
 
-# example
+# Example usage
 garden grow cola
 </code></pre>
-<p>Update or create the tree(s) referenced by the <code>&lt;query&gt;</code>.</p>
-<p>It is safe to re-run the <code>grow</code> command.  Existing trees will have their git
-configuration updated to match the configured remotes.  Missing repositories
-are created by cloning the configured tree url.</p>
+<p>If you have a <code>garden.yaml</code> file, either one that you authored yourself or
+one that was provided to you, then you will need to grow the Git trees
+into existence.</p>
+<p>The <code>grow</code> sub-command updates or creates the trees matched by the <code>&lt;tree-query&gt;</code>
+and places them into the paths defined by the garden file.</p>
+<p>It is safe to re-run the <code>grow</code> command and re-grow a tree.  Existing trees will
+have their git configuration updated to match the configured remotes.  Missing
+repositories are created by cloning the configured tree url.</p>
+<p>The <code>branch: &lt;branch-name&gt;</code> tree variable is used to specify which branch should be
+cloned and checked out when the tree is grown.</p>
+<pre><code>trees:
+  example:
+    branch: dev
+    url: &lt;url&gt;
+</code></pre>
+<p><code>graden grow example</code> clones the repository using <code>git clone --branch=dev</code>.
+The <code>branch</code> setting is a tree variable and supports <code>${variable}</code> expressions.</p>
+<p>The <code>depth: &lt;integer&gt;</code> tree parameter is used to create shallow clones.</p>
+<pre><code>trees:
+  example:
+    depth: 42
+    url: &lt;url&gt;
+</code></pre>
+<p><code>garden grow example</code> clones the repository using:</p>
+<pre><code>git clone --depth=42 --no-single-branch
+</code></pre>
+<p>Even though a shallow clone is created, all of the remote tracking branches
+(eg. <code>origin/*</code>) are available because we clone the repository using
+the <code>--no-single-branch</code> option.</p>
+<p>The <code>single-branch: true</code> tree parameter is used to create clones that contain
+a single branch only. This is useful if you want to limit the on-disk footprint
+of repositories by only having a single branch available.</p>
+<p>This paramter is typically used in conjunction with <code>branch: &lt;branch-name&gt;</code> and
+<code>depth: 1</code> to create a 1-commit shallow clone with a single branch.</p>
+<pre><code>trees:
+  example:
+    branch: dev
+    depth: 1
+    single-branch: true
+    url: &lt;url&gt;
+</code></pre>
+<p>Wildcards are supported in the trees queries supported by <code>garden grow</code>.
+<code>garden grow 'glob*'</code> grows the gardens, groups or trees that start with &quot;glob&quot;.</p>
+<p>If <code>garden.yaml</code> contains <code>gardens</code> whose name matches the query then the trees
+associated with each garden are grown.</p>
+<p>If no gardens are found then garden will search for &quot;groups&quot; that match
+the query. If groups are found then the trees within each group will be grown.</p>
+<p>If no gardens and no groups are found then will garden search for trees and grow
+those whose names match the query string.</p>
+<h2 id="garden-cmd"><a class="header" href="#garden-cmd">garden cmd</a></h2>
+<pre><code>garden cmd &lt;tree-query&gt; &lt;command&gt; [&lt;command&gt;]... [-- &lt;arguments&gt;..]
+
+# Example usage
+garden cmd cola build test -- V=1
+</code></pre>
+<p>Run one or more user-defined commands over the gardens, groups or trees
+that match the specified tree query.</p>
+<p>For example if you have a group called <code>treesitters</code> and two custom commands
+called <code>build</code> and <code>test</code>, then running <code>garden cmd treesitters build test</code>
+will run the custom <code>build</code> and <code>test</code> commands over all of the trees in
+<code>treesitters</code> group.</p>
+<p><code>garden cmd</code> and <code>garden &lt;command&gt;</code> interact with custom commands that are
+configured in the <code>commands</code> section for templates, trees, gardens,
+and the top-level scope.</p>
+<p>Custom commands can be defined at either the tree or garden level.
+Commands defined at the garden level extend commands defined on a tree.
+If both a tree and the garden containing that tree defines a command called
+&quot;test&quot; then &quot;garden test&quot; will first run the tree's &quot;test&quot; command followed
+by the garden's &quot;test&quot; command.</p>
+<p>Commands are executed in a shell and shell expressions can be used in commands.
+Each command runs under <code>[&quot;sh&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> with the resolved
+environment from the corresponding garden, group, or tree.</p>
+<p>Additional command-line <code>&lt;arguments&gt;</code> specified after a double-dash (<code>--</code>)
+end-of-options marker are forwarded to each command.</p>
+<p><code>&quot;$0&quot;</code> in a custom command points to the current garden executable and can be
+used to rerun garden from within a garden command.</p>
+<p>Additional arguments are available to command strings by using the traditional
+<code>&quot;$@&quot;</code> shell syntax.  When additional arguments are present <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and
+subsequent variables will be set according to each argument.</p>
+<pre><code># Example usage
+garden test cola -- V=1
+</code></pre>
+<h3 id="custom-commands"><a class="header" href="#custom-commands">Custom Commands</a></h3>
+<pre><code>garden &lt;command&gt; &lt;query&gt; [&lt;query&gt;]* [-- &lt;arguments&gt;...]
+
+# Example usage
+garden status @git-cola .
+garden build cola -- V=1
+</code></pre>
+<p><code>garden &lt;command&gt;</code> is another way to execute a user-defined <code>&lt;command&gt;</code>.
+This form allows you to specify multiple queries rather than multiple commands.</p>
+<p>When no builtin command exists by the specified name then garden will
+use custom commands defined in a <code>commands</code> block at the corresponding
+garden or tree scope.</p>
+<p><code>garden &lt;command&gt; &lt;query&gt;...</code> is complementary to <code>garden cmd &lt;query&gt; &lt;command&gt;...</code>.</p>
+<p><code>garden cmd ...</code> runs multiple commands over a single query.</p>
+<p><code>garden &lt;command&gt; ...</code> runs a command over multiple queries.</p>
+<p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
+command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
+<h2 id="garden-exec"><a class="header" href="#garden-exec">garden exec</a></h2>
+<pre><code>garden exec &lt;tree-query&gt; &lt;command&gt; [&lt;arguments&gt;]*
+
+# example
+garden exec cola git status -s
+</code></pre>
+<p>Run commands over the trees, groups or gardens matched by tree query.
+When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environment
+is configured for the command using the environment variables and
+custom commands from both the tree and the garden.</p>
+<h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
+<pre><code>garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
+
+# example
+garden eval '${GARDEN_ROOT}'
+garden eval '${TREE_PATH}' cola
+</code></pre>
+<p>Evaluate a Garden Expression in the specified tree context and output
+the result to stdout.</p>
+<p>Garden Expressions are <code>strings-with-${variables}</code> that get substituted
+and resolved using garden's <code>variables</code> and <code>environment</code> blocks.</p>
+<p>If no tree is given then the variable scope includes the top-level variables
+block only.</p>
+<p>When a tree is given then its variables are considered as well.</p>
+<p>When a garden is specified then the garden's variables are also available for
+evaluation.</p>
 <h2 id="garden-shell"><a class="header" href="#garden-shell">garden shell</a></h2>
-<pre><code>garden shell &lt;query&gt; [&lt;tree&gt;]
+<pre><code>garden shell &lt;tree-query&gt; [&lt;tree&gt;]
 
 # example
 garden shell cola
 </code></pre>
-<p>Launch a shell inside the environment formed by the tree query.
-The optional tree argument specifies which tree to chdir into.</p>
+<p>Launch a shell inside the environment synthesized by the tree query.
+If <code>&lt;tree&gt;</code> is specified then the current directory will be set to the
+tree's directory.</p>
 <p>If the resolved tree query contains a tree whose name exactly matches the
 query string then that tree's directory will be used when opening the shell.
-The optional tree argument is not needed for the common case where a garden
+The optional tree argument is not needed for the case where a garden
 and tree share a name -- garden will chdir into that same-named tree when
 creating the shell.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
@@ -395,7 +558,41 @@ following locations. The first one found is used.</p>
 garden's file discovery.</p>
 <p>The following example <code>garden.yaml</code> is referred to by the documentation
 when showing examples.</p>
-<pre><code class="language-yaml">garden:
+<pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
+#
+# The following gardens are defined: &quot;cola&quot;, &quot;cola-main&quot; and &quot;cola-next&quot;.
+#
+# The &quot;cola&quot; garden runs git-cola using the &quot;git&quot; command from your $PATH.
+# The &quot;cola-main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
+# The &quot;cola-next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
+#
+# One-time Setup:
+#
+# * Clone repositories and create worktrees:
+#   garden grow cola-main cola-next
+#
+# * Initialize git-cola's Python virtualenv environment.
+#   garden setup cola
+#
+# Development workflows:
+#
+# * Build the &quot;cola-main&quot; garden using git.git's &quot;main&quot; branch:
+#   garden build cola-main
+#
+# * Build the &quot;cola-next&quot; garden using git.git's &quot;next&quot; branch:
+#   garden build cola-next
+#
+# * Run Git Cola's tests in each environment.
+#   garden test/git-cola cola
+#   garden test/git-cola cola-main
+#   garden test/git-cola cola-next
+#
+# * Run Git Cola in each environment.
+#   garden run cola
+#   garden run cola-main
+#   garden run cola-next
+
+garden:
   root: ${GARDEN_CONFIG_DIR}
 
 # The following variables are used in the custom commands below.
@@ -409,10 +606,10 @@ commands:
   add-all: git add --update
   diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
   lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
+  run: vx ${prefix} git cola &quot;$@&quot;
   status:
     - git status --short
     - git branch
-  run: vx ${prefix} git cola &quot;$@&quot;
 
 templates:
   bin:
@@ -423,48 +620,79 @@ templates:
       PYTHONPATH: ${TREE_PATH}
   makefile:
     commands:
-      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; all
-      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; install
-      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; test
-      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; doc
+      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
-  git:
-    url: git://github.com/git/git.git
+  # git/git.git is a bare repository.
+  #   https://git-scm.com/docs/gitglossary.html#Documentation/gitglossary.txt-aiddefbarerepositoryabarerepository
+  # git/git.git is the parent repository for the &quot;git/main&quot; and &quot;git/next&quot; worktrees:
+  #   https://git-scm.com/docs/git-worktree
+  git/git.git:
+    bare: true  # Create a bare repository
+    url: https://github.com/git/git.git
     templates: makefile
     environment:
       PATH: ${TREE_PATH}/bin-wrappers
+  # git/main is a &quot;git worktree&quot; for git.git's &quot;main&quot; branch.
+  git/main:
+    worktree: git/git.git
+    branch: main
+  # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
+  git/next:
+    worktree: git/git.git
+    branch: next
+
+  # git-cola's worktree can be reused alongside any of the git/* trees defined above.
   git-cola:
-    path: git-cola
-    url: git://github.com/git-cola/git-cola.git
+    url: https://github.com/git-cola/git-cola.git
     templates: [bin, makefile, python]
     commands:
-      setup:
-        - ${python} -m venv ${prefix}
-        - vx ${prefix} make requirements
-        - vx ${prefix} make requirements-dev
-        - vx ${prefix} pip install PyQt5
+      setup: |
+        ${python} -m venv ${prefix}
+        vx ${prefix} make requirements
+        vx ${prefix} make requirements-dev
+        vx ${prefix} make requirements-optional
+      # Run just git-cola's tests
+      test/git-cola: make test &quot;$@&quot;
+
   qtpy:
-    url: git://github.com/spyder-ide/qtpy.git
+    description: Qt abstraction library used by git-cola
+    url: https://github.com/spyder-ide/qtpy.git
     templates: python
+
   vx:
-    url: git://github.com/davvid/vx.git
+    description: Utility for activating Python virtualenvs
+    url: https://github.com/davvid/vx.git
+    depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
     environment:
       PATH: ${TREE_PATH}
+
   # This tree allows the &quot;run&quot; command to be run from any directory.
   cwd:
     path: ${PWD}
 
 groups:
-  cola-grp:
-    - git
+  cola-repos-grp:
     - git-cola
     - qtpy
     - vx
 
 gardens:
   cola:
-    groups: cola-grp
+    groups: cola-repos-grp
+    environment:
+      PATH: ${prefix}/bin
+  cola-main:
+    groups: cola-repos-grp
+    trees: git/main
+    environment:
+      PATH: ${prefix}/bin
+  cola-next:
+    groups: cola-repos-grp
+    trees: git/next
     environment:
       PATH: ${prefix}/bin
 </code></pre>
@@ -563,7 +791,7 @@ extending a tree.</p>
 list will be treated like a list with a single item.  This is useful, for
 example, when defining groups using wildcards, or commands which can sometimes
 be one-lines, and multi-line at other times.</p>
-<h2 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h2>
+<h2 id="wildcards-1"><a class="header" href="#wildcards-1">Wildcards</a></h2>
 <p>The names in garden <code>tree</code> and <code>group</code> lists, and group member names accept glob
 wildcard patterns.</p>
 <p>The &quot;annex&quot; group definition is: <code>annex/*</code>.   This matches all trees that
@@ -580,56 +808,6 @@ matches &quot;cola&quot; only.</p>
 </code></pre>
 <p>The &quot;path&quot; entry behaves like the tree &quot;path&quot; entry -- when unspecified it
 defaults to a path named after the tree relative to the garden root.</p>
-<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="tree-queries"><a class="header" href="#tree-queries">Tree Queries</a></h1>
-<p>Garden commands take arguments that specify which groups, gardens or trees to
-operate on. Tree queries are strings that resolve to a set of trees.</p>
-<p>Command arguments with garden, group or tree names, <code>@tree</code> references,
-<code>%group</code> references, <code>:garden</code> references and wildcards are all referred to as
-&quot;tree queries&quot;.</p>
-<p>When a name is specified, garden will use the first matching garden, group or
-tree, in that order, when determining which trees to operate on.  When a
-garden or group is matched, all of its associated trees are used.</p>
-<h2 id="resolving-trees-groups-or-gardens-only"><a class="header" href="#resolving-trees-groups-or-gardens-only">Resolving Trees, Groups or Gardens Only</a></h2>
-<p>If you have groups, gardens, and trees with the same name then you can use the
-<code>@tree</code>, <code>%group</code>, and <code>:garden</code> syntax to disambiguate between them.</p>
-<ul>
-<li><em><strong>@tree</strong></em> - values prefixed with <code>@</code> resolve trees only</li>
-<li><em><strong>%group</strong></em> - values prefixed with <code>%</code> resolve groups only</li>
-<li><em><strong>:garden</strong></em> - values prefixed with <code>:</code> resolve gardens only</li>
-</ul>
-<pre><code class="language-bash">garden grow @tree      # grow the tree called &quot;tree&quot;
-garden grow %group     # grow the group called &quot;group&quot;
-garden grow :garden    # grow the garden called &quot;garden&quot;
-</code></pre>
-<p>When no prefixes are specified then the names are resolved in the following
-order: gardens, groups and trees.</p>
-<p>Gardens have the highest priority, followed by groups and lastly trees. If
-your trees, groups and gardens are named uniquely then no prefixes are needed.</p>
-<h2 id="tree-queries-resolve-to-multiple-trees"><a class="header" href="#tree-queries-resolve-to-multiple-trees">Tree Queries Resolve to Multiple Trees</a></h2>
-<p>In the following example, the &quot;cola&quot; garden is found in the example
-configuration. Each command is run over every tree in that garden.</p>
-<pre><code class="language-bash">garden exec cola git status -s
-garden status cola
-garden cmd cola status build
-</code></pre>
-<h2 id="paths"><a class="header" href="#paths">Paths</a></h2>
-<p>Paths can be specified as well, but the filesystem has the lowest priority
-relative to gardens, groups, and trees.  When specifyiing paths they must
-resolve to a configured tree.  For example,</p>
-<pre><code class="language-bash">garden build . -- --verbose
-</code></pre>
-<p>runs the <code>build</code> command on the tree in the current directory and passes the
-<code>--verbose</code> flag to the configured <code>build</code> command.</p>
-<h2 id="wildcards-1"><a class="header" href="#wildcards-1">Wildcards</a></h2>
-<p>Garden understands shell wildcards.  Glob wildcards in tree queries allows
-operations to span over ad-hoc gardens, groups and trees.</p>
-<p>This following examples show how wildcards might be used:</p>
-<pre><code class="language-bash"># Grow all all trees whose names start with &quot;git&quot; by cloning them.
-garden grow '@git*'
-
-# Run &quot;pwd&quot; in all of the same trees.
-garden exec '@git*' pwd
-</code></pre>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
 <p>The garden documentation contains an example garden file that sets up a
 development garden with the latest version of Git, Git Cola, qtpy and vx.</p>
@@ -640,12 +818,15 @@ development garden with the latest version of Git, Git Cola, qtpy and vx.</p>
 mkdir -p cola &amp;&amp; cd cola
 
 # Download and audit the garden file we're going to run.
-wget https://raw.githubusercontent.com/davvid/garden/main/src/doc/garden.yaml
+wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the repos in the &quot;cola&quot; garden and run a custom
 # &quot;setup&quot; command to initialize the development environment.
+# &quot;garden grow&quot; is a garden built-in command.
 garden grow cola
+
+# The &quot;setup&quot; command is defined in garden.yaml.
 garden setup cola
 
 # Daily development workflow: run &quot;make&quot; to build each repository in-place.

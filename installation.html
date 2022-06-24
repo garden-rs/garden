@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Garden - Garden User Guide</title>
+        <title>Installation - Garden User Guide</title>
         
         
 
@@ -98,7 +98,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html" class="active"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html" class="active"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -144,7 +144,7 @@
                         </a>
                         
                         
-                        <a href="https://github.com/davvid/garden/edit/main/doc/src/README.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/davvid/garden/edit/main/doc/src/installation.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
                         
@@ -176,26 +176,46 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="garden-user-guide"><a class="header" href="#garden-user-guide">Garden User Guide</a></h1>
-<h2 id="introduction"><a class="header" href="#introduction">Introduction</a></h2>
-<p>Garden streamlines development workflows that involve a loosely-coupled set of
-multiple, independent Git trees.</p>
-<p>Garden allows you to define dynamic relationships and workflows between these
-repositories using a declarative YAML config file that can be shared and used as
-a bootstrapping mechanism for getting a auditable, from-source project cloned,
-built, installed and running with minimal effort for consumers of a Garden file.</p>
-<p>Garden sits above any individual project's build scripts and conventions.
-Garden is all about making it easy to remix and reuse libraries maintained
-in seperate Git repositories.</p>
+                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<p>There are multiple ways to install garden.</p>
+<h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
+<p>This requires at least Rust 1.45 and Cargo to be installed. Once you have
+installed Rust, type the following in the terminal:</p>
+<pre><code>cargo install garden-tools
+</code></pre>
+<p>This will download and compile garden for you. The only thing left to do is
+to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</code>.</p>
+<h2 id="latest-using-cargo"><a class="header" href="#latest-using-cargo">Latest using Cargo</a></h2>
+<p>The version published to crates.io will sometimes be behind the source
+code repository. If you want to install the latest pre-release version then you can
+build the Git version of Garden yourself using <code>cargo</code>.</p>
+<pre><code>cargo install --git https://github.com/davvid/garden garden-tools
+</code></pre>
+<h2 id="build-and-install-from-source-for-development"><a class="header" href="#build-and-install-from-source-for-development">Build and Install from Source for Development</a></h2>
+<p>If you would like to develop features and contribute to Garden then you will
+have to clone the repository on your local machine.</p>
+<pre><code>git clone https://github.com/davvid/garden
+cd garden
+
+# Build ./target/debug/garden
+cargo build
+
+# Install $HOME/.cargo/bin/garden
+cargo install
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
+                            <a rel="prev" href="glossary.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
 
                         
-                            <a rel="next" href="glossary.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="setup-and-usage.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -207,9 +227,13 @@ in seperate Git repositories.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
+                    <a rel="prev" href="glossary.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
 
                 
-                    <a rel="next" href="glossary.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="setup-and-usage.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 

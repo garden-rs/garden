@@ -1,3 +1,37 @@
+# Create environments for developing Git Cola against development versions of Git.
+#
+# The following gardens are defined: "cola", "cola-main" and "cola-next".
+#
+# The "cola" garden runs git-cola using the "git" command from your $PATH.
+# The "cola-main" garden runs git-cola using git.git's "main" branch.
+# The "cola-next" garden runs git-cola using git.git's "next" branch.
+#
+# One-time Setup:
+#
+# * Clone repositories and create worktrees:
+#   garden grow cola-main cola-next
+#
+# * Initialize git-cola's Python virtualenv environment.
+#   garden setup cola
+#
+# Development workflows:
+#
+# * Build the "cola-main" garden using git.git's "main" branch:
+#   garden build cola-main
+#
+# * Build the "cola-next" garden using git.git's "next" branch:
+#   garden build cola-next
+#
+# * Run Git Cola's tests in each environment.
+#   garden test/git-cola cola
+#   garden test/git-cola cola-main
+#   garden test/git-cola cola-next
+#
+# * Run Git Cola in each environment.
+#   garden run cola
+#   garden run cola-main
+#   garden run cola-next
+
 garden:
   root: ${GARDEN_CONFIG_DIR}
 
@@ -12,10 +46,10 @@ commands:
   add-all: git add --update
   diff: GIT_PAGER= git diff --patience --color-words "$@"
   lol: git log --decorate --graph --oneline "$@" && echo
+  run: vx ${prefix} git cola "$@"
   status:
     - git status --short
     - git branch
-  run: vx ${prefix} git cola "$@"
 
 templates:
   bin:
@@ -26,47 +60,78 @@ templates:
       PYTHONPATH: ${TREE_PATH}
   makefile:
     commands:
-      build: make -j ${num_procs} prefix="${prefix}" "$@" all
-      install: make -j ${num_procs} prefix="${prefix}" "$@" install
-      test: make -j ${num_procs} prefix="${prefix}" "$@" test
-      doc: make -j ${num_procs} prefix="${prefix}" "$@" doc
+      build: make -j ${num_procs} prefix="${prefix}" all "$@"
+      install: make -j ${num_procs} prefix="${prefix}" install "$@"
+      test: make -j ${num_procs} prefix="${prefix}" test "$@"
+      doc: make -j ${num_procs} prefix="${prefix}" doc "$@"
 
 trees:
-  git:
-    url: git://github.com/git/git.git
+  # git/git.git is a bare repository.
+  #   https://git-scm.com/docs/gitglossary.html#Documentation/gitglossary.txt-aiddefbarerepositoryabarerepository
+  # git/git.git is the parent repository for the "git/main" and "git/next" worktrees:
+  #   https://git-scm.com/docs/git-worktree
+  git/git.git:
+    bare: true  # Create a bare repository
+    url: https://github.com/git/git.git
     templates: makefile
     environment:
       PATH: ${TREE_PATH}/bin-wrappers
+  # git/main is a "git worktree" for git.git's "main" branch.
+  git/main:
+    worktree: git/git.git
+    branch: main
+  # git/next is a "git worktree" for git.git's "next" branch.
+  git/next:
+    worktree: git/git.git
+    branch: next
+
+  # git-cola's worktree can be reused alongside any of the git/* trees defined above.
   git-cola:
-    path: git-cola
-    url: git://github.com/git-cola/git-cola.git
+    url: https://github.com/git-cola/git-cola.git
     templates: [bin, makefile, python]
     commands:
-      setup:
-        - ${python} -m venv ${prefix}
-        - vx ${prefix} make requirements
-        - vx ${prefix} make requirements-dev
-        - vx ${prefix} pip install PyQt5
+      setup: |
+        ${python} -m venv ${prefix}
+        vx ${prefix} make requirements
+        vx ${prefix} make requirements-dev
+        vx ${prefix} make requirements-optional
+      # Run just git-cola's tests
+      test/git-cola: make test "$@"
+
   qtpy:
-    url: git://github.com/spyder-ide/qtpy.git
+    description: Qt abstraction library used by git-cola
+    url: https://github.com/spyder-ide/qtpy.git
     templates: python
+
   vx:
-    url: git://github.com/davvid/vx.git
+    description: Utility for activating Python virtualenvs
+    url: https://github.com/davvid/vx.git
+    depth: 1  # Create a shallow clone using "git clone --depth=1"
     environment:
       PATH: ${TREE_PATH}
+
   # This tree allows the "run" command to be run from any directory.
   cwd:
     path: ${PWD}
 
 groups:
-  cola-grp:
-    - git
+  cola-repos-grp:
     - git-cola
     - qtpy
     - vx
 
 gardens:
   cola:
-    groups: cola-grp
+    groups: cola-repos-grp
+    environment:
+      PATH: ${prefix}/bin
+  cola-main:
+    groups: cola-repos-grp
+    trees: git/main
+    environment:
+      PATH: ${prefix}/bin
+  cola-next:
+    groups: cola-repos-grp
+    trees: git/next
     environment:
       PATH: ${prefix}/bin

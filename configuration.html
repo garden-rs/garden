@@ -98,7 +98,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">3.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">4.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html" class="active"><strong aria-hidden="true">5.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">6.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">7.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html" class="active"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -198,7 +198,41 @@ following locations. The first one found is used.</p>
 garden's file discovery.</p>
 <p>The following example <code>garden.yaml</code> is referred to by the documentation
 when showing examples.</p>
-<pre><code class="language-yaml">garden:
+<pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
+#
+# The following gardens are defined: &quot;cola&quot;, &quot;cola-main&quot; and &quot;cola-next&quot;.
+#
+# The &quot;cola&quot; garden runs git-cola using the &quot;git&quot; command from your $PATH.
+# The &quot;cola-main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
+# The &quot;cola-next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
+#
+# One-time Setup:
+#
+# * Clone repositories and create worktrees:
+#   garden grow cola-main cola-next
+#
+# * Initialize git-cola's Python virtualenv environment.
+#   garden setup cola
+#
+# Development workflows:
+#
+# * Build the &quot;cola-main&quot; garden using git.git's &quot;main&quot; branch:
+#   garden build cola-main
+#
+# * Build the &quot;cola-next&quot; garden using git.git's &quot;next&quot; branch:
+#   garden build cola-next
+#
+# * Run Git Cola's tests in each environment.
+#   garden test/git-cola cola
+#   garden test/git-cola cola-main
+#   garden test/git-cola cola-next
+#
+# * Run Git Cola in each environment.
+#   garden run cola
+#   garden run cola-main
+#   garden run cola-next
+
+garden:
   root: ${GARDEN_CONFIG_DIR}
 
 # The following variables are used in the custom commands below.
@@ -212,10 +246,10 @@ commands:
   add-all: git add --update
   diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
   lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
+  run: vx ${prefix} git cola &quot;$@&quot;
   status:
     - git status --short
     - git branch
-  run: vx ${prefix} git cola &quot;$@&quot;
 
 templates:
   bin:
@@ -226,48 +260,79 @@ templates:
       PYTHONPATH: ${TREE_PATH}
   makefile:
     commands:
-      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; all
-      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; install
-      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; test
-      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; &quot;$@&quot; doc
+      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
-  git:
-    url: git://github.com/git/git.git
+  # git/git.git is a bare repository.
+  #   https://git-scm.com/docs/gitglossary.html#Documentation/gitglossary.txt-aiddefbarerepositoryabarerepository
+  # git/git.git is the parent repository for the &quot;git/main&quot; and &quot;git/next&quot; worktrees:
+  #   https://git-scm.com/docs/git-worktree
+  git/git.git:
+    bare: true  # Create a bare repository
+    url: https://github.com/git/git.git
     templates: makefile
     environment:
       PATH: ${TREE_PATH}/bin-wrappers
+  # git/main is a &quot;git worktree&quot; for git.git's &quot;main&quot; branch.
+  git/main:
+    worktree: git/git.git
+    branch: main
+  # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
+  git/next:
+    worktree: git/git.git
+    branch: next
+
+  # git-cola's worktree can be reused alongside any of the git/* trees defined above.
   git-cola:
-    path: git-cola
-    url: git://github.com/git-cola/git-cola.git
+    url: https://github.com/git-cola/git-cola.git
     templates: [bin, makefile, python]
     commands:
-      setup:
-        - ${python} -m venv ${prefix}
-        - vx ${prefix} make requirements
-        - vx ${prefix} make requirements-dev
-        - vx ${prefix} pip install PyQt5
+      setup: |
+        ${python} -m venv ${prefix}
+        vx ${prefix} make requirements
+        vx ${prefix} make requirements-dev
+        vx ${prefix} make requirements-optional
+      # Run just git-cola's tests
+      test/git-cola: make test &quot;$@&quot;
+
   qtpy:
-    url: git://github.com/spyder-ide/qtpy.git
+    description: Qt abstraction library used by git-cola
+    url: https://github.com/spyder-ide/qtpy.git
     templates: python
+
   vx:
-    url: git://github.com/davvid/vx.git
+    description: Utility for activating Python virtualenvs
+    url: https://github.com/davvid/vx.git
+    depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
     environment:
       PATH: ${TREE_PATH}
+
   # This tree allows the &quot;run&quot; command to be run from any directory.
   cwd:
     path: ${PWD}
 
 groups:
-  cola-grp:
-    - git
+  cola-repos-grp:
     - git-cola
     - qtpy
     - vx
 
 gardens:
   cola:
-    groups: cola-grp
+    groups: cola-repos-grp
+    environment:
+      PATH: ${prefix}/bin
+  cola-main:
+    groups: cola-repos-grp
+    trees: git/main
+    environment:
+      PATH: ${prefix}/bin
+  cola-next:
+    groups: cola-repos-grp
+    trees: git/next
     environment:
       PATH: ${prefix}/bin
 </code></pre>
@@ -395,7 +460,7 @@ defaults to a path named after the tree relative to the garden root.</p>
                         
 
                         
-                            <a rel="next" href="tree-queries.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="examples.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -413,7 +478,7 @@ defaults to a path named after the tree relative to the garden root.</p>
                 
 
                 
-                    <a rel="next" href="tree-queries.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="examples.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
