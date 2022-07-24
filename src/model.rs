@@ -694,7 +694,7 @@ impl TreeQuery {
             is_default = true;
         }
         let glob_pattern = syntax::trim(query);
-        let pattern = glob::Pattern::new(glob_pattern).unwrap();
+        let pattern = glob::Pattern::new(glob_pattern).unwrap_or_default();
 
         TreeQuery {
             query: query.into(),
