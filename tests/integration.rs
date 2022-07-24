@@ -124,7 +124,7 @@ mod slow {
 
             let output = cmd::trim_stdout(&capture.unwrap());
             let lines = output.split("\n").collect::<Vec<&str>>();
-            assert_eq!(lines.len(), 1);  // One commit only!
+            assert_eq!(lines.len(), 1); // One commit only!
         }
 
         teardown("tests/tmp/shallow");
@@ -166,7 +166,8 @@ mod slow {
         {
             let command = ["git", "rev-parse", "origin/default"];
             let exec = cmd::exec_in_dir(
-                &command, "tests/tmp/single-branch/example/tree/single-branch"
+                &command,
+                "tests/tmp/single-branch/example/tree/single-branch",
             );
             assert_eq!(0, cmd::status(exec.join()));
         }
@@ -174,7 +175,8 @@ mod slow {
         {
             let command = ["git", "rev-parse", "origin/dev"];
             let exec = cmd::exec_in_dir(
-                &command, "tests/tmp/single-branch/example/tree/single-branch"
+                &command,
+                "tests/tmp/single-branch/example/tree/single-branch",
             );
             assert!(0 != cmd::status(exec.join()));
         }
@@ -182,14 +184,15 @@ mod slow {
         {
             let command = ["git", "rev-list", "HEAD"];
             let exec = cmd::exec_in_dir(
-                &command, "tests/tmp/single-branch/example/tree/single-branch"
+                &command,
+                "tests/tmp/single-branch/example/tree/single-branch",
             );
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
 
             let output = cmd::trim_stdout(&capture.unwrap());
             let lines = output.split("\n").collect::<Vec<&str>>();
-            assert_eq!(lines.len(), 1);  // One commit only!
+            assert_eq!(lines.len(), 1); // One commit only!
         }
 
         teardown("tests/tmp/single-branch");

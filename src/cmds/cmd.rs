@@ -255,10 +255,8 @@ pub fn cmds(
     let commands: Vec<String> = vec![command.to_string()];
 
     for query in queries {
-        let status = cmd(
-            app, quiet, verbose, keep_going, query, &commands, arguments,
-        )
-        .unwrap_or(errors::EX_IOERR);
+        let status = cmd(app, quiet, verbose, keep_going, query, &commands, arguments)
+            .unwrap_or(errors::EX_IOERR);
         if status != 0 {
             exit_status = status;
             if !keep_going {

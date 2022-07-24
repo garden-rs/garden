@@ -384,8 +384,7 @@ fn eval_graft_tree() -> Result<()> {
 
     // Evaluate a grafted variable from the context of "example/tree" from
     // the main configuration.
-    let actual =
-        garden::eval::tree_value(config, "${graft::current_config}", ctx.tree, ctx.garden);
+    let actual = garden::eval::tree_value(config, "${graft::current_config}", ctx.tree, ctx.garden);
     // TODO: this should evaluate to "graft".
     //assert_eq!("graft", actual);
     assert_eq!("${graft::current_config}", actual);
