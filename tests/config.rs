@@ -7,7 +7,7 @@ use anyhow::Result;
 fn config_default() {
     let config = garden::model::Configuration::new();
     assert_eq!("zsh", config.shell);
-    assert_eq!(false, config.verbose);
+    assert!(config.verbose == false);
     assert_eq!("", config.root.get_expr());
 }
 
@@ -167,7 +167,7 @@ fn trees() {
     assert!(config.trees.len() >= 6);
 
     // git
-    let ref tree0 = config.trees[0];
+    let tree0 = &config.trees[0];
     assert!(tree0.environment.is_empty());
     assert_eq!(3, tree0.commands.len());
 
@@ -209,7 +209,7 @@ fn trees() {
     assert_eq!(None, tree0.gitconfig[1].get_value());
 
     // cola
-    let ref tree1 = config.trees[1];
+    let tree1 = &config.trees[1];
     assert!(tree1.gitconfig.is_empty());
 
     assert_eq!("cola", tree1.get_name());
@@ -261,7 +261,7 @@ fn trees() {
     assert_eq!("make tox", tree1.commands[3].get(1).get_expr());
 
     // annex/data
-    let ref tree3 = config.trees[4];
+    let tree3 = &config.trees[4];
     assert_eq!("annex/data", tree3.get_name());
     // gitconfig
     assert_eq!(1, tree3.gitconfig.len());
@@ -278,7 +278,7 @@ fn trees() {
     assert_eq!("${GARDEN_ROOT}/annex/local", tree3.remotes[1].get_expr());
 
     // annex/local extends annex/data
-    let ref tree4 = config.trees[5];
+    let tree4 = &config.trees[5];
     assert_eq!("annex/local", tree4.get_name());
     // gitconfig
     assert_eq!(1, tree4.gitconfig.len());
@@ -429,7 +429,7 @@ fn test_template_url() {
     let config = common::garden_config();
     assert!(config.trees.len() > 3);
     // The "tmp" tree uses the "local" template which defines a URL.
-    let ref tree = config.trees[3];
+    let tree = &config.trees[3];
     assert_eq!("tmp", tree.get_name());
     assert_eq!(1, tree.remotes.len());
     assert_eq!("origin", tree.remotes[0].get_name());

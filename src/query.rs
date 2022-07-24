@@ -74,7 +74,7 @@ pub fn garden_trees(
         if !pattern.matches(garden.get_name()) {
             continue;
         }
-        result.append(&mut trees_from_garden(config, &garden));
+        result.append(&mut trees_from_garden(config, garden));
     }
 
     result
@@ -90,7 +90,7 @@ pub fn trees_from_garden(
     // Loop over the garden's groups.
     for group in &garden.groups {
         // Create a glob pattern for the group entry
-        let pattern = match glob::Pattern::new(&group) {
+        let pattern = match glob::Pattern::new(group) {
             Ok(value) => value,
             Err(_) => continue,
         };
@@ -280,7 +280,7 @@ pub fn tree_context(
 ) -> Result<model::TreeContext, GardenError> {
     let mut ctx = model::TreeContext::new(0, config.get_id(), None, None);
     // TODO: grafted trees
-    if let Some(context) = tree_from_name(&config, tree, None, None) {
+    if let Some(context) = tree_from_name(config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
         return Err(GardenError::TreeNotFound { tree: tree.into() });

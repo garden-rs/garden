@@ -76,7 +76,7 @@ where
     P: AsRef<std::path::Path>,
     S: AsRef<std::ffi::OsStr>,
 {
-    exec_cmd(&command).cwd(path)
+    exec_cmd(command).cwd(path)
 }
 
 /// Run a command in the specified tree context.
@@ -104,13 +104,13 @@ where
         path = tree.path_as_ref()?.clone();
 
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !model::print_tree(&tree, verbose, quiet) {
+        if !model::print_tree(tree, verbose, quiet) {
             return Ok(());
         }
     }
     // Evaluate the tree environment and run the command.
     let env = eval::environment(config, context);
-    let command_vec = resolve_command(&command, &env);
+    let command_vec = resolve_command(command, &env);
 
     // Create an Exec object.
     let mut exec = exec_in_dir(&command_vec, &path);
@@ -201,6 +201,6 @@ pub fn current_exe() -> String {
 pub fn parse_args(parser: argparse::ArgumentParser, arguments: Vec<String>) {
     parser
         .parse(arguments, &mut std::io::stdout(), &mut std::io::stderr())
-        .map_err(|exit_status| std::process::exit(exit_status))
+        .map_err(std::process::exit)
         .ok();
 }

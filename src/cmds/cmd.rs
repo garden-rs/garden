@@ -184,7 +184,7 @@ pub fn cmd(
             let tree = &config.trees[context.tree];
             path = tree.path_as_ref()?.to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !model::print_tree(&tree, verbose, quiet) {
+            if !model::print_tree(tree, verbose, quiet) {
                 continue;
             }
         }
@@ -202,7 +202,7 @@ pub fn cmd(
             // are included.  When the scope includes a gardens,
             // its matching commands are appended to the end.
             error = false;
-            let cmd_seq_vec = eval::command(app, context, &name);
+            let cmd_seq_vec = eval::command(app, context, name);
             app.get_root_config_mut().reset();
 
             for cmd_seq in &cmd_seq_vec {
@@ -256,7 +256,7 @@ pub fn cmds(
 
     for query in queries {
         let status = cmd(
-            app, quiet, verbose, keep_going, &query, &commands, arguments,
+            app, quiet, verbose, keep_going, query, &commands, arguments,
         )
         .unwrap_or(errors::EX_IOERR);
         if status != 0 {

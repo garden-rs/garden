@@ -211,7 +211,7 @@ impl Tree {
 
     pub fn symlink_as_ref(&self) -> Result<&String, errors::GardenError> {
         match self.symlink.get_value() {
-            Some(ref value) => Ok(value),
+            Some(value) => Ok(value),
             None => Err(errors::GardenError::ConfigurationError(format!(
                 "unset tree path for {}",
                 self.name
@@ -466,7 +466,7 @@ impl Configuration {
 
     /// Evaluate and return a path string relative to the garden root.
     pub fn eval_tree_path(&mut self, path: &str) -> String {
-        let value = eval::value(self, &path);
+        let value = eval::value(self, path);
         self.tree_path(&value)
     }
 
@@ -488,7 +488,7 @@ impl Configuration {
 
     /// Evaluate and resolve a path string and relative to the config dir.
     pub fn eval_config_path(&self, path: &str) -> String {
-        let value = eval::value(self, &path);
+        let value = eval::value(self, path);
 
         self.config_path(&value)
     }
@@ -867,7 +867,7 @@ pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
         // Sparse gardens/missing trees are ok -> skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
             if !quiet {
-                eprintln!("{}", display_missing_tree(&tree, &path, verbose));
+                eprintln!("{}", display_missing_tree(tree, path, verbose));
             }
             return false;
         }
@@ -875,7 +875,7 @@ pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
         print_tree_details(tree, verbose, quiet);
         return true;
     } else if !quiet {
-        eprintln!("{}", display_missing_tree(&tree, "[invalid-path]", verbose));
+        eprintln!("{}", display_missing_tree(tree, "[invalid-path]", verbose));
     }
 
     false
@@ -885,7 +885,7 @@ pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
 pub fn print_tree_details(tree: &Tree, verbose: bool, quiet: bool) {
     if !quiet {
         if let Ok(path) = tree.path_as_ref() {
-            eprintln!("{}", display_tree(&tree, &path, verbose));
+            eprintln!("{}", display_tree(tree, path, verbose));
         }
     }
 }

@@ -20,7 +20,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut exit_status = errors::EX_OK;
     let config = app.get_root_config_mut();
     for query in &queries {
-        let status = grow(config, quiet, verbose, &query)?;
+        let status = grow(config, quiet, verbose, query)?;
         if status != errors::EX_OK {
             exit_status = status;
         }
@@ -162,7 +162,7 @@ pub fn grow(
 
         // Add/update git remote configuration.
         for (k, v) in &config_remotes {
-            let url = eval::tree_value(config, &v, ctx.tree, ctx.garden);
+            let url = eval::tree_value(config, v, ctx.tree, ctx.garden);
 
             let exec;
             if existing_remotes.contains(k) {

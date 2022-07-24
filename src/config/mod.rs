@@ -210,7 +210,7 @@ pub fn parse(
     verbose: bool,
     cfg: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-    reader::parse(&config_string, verbose, cfg)?;
+    reader::parse(config_string, verbose, cfg)?;
     // Initialize the configuration now that the values have been read.
     cfg.initialize();
 

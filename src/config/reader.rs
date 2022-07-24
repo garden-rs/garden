@@ -332,7 +332,7 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
 /// Read a single template definition
 fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template {
     let mut template = model::Template::default();
-    get_str(&name, template.get_name_mut());
+    get_str(name, template.get_name_mut());
 
     {
         let mut url = String::new();
@@ -431,7 +431,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     let mut tree = model::Tree::default();
 
     // Tree name
-    get_str(&name, tree.get_name_mut());
+    get_str(name, tree.get_name_mut());
 
     // Default to the name when "path" is unspecified.
     let tree_name = tree.get_name().to_string();
@@ -477,7 +477,7 @@ fn get_tree(
     let mut extend = String::new();
     if get_str(&value["extend"], &mut extend) {
         let tree_name = Yaml::String(extend);
-        if let Some(ref tree_values) = trees.get(&tree_name) {
+        if let Some(tree_values) = trees.get(&tree_name) {
             tree = get_tree(&tree_name, tree_values, templates, trees, false);
             tree.remotes.truncate(1); // Keep origin only
             tree.templates.truncate(0); // Parent templates have already been processed.
@@ -485,7 +485,7 @@ fn get_tree(
     }
 
     // Tree name
-    get_str(&name, tree.get_name_mut());
+    get_str(name, tree.get_name_mut());
 
     // Tree path
     if !get_str(&value["path"], tree.get_path_mut().get_expr_mut()) {
@@ -614,8 +614,8 @@ fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut group = model::Group::default();
-            get_str(&name, group.get_name_mut());
-            get_vec_str(&value, &mut group.members);
+            get_str(name, group.get_name_mut());
+            get_vec_str(value, &mut group.members);
             groups.push(group);
         }
         return true;
@@ -629,7 +629,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut garden = model::Garden::default();
-            get_str(&name, garden.get_name_mut());
+            get_str(name, garden.get_name_mut());
             get_vec_str(&value["groups"], &mut garden.groups);
             get_vec_str(&value["trees"], &mut garden.trees);
             get_variables(&value["variables"], &mut garden.variables);
