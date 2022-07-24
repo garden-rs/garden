@@ -61,14 +61,28 @@ test-integration::
 	$(CARGO) test --features integration $(CARGO_FLAGS) $(flags)
 
 
+# Test coverage
 .PHONY: coverage
 coverage::
 	cargo kcov --verbose
 
 
-.PHONY:check
-check::
+# Tests and checks
+.PHONY: check
+check:: check-clippy
+check:: check-format
+
+
+# Check for common mistakes and code improvements using clippy.
+.PHONY: check-clippy
+check-clippy::
 	cargo clippy --all -- -D warnings
+
+
+# Apply clippy suggestions.
+.PHONY: clippy-fix
+clippy-fix:
+	cargo clippy --fix $(flags)
 
 
 # Code formatting
