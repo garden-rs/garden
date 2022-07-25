@@ -388,6 +388,8 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     get_bool(&value["bare"], &mut template.tree.is_bare_repository);
     get_bool(&value["single-branch"], &mut template.tree.is_single_branch);
 
+    get_remotes(&value["remotes"], &mut template.tree.remotes);
+
     template.tree.update_flags();
 
     // These follow first-found semantics; process the base templates in
