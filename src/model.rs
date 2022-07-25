@@ -357,7 +357,7 @@ impl Configuration {
 
     pub fn initialize(&mut self) {
         // Evaluate garden.root
-        let expr = self.root.get_expr().to_string();
+        let expr = String::from(self.root.get_expr());
         let value = eval::value(self, &expr);
         // Store the resolved garden.root
         self.root_path = std::path::PathBuf::from(&value);
@@ -385,8 +385,8 @@ impl Configuration {
         // Update GARDEN_ROOT at position 0.
         if !self.variables.is_empty() && self.variables[0].get_name() == "GARDEN_ROOT" {
             if let Some(value) = self.root.get_value() {
-                self.variables[0].set_expr(value.to_string());
-                self.variables[0].set_value(value.to_string());
+                self.variables[0].set_expr(value.into());
+                self.variables[0].set_value(value.into());
             }
         }
 
@@ -394,20 +394,19 @@ impl Configuration {
             if tree.variables.len() >= 2 {
                 // Extract the tree's path.  Skip invalid/unset entries.
                 let tree_path = match tree.path_as_ref() {
-                    Ok(path) => path,
+                    Ok(path) => String::from(path),
                     Err(_) => continue,
-                }
-                .to_string();
+                };
                 // Update TREE_NAME at position 0.
-                let tree_name = tree.get_name().to_string();
+                let tree_name = String::from(tree.get_name());
                 if tree.variables[0].get_name() == "TREE_NAME" {
-                    tree.variables[0].set_expr(tree_name.to_string());
-                    tree.variables[0].set_value(tree_name.to_string());
+                    tree.variables[0].set_expr(tree_name.clone());
+                    tree.variables[0].set_value(tree_name.clone());
                 }
                 // Update TREE_PATH at position 1.
                 if tree.variables[1].get_name() == "TREE_PATH" {
-                    tree.variables[1].set_expr(tree_path.to_string());
-                    tree.variables[1].set_value(tree_path.to_string());
+                    tree.variables[1].set_expr(tree_path.clone());
+                    tree.variables[1].set_value(tree_path.clone());
                 }
             }
         }
@@ -474,13 +473,13 @@ impl Configuration {
     pub fn config_path(&self, path: &str) -> String {
         if std::path::PathBuf::from(path).is_absolute() {
             // Absolute path, nothing to do
-            path.to_string()
+            path.into()
         } else if let Some(dirname) = self.dirname.as_ref() {
             // Make path relative to the configuration's dirname
             let mut path_buf = dirname.to_path_buf();
             path_buf.push(path);
 
-            path_buf.to_string_lossy().to_string()
+            path_buf.to_string_lossy().into()
         } else {
             self.tree_path(path)
         }
