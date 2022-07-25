@@ -47,6 +47,11 @@ impl Variable {
         }
     }
 
+    /// Does this variable have a value?
+    pub fn is_empty(&self) -> bool {
+        self.expr.is_empty()
+    }
+
     pub fn get_expr(&self) -> &String {
         &self.expr
     }
@@ -157,7 +162,8 @@ impl MultiVariable {
     }
 }
 
-// Trees represent a single worktree
+
+/// Trees represent a single worktree
 #[derive(Clone, Debug, Default)]
 pub struct Tree {
     pub commands: Vec<MultiVariable>,
@@ -168,9 +174,12 @@ pub struct Tree {
     pub templates: Vec<String>,
     pub variables: Vec<NamedVariable>,
     pub branch: Variable,
+    pub worktree: Variable,
     pub clone_depth: i64,
     pub is_single_branch: bool,
     pub is_symlink: bool,
+    pub is_bare_repository: bool,
+    pub is_worktree: bool,
 
     name: String,
     path: Variable,
@@ -239,6 +248,73 @@ impl Tree {
             cmd.reset();
         }
     }
+
+    /// Copy the guts of another tree into the current tree.
+    pub fn clone_from_tree(&mut self, tree: &Tree, clone_variables: bool) {
+        // "commands" are concatenated across templates.
+        self.commands.append(&mut tree.commands.clone());
+        // "environment" follow last-set-wins semantics.
+        self.environment.append(&mut tree.environment.clone());
+        // "gitconfig" follows last-set-wins semantics.
+        self.gitconfig.append(&mut tree.gitconfig.clone());
+
+        // If multiple templates define "url" then the first one wins,
+        // but only if we don't have url defined in the current template.
+        if self.remotes.is_empty() {
+            self.remotes.append(&mut tree.remotes.clone());
+        }
+
+        // The last value set is the one that wins.
+        if tree.clone_depth > 0 {
+            self.clone_depth = tree.clone_depth;
+        }
+
+        if tree.is_bare_repository {
+            self.is_bare_repository = tree.is_bare_repository;
+        }
+
+        if tree.is_single_branch {
+            self.is_single_branch = tree.is_single_branch;
+        }
+
+        if tree.is_worktree {
+            self.is_worktree = tree.is_worktree;
+        }
+        if tree.is_symlink {
+            self.is_symlink = tree.is_symlink;
+        }
+
+        if ! tree.branch.is_empty() {
+            self.branch = tree.branch.clone();
+        }
+
+        if ! tree.symlink.is_empty() {
+            self.symlink = tree.symlink.clone();
+        }
+
+        if ! tree.worktree.is_empty() {
+            self.worktree = tree.worktree.clone();
+        }
+
+        if clone_variables && ! tree.variables.is_empty() {
+            self.variables.append(&mut tree.variables.clone());
+        }
+
+        self.update_flags();
+    }
+
+    /// Update internal flags in response to newly read data.
+    pub fn update_flags(&mut self) {
+        if !self.symlink.is_empty() {
+            self.is_symlink = true;
+        }
+        if !self.worktree.is_empty() {
+            self.is_worktree = true;
+        }
+        if self.is_worktree {
+            self.is_bare_repository = false;
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -264,17 +340,13 @@ impl Group {
     }
 }
 
+/// Templates can be used to create trees.
+/// They contain a (path-less) tree object which can be used for creating
+/// materialized trees.
 #[derive(Clone, Debug, Default)]
 pub struct Template {
-    pub commands: Vec<MultiVariable>,
-    pub environment: Vec<MultiVariable>,
+    pub tree: Tree,
     pub extend: Vec<String>,
-    pub gitconfig: Vec<NamedVariable>,
-    pub remotes: Vec<NamedVariable>,
-    pub variables: Vec<NamedVariable>,
-    pub branch: Variable,
-    pub clone_depth: i64,
-    pub is_single_branch: bool,
     name: String,
 }
 
@@ -287,6 +359,11 @@ impl Template {
 
     pub fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
+    }
+
+    /// Apply this template onto the specified tree.
+    pub fn apply(&self, tree: &mut Tree) {
+        tree.clone_from_tree(&self.tree, false);
     }
 }
 

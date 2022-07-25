@@ -27,7 +27,7 @@ pub fn parse(
     }
 
     // garden.root
-    if config.root.get_expr().is_empty() {
+    if config.root.is_empty() {
         if !get_str(&doc["garden"]["root"], config.root.get_expr_mut()) {
             // Default to the current directory when garden.root is unspecified
             // NOTE: this logic must be duplicated here for GARDEN_ROOT.
@@ -342,6 +342,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
         //   example: git://git.example.org/example/repo.git
         if get_str(value, &mut url) {
             template
+                .tree
                 .remotes
                 .push(model::NamedVariable::new("origin".to_string(), url, None));
             return template;
@@ -350,6 +351,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
         // The first remote is "origin" by convention.
         if get_str(&value["url"], &mut url) {
             template
+                .tree
                 .remotes
                 .push(model::NamedVariable::new("origin".to_string(), url, None));
         }
@@ -362,35 +364,31 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     get_vec_str(&value["extend"], &mut template.extend);
     for template_name in &template.extend {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
-            let mut base = get_template(
+            let base = get_template(
                 &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
                 templates,
             );
 
-            template.environment.append(&mut base.environment);
-            template.gitconfig.append(&mut base.gitconfig);
-            // If multiple templates define "url" then the first one wins,
-            // but only if we don't have url defined in the current template.
-            if template.remotes.is_empty() {
-                template.remotes.append(&mut base.remotes);
-            }
-
-            // The last clone depth set is the one that wins.
-            template.clone_depth = base.clone_depth;
-            template.is_single_branch = base.is_single_branch;
-            template.branch = base.branch;
+            base.apply(&mut template.tree);
         }
     }
 
-    get_variables(&value["variables"], &mut template.variables);
-    get_variables(&value["gitconfig"], &mut template.gitconfig);
-    get_multivariables(&value["environment"], &mut template.environment);
-    get_multivariables(&value["commands"], &mut template.commands);
+    get_variables(&value["variables"], &mut template.tree.variables);
+    get_variables(&value["gitconfig"], &mut template.tree.gitconfig);
 
-    get_variable(&value["branch"], &mut template.branch);
-    get_i64(&value["depth"], &mut template.clone_depth);
-    get_bool(&value["single-branch"], &mut template.is_single_branch);
+    get_multivariables(&value["environment"], &mut template.tree.environment);
+    get_multivariables(&value["commands"], &mut template.tree.commands);
+
+    get_variable(&value["branch"], &mut template.tree.branch);
+    get_variable(&value["symlink"], &mut template.tree.symlink);
+    get_variable(&value["worktree"], &mut template.tree.worktree);
+
+    get_i64(&value["depth"], &mut template.tree.clone_depth);
+    get_bool(&value["bare"], &mut template.tree.is_bare_repository);
+    get_bool(&value["single-branch"], &mut template.tree.is_single_branch);
+
+    template.tree.update_flags();
 
     // These follow first-found semantics; process the base templates in
     // reverse order.
@@ -402,8 +400,7 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
                 templates,
             );
 
-            template.variables.append(&mut base.variables);
-            template.commands.append(&mut base.commands);
+            template.tree.variables.append(&mut base.tree.variables);
         }
     }
 
@@ -521,16 +518,12 @@ fn get_tree(
         }
     }
 
-    // Symlinks
-    tree.is_symlink = get_str(&value["symlink"], tree.symlink.get_expr_mut());
-
     // Templates
     get_vec_str(&value["templates"], &mut tree.templates);
 
-    // "environment" follow last-set-wins semantics.
     // Process the base templates in the specified order before processing
     // the template itself.
-    for template_name in &tree.templates {
+    for template_name in &tree.templates.clone() {
         let yaml_template = &templates[template_name.as_ref()];
 
         // Templates defined with just a string value can only specify a single
@@ -542,26 +535,15 @@ fn get_tree(
                 templates,
             );
             if tree.remotes.is_empty() {
-                tree.remotes.append(&mut base.remotes);
+                tree.remotes.append(&mut base.tree.remotes);
             }
         } else if let Yaml::Hash(_) = yaml_template {
-            let mut base = get_template(
+            let base = get_template(
                 &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
                 templates,
             );
-
-            tree.environment.append(&mut base.environment);
-            tree.gitconfig.append(&mut base.gitconfig);
-            tree.commands.append(&mut base.commands);
-            // If multiple templates define "url" then the first one wins,
-            // but only if we don't have url defined in the current template.
-            if tree.remotes.is_empty() {
-                tree.remotes.append(&mut base.remotes);
-            }
-            tree.clone_depth = base.clone_depth;
-            tree.is_single_branch = base.is_single_branch;
-            tree.branch = base.branch;
+            base.apply(&mut tree);
         }
     }
 
@@ -571,11 +553,17 @@ fn get_tree(
     get_multivariables(&value["commands"], &mut tree.commands);
 
     get_variable(&value["branch"], &mut tree.branch);
+    get_variable(&value["symlink"], &mut tree.symlink);
+    get_variable(&value["worktree"], &mut tree.worktree);
+
     get_i64(&value["depth"], &mut tree.clone_depth);
+    get_bool(&value["bare"], &mut tree.is_bare_repository);
     get_bool(&value["single-branch"], &mut tree.is_single_branch);
 
     // Remotes
     get_remotes(&value["remotes"], &mut tree.remotes);
+
+    tree.update_flags();
 
     // These follow first-found semantics; process templates in
     // reverse order.
@@ -587,7 +575,7 @@ fn get_tree(
                 templates,
             );
 
-            tree.variables.append(&mut base.variables);
+            tree.variables.append(&mut base.tree.variables);
         }
     }
 

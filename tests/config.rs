@@ -108,44 +108,44 @@ fn templates() {
     let config = common::from_string(&string);
     assert_eq!(3, config.templates.len());
     assert_eq!("template1", config.templates[0].get_name());
-    assert_eq!(1, config.templates[0].variables.len());
-    assert_eq!("foo", config.templates[0].variables[0].get_name());
-    assert_eq!("bar", config.templates[0].variables[0].get_expr());
+    assert_eq!(1, config.templates[0].tree.variables.len());
+    assert_eq!("foo", config.templates[0].tree.variables[0].get_name());
+    assert_eq!("bar", config.templates[0].tree.variables[0].get_expr());
 
-    assert_eq!(2, config.templates[0].environment.len());
-    assert_eq!("ENV=", config.templates[0].environment[0].get_name());
-    assert_eq!(1, config.templates[0].environment[0].len());
+    assert_eq!(2, config.templates[0].tree.environment.len());
+    assert_eq!("ENV=", config.templates[0].tree.environment[0].get_name());
+    assert_eq!(1, config.templates[0].tree.environment[0].len());
     assert_eq!(
         "${foo}env",
-        config.templates[0].environment[0].get(0).get_expr()
+        config.templates[0].tree.environment[0].get(0).get_expr()
     );
 
-    assert_eq!("THEPATH", config.templates[0].environment[1].get_name());
-    assert_eq!(2, config.templates[0].environment[1].len());
+    assert_eq!("THEPATH", config.templates[0].tree.environment[1].get_name());
+    assert_eq!(2, config.templates[0].tree.environment[1].len());
     assert_eq!(
         "${foo}",
-        config.templates[0].environment[1].get(0).get_expr()
+        config.templates[0].tree.environment[1].get(0).get_expr()
     );
     assert_eq!(
         "${ENV}",
-        config.templates[0].environment[1].get(1).get_expr()
+        config.templates[0].tree.environment[1].get(1).get_expr()
     );
 
     assert_eq!("template2", config.templates[1].get_name());
     assert_eq!(vec!["template1"], config.templates[1].extend);
-    assert_eq!(3, config.templates[1].variables.len());
-    assert_eq!("baz", config.templates[1].variables[0].get_name());
-    assert_eq!("zax", config.templates[1].variables[0].get_expr());
-    assert_eq!("zee", config.templates[1].variables[1].get_name());
-    assert_eq!("${foo}", config.templates[1].variables[1].get_expr());
-    assert_eq!("foo", config.templates[1].variables[2].get_name());
-    assert_eq!("bar", config.templates[1].variables[2].get_expr());
+    assert_eq!(3, config.templates[1].tree.variables.len());
+    assert_eq!("baz", config.templates[1].tree.variables[0].get_name());
+    assert_eq!("zax", config.templates[1].tree.variables[0].get_expr());
+    assert_eq!("zee", config.templates[1].tree.variables[1].get_name());
+    assert_eq!("${foo}", config.templates[1].tree.variables[1].get_expr());
+    assert_eq!("foo", config.templates[1].tree.variables[2].get_name());
+    assert_eq!("bar", config.templates[1].tree.variables[2].get_expr());
 
     assert_eq!("template3", config.templates[2].get_name());
     assert_eq!(vec!["template1", "template2"], config.templates[2].extend);
-    assert_eq!(5, config.templates[2].variables.len());
-    assert_eq!("foo", config.templates[2].variables[0].get_name());
-    assert_eq!("boo", config.templates[2].variables[0].get_expr());
+    assert_eq!(5, config.templates[2].tree.variables.len());
+    assert_eq!("foo", config.templates[2].tree.variables[0].get_name());
+    assert_eq!("boo", config.templates[2].tree.variables[0].get_expr());
 }
 
 /// Groups
