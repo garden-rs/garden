@@ -158,6 +158,13 @@ the query. If groups are found then the trees within each group will be grown.
 If no gardens and no groups are found then will garden search for trees and grow
 those whose names match the query string.
 
+To clone bare repositories use `bare: true` in the tree configuration.
+
+    trees:
+      example.git:
+        bare: false
+        url: <url>
+
 
 ## garden cmd
 

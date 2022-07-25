@@ -120,6 +120,11 @@ fn grow_tree_from_context(
 
         // [options]
         //
+        // "git clone --bare" clones bare repositories.
+        if config.trees[ctx.tree].is_bare_repository {
+            command.push("--bare".into());
+        }
+
         // "git clone --branch=name" clones the named branch.
         let branch_var = config.trees[ctx.tree].branch.clone();
         let branch = eval::tree_value(config, branch_var.get_expr(), ctx.tree, ctx.garden);

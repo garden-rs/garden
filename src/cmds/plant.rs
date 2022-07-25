@@ -220,13 +220,26 @@ fn plant_path(
         eprintln!("{}: no url", tree_name);
     }
 
-    // Update the url field
+    // Update the "url" field.
     {
         let command = ["git", "config", "remote.origin.url"];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(cmd_stdout) = cmd::capture_stdout(exec) {
             let origin_url = cmd::trim_stdout(&cmd_stdout);
             entry.insert(url_key, Yaml::String(origin_url));
+        }
+    }
+
+    // Update the "bare" field.
+    {
+        let bare_key = Yaml::String("bare".into());
+        let command = ["git", "config", "--bool", "core.bare"];
+        let exec = cmd::exec_in_dir(&command, &path);
+        if let Ok(cmd_stdout) = cmd::capture_stdout(exec) {
+            let is_bare = cmd::trim_stdout(&cmd_stdout);
+            if is_bare == "true" {
+                entry.insert(bare_key, Yaml::Boolean(true));
+            }
         }
     }
 

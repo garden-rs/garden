@@ -277,6 +277,67 @@ mod slow {
         Ok(())
     }
 
+    #[test]
+    fn grow_bare_repo() -> Result<()> {
+        setup("grow-bare-repo", "tests/tmp");
+
+        // garden grow bare.git
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir",
+            "tests/tmp/grow-bare-repo",
+            "--config",
+            "tests/data/bare.yaml",
+            "grow",
+            "bare.git",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        // Ensure the repository was created
+        // tests/tmp/grow-bare-repo/bare.git
+        let mut repo = std::path::PathBuf::from("tests");
+        repo.push("tmp");
+        repo.push("grow-bare-repo");
+        repo.push("bare.git");
+        assert!(repo.exists());
+
+        {
+            let command = ["git", "rev-parse", "default"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-bare-repo/bare.git",
+            );
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+        // The dev branch must exist because we cloned with --no-single-branch.
+        {
+            let command = ["git", "rev-parse", "dev"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-bare-repo/bare.git",
+            );
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+        // The repository must be bare.
+        {
+            let command = ["git", "config", "core.bare"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-bare-repo/bare.git",
+            );
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            let output = cmd::trim_stdout(&capture.unwrap());
+            assert_eq!(output, String::from("true"));
+        }
+
+        teardown("tests/tmp/grow-bare-repo");
+
+        Ok(())
+    }
+
+
     /// `garden grow` sets up remotes
     #[test]
     fn grow_remotes() {
@@ -599,6 +660,59 @@ mod slow {
 
         teardown("tests/tmp/plant-empty-repo");
 
+        Ok(())
+    }
+
+    /// `garden plant` detects bare repositories.
+    #[test]
+    fn plant_bare_repo() -> Result<()> {
+        setup("plant-bare-repo", "tests/tmp");
+
+        // garden plant in test/tmp/plant-bare-repo
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir",
+            "tests/tmp/plant-bare-repo",
+            "init",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+        // Empty garden.yaml should be created
+        assert!(Path::new("tests/tmp/plant-bare-repo/garden.yaml").exists());
+
+        // Create tests/tmp/plant-bare-repo/repo.git
+        let cmd = [
+            "git",
+            "-C",
+            "tests/tmp/plant-bare-repo",
+            "init",
+            "--bare",
+            "repo.git",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        // garden plant repo.git
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir",
+            "tests/tmp/plant-bare-repo",
+            "plant",
+            "repo.git",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        let path = Some(std::path::PathBuf::from(
+            "tests/tmp/plant-bare-repo/garden.yaml",
+        ));
+
+        // Load the configuration and assert that the remotes are configured.
+        let cfg = garden::config::new(&path, "", false, None)?;
+        assert_eq!(1, cfg.trees.len());
+        assert_eq!("repo.git", cfg.trees[0].get_name());
+
+        // The generated config must have "bare: true" configured.
+        assert!(cfg.trees[0].is_bare_repository);
+
+        teardown("tests/tmp/plant-bare-repo");
         Ok(())
     }
 
