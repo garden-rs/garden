@@ -277,6 +277,8 @@ mod slow {
         Ok(())
     }
 
+    /// This creates bare repositories based on the "bare.git" naming convention.
+    /// The configuration does not specify "bare: true".
     #[test]
     fn grow_bare_repo() -> Result<()> {
         setup("grow-bare-repo", "tests/tmp");
@@ -333,6 +335,67 @@ mod slow {
         }
 
         teardown("tests/tmp/grow-bare-repo");
+
+        Ok(())
+    }
+
+    /// This creates bare repositories using the "bare: true" configuration.
+    #[test]
+    fn grow_bare_repo_with_config() -> Result<()> {
+        setup("grow-bare-repo-config", "tests/tmp");
+
+        // garden grow bare.git
+        let cmd = [
+            "./target/debug/garden",
+            "--chdir",
+            "tests/tmp/grow-bare-repo-config",
+            "--config",
+            "tests/data/bare.yaml",
+            "grow",
+            "bare",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        // Ensure the repository was created
+        // tests/tmp/grow-bare-repo-config/bare
+        let mut repo = std::path::PathBuf::from("tests");
+        repo.push("tmp");
+        repo.push("grow-bare-repo-config");
+        repo.push("bare");
+        assert!(repo.exists());
+
+        {
+            let command = ["git", "rev-parse", "default"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-bare-repo-config/bare",
+            );
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+        // The dev branch must exist because we cloned with --no-single-branch.
+        {
+            let command = ["git", "rev-parse", "dev"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-bare-repo-config/bare",
+            );
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+        // The repository must be bare.
+        {
+            let command = ["git", "config", "core.bare"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-bare-repo-config/bare",
+            );
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            let output = cmd::trim_stdout(&capture.unwrap());
+            assert_eq!(output, String::from("true"));
+        }
+
+        teardown("tests/tmp/grow-bare-repo-config");
 
         Ok(())
     }

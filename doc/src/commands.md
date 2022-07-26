@@ -161,6 +161,19 @@ those whose names match the query string.
 To clone bare repositories use `bare: true` in the tree configuration.
 
     trees:
+      example:
+        bare: true
+        url: <url>
+
+Bare clones are created by default when the tree path ends in `.git`.
+For example, a tree called `example.git` will be `bare: true` by default.
+
+    trees:
+      example.git: <url>
+
+Setting `bare: false` overrides the name-based detection of bare repositories.
+
+    trees:
       example.git:
         bare: false
         url: <url>

@@ -28,6 +28,11 @@ pub fn is_graft(string: &str) -> bool {
     string.contains("::")
 }
 
+/// Return true if `string` ends in ".git". This is used to detect bare repositories.
+pub fn is_git_dir(string: &str) -> bool {
+    string.len() > 4 && string.ends_with(".git") && !string.ends_with("/.git")
+}
+
 /// Trim garden, group, and tree prefixes
 pub fn trim(string: &str) -> &str {
     let needs_trim = is_group(string) || is_tree(string) || is_garden(string);

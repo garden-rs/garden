@@ -5,6 +5,7 @@ use yaml_rust::YamlLoader;
 use super::super::errors;
 use super::super::model;
 use super::super::path;
+use super::super::syntax;
 
 // Apply YAML Configuration from a string.
 pub fn parse(
@@ -357,10 +358,10 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
         }
     }
 
-    // "environment" follow last-set-wins semantics.
     // Process the base templates in the specified order before processing
     // the template itself. Any "VAR=" variables will be overridden
     // by the tree entry itself, or the last template processed.
+    // "environment" follow last-set-wins semantics.
     get_vec_str(&value["extend"], &mut template.extend);
     for template_name in &template.extend {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
@@ -437,6 +438,10 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     tree.get_path_mut().set_expr(tree_name.to_string());
     tree.get_path().set_value(tree_name);
 
+    if syntax::is_git_dir(tree.get_path().get_expr()) {
+        tree.is_bare_repository = true;
+    }
+
     // Register the ${TREE_NAME} variable.
     tree.variables.insert(
         0,
@@ -492,6 +497,11 @@ fn get_tree(
         let tree_name = tree.get_name().to_string();
         tree.get_path_mut().set_expr(tree_name.to_string());
         tree.get_path().set_value(tree_name);
+    }
+
+    // Detect bare repositories.
+    if syntax::is_git_dir(tree.get_path().get_expr()) {
+        tree.is_bare_repository = true;
     }
 
     // Add the TREE_NAME and TREE_PATH variables

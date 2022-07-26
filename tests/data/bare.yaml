@@ -4,5 +4,8 @@ variables:
 
 trees:
   bare.git:
+    url: ${repo_url}
+
+  bare:
     bare: true
     url: ${repo_url}
