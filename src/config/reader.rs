@@ -3,6 +3,7 @@ use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
 
 use super::super::errors;
+use super::super::eval;
 use super::super::model;
 use super::super::path;
 use super::super::syntax;
@@ -102,7 +103,7 @@ pub fn parse(
     if verbose {
         debug!("yaml: trees");
     }
-    if !get_trees(&doc["trees"], &doc["templates"], &mut config.trees) && verbose {
+    if !get_trees(config, &doc["trees"], &doc["templates"]) && verbose {
         debug!("yaml: no trees");
     }
 
@@ -411,13 +412,14 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
 }
 
 /// Read tree definitions
-fn get_trees(yaml: &Yaml, templates: &Yaml, trees: &mut Vec<model::Tree>) -> bool {
+fn get_trees(config: &mut model::Configuration, yaml: &Yaml, templates: &Yaml) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if let Yaml::String(ref url) = value {
-                trees.push(get_tree_from_url(name, url));
+                config.trees.push(get_tree_from_url(name, url));
             } else {
-                trees.push(get_tree(name, value, templates, hash, true));
+                let tree = get_tree(config, name, value, templates, hash, true);
+                config.trees.push(tree);
             }
         }
         return true;
@@ -469,6 +471,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 
 /// Read a single tree definition
 fn get_tree(
+    config: &mut model::Configuration,
     name: &Yaml,
     value: &Yaml,
     templates: &Yaml,
@@ -482,7 +485,7 @@ fn get_tree(
     if get_str(&value["extend"], &mut extend) {
         let tree_name = Yaml::String(extend);
         if let Some(tree_values) = trees.get(&tree_name) {
-            tree = get_tree(&tree_name, tree_values, templates, trees, false);
+            tree = get_tree(config, &tree_name, tree_values, templates, trees, false);
             tree.remotes.truncate(1); // Keep origin only
             tree.templates.truncate(0); // Parent templates have already been processed.
         }
@@ -559,8 +562,22 @@ fn get_tree(
         }
     }
 
+    // Load values from the parent tree when using "worktree: <parent>".
+    let mut parent_expr = String::new();
+    if get_str(&value["worktree"], &mut parent_expr) {
+        let parent_name = eval::value(config, &parent_expr);
+        if !parent_expr.is_empty() {
+            let tree_name = Yaml::String(parent_name);
+            if let Some(tree_values) = trees.get(&tree_name) {
+                let base = get_tree(config, &tree_name, tree_values, templates, trees, true);
+                tree.clone_from_tree(&base, true);
+            }
+        }
+    }
+
     get_variables(&value["variables"], &mut tree.variables);
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
+
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables(&value["commands"], &mut tree.commands);
 

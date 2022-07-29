@@ -1,11 +1,3 @@
-# NOTE: Some of these examples are unimplemented.
-# The "cola-next" and "git/next" entries below demonstrate what the configuration
-# will look like for the upcoming "git worktree" support being worked on in issue #1.
-# Invocations that mention either of those names are not yet implemented.
-#
-# Just those examples are unimplemented -- everything else in this file works.
-# ----
-#
 # Create environments for developing Git Cola against development versions of Git.
 #
 # The following gardens are defined: "cola", "cola-main" and "cola-next".
@@ -18,8 +10,7 @@
 #
 # * Clone repositories and create worktrees:
 #
-#   garden grow cola-main
-#   garden grow cola-next
+#   garden grow cola-main cola-next
 #
 # * Initialize git-cola's Python virtualenv environment.
 #   garden setup cola

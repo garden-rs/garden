@@ -296,8 +296,13 @@ impl Tree {
             self.worktree = tree.worktree.clone();
         }
 
-        if clone_variables && ! tree.variables.is_empty() {
-            self.variables.append(&mut tree.variables.clone());
+        if clone_variables {
+            if ! tree.templates.is_empty() {
+                self.templates.append(&mut tree.templates.clone());
+            }
+            if ! tree.variables.is_empty() {
+                self.variables.append(&mut tree.variables.clone());
+            }
         }
 
         self.update_flags();
@@ -364,6 +369,11 @@ impl Template {
     /// Apply this template onto the specified tree.
     pub fn apply(&self, tree: &mut Tree) {
         tree.clone_from_tree(&self.tree, false);
+    }
+
+    /// Apply this template onto the specified tree.
+    pub fn apply_with_variables(&self, tree: &mut Tree) {
+        tree.clone_from_tree(&self.tree, true);
     }
 }
 

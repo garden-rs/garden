@@ -87,24 +87,26 @@ fn grow_tree_from_context(
     model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
 
     let pathbuf = std::path::PathBuf::from(&path);
-    if !pathbuf.exists() {
-        let parent = pathbuf.parent().ok_or_else(|| {
-            errors::GardenError::AssertionError(format!(
-                "unable to get parent directory for {}",
-                path
-            ))
-        })?;
+    let parent = pathbuf.parent().ok_or_else(|| {
+        errors::GardenError::AssertionError(format!("unable to get parent directory for {}", path))
+    })?;
+    std::fs::create_dir_all(&parent).map_err(|err| {
+        errors::GardenError::OSError(format!("unable to create {}: {}", path, err))
+    })?;
 
-        std::fs::create_dir_all(&parent).map_err(|err| {
-            errors::GardenError::OSError(format!("unable to create {}: {}", path, err))
-        })?;
-
+    if pathbuf.exists() {
+        return update_grown_tree_from_context(config, ctx, &pathbuf, quiet, verbose);
+    } else {
         if config.trees[ctx.tree].is_symlink {
             let status = init_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
             if status != errors::EX_OK {
                 exit_status = status;
             }
             return Ok(exit_status);
+        }
+
+        if config.trees[ctx.tree].is_worktree {
+            return grow_tree_from_context_as_worktree(config, ctx, quiet, verbose);
         }
 
         if config.trees[ctx.tree].remotes.is_empty() {
@@ -152,15 +154,8 @@ fn grow_tree_from_context(
         command.push(path.to_string());
 
         if verbose {
-            let mut quoted_args: Vec<String> = Vec::new();
-            for cmd in &command {
-                let quoted = shlex::quote(cmd.as_str());
-                quoted_args.push(quoted.as_ref().to_string());
-            }
-
-            println!(": {}", quoted_args.join(" "));
+            print_quoted_command(&command);
         }
-
         let exec = cmd::exec_cmd(&command);
         let status = cmd::status(exec.join());
         if status != 0 {
@@ -236,8 +231,106 @@ fn grow_tree_from_context(
     Ok(exit_status)
 }
 
-/// Initialize a tree symlink entry.
 
+/// Print a command that will be executed.
+fn print_quoted_command(command: &Vec<String>) {
+    let mut quoted_args: Vec<String> = Vec::new();
+    for cmd in command {
+        let quoted = shlex::quote(cmd.as_str());
+        quoted_args.push(quoted.as_ref().to_string());
+    }
+
+    println!(": {}", quoted_args.join(" "));
+}
+
+/// TODO: Apply remotes that do not already exist and synchronize .git/config values.
+fn update_grown_tree_from_context(
+    _config: &model::Configuration,
+    _ctx: &model::TreeContext,
+    _path: &std::path::PathBuf,
+    _quiet: bool,
+    _verbose: bool,
+) -> Result<i32> {
+    let exit_status = 0;
+    return Ok(exit_status);
+}
+
+/// Use "git worktree" to create a worktree.
+/// Grow the parent worktree first and then create our worktree.
+fn grow_tree_from_context_as_worktree(
+    config: &model::Configuration,
+    ctx: &model::TreeContext,
+    quiet: bool,
+    verbose: bool,
+) -> Result<i32> {
+    let mut exit_status;
+    let tree = &config.trees[ctx.tree];
+    let worktree = eval::tree_value(config, tree.worktree.get_expr(), ctx.tree, ctx.garden);
+    let branch = eval::tree_value(config, tree.branch.get_expr(), ctx.tree, ctx.garden);
+
+    let parent_ctx =
+        query::tree_from_name(config, &worktree, ctx.garden, ctx.group).ok_or_else(|| {
+            errors::GardenError::WorktreeNotFound {
+                tree: tree.get_name().to_string(),
+                worktree: worktree.clone(),
+            }
+        })?;
+
+    exit_status = grow_tree_from_context(config, &parent_ctx, quiet, verbose)?;
+    if exit_status != 0 {
+        return Err(errors::GardenError::WorktreeParentCreationError {
+            tree: tree.get_name().into(),
+            worktree,
+        }
+        .into());
+    }
+
+    let tree_path = tree.path_as_ref()?;
+    let parent_path = config.trees[parent_ctx.tree].path_as_ref()?;
+
+    let mut command: Vec<String> = vec![
+        "git".into(),
+        "worktree".into(),
+        "add".into(),
+    ];
+    if !branch.is_empty() {
+        command.push("--track".into());
+        command.push("-b".into());
+        command.push(branch.clone());
+    }
+
+    // The parent_path is the base path from which we'll execute "git worktree add".
+    // Compute a relative path to the child.
+    if let Some(relative_path) = pathdiff::diff_paths(tree_path, parent_path) {
+        command.push(relative_path.to_string_lossy().into());
+    } else {
+        command.push(tree_path.into());
+    }
+
+    if !branch.is_empty() {
+        // TODO: Support tree.<tree>.branches.<branch-name>.upstream
+        // to generalize the remote branch name instead of hard-coding "origin/".
+        command.push(format!("origin/{}", branch));
+    }
+
+    if verbose {
+        print_quoted_command(&command);
+    }
+    let exec = cmd::exec_in_dir(&command, &parent_path);
+    exit_status = cmd::status(exec.join());
+
+    if exit_status != 0 {
+        return Err(errors::GardenError::WorktreeGitCheckoutError {
+            tree: tree.get_name().clone(),
+            status: exit_status,
+        }.into());
+    }
+
+    Ok(exit_status)
+}
+
+
+/// Initialize a tree symlink entry.
 fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {
     let tree = &config.trees[ctx.tree];
     // Invalid usage: non-symlink

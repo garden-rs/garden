@@ -400,7 +400,6 @@ mod slow {
         Ok(())
     }
 
-
     /// `garden grow` sets up remotes
     #[test]
     fn grow_remotes() {
@@ -499,6 +498,7 @@ mod slow {
         teardown("tests/tmp/symlinks");
     }
 
+
     /// `garden grow` sets up git config settings
     #[test]
     fn grow_gitconfig() {
@@ -550,6 +550,65 @@ mod slow {
 
         teardown("tests/tmp/gitconfig");
     }
+
+
+    /// This creates a worktree
+    #[test]
+    fn grow_worktree_and_parent() -> Result<()> {
+        setup("grow-worktree-and-parent", "tests/tmp");
+
+        // garden grow dev
+        let cmd = [
+            "./target/debug/garden",
+            "--verbose",
+            "--chdir",
+            "tests/tmp/grow-worktree-and-parent",
+            "--config",
+            "tests/data/worktree.yaml",
+            "grow",
+            "dev",
+        ];
+        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
+
+        // Ensure the repository was created
+        let mut repo = std::path::PathBuf::from("tests");
+        // tests/tmp/grow-bare-repo-config/default
+        repo.push("tmp");
+        repo.push("grow-worktree-and-parent");
+        repo.push("default");
+        repo.push(".git");
+        assert!(repo.exists());
+
+        // tests/tmp/grow-bare-repo-config/dev
+        repo.pop();
+        repo.pop();
+        repo.push("dev");
+        repo.push(".git");
+        assert!(repo.exists());
+
+        {
+            let command = ["git", "rev-parse", "default"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-worktree-and-parent/default",
+            );
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+        // The dev branch must exist because we cloned with --no-single-branch.
+        {
+            let command = ["git", "rev-parse", "dev"];
+            let exec = cmd::exec_in_dir(
+                &command,
+                "tests/tmp/grow-worktree-and-parent/dev",
+            );
+            assert_eq!(0, cmd::status(exec.join()));
+        }
+
+        teardown("tests/tmp/grow-worktree-and-parent");
+
+        Ok(())
+    }
+
 
     /// `garden plant` adds an empty repository
     #[test]
