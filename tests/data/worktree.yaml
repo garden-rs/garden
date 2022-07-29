@@ -6,7 +6,8 @@ variables:
 templates:
   echo:
     commands:
-      echo: echo "$@"
+      echo: echo ${TREE_NAME} "$@"
+
 
 trees:
   default:

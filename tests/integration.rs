@@ -604,6 +604,50 @@ mod slow {
             assert_eq!(0, cmd::status(exec.join()));
         }
 
+        // Ensure that the "echo" command is available from the child worktree.
+        {
+            let command = [
+                "./target/debug/garden",
+                "--chdir",
+                "tests/tmp/grow-worktree-and-parent",
+                "--config",
+                "tests/data/worktree.yaml",
+                "echo",
+                "dev",
+                "--",
+                "hello",
+            ];
+            let exec = cmd::exec_cmd(&command);
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            // The "echo" command is: echo ${TREE_NAME} "$@"
+            let output = cmd::trim_stdout(&capture.unwrap());
+            assert_eq!("dev hello", output);
+        }
+
+        // Ensure that the "echo" command is available from the parent worktree.
+        {
+            let command = [
+                "./target/debug/garden",
+                "--chdir",
+                "tests/tmp/grow-worktree-and-parent",
+                "--config",
+                "tests/data/worktree.yaml",
+                "echo",
+                "default",
+                "--",
+                "hello",
+            ];
+            let exec = cmd::exec_cmd(&command);
+            let capture = cmd::capture_stdout(exec);
+            assert!(capture.is_ok());
+
+            // The "echo" command is: echo ${TREE_NAME} "$@"
+            let output = cmd::trim_stdout(&capture.unwrap());
+            assert_eq!("default hello", output);
+        }
+
         teardown("tests/tmp/grow-worktree-and-parent");
 
         Ok(())
