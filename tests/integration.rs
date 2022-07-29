@@ -305,28 +305,19 @@ mod slow {
 
         {
             let command = ["git", "rev-parse", "default"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-bare-repo/bare.git",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo/bare.git");
             assert_eq!(0, cmd::status(exec.join()));
         }
         // The dev branch must exist because we cloned with --no-single-branch.
         {
             let command = ["git", "rev-parse", "dev"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-bare-repo/bare.git",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo/bare.git");
             assert_eq!(0, cmd::status(exec.join()));
         }
         // The repository must be bare.
         {
             let command = ["git", "config", "core.bare"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-bare-repo/bare.git",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo/bare.git");
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
 
@@ -366,28 +357,19 @@ mod slow {
 
         {
             let command = ["git", "rev-parse", "default"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-bare-repo-config/bare",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo-config/bare");
             assert_eq!(0, cmd::status(exec.join()));
         }
         // The dev branch must exist because we cloned with --no-single-branch.
         {
             let command = ["git", "rev-parse", "dev"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-bare-repo-config/bare",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo-config/bare");
             assert_eq!(0, cmd::status(exec.join()));
         }
         // The repository must be bare.
         {
             let command = ["git", "config", "core.bare"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-bare-repo-config/bare",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo-config/bare");
             let capture = cmd::capture_stdout(exec);
             assert!(capture.is_ok());
 
@@ -498,7 +480,6 @@ mod slow {
         teardown("tests/tmp/symlinks");
     }
 
-
     /// `garden grow` sets up git config settings
     #[test]
     fn grow_gitconfig() {
@@ -551,7 +532,6 @@ mod slow {
         teardown("tests/tmp/gitconfig");
     }
 
-
     /// This creates a worktree
     #[test]
     fn grow_worktree_and_parent() -> Result<()> {
@@ -588,19 +568,13 @@ mod slow {
 
         {
             let command = ["git", "rev-parse", "default"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-worktree-and-parent/default",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-worktree-and-parent/default");
             assert_eq!(0, cmd::status(exec.join()));
         }
         // The dev branch must exist because we cloned with --no-single-branch.
         {
             let command = ["git", "rev-parse", "dev"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/grow-worktree-and-parent/dev",
-            );
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-worktree-and-parent/dev");
             assert_eq!(0, cmd::status(exec.join()));
         }
 
@@ -652,7 +626,6 @@ mod slow {
 
         Ok(())
     }
-
 
     /// `garden plant` adds an empty repository
     #[test]

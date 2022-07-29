@@ -231,7 +231,6 @@ fn grow_tree_from_context(
     Ok(exit_status)
 }
 
-
 /// Print a command that will be executed.
 fn print_quoted_command(command: &Vec<String>) {
     let mut quoted_args: Vec<String> = Vec::new();
@@ -288,11 +287,7 @@ fn grow_tree_from_context_as_worktree(
     let tree_path = tree.path_as_ref()?;
     let parent_path = config.trees[parent_ctx.tree].path_as_ref()?;
 
-    let mut command: Vec<String> = vec![
-        "git".into(),
-        "worktree".into(),
-        "add".into(),
-    ];
+    let mut command: Vec<String> = vec!["git".into(), "worktree".into(), "add".into()];
     if !branch.is_empty() {
         command.push("--track".into());
         command.push("-b".into());
@@ -323,12 +318,12 @@ fn grow_tree_from_context_as_worktree(
         return Err(errors::GardenError::WorktreeGitCheckoutError {
             tree: tree.get_name().clone(),
             status: exit_status,
-        }.into());
+        }
+        .into());
     }
 
     Ok(exit_status)
 }
-
 
 /// Initialize a tree symlink entry.
 fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {

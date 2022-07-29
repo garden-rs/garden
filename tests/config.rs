@@ -120,7 +120,10 @@ fn templates() {
         config.templates[0].tree.environment[0].get(0).get_expr()
     );
 
-    assert_eq!("THEPATH", config.templates[0].tree.environment[1].get_name());
+    assert_eq!(
+        "THEPATH",
+        config.templates[0].tree.environment[1].get_name()
+    );
     assert_eq!(2, config.templates[0].tree.environment[1].len());
     assert_eq!(
         "${foo}",

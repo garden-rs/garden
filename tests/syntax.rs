@@ -27,8 +27,14 @@ fn is_tree() {
 #[test]
 fn is_git_dir() {
     assert!(syntax::is_git_dir("tree.git"), "tree.git is a git dir");
-    assert!(syntax::is_git_dir("/src/tree.git"), "/src/tree.git is a git dir");
-    assert!(!syntax::is_git_dir("src/tree/.git"), "src/tree/.git is a git dir");
+    assert!(
+        syntax::is_git_dir("/src/tree.git"),
+        "/src/tree.git is a git dir"
+    );
+    assert!(
+        !syntax::is_git_dir("src/tree/.git"),
+        "src/tree/.git is a git dir"
+    );
     assert!(!syntax::is_git_dir(".git"), ".git is a git dir");
     assert!(!syntax::is_git_dir("/.git"), "/.git is a git dir");
 }

@@ -162,7 +162,6 @@ impl MultiVariable {
     }
 }
 
-
 /// Trees represent a single worktree
 #[derive(Clone, Debug, Default)]
 pub struct Tree {
@@ -284,23 +283,23 @@ impl Tree {
             self.is_symlink = tree.is_symlink;
         }
 
-        if ! tree.branch.is_empty() {
+        if !tree.branch.is_empty() {
             self.branch = tree.branch.clone();
         }
 
-        if ! tree.symlink.is_empty() {
+        if !tree.symlink.is_empty() {
             self.symlink = tree.symlink.clone();
         }
 
-        if ! tree.worktree.is_empty() {
+        if !tree.worktree.is_empty() {
             self.worktree = tree.worktree.clone();
         }
 
         if clone_variables {
-            if ! tree.templates.is_empty() {
+            if !tree.templates.is_empty() {
                 self.templates.append(&mut tree.templates.clone());
             }
-            if ! tree.variables.is_empty() {
+            if !tree.variables.is_empty() {
                 self.variables.append(&mut tree.variables.clone());
             }
         }

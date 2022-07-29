@@ -111,8 +111,8 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::TreeNotFound { .. } => EX_USAGE,
             GardenError::Usage(_) => EX_USAGE,
             GardenError::WorktreeGitCheckoutError { .. } => EX_CANTCREAT,
-            GardenError::WorktreeParentCreationError{ .. } => EX_CANTCREAT,
-            GardenError::WorktreeNotFound{ .. } => EX_CONFIG,
+            GardenError::WorktreeParentCreationError { .. } => EX_CANTCREAT,
+            GardenError::WorktreeNotFound { .. } => EX_CONFIG,
             GardenError::WriteConfigurationError { .. } => EX_CANTCREAT,
         }
     }
