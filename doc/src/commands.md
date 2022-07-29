@@ -106,6 +106,8 @@ It is safe to re-run the `grow` command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
 repositories are created by cloning the configured tree url.
 
+### Branches
+
 The `branch: <branch-name>` tree variable is used to specify which branch should be
 cloned and checked out when the tree is grown.
 
@@ -116,6 +118,9 @@ cloned and checked out when the tree is grown.
 
 `graden grow example` clones the repository using `git clone --branch=dev`.
 The `branch` setting is a tree variable and supports `${variable}` expressions.
+
+
+### Shallow Clones
 
 The `depth: <integer>` tree parameter is used to create shallow clones.
 
@@ -146,6 +151,9 @@ This paramter is typically used in conjunction with `branch: <branch-name>` and
         single-branch: true
         url: <url>
 
+
+### Wildcards
+
 Wildcards are supported in the trees queries supported by `garden grow`.
 `garden grow 'glob*'` grows the gardens, groups or trees that start with "glob".
 
@@ -157,6 +165,33 @@ the query. If groups are found then the trees within each group will be grown.
 
 If no gardens and no groups are found then will garden search for trees and grow
 those whose names match the query string.
+
+
+### Worktrees
+
+`garden grow` can be used to create worktrees that share their `.git` storage
+using [git worktree](https://git-scm.com/docs/git-worktree).
+
+To create shared storage, define the primary worktree where the `.git`
+storage will reside and then define additional trees that reference the
+worktrees.
+
+    trees:
+      example/main: <url>
+
+      example/dev:
+        worktree: example/main
+        branch: dev
+
+    example/v2:
+        worktree: example/main
+        branch: v2
+
+This example uses `example/main` tree for the shared storage and two additional worktrees.
+`example/dev` uses the `dev` branch and `example/v2` uses the `v2` branch.
+
+
+### Bare Repositories
 
 To clone bare repositories use `bare: true` in the tree configuration.
 
