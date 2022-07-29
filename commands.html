@@ -253,6 +253,7 @@ and places them into the paths defined by the garden file.</p>
 <p>It is safe to re-run the <code>grow</code> command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
 repositories are created by cloning the configured tree url.</p>
+<h3 id="branches"><a class="header" href="#branches">Branches</a></h3>
 <p>The <code>branch: &lt;branch-name&gt;</code> tree variable is used to specify which branch should be
 cloned and checked out when the tree is grown.</p>
 <pre><code>trees:
@@ -262,6 +263,7 @@ cloned and checked out when the tree is grown.</p>
 </code></pre>
 <p><code>graden grow example</code> clones the repository using <code>git clone --branch=dev</code>.
 The <code>branch</code> setting is a tree variable and supports <code>${variable}</code> expressions.</p>
+<h3 id="shallow-clones"><a class="header" href="#shallow-clones">Shallow Clones</a></h3>
 <p>The <code>depth: &lt;integer&gt;</code> tree parameter is used to create shallow clones.</p>
 <pre><code>trees:
   example:
@@ -286,6 +288,7 @@ of repositories by only having a single branch available.</p>
     single-branch: true
     url: &lt;url&gt;
 </code></pre>
+<h3 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h3>
 <p>Wildcards are supported in the trees queries supported by <code>garden grow</code>.
 <code>garden grow 'glob*'</code> grows the gardens, groups or trees that start with &quot;glob&quot;.</p>
 <p>If <code>garden.yaml</code> contains <code>gardens</code> whose name matches the query then the trees
@@ -294,6 +297,26 @@ associated with each garden are grown.</p>
 the query. If groups are found then the trees within each group will be grown.</p>
 <p>If no gardens and no groups are found then will garden search for trees and grow
 those whose names match the query string.</p>
+<h3 id="worktrees"><a class="header" href="#worktrees">Worktrees</a></h3>
+<p><code>garden grow</code> can be used to create worktrees that share their <code>.git</code> storage
+using <a href="https://git-scm.com/docs/git-worktree">git worktree</a>.</p>
+<p>To create shared storage, define the primary worktree where the <code>.git</code>
+storage will reside and then define additional trees that reference the
+worktrees.</p>
+<pre><code>trees:
+  example/main: &lt;url&gt;
+
+  example/dev:
+    worktree: example/main
+    branch: dev
+
+example/v2:
+    worktree: example/main
+    branch: v2
+</code></pre>
+<p>This example uses <code>example/main</code> tree for the shared storage and two additional worktrees.
+<code>example/dev</code> uses the <code>dev</code> branch and <code>example/v2</code> uses the <code>v2</code> branch.</p>
+<h3 id="bare-repositories"><a class="header" href="#bare-repositories">Bare Repositories</a></h3>
 <p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
 <pre><code>trees:
   example:
