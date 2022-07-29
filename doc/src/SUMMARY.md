@@ -8,3 +8,4 @@
 - [Commands](commands.md)
 - [Configuration](configuration.md)
 - [Examples](examples.md)
+- [Changelog](changelog.md)
