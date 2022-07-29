@@ -1,9 +1,5 @@
 # Ideas, New Features, Usability Enhancements
 
-- grow: make --depth optional and configurable.
-- grow: add "grow: branch: clone-branch" and let it be overridden per-graden
-  using "gardens: <garden>: branch: <tree>: branch-name"
-
 - config::reader should stop creating `${TREE_NAME}`, `${GARDEN_ROOT}`,
   and `${GARDEN_CONFIG_DIR}`.  config.rs should create the NamedVariables.
 
