@@ -151,6 +151,16 @@ fn grow_tree_from_context(
         command.push(url);
         command.push(path.to_string());
 
+        if verbose {
+            let mut quoted_args: Vec<String> = Vec::new();
+            for cmd in &command {
+                let quoted = shlex::quote(cmd.as_str());
+                quoted_args.push(quoted.as_ref().to_string());
+            }
+
+            println!(": {}", quoted_args.join(" "));
+        }
+
         let exec = cmd::exec_cmd(&command);
         let status = cmd::status(exec.join());
         if status != 0 {
