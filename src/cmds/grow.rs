@@ -239,7 +239,11 @@ fn print_quoted_command(command: &Vec<String>) {
         quoted_args.push(quoted.as_ref().to_string());
     }
 
-    println!(": {}", quoted_args.join(" "));
+    println!(
+        "{} {}",
+        model::Color::cyan(":"),
+        model::Color::green(quoted_args.join(" ")),
+    );
 }
 
 /// TODO: Apply remotes that do not already exist and synchronize .git/config values.
