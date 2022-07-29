@@ -1,3 +1,11 @@
+# NOTE: Some of these examples are unimplemented.
+# The "cola-next" and "git/next" entries below demonstrate what the configuration
+# will look like for the upcoming "git worktree" support being worked on in issue #1.
+# Invocations that mention either of those names are not yet implemented.
+#
+# Just those examples are unimplemented -- everything else in this file works.
+# ----
+#
 # Create environments for developing Git Cola against development versions of Git.
 #
 # The following gardens are defined: "cola", "cola-main" and "cola-next".
@@ -9,7 +17,9 @@
 # One-time Setup:
 #
 # * Clone repositories and create worktrees:
-#   garden grow cola-main cola-next
+#
+#   garden grow cola-main
+#   garden grow cola-next
 #
 # * Initialize git-cola's Python virtualenv environment.
 #   garden setup cola
@@ -66,23 +76,16 @@ templates:
       doc: make -j ${num_procs} prefix="${prefix}" doc "$@"
 
 trees:
-  # git/git.git is a bare repository.
-  #   https://git-scm.com/docs/gitglossary.html#Documentation/gitglossary.txt-aiddefbarerepositoryabarerepository
-  # git/git.git is the parent repository for the "git/main" and "git/next" worktrees:
-  #   https://git-scm.com/docs/git-worktree
-  git/git.git:
-    bare: true  # Create a bare repository
+  # git/main is the parent worktree that shares its .git storage with the child
+  # git/next worktrees using "git worktree" -- https://git-scm.com/docs/git-worktree
+  git/main:
     url: https://github.com/git/git.git
     templates: makefile
     environment:
       PATH: ${TREE_PATH}/bin-wrappers
-  # git/main is a "git worktree" for git.git's "main" branch.
-  git/main:
-    worktree: git/git.git
-    branch: main
   # git/next is a "git worktree" for git.git's "next" branch.
   git/next:
-    worktree: git/git.git
+    worktree: git/main
     branch: next
 
   # git-cola's worktree can be reused alongside any of the git/* trees defined above.
