@@ -94,3 +94,8 @@ check-format::
 .PHONY: format
 format::
 	$(CARGO) fmt
+
+
+.PHONY: update
+update::
+	$(CARGO) update
