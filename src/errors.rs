@@ -66,6 +66,15 @@ pub enum GardenError {
     #[error("invalid arguments: {0}")]
     Usage(String),
 
+    #[error("error creating {tree:?}: 'git checkout' returned exit status {status:?}")]
+    WorktreeGitCheckoutError { tree: String, status: i32 },
+
+    #[error("unable to find worktree {worktree:?} for {tree:?}")]
+    WorktreeNotFound { worktree: String, tree: String },
+
+    #[error("error creating worktree parent '{worktree:?}' for '{tree:?}'")]
+    WorktreeParentCreationError { worktree: String, tree: String },
+
     #[error("unable to write configuration: {path:?}")]
     WriteConfigurationError { path: std::path::PathBuf },
 }
@@ -101,6 +110,9 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::SyncConfigurationError { .. } => EX_IOERR,
             GardenError::TreeNotFound { .. } => EX_USAGE,
             GardenError::Usage(_) => EX_USAGE,
+            GardenError::WorktreeGitCheckoutError { .. } => EX_CANTCREAT,
+            GardenError::WorktreeParentCreationError{ .. } => EX_CANTCREAT,
+            GardenError::WorktreeNotFound{ .. } => EX_CONFIG,
             GardenError::WriteConfigurationError { .. } => EX_CANTCREAT,
         }
     }
