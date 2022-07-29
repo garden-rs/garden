@@ -208,7 +208,11 @@ pub fn cmd(
             for cmd_seq in &cmd_seq_vec {
                 for cmd_str in cmd_seq {
                     if verbose {
-                        println!(": {}", cmd_str);
+                        println!(
+                            "{} {}",
+                            model::Color::cyan(":"),
+                            model::Color::green(&cmd_str),
+                        );
                     }
                     let mut exec = subprocess::Exec::shell(&cmd_str)
                         .arg(&current_exe)
