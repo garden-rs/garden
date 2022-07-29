@@ -100,7 +100,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -446,6 +446,23 @@ associated with each garden are grown.</p>
 the query. If groups are found then the trees within each group will be grown.</p>
 <p>If no gardens and no groups are found then will garden search for trees and grow
 those whose names match the query string.</p>
+<p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
+<pre><code>trees:
+  example:
+    bare: true
+    url: &lt;url&gt;
+</code></pre>
+<p>Bare clones are created by default when the tree path ends in <code>.git</code>.
+For example, a tree called <code>example.git</code> will be <code>bare: true</code> by default.</p>
+<pre><code>trees:
+  example.git: &lt;url&gt;
+</code></pre>
+<p>Setting <code>bare: false</code> overrides the name-based detection of bare repositories.</p>
+<pre><code>trees:
+  example.git:
+    bare: false
+    url: &lt;url&gt;
+</code></pre>
 <h2 id="garden-cmd"><a class="header" href="#garden-cmd">garden cmd</a></h2>
 <pre><code>garden cmd &lt;tree-query&gt; &lt;command&gt; [&lt;command&gt;]... [-- &lt;arguments&gt;..]
 
@@ -569,6 +586,7 @@ when showing examples.</p>
 # One-time Setup:
 #
 # * Clone repositories and create worktrees:
+#
 #   garden grow cola-main cola-next
 #
 # * Initialize git-cola's Python virtualenv environment.
@@ -626,23 +644,16 @@ templates:
       doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
-  # git/git.git is a bare repository.
-  #   https://git-scm.com/docs/gitglossary.html#Documentation/gitglossary.txt-aiddefbarerepositoryabarerepository
-  # git/git.git is the parent repository for the &quot;git/main&quot; and &quot;git/next&quot; worktrees:
-  #   https://git-scm.com/docs/git-worktree
-  git/git.git:
-    bare: true  # Create a bare repository
+  # git/main is the parent worktree that shares its .git storage with the child
+  # git/next worktrees using &quot;git worktree&quot; -- https://git-scm.com/docs/git-worktree
+  git/main:
     url: https://github.com/git/git.git
     templates: makefile
     environment:
       PATH: ${TREE_PATH}/bin-wrappers
-  # git/main is a &quot;git worktree&quot; for git.git's &quot;main&quot; branch.
-  git/main:
-    worktree: git/git.git
-    branch: main
   # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
   git/next:
-    worktree: git/git.git
+    worktree: git/main
     branch: next
 
   # git-cola's worktree can be reused alongside any of the git/* trees defined above.
@@ -873,6 +884,28 @@ by running the &quot;make install&quot; targets in each repo:</p>
 </code></pre>
 <p>Voila, we now have a fully functional development environment with PyQt5, the
 latest development Git version and Git Cola ready to go for development.</p>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v020"><a class="header" href="#v020">v0.2.0</a></h2>
+<p><strong>Breaking Changes</strong>:</p>
+<ul>
+<li><code>garden add</code> was renamed to <code>garden plant</code>.</li>
+</ul>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden grow</code> learned to grow trees using &quot;git worktree&quot; (#1).</li>
+<li><code>garden grow</code> learned to clone specific branches.</li>
+<li><code>garden grow</code> and <code>garden plant</code> learned to handle bare repositories.</li>
+</ul>
+<h2 id="v010"><a class="header" href="#v010">v0.1.0</a></h2>
+<p><strong>Features</strong>:</p>
+<p>This is the initial garden release.</p>
+<ul>
+<li><code>garden grow</code> grows worktrees.</li>
+<li><code>garden init</code> intitializes configuration.</li>
+<li><code>garden plant</code> (formerly <code>garden add</code>) adds existing trees.</li>
+<li><code>garden cmd</code> and <code>garden &lt;custom-command&gt;</code> can run custom commands.</li>
+<li>Templates, variables, and environment variables are all supported.</li>
+</ul>
 
                     </main>
 

@@ -98,7 +98,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html" class="active"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html" class="active"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -294,6 +294,23 @@ associated with each garden are grown.</p>
 the query. If groups are found then the trees within each group will be grown.</p>
 <p>If no gardens and no groups are found then will garden search for trees and grow
 those whose names match the query string.</p>
+<p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
+<pre><code>trees:
+  example:
+    bare: true
+    url: &lt;url&gt;
+</code></pre>
+<p>Bare clones are created by default when the tree path ends in <code>.git</code>.
+For example, a tree called <code>example.git</code> will be <code>bare: true</code> by default.</p>
+<pre><code>trees:
+  example.git: &lt;url&gt;
+</code></pre>
+<p>Setting <code>bare: false</code> overrides the name-based detection of bare repositories.</p>
+<pre><code>trees:
+  example.git:
+    bare: false
+    url: &lt;url&gt;
+</code></pre>
 <h2 id="garden-cmd"><a class="header" href="#garden-cmd">garden cmd</a></h2>
 <pre><code>garden cmd &lt;tree-query&gt; &lt;command&gt; [&lt;command&gt;]... [-- &lt;arguments&gt;..]
 
