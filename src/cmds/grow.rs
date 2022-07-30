@@ -98,7 +98,7 @@ fn grow_tree_from_context(
         return update_grown_tree_from_context(config, ctx, &pathbuf, quiet, verbose);
     } else {
         if config.trees[ctx.tree].is_symlink {
-            let status = init_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
+            let status = grow_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
             if status != errors::EX_OK {
                 exit_status = status;
             }
@@ -152,10 +152,10 @@ fn grow_tree_from_context(
         // <url> <path>
         command.push(url);
         command.push(path.to_string());
-
         if verbose {
             print_quoted_command(&command);
         }
+
         let exec = cmd::exec_cmd(&command);
         let status = cmd::status(exec.join());
         if status != 0 {
@@ -330,7 +330,7 @@ fn grow_tree_from_context_as_worktree(
 }
 
 /// Initialize a tree symlink entry.
-fn init_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {
+fn grow_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {
     let tree = &config.trees[ctx.tree];
     // Invalid usage: non-symlink
     if !tree.is_symlink || tree.path_as_ref()?.is_empty() || tree.symlink_as_ref()?.is_empty() {
