@@ -64,7 +64,7 @@ mod slow {
         // The repository must have all branches by default.
         {
             let command = ["git", "rev-parse", "origin/dev", "origin/default"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
+            let exec = cmd::exec_in_dir(&command, "tests/tmp/clone/example/tree/repo");
             assert_eq!(0, cmd::status(exec.join()));
         }
 
