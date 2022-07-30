@@ -33,7 +33,7 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
 
     help_cmd.push("--help".into());
 
-    if options.verbose {
+    if options.verbose > 0 {
         debug!("help command");
         for (i, arg) in help_cmd.iter().enumerate() {
             debug!("help_cmd[{:02}] = {:?}", i, arg);

@@ -423,7 +423,7 @@ pub struct Configuration {
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: Vec<Tree>,
     pub variables: Vec<NamedVariable>,
-    pub verbose: bool,
+    pub verbose: u8,
     id: Option<ConfigId>,
     parent_id: Option<ConfigId>,
 }
@@ -914,8 +914,8 @@ impl std::str::FromStr for ColorMode {
 // Color is an alias for yansi::Paint.
 pub type Color<T> = yansi::Paint<T>;
 
-pub fn display_missing_tree(tree: &Tree, path: &str, verbose: bool) -> String {
-    if verbose {
+pub fn display_missing_tree(tree: &Tree, path: &str, verbose: u8) -> String {
+    if verbose > 0 {
         format!(
             "{} {}  {} {}",
             Color::black("#").bold(),
@@ -933,8 +933,8 @@ pub fn display_missing_tree(tree: &Tree, path: &str, verbose: bool) -> String {
     }
 }
 
-pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
-    if verbose {
+pub fn display_tree(tree: &Tree, path: &str, verbose: u8) -> String {
+    if verbose > 0 {
         format!(
             "{} {}  {}",
             Color::cyan("#"),
@@ -947,7 +947,7 @@ pub fn display_tree(tree: &Tree, path: &str, verbose: bool) -> String {
 }
 
 /// Print a tree if it exists, otherwise print a missing tree
-pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
+pub fn print_tree(tree: &Tree, verbose: u8, quiet: bool) -> bool {
     if let Ok(path) = tree.path_as_ref() {
         // Sparse gardens/missing trees are ok -> skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
@@ -967,7 +967,7 @@ pub fn print_tree(tree: &Tree, verbose: bool, quiet: bool) -> bool {
 }
 
 /// Print a tree
-pub fn print_tree_details(tree: &Tree, verbose: bool, quiet: bool) {
+pub fn print_tree_details(tree: &Tree, verbose: u8, quiet: bool) {
     if !quiet {
         if let Ok(path) = tree.path_as_ref() {
             eprintln!("{}", display_tree(tree, path, verbose));
@@ -988,7 +988,7 @@ pub struct CommandOptions {
     pub root: String,
     pub subcommand: Command,
     pub variables: Vec<String>,
-    pub verbose: bool,
+    pub verbose: u8,
 }
 
 impl CommandOptions {
@@ -997,7 +997,7 @@ impl CommandOptions {
     }
 
     // Builder function to update verbosity.
-    pub fn verbose(mut self, value: bool) -> Self {
+    pub fn verbose(mut self, value: u8) -> Self {
         self.verbose = value;
         self
     }

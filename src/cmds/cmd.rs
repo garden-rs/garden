@@ -146,7 +146,7 @@ fn parse_args_custom(
 pub fn cmd(
     app: &mut model::ApplicationContext,
     quiet: bool,
-    verbose: bool,
+    verbose: u8,
     keep_going: bool,
     query: &str,
     commands: &[String],
@@ -207,7 +207,7 @@ pub fn cmd(
 
             for cmd_seq in &cmd_seq_vec {
                 for cmd_str in cmd_seq {
-                    if verbose {
+                    if verbose > 1 {
                         println!(
                             "{} {}",
                             model::Color::cyan(":"),
@@ -251,7 +251,7 @@ pub fn cmd(
 pub fn cmds(
     app: &mut model::ApplicationContext,
     quiet: bool,
-    verbose: bool,
+    verbose: u8,
     keep_going: bool,
     command: &str,
     queries: &[String],

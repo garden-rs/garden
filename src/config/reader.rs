@@ -11,7 +11,7 @@ use super::super::syntax;
 // Apply YAML Configuration from a string.
 pub fn parse(
     string: &str,
-    verbose: bool,
+    verbose: u8,
     config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
     let docs = YamlLoader::load_from_str(string)
@@ -24,7 +24,7 @@ pub fn parse(
     let doc = &docs[0];
 
     // Debug support
-    if verbose {
+    if verbose > 1 {
         dump_node(doc, 1, "");
     }
 
@@ -39,26 +39,26 @@ pub fn parse(
             config.root.set_expr(path::current_dir_string());
         }
 
-        if verbose {
+        if verbose > 0 {
             debug!("yaml: garden.root = {}", config.root.get_expr());
         }
     }
 
     // garden.shell
-    if get_str(&doc["garden"]["shell"], &mut config.shell) && verbose {
+    if get_str(&doc["garden"]["shell"], &mut config.shell) && verbose > 0 {
         debug!("yaml: garden.shell = {}", config.shell);
     }
 
     // grafts
-    if verbose {
+    if verbose > 0 {
         debug!("yaml: grafts");
     }
-    if !get_grafts(&doc["grafts"], &mut config.grafts) && verbose {
+    if !get_grafts(&doc["grafts"], &mut config.grafts) && verbose > 0 {
         debug!("yaml: no grafts");
     }
 
     // variables
-    if verbose {
+    if verbose > 0 {
         debug!("yaml: variables");
     }
     // Provide GARDEN_ROOT
@@ -79,47 +79,47 @@ pub fn parse(
         }
     }
 
-    if !get_variables(&doc["variables"], &mut config.variables) && verbose {
+    if !get_variables(&doc["variables"], &mut config.variables) && verbose > 0 {
         debug!("yaml: no variables");
     }
 
     // commands
-    if verbose {
+    if verbose > 0 {
         debug!("yaml: commands");
     }
-    if !get_multivariables(&doc["commands"], &mut config.commands) && verbose {
+    if !get_multivariables(&doc["commands"], &mut config.commands) && verbose > 0 {
         debug!("yaml: no commands");
     }
 
     // templates
-    if verbose {
+    if verbose > 0 {
         debug!("yaml: templates");
     }
-    if !get_templates(&doc["templates"], &mut config.templates) && verbose {
+    if !get_templates(&doc["templates"], &mut config.templates) && verbose > 0 {
         debug!("yaml: no templates");
     }
 
     // trees
-    if verbose {
+    if verbose > 0 {
         debug!("yaml: trees");
     }
-    if !get_trees(config, &doc["trees"], &doc["templates"]) && verbose {
+    if !get_trees(config, &doc["trees"], &doc["templates"]) && verbose > 0 {
         debug!("yaml: no trees");
     }
 
     // groups
-    if verbose {
+    if verbose > 0 {
         debug!("yaml: groups");
     }
-    if !get_groups(&doc["groups"], &mut config.groups) && verbose {
+    if !get_groups(&doc["groups"], &mut config.groups) && verbose > 0 {
         debug!("yaml: no groups");
     }
 
     // gardens
-    if verbose {
+    if verbose > 0 {
         debug!("yaml: gardens");
     }
-    if !get_gardens(&doc["gardens"], &mut config.gardens) && verbose {
+    if !get_gardens(&doc["gardens"], &mut config.gardens) && verbose > 0 {
         debug!("yaml: no gardens");
     }
 

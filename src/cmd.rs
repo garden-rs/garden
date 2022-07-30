@@ -91,7 +91,7 @@ pub fn exec_in_context<S>(
     config: &mut model::Configuration,
     context: &model::TreeContext,
     quiet: bool,
-    verbose: bool,
+    verbose: u8,
     command: &[S],
 ) -> Result<(), errors::GardenError>
 where

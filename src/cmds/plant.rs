@@ -72,7 +72,7 @@ fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &
 
 fn plant_path(
     config: &model::Configuration,
-    verbose: bool,
+    verbose: u8,
     raw_path: &str,
     trees: &mut YamlHash,
 ) -> Result<()> {
@@ -139,7 +139,7 @@ fn plant_path(
     let mut entry: YamlHash = YamlHash::new();
     if let Some(tree_yaml) = trees.get(&key) {
         if let Some(tree_hash) = tree_yaml.as_hash() {
-            if verbose {
+            if verbose > 0 {
                 eprintln!("{}: found existing tree", tree_name);
             }
             entry = tree_hash.clone();
@@ -216,7 +216,7 @@ fn plant_path(
     }
 
     let url_key = Yaml::String("url".into());
-    if verbose && entry.contains_key(&url_key) {
+    if verbose > 0 && entry.contains_key(&url_key) {
         eprintln!("{}: no url", tree_name);
     }
 

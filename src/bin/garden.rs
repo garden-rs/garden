@@ -109,8 +109,8 @@ fn parse_args() -> model::CommandOptions {
 
         ap.refer(&mut options.verbose).add_option(
             &["-v", "--verbose"],
-            argparse::StoreTrue,
-            "be verbose",
+            argparse::IncrBy(1),
+            "increase verbosity level (default 0)",
         );
 
         ap.refer(&mut options.quiet).add_option(

@@ -7,7 +7,7 @@ use anyhow::Result;
 fn config_default() {
     let config = garden::model::Configuration::new();
     assert_eq!("zsh", config.shell);
-    assert!(config.verbose == false);
+    assert_eq!(0, config.verbose);
     assert_eq!("", config.root.get_expr());
 }
 
@@ -441,7 +441,7 @@ fn test_template_url() {
 
 #[test]
 fn read_grafts() -> Result<()> {
-    let options = garden::build::command_options().verbose(true);
+    let options = garden::build::command_options().verbose(1);
     let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
 
     let config = app.get_root_config();

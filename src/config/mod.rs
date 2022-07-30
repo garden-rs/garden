@@ -80,7 +80,7 @@ pub fn xdg_dir() -> std::path::PathBuf {
 pub fn new(
     config: &Option<std::path::PathBuf>,
     root: &str,
-    verbose: bool,
+    verbose: u8,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
     let mut cfg = model::Configuration::new();
@@ -123,7 +123,7 @@ pub fn new(
             }
         }
     }
-    if verbose {
+    if verbose > 0 {
         debug!(
             "config: path: {:?}, root: {:?}, found: {}",
             cfg.path, cfg.root, found
@@ -154,7 +154,7 @@ pub fn new(
 pub fn from_path(
     path: std::path::PathBuf,
     root: &str,
-    verbose: bool,
+    verbose: u8,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
     new(&Some(path), root, verbose, parent)
@@ -163,7 +163,7 @@ pub fn from_path(
 /// Read configuration from a path string.  Wraps from_path() to simplify usage.
 pub fn from_path_string(
     path: &str,
-    verbose: bool,
+    verbose: u8,
 ) -> Result<model::Configuration, errors::GardenError> {
     from_path(std::path::PathBuf::from(path), "", verbose, None)
 }
@@ -172,7 +172,7 @@ pub fn from_path_string(
 pub fn from_options(
     options: &model::CommandOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
-    let config_verbose = options.is_debug("config::new");
+    let config_verbose = options.is_debug("config::new") as u8;
     let mut config = new(&options.filename, &options.root, config_verbose, None)?;
 
     if config.path.is_none() {
@@ -207,7 +207,7 @@ pub fn from_options(
 /// Parse and apply configuration from a YAML/JSON string
 pub fn parse(
     config_string: &str,
-    verbose: bool,
+    verbose: u8,
     cfg: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
     reader::parse(config_string, verbose, cfg)?;

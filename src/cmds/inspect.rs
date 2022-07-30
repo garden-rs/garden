@@ -42,7 +42,7 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
 }
 
 /// Execute a command over every tree in the evaluated tree query.
-pub fn inspect(config: &mut model::Configuration, verbose: bool, queries: &[String]) -> Result<()> {
+pub fn inspect(config: &mut model::Configuration, verbose: u8, queries: &[String]) -> Result<()> {
     for query in queries {
         // Resolve the tree query into a vector of tree contexts.
         let contexts = query::resolve_trees(config, query);
@@ -52,7 +52,7 @@ pub fn inspect(config: &mut model::Configuration, verbose: bool, queries: &[Stri
             let path = tree.path_as_ref()?;
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !std::path::PathBuf::from(&path).exists() {
-                if verbose {
+                if verbose > 0 {
                     println!(
                         "{} {}  {}",
                         Color::red("-").dimmed(),
@@ -70,7 +70,7 @@ pub fn inspect(config: &mut model::Configuration, verbose: bool, queries: &[Stri
             }
 
             if tree.is_symlink {
-                if verbose {
+                if verbose > 0 {
                     println!(
                         "{} {}  {} {} {}",
                         Color::green("+"),
@@ -88,7 +88,7 @@ pub fn inspect(config: &mut model::Configuration, verbose: bool, queries: &[Stri
                         Color::blue(tree.symlink_as_ref()?).bold()
                     );
                 }
-            } else if verbose {
+            } else if verbose > 0 {
                 println!(
                     "{} {}  {}",
                     Color::green("+"),

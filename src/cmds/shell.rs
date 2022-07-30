@@ -59,7 +59,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(
-            config, &context, /*quiet*/ true, /*verbose*/ false, &value,
+            config, &context, /*quiet*/ true, /*verbose*/ 0, &value,
         )
         .map_err(|err| err.into())
     } else {

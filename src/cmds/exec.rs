@@ -53,7 +53,7 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut String, command: 
 pub fn exec(
     config: &mut model::Configuration,
     quiet: bool,
-    verbose: bool,
+    verbose: u8,
     query: &str,
     command: &[String],
 ) -> Result<()> {

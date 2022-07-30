@@ -56,7 +56,7 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
 pub fn grow(
     config: &mut model::Configuration,
     quiet: bool,
-    verbose: bool,
+    verbose: u8,
     query: &str,
 ) -> Result<i32> {
     let contexts = query::resolve_trees(config, query);
@@ -79,7 +79,7 @@ fn grow_tree_from_context(
     config: &model::Configuration,
     ctx: &model::TreeContext,
     quiet: bool,
-    verbose: bool,
+    verbose: u8,
 ) -> Result<i32> {
     let mut exit_status: i32 = 0;
 
@@ -152,7 +152,7 @@ fn grow_tree_from_context(
         // <url> <path>
         command.push(url);
         command.push(path.to_string());
-        if verbose {
+        if verbose > 1 {
             print_quoted_command(&command);
         }
 
@@ -197,7 +197,7 @@ fn update_tree_from_context(
     ctx: &model::TreeContext,
     path: &std::path::PathBuf,
     _quiet: bool,
-    verbose: bool,
+    verbose: u8,
 ) -> Result<i32> {
     let mut exit_status = 0;
 
@@ -239,13 +239,13 @@ fn update_tree_from_context(
         if existing_remotes.contains(k) {
             let remote_key = format!("remote.{}.url", k);
             let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
-            if verbose {
+            if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
             exec = cmd::exec_in_dir(&command, &path);
         } else {
             let command = ["git", "remote", "add", k.as_ref(), url.as_ref()];
-            if verbose {
+            if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
             exec = cmd::exec_in_dir(&command, &path);
@@ -281,7 +281,7 @@ fn grow_tree_from_context_as_worktree(
     config: &model::Configuration,
     ctx: &model::TreeContext,
     quiet: bool,
-    verbose: bool,
+    verbose: u8,
 ) -> Result<i32> {
     let mut exit_status;
     let tree = &config.trees[ctx.tree];
@@ -329,7 +329,7 @@ fn grow_tree_from_context_as_worktree(
         command.push(format!("origin/{}", branch));
     }
 
-    if verbose {
+    if verbose > 1 {
         print_quoted_command(&command);
     }
     let exec = cmd::exec_in_dir(&command, &parent_path);

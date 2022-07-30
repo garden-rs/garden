@@ -10,7 +10,7 @@ pub fn from_string(string: &str) -> garden::model::Configuration {
     initialize_environment();
 
     let mut config = garden::model::Configuration::new();
-    garden::config::parse(string, false, &mut config).ok();
+    garden::config::parse(string, 0, &mut config).ok();
 
     config
 }
