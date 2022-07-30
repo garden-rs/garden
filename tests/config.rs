@@ -441,7 +441,7 @@ fn test_template_url() {
 
 #[test]
 fn read_grafts() -> Result<()> {
-    let options = garden::build::command_options().verbose(1);
+    let options = garden::build::command_options();
     let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
 
     let config = app.get_root_config();

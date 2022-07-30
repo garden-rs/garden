@@ -42,7 +42,7 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut String, command: 
     options.args.insert(0, "garden exec".into());
     cmd::parse_args(ap, options.args.to_vec());
 
-    if options.is_debug("exec") {
+    if options.debug_level("exec") > 0 {
         debug!("command: exec");
         debug!("query: {}", query);
         debug!("command: {:?}", command);

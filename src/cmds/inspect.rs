@@ -36,7 +36,7 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
         query.push(".".into());
     }
 
-    if options.is_debug("inspect") {
+    if options.debug_level("inspect") > 0 {
         debug!("query: {:?}", query);
     }
 }

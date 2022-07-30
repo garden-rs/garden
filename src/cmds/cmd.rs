@@ -57,7 +57,7 @@ fn parse_args(
         cmd::parse_args(ap, options.args.to_vec());
     }
 
-    if options.is_debug("cmd") {
+    if options.debug_level("cmd") > 0 {
         debug!("subcommand: cmd");
         debug!("query: {}", query);
         debug!("commands_and_args: {:?}", commands_and_args);
@@ -66,7 +66,7 @@ fn parse_args(
     // Queries and arguments are separated by a double-dash "--" marker.
     cmd::split_on_dash(&commands_and_args, commands, arguments);
 
-    if options.is_debug("cmd") {
+    if options.debug_level("cmd") > 0 {
         debug!("commands: {:?}", commands);
         debug!("arguments: {:?}", arguments);
     }
@@ -114,7 +114,7 @@ fn parse_args_custom(
     options.args.insert(0, format!("garden {}", command));
     cmd::parse_args(ap, options.args.to_vec());
 
-    if options.is_debug("cmd") {
+    if options.debug_level("cmd") > 0 {
         debug!("command: {}", command);
         debug!("queries_and_arguments: {:?}", queries_and_arguments);
     }
@@ -127,7 +127,7 @@ fn parse_args_custom(
         queries.push(".".into());
     }
 
-    if options.is_debug("cmd") {
+    if options.debug_level("cmd") > 0 {
         debug!("queries {:?}", queries);
         debug!("arguments: {:?}", arguments);
     }

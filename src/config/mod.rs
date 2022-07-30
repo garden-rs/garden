@@ -172,15 +172,20 @@ pub fn from_path_string(
 pub fn from_options(
     options: &model::CommandOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
-    let config_verbose = options.is_debug("config::new") as u8;
+    let config_verbose = options.debug_level("config::new");
     let mut config = new(&options.filename, &options.root, config_verbose, None)?;
 
     if config.path.is_none() {
         error!("unable to find a configuration file -- use --config <path>");
     }
-    if options.is_debug("config") {
+    if options.debug_level("config") > 0 {
         eprintln!("config: {:?}", config.get_path()?);
         debug!("{}", config);
+    }
+
+    for key in &options.debug {
+        let current = config.debug.get(key).unwrap_or(&0).clone();
+        config.debug.insert(key.into(), current + 1);
     }
 
     for k_eq_v in &options.variables {

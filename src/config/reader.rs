@@ -24,7 +24,7 @@ pub fn parse(
     let doc = &docs[0];
 
     // Debug support
-    if verbose > 1 {
+    if verbose > 2 {
         dump_node(doc, 1, "");
     }
 

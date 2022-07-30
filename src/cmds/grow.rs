@@ -178,17 +178,12 @@ fn print_quoted_command(command: &Vec<String>) {
         quoted_args.push(quoted.as_ref().to_string());
     }
 
-   print_command_str(&quoted_args.join(" "));
+    print_command_str(&quoted_args.join(" "));
 }
-
 
 /// Print a command that will be executed from a string.
 fn print_command_str(cmd: &str) {
-    println!(
-        "{} {}",
-        model::Color::cyan(":"),
-        model::Color::green(cmd),
-    )
+    println!("{} {}", model::Color::cyan(":"), model::Color::green(cmd),)
 }
 
 /// Add remotes that do not already exist and synchronize .git/config values.

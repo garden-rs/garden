@@ -92,7 +92,7 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.debug).add_option(
             &["-d", "--debug"],
             argparse::Collect,
-            "enable debug categories",
+            "increase verbosity for a debug category"
         );
 
         ap.refer(&mut options.root).add_option(

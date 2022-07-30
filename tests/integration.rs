@@ -30,6 +30,8 @@ mod slow {
         // garden grow examples/tree
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
+            "--verbose",
             "--chdir",
             "tests/tmp/clone",
             "--config",
@@ -81,6 +83,8 @@ mod slow {
         // garden grow examples/shallow
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
+            "--verbose",
             "--chdir",
             "tests/tmp/shallow",
             "--config",
@@ -140,6 +144,8 @@ mod slow {
         // garden grow examples/single-branch
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
+            "--verbose",
             "--chdir",
             "tests/tmp/single-branch",
             "--config",
@@ -207,6 +213,8 @@ mod slow {
         // garden grow default dev
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
+            "--verbose",
             "--chdir",
             "tests/tmp/branches",
             "--config",
@@ -286,6 +294,8 @@ mod slow {
         // garden grow bare.git
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
+            "--verbose",
             "--chdir",
             "tests/tmp/grow-bare-repo",
             "--config",
@@ -338,6 +348,8 @@ mod slow {
         // garden grow bare.git
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
+            "--verbose",
             "--chdir",
             "tests/tmp/grow-bare-repo-config",
             "--config",
@@ -390,6 +402,8 @@ mod slow {
         // garden grow examples/tree
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
+            "--verbose",
             "--chdir",
             "tests/tmp/remotes",
             "--config",
@@ -436,6 +450,8 @@ mod slow {
         {
             let cmd = [
                 "./target/debug/garden",
+                "--verbose",
+                "--verbose",
                 "--chdir",
                 "tests/tmp/symlinks",
                 "--config",
@@ -489,6 +505,8 @@ mod slow {
         {
             let cmd = [
                 "./target/debug/garden",
+                "--verbose",
+                "--verbose",
                 "--chdir",
                 "tests/tmp/gitconfig",
                 "--config",
@@ -540,6 +558,7 @@ mod slow {
         // garden grow dev
         let cmd = [
             "./target/debug/garden",
+            "--verbose",
             "--verbose",
             "--chdir",
             "tests/tmp/grow-worktree-and-parent",

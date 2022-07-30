@@ -409,7 +409,7 @@ impl Garden {
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
     pub commands: Vec<MultiVariable>,
-    pub debug: std::collections::HashSet<String>,
+    pub debug: std::collections::HashMap<String, u8>,
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
     pub grafts: Vec<Graft>,
@@ -1035,8 +1035,8 @@ impl CommandOptions {
         self.color_mode.update();
     }
 
-    pub fn is_debug(&self, name: &str) -> bool {
-        self.debug.contains(&name.into())
+    pub fn debug_level(&self, name: &str) -> u8 {
+        self.debug.iter().filter(|&x| x == name).count() as u8
     }
 }
 
