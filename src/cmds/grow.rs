@@ -95,7 +95,7 @@ fn grow_tree_from_context(
     })?;
 
     if pathbuf.exists() {
-        return update_grown_tree_from_context(config, ctx, &pathbuf, quiet, verbose);
+        return update_tree_from_context(config, ctx, &pathbuf, quiet, verbose);
     } else {
         if config.trees[ctx.tree].is_symlink {
             let status = grow_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
@@ -163,6 +163,44 @@ fn grow_tree_from_context(
         }
     }
 
+    let status = update_tree_from_context(config, ctx, &pathbuf, quiet, verbose)?;
+    if status != 0 {
+        exit_status = status;
+    }
+    Ok(exit_status)
+}
+
+/// Print a command that will be executed.
+fn print_quoted_command(command: &Vec<String>) {
+    let mut quoted_args: Vec<String> = Vec::new();
+    for cmd in command {
+        let quoted = shlex::quote(cmd.as_str());
+        quoted_args.push(quoted.as_ref().to_string());
+    }
+
+   print_command_str(&quoted_args.join(" "));
+}
+
+
+/// Print a command that will be executed from a string.
+fn print_command_str(cmd: &str) {
+    println!(
+        "{} {}",
+        model::Color::cyan(":"),
+        model::Color::green(cmd),
+    )
+}
+
+/// Add remotes that do not already exist and synchronize .git/config values.
+fn update_tree_from_context(
+    config: &model::Configuration,
+    ctx: &model::TreeContext,
+    path: &std::path::PathBuf,
+    _quiet: bool,
+    verbose: bool,
+) -> Result<i32> {
+    let mut exit_status = 0;
+
     // Existing symlinks require no further processing.
     if config.trees[ctx.tree].is_symlink {
         return Ok(exit_status);
@@ -201,9 +239,15 @@ fn grow_tree_from_context(
         if existing_remotes.contains(k) {
             let remote_key = format!("remote.{}.url", k);
             let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
+            if verbose {
+                print_command_str(&command.join(" "));
+            }
             exec = cmd::exec_in_dir(&command, &path);
         } else {
             let command = ["git", "remote", "add", k.as_ref(), url.as_ref()];
+            if verbose {
+                print_command_str(&command.join(" "));
+            }
             exec = cmd::exec_in_dir(&command, &path);
         }
         let status = cmd::status(exec.join());
@@ -229,33 +273,6 @@ fn grow_tree_from_context(
     }
 
     Ok(exit_status)
-}
-
-/// Print a command that will be executed.
-fn print_quoted_command(command: &Vec<String>) {
-    let mut quoted_args: Vec<String> = Vec::new();
-    for cmd in command {
-        let quoted = shlex::quote(cmd.as_str());
-        quoted_args.push(quoted.as_ref().to_string());
-    }
-
-    println!(
-        "{} {}",
-        model::Color::cyan(":"),
-        model::Color::green(quoted_args.join(" ")),
-    );
-}
-
-/// TODO: Apply remotes that do not already exist and synchronize .git/config values.
-fn update_grown_tree_from_context(
-    _config: &model::Configuration,
-    _ctx: &model::TreeContext,
-    _path: &std::path::PathBuf,
-    _quiet: bool,
-    _verbose: bool,
-) -> Result<i32> {
-    let exit_status = 0;
-    return Ok(exit_status);
 }
 
 /// Use "git worktree" to create a worktree.
