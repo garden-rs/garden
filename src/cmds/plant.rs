@@ -134,7 +134,7 @@ fn plant_path(
     // Key for the tree entry
     let key = Yaml::String(tree_name.clone());
 
-    // Update an existing tre entry if it already exists.
+    // Update an existing tree entry if it already exists.
     // Add a new entry otherwise.
     let mut entry: YamlHash = YamlHash::new();
     if let Some(tree_yaml) = trees.get(&key) {

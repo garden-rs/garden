@@ -45,10 +45,10 @@ pub enum GardenError {
     #[error("{0}")]
     OSError(String),
 
-    #[error("unable to read configuration: {err:?}")]
-    ReadConfig { err: yaml_rust::ScanError },
+    #[error("unable to read {path:?}\nerror: {err}")]
+    ReadConfig { err: yaml_rust::ScanError, path: String },
 
-    #[error("unable to read {path:?}: {err:?}")]
+    #[error("unable to read {path:?}: {err}")]
     ReadFile {
         path: std::path::PathBuf,
         err: std::io::Error,

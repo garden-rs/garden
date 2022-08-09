@@ -624,6 +624,17 @@ impl Configuration {
             .ok_or_else(|| errors::GardenError::AssertionError("cfg.path is unset".into()))
     }
 
+    /// Get a path string for this configuration.
+    /// Returns the current directory when the configuration does not have a valid path.
+    pub fn get_path_for_display(&self) -> String {
+        let default_pathbuf = std::path::PathBuf::from(".");
+        self.path
+            .as_ref()
+            .unwrap_or_else(|| &default_pathbuf)
+            .display()
+            .to_string()
+    }
+
     /// Return true if the configuration contains the named graft.
     pub fn contains_graft(&self, name: &str) -> bool {
         let graft_name = syntax::trim(name);

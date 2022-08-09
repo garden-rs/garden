@@ -14,8 +14,11 @@ pub fn parse(
     verbose: u8,
     config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-    let docs = YamlLoader::load_from_str(string)
-        .map_err(|scan_err| errors::GardenError::ReadConfig { err: scan_err })?;
+    let docs =
+        YamlLoader::load_from_str(string).map_err(|scan_err| errors::GardenError::ReadConfig {
+            err: scan_err,
+            path: config.get_path_for_display(),
+        })?;
     if docs.is_empty() {
         return Err(errors::GardenError::EmptyConfiguration {
             path: config.get_path()?.into(),
@@ -704,8 +707,11 @@ where
             err: io_err,
         })?;
 
-    let mut docs = YamlLoader::load_from_str(&string)
-        .map_err(|scan_err| errors::GardenError::ReadConfig { err: scan_err })?;
+    let mut docs =
+        YamlLoader::load_from_str(&string).map_err(|err| errors::GardenError::ReadConfig {
+            err,
+            path: path.as_ref().display().to_string(),
+        })?;
 
     if docs.is_empty() {
         return Err(errors::GardenError::EmptyConfiguration {
