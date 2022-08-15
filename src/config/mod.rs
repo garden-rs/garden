@@ -80,14 +80,14 @@ pub fn xdg_dir() -> std::path::PathBuf {
 pub fn new(
     config: &Option<std::path::PathBuf>,
     root: &str,
-    verbose: u8,
+    config_verbose: u8,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
     let mut cfg = model::Configuration::new();
     if let Some(parent_id) = parent {
         cfg.set_parent(parent_id);
     }
-    cfg.verbose = verbose;
+    cfg.verbose = config_verbose;
 
     // Override the configured garden root
     if !root.is_empty() {
@@ -123,7 +123,7 @@ pub fn new(
             }
         }
     }
-    if verbose > 0 {
+    if config_verbose > 0 {
         debug!(
             "config: path: {:?}, root: {:?}, found: {}",
             cfg.path, cfg.root, found
@@ -139,7 +139,7 @@ pub fn new(
             Err(_) => return Ok(cfg),
         };
 
-        parse(&config_string, verbose, &mut cfg)?;
+        parse(&config_string, config_verbose, &mut cfg)?;
     }
 
     // Default to the current directory when garden.root is unspecified
@@ -154,10 +154,10 @@ pub fn new(
 pub fn from_path(
     path: std::path::PathBuf,
     root: &str,
-    verbose: u8,
+    config_verbose: u8,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
-    new(&Some(path), root, verbose, parent)
+    new(&Some(path), root, config_verbose, parent)
 }
 
 /// Read configuration from a path string.  Wraps from_path() to simplify usage.
@@ -172,14 +172,16 @@ pub fn from_path_string(
 pub fn from_options(
     options: &model::CommandOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
-    let config_verbose = options.debug_level("config::new");
+    let config_verbose = options.debug_level("config");
     let mut config = new(&options.filename, &options.root, config_verbose, None)?;
 
     if config.path.is_none() {
         error!("unable to find a configuration file -- use --config <path>");
     }
-    if options.debug_level("config") > 0 {
+    if config_verbose > 1 {
         eprintln!("config: {:?}", config.get_path()?);
+    }
+    if config_verbose > 2 {
         debug!("{}", config);
     }
 
@@ -259,10 +261,10 @@ fn read_grafts_recursive(
     }
 
     // Read child grafts recursively after the immutable scope has ended.
-    let verbose = app.options.verbose;
+    let config_verbose = app.options.debug_level("config");
     for (idx, path, root) in details {
         // Read the Configuration referenced by the graft.
-        let graft_config = from_path(path, &root, verbose, Some(id))?;
+        let graft_config = from_path(path, &root, config_verbose, Some(id))?;
         // The app Arena takes ownershp of the Configuration.
         let graft_id = app.add_graft(id, graft_config);
         // Record the config ID in the graft structure.
