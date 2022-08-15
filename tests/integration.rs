@@ -8,7 +8,7 @@ use std::process::Command;
 
 /// Execute the "garden" command with the specified arguments.
 fn exec_garden(args: &[&str]) -> Result<()> {
-    let mut exec= Command::cargo_bin("garden").expect("garden not found");
+    let mut exec = Command::cargo_bin("garden").expect("garden not found");
     exec.args(args);
 
     assert!(exec.status().expect("garden returned an error").success());
@@ -170,7 +170,8 @@ fn grow_clone_shallow() -> Result<()> {
         "example/shallow",
     ])?;
 
-    let worktree = fixture.worktree("example/tree/shallow"); // A repository was created.
+    // A repository was created.
+    let worktree = fixture.worktree("example/tree/shallow");
     // The repository has all branches.
     assert_ref(&worktree, "origin/default");
     assert_ref(&worktree, "origin/dev");
@@ -614,7 +615,7 @@ fn plant_bare_repo() -> Result<()> {
     exec_garden(&["--chdir", &fixture.root(), "init"])?;
     let garden_yaml = fixture.path("garden.yaml");
 
-    let cmd = ["git", "init", "--bare", "repo.git"];  // Create repo.git
+    let cmd = ["git", "init", "--bare", "repo.git"]; // Create repo.git
     assert_cmd(&cmd, &fixture.root());
 
     // garden plant repo.git
@@ -646,7 +647,11 @@ fn eval_garden_config_dir() -> Result<()> {
         "eval",
         "${GARDEN_CONFIG_DIR}",
     ]);
-    assert!(output.ends_with("/tests/data"), "{} does not end with /tests/data", output);
+    assert!(
+        output.ends_with("/tests/data"),
+        "{} does not end with /tests/data",
+        output
+    );
 
     Ok(())
 }
