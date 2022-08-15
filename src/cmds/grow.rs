@@ -171,7 +171,7 @@ fn grow_tree_from_context(
 }
 
 /// Print a command that will be executed.
-fn print_quoted_command(command: &Vec<String>) {
+fn print_quoted_command(command: &[String]) {
     let mut quoted_args: Vec<String> = Vec::new();
     for cmd in command {
         let quoted = shlex::quote(cmd.as_str());
@@ -190,7 +190,7 @@ fn print_command_str(cmd: &str) {
 fn update_tree_from_context(
     config: &model::Configuration,
     ctx: &model::TreeContext,
-    path: &std::path::PathBuf,
+    path: &std::path::Path,
     _quiet: bool,
     verbose: u8,
 ) -> Result<i32> {

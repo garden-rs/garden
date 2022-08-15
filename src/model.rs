@@ -630,7 +630,7 @@ impl Configuration {
         let default_pathbuf = std::path::PathBuf::from(".");
         self.path
             .as_ref()
-            .unwrap_or_else(|| &default_pathbuf)
+            .unwrap_or(&default_pathbuf)
             .display()
             .to_string()
     }

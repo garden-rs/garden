@@ -184,7 +184,7 @@ pub fn from_options(
     }
 
     for key in &options.debug {
-        let current = config.debug.get(key).unwrap_or(&0).clone();
+        let current = *config.debug.get(key).unwrap_or(&0);
         config.debug.insert(key.into(), current + 1);
     }
 

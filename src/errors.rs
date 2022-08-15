@@ -46,7 +46,10 @@ pub enum GardenError {
     OSError(String),
 
     #[error("unable to read {path:?}\nerror: {err}")]
-    ReadConfig { err: yaml_rust::ScanError, path: String },
+    ReadConfig {
+        err: yaml_rust::ScanError,
+        path: String,
+    },
 
     #[error("unable to read {path:?}: {err}")]
     ReadFile {
