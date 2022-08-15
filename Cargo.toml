@@ -22,9 +22,6 @@ readme = "README.md"
 homepage = "https://github.com/davvid/garden"
 authors = ["David Aguilar <davvid@gmail.com>"]
 
-[features]
-integration = []
-
 [dependencies]
 anyhow = "1.0"
 argparse = "0.2"
@@ -40,6 +37,10 @@ thiserror = "1.0"
 xdg = "2.4"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 yansi = "0.5"
+
+[dev-dependencies]
+assert_cmd = "0.2"
+function_name = "0.3"
 
 [lib]
 name = "garden"

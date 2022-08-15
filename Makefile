@@ -55,12 +55,6 @@ install-doc:: doc
 	rsync -r doc/book/ $(DESTDIR)$(prefix)/share/doc/garden/
 
 
-# Integration tests
-.PHONY: test-integration
-test-integration::
-	$(CARGO) test --features integration $(CARGO_FLAGS) $(flags)
-
-
 # Test coverage
 .PHONY: coverage
 coverage::

@@ -1,927 +1,669 @@
 use garden::cmd;
 
-// Slow or filesystem/IO-heavy integration tests go in the slow namespace
-// and are enabled by using "cargo test --features integration"
-#[cfg(feature = "integration")]
-mod slow {
-    use std::path::Path;
+use anyhow::Result;
+use assert_cmd::prelude::CommandCargoExt;
+use function_name::named;
 
-    use anyhow::Result;
+use std::process::Command;
 
-    use garden::cmd;
+/// Execute the "garden" command with the specified arguments.
+fn exec_garden(args: &[&str]) -> Result<()> {
+    let mut exec= Command::cargo_bin("garden").expect("garden not found");
+    exec.args(args);
 
-    /// Cleanup and create a bare repository for cloning
-    fn setup(name: &str, path: &str) {
-        let cmd = ["../integration/setup.sh", name];
-        assert_eq!(0, cmd::status(cmd::exec_in_dir(&cmd, path).join()));
+    assert!(exec.status().expect("garden returned an error").success());
+    Ok(())
+}
+
+/// Execute a command and ensure that exit status 0 is returned. Return the Exec object.
+fn garden_capture(args: &[&str]) -> String {
+    let mut exec = Command::cargo_bin("garden").expect("garden not found");
+    exec.args(args);
+
+    let capture = exec.output();
+    assert!(capture.is_ok());
+
+    let utf8_result = String::from_utf8(capture.unwrap().stdout);
+    assert!(utf8_result.is_ok());
+
+    utf8_result.unwrap().trim_end().into()
+}
+
+/// Execute a command and ensure that the exit status is returned.
+fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
+    let exec = cmd::exec_in_dir(&cmd, directory);
+    assert_eq!(status, cmd::status(exec.join()));
+}
+
+/// Execute a command and ensure that exit status 0 is returned.
+fn assert_cmd(cmd: &[&str], directory: &str) {
+    assert_cmd_status(cmd, directory, 0);
+}
+
+/// Execute a command and ensure that exit status 0 is returned. Return the Exec object.
+fn assert_cmd_capture(cmd: &[&str], directory: &str) -> String {
+    let exec = cmd::exec_in_dir(&cmd, directory);
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+
+    cmd::trim_stdout(&capture.unwrap())
+}
+
+/// Assert that the specified path exists.
+fn assert_path(path: &str) {
+    let pathbuf = std::path::PathBuf::from(path);
+    assert!(pathbuf.exists());
+}
+
+/// Assert that the specified path is a Git worktree.
+fn assert_git_worktree(path: &str) {
+    assert_path(&format!("{}/.git", path));
+}
+
+/// Assert that the Git ref exists in the specified repository.
+fn assert_ref(repository: &str, refname: &str) {
+    let cmd = ["git", "rev-parse", "--quiet", "--verify", &refname];
+    assert_cmd(&cmd, &repository);
+}
+
+/// Assert that the Git ref does not exist in the specified repository.
+fn assert_ref_missing(repository: &str, refname: &str) {
+    let cmd = ["git", "rev-parse", "--quiet", "--verify", &refname];
+    assert_cmd_status(&cmd, &repository, 1);
+}
+
+/// Cleanup and create a bare repository for cloning
+fn setup(name: &str, path: &str) {
+    let cmd = ["../integration/setup.sh", name];
+    assert_cmd(&cmd, path);
+}
+
+fn teardown(path: &str) {
+    if let Err(err) = std::fs::remove_dir_all(path) {
+        assert!(false, "unable to remove '{}': {}", path, err);
+    }
+}
+
+/// Provide a bare repository fixture for the current test.
+struct BareRepoFixture<'a> {
+    name: &'a str,
+}
+
+impl<'a> BareRepoFixture<'a> {
+    /// Create the test bare repository.
+    fn new(name: &'a str) -> Self {
+        setup(name, "tests/tmp");
+
+        Self { name }
     }
 
-    fn teardown(path: &str) {
-        if let Err(err) = std::fs::remove_dir_all(path) {
-            assert!(false, "unable to remove '{}': {}", path, err);
-        }
+    /// Return the temporary directory for the current test.
+    fn root(&self) -> String {
+        format!("tests/tmp/{}", self.name)
     }
 
-    /// `garden grow` clones repositories
-    #[test]
-    fn grow_clone() -> Result<()> {
-        setup("clone", "tests/tmp");
+    /// Return a path relative to the temporary directory for the current test.
+    fn path(&self, path: &str) -> String {
+        let fixture_path = format!("{}/{}", self.root(), path);
+        assert_path(&fixture_path);
 
-        // garden grow examples/tree
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/clone",
-            "--config",
-            "tests/data/garden.yaml",
-            "grow",
-            "example/tree",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Ensure the repository was created
-        let mut repo = std::path::PathBuf::from("tests");
-        assert!(repo.exists());
-        // tests/tmp
-        repo.push("tmp");
-        assert!(repo.exists());
-        // tests/tmp/clone/example
-        repo.push("clone");
-        assert!(repo.exists());
-        // tests/tmp/clone/example
-        repo.push("example");
-        assert!(repo.exists());
-        // tests/tmp/clone/example/tree
-        repo.push("tree");
-        assert!(repo.exists());
-        // tests/tmp/clone/example/tree/repo
-        repo.push("repo");
-        assert!(repo.exists());
-        // tests/tmp/clone/example/tree/repo/.git
-        repo.push(".git");
-        assert!(repo.exists());
-
-        // The repository must have all branches by default.
-        {
-            let command = ["git", "rev-parse", "origin/dev", "origin/default"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/clone/example/tree/repo");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-
-        teardown("tests/tmp/clone");
-
-        Ok(())
+        fixture_path
     }
 
-    /// `garden grow` can create shallow clones with depth: 1.
-    #[test]
-    fn grow_clone_shallow() -> Result<()> {
-        setup("shallow", "tests/tmp");
+    /// Asserts that the path is a Git worktree.
+    /// Returns the path to the specified worktree.
+    fn worktree(&self, path: &str) -> String {
+        let worktree = self.path(path);
+        assert_git_worktree(&worktree);
 
-        // garden grow examples/shallow
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/shallow",
-            "--config",
-            "tests/data/garden.yaml",
-            "grow",
-            "example/shallow",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Ensure the repository was created
-        let mut repo = std::path::PathBuf::from("tests");
-        assert!(repo.exists());
-        // tests/tmp
-        repo.push("tmp");
-        repo.push("shallow");
-        repo.push("example");
-        repo.push("tree");
-        repo.push("shallow");
-        // tests/tmp/shallow/example/tree/repo/.git
-        repo.push(".git");
-        assert!(repo.exists());
-
-        // The repository must have the default branches.
-        {
-            let command = ["git", "rev-parse", "origin/default"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-        // The dev branch must exist because we cloned with --no-single-branch.
-        {
-            let command = ["git", "rev-parse", "origin/dev"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
-            assert!(0 == cmd::status(exec.join()));
-        }
-        // Only one commit must be cloned because of "depth: 1".
-        {
-            let command = ["git", "rev-list", "HEAD"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/shallow/example/tree/shallow");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            let output = cmd::trim_stdout(&capture.unwrap());
-            let lines = output.split("\n").collect::<Vec<&str>>();
-            assert_eq!(lines.len(), 1); // One commit only!
-        }
-
-        teardown("tests/tmp/shallow");
-
-        Ok(())
+        worktree
     }
+}
 
-    /// `garden grow` clones a single branch with "single-branch: true".
-    #[test]
-    fn grow_clone_single_branch() -> Result<()> {
-        setup("single-branch", "tests/tmp");
-
-        // garden grow examples/single-branch
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/single-branch",
-            "--config",
-            "tests/data/garden.yaml",
-            "grow",
-            "example/single-branch",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Ensure the repository was created
-        let mut repo = std::path::PathBuf::from("tests");
-        assert!(repo.exists());
-        // tests/tmp
-        repo.push("tmp");
-        repo.push("single-branch");
-        repo.push("example");
-        repo.push("tree");
-        repo.push("single-branch");
-        // tests/tmp/single-branch/example/tree/single-branch/.git
-        repo.push(".git");
-        assert!(repo.exists());
-
-        // The repository must have the default branches.
-        {
-            let command = ["git", "rev-parse", "origin/default"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/single-branch/example/tree/single-branch",
-            );
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-        // The dev branch must not exist because we cloned with --single-branch.
-        {
-            let command = ["git", "rev-parse", "origin/dev"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/single-branch/example/tree/single-branch",
-            );
-            assert!(0 != cmd::status(exec.join()));
-        }
-        // Only one commit must be cloned because of "depth: 1".
-        {
-            let command = ["git", "rev-list", "HEAD"];
-            let exec = cmd::exec_in_dir(
-                &command,
-                "tests/tmp/single-branch/example/tree/single-branch",
-            );
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            let output = cmd::trim_stdout(&capture.unwrap());
-            let lines = output.split("\n").collect::<Vec<&str>>();
-            assert_eq!(lines.len(), 1); // One commit only!
-        }
-
-        teardown("tests/tmp/single-branch");
-
-        Ok(())
+impl Drop for BareRepoFixture<'_> {
+    /// Teardown the test repository.
+    fn drop(&mut self) {
+        teardown(&self.root());
     }
-
-    #[test]
-    fn grow_branch_default() -> Result<()> {
-        setup("branches", "tests/tmp");
-
-        // garden grow default dev
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/branches",
-            "--config",
-            "tests/data/branches.yaml",
-            "grow",
-            "default",
-            "dev",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Ensure the repository was created
-        let mut repo = std::path::PathBuf::from("tests");
-        assert!(repo.exists());
-        // tests/tmp
-        repo.push("tmp");
-        repo.push("branches");
-        repo.push("default");
-        // tests/tmp/branches/default/.git
-        repo.push(".git");
-        assert!(repo.exists());
-
-        // The "default" repository must have a branch called "default" checked-out.
-        {
-            let command = ["git", "symbolic-ref", "--short", "HEAD"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/default");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            let output = cmd::trim_stdout(&capture.unwrap());
-            let lines = output.split("\n").collect::<Vec<&str>>();
-            assert_eq!(lines.len(), 1);
-            assert_eq!(lines[0], "default");
-        }
-
-        // The "dev" repository must have a branch called "dev" checked-out.
-        {
-            let command = ["git", "symbolic-ref", "--short", "HEAD"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/dev");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            let output = cmd::trim_stdout(&capture.unwrap());
-            let lines = output.split("\n").collect::<Vec<&str>>();
-            assert_eq!(lines.len(), 1);
-            assert_eq!(lines[0], "dev");
-        }
-        // The origin/dev and origin/default branches must exist because we cloned with
-        // --no-single-branch.
-        {
-            let command = ["git", "rev-parse", "origin/default"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/default");
-            assert!(0 == cmd::status(exec.join()));
-
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/dev");
-            assert!(0 == cmd::status(exec.join()));
-        }
-        {
-            let command = ["git", "rev-parse", "origin/dev"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/default");
-            assert!(0 == cmd::status(exec.join()));
-
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/branches/dev");
-            assert!(0 == cmd::status(exec.join()));
-        }
-
-        teardown("tests/tmp/branches");
-
-        Ok(())
-    }
-
-    /// This creates bare repositories based on the "bare.git" naming convention.
-    /// The configuration does not specify "bare: true".
-    #[test]
-    fn grow_bare_repo() -> Result<()> {
-        setup("grow-bare-repo", "tests/tmp");
-
-        // garden grow bare.git
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/grow-bare-repo",
-            "--config",
-            "tests/data/bare.yaml",
-            "grow",
-            "bare.git",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Ensure the repository was created
-        // tests/tmp/grow-bare-repo/bare.git
-        let mut repo = std::path::PathBuf::from("tests");
-        repo.push("tmp");
-        repo.push("grow-bare-repo");
-        repo.push("bare.git");
-        assert!(repo.exists());
-
-        {
-            let command = ["git", "rev-parse", "default"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo/bare.git");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-        // The dev branch must exist because we cloned with --no-single-branch.
-        {
-            let command = ["git", "rev-parse", "dev"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo/bare.git");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-        // The repository must be bare.
-        {
-            let command = ["git", "config", "core.bare"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo/bare.git");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!(output, String::from("true"));
-        }
-
-        teardown("tests/tmp/grow-bare-repo");
-
-        Ok(())
-    }
-
-    /// This creates bare repositories using the "bare: true" configuration.
-    #[test]
-    fn grow_bare_repo_with_config() -> Result<()> {
-        setup("grow-bare-repo-config", "tests/tmp");
-
-        // garden grow bare.git
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/grow-bare-repo-config",
-            "--config",
-            "tests/data/bare.yaml",
-            "grow",
-            "bare",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Ensure the repository was created
-        // tests/tmp/grow-bare-repo-config/bare
-        let mut repo = std::path::PathBuf::from("tests");
-        repo.push("tmp");
-        repo.push("grow-bare-repo-config");
-        repo.push("bare");
-        assert!(repo.exists());
-
-        {
-            let command = ["git", "rev-parse", "default"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo-config/bare");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-        // The dev branch must exist because we cloned with --no-single-branch.
-        {
-            let command = ["git", "rev-parse", "dev"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo-config/bare");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-        // The repository must be bare.
-        {
-            let command = ["git", "config", "core.bare"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-bare-repo-config/bare");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!(output, String::from("true"));
-        }
-
-        teardown("tests/tmp/grow-bare-repo-config");
-
-        Ok(())
-    }
-
-    /// `garden grow` sets up remotes
-    #[test]
-    fn grow_remotes() {
-        setup("remotes", "tests/tmp");
-
-        // garden grow examples/tree
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/remotes",
-            "--config",
-            "tests/data/garden.yaml",
-            "grow",
-            "example/tree",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // remote.origin.url is a read-only https:// URL
-        {
-            let command = ["git", "config", "remote.origin.url"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert!(
-                output.ends_with("/tests/tmp/remotes/repos/example.git"),
-                "{} does not end with {}",
-                output,
-                "/tests/tmp/clone/repos/example.git"
-            );
-        }
-
-        // remote.publish.url is a ssh push URL
-        {
-            let command = ["git", "config", "remote.publish.url"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/remotes/example/tree/repo");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!("git@github.com:user/example.git", output);
-        }
-
-        teardown("tests/tmp/remotes");
-    }
-
-    /// `garden grow` creates symlinks
-    #[test]
-    fn grow_symlinks() {
-        setup("symlinks", "tests/tmp");
-
-        // garden grow examples/tree examples/link
-        {
-            let cmd = [
-                "./target/debug/garden",
-                "--verbose",
-                "--verbose",
-                "--chdir",
-                "tests/tmp/symlinks",
-                "--config",
-                "tests/data/garden.yaml",
-                "grow",
-                "example/tree",
-                "link",
-                "example/link",
-            ];
-            assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        }
-
-        // tests/tmp/symlinks/trees/example/repo exists
-        {
-            let repo = std::path::PathBuf::from("tests/tmp/symlinks/example/tree/repo/.git");
-            assert!(repo.exists());
-        }
-
-        // tests/tmp/symlinks/link is a symlink pointing to example/tree/repo
-        {
-            let link = std::path::PathBuf::from("tests/tmp/symlinks/link");
-            assert!(link.exists(), "tests/tmp/symlinks/link does not exist");
-            assert!(link.read_link().is_ok());
-
-            let target = link.read_link().unwrap();
-            assert_eq!("example/tree/repo", target.to_string_lossy());
-        }
-
-        // tests/tmp/symlinks/example/link is a symlink pointing to tree/repo
-        {
-            let link = std::path::PathBuf::from("tests/tmp/symlinks/example/link");
-            assert!(
-                link.exists(),
-                "tests/tmp/symlinks/example/link does not exist"
-            );
-            assert!(link.read_link().is_ok());
-
-            let target = link.read_link().unwrap();
-            assert_eq!("tree/repo", target.to_string_lossy());
-        }
-
-        teardown("tests/tmp/symlinks");
-    }
-
-    /// `garden grow` sets up git config settings
-    #[test]
-    fn grow_gitconfig() {
-        setup("gitconfig", "tests/tmp");
-
-        // garden grow examples/tree
-        {
-            let cmd = [
-                "./target/debug/garden",
-                "--verbose",
-                "--verbose",
-                "--chdir",
-                "tests/tmp/gitconfig",
-                "--config",
-                "tests/data/garden.yaml",
-                "grow",
-                "example/tree",
-            ];
-            assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        }
-
-        // remote.origin.annex-ignore is true
-        {
-            let command = ["git", "config", "remote.origin.annex-ignore"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/gitconfig/example/tree/repo");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!("true", output);
-        }
-
-        // user.name is "A U Thor"
-        {
-            let command = ["git", "config", "user.name"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/gitconfig/example/tree/repo");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!("A U Thor", output);
-        }
-
-        // user.email is "author@example.com"
-        {
-            let command = ["git", "config", "user.email"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/gitconfig/example/tree/repo");
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!("author@example.com", output);
-        }
-
-        teardown("tests/tmp/gitconfig");
-    }
-
-    /// This creates a worktree
-    #[test]
-    fn grow_worktree_and_parent() -> Result<()> {
-        setup("grow-worktree-and-parent", "tests/tmp");
-
-        // garden grow dev
-        let cmd = [
-            "./target/debug/garden",
-            "--verbose",
-            "--verbose",
-            "--chdir",
-            "tests/tmp/grow-worktree-and-parent",
-            "--config",
-            "tests/data/worktree.yaml",
-            "grow",
-            "dev",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Ensure the repository was created
-        let mut repo = std::path::PathBuf::from("tests");
-        // tests/tmp/grow-bare-repo-config/default
-        repo.push("tmp");
-        repo.push("grow-worktree-and-parent");
-        repo.push("default");
-        repo.push(".git");
-        assert!(repo.exists());
-
-        // tests/tmp/grow-bare-repo-config/dev
-        repo.pop();
-        repo.pop();
-        repo.push("dev");
-        repo.push(".git");
-        assert!(repo.exists());
-
-        {
-            let command = ["git", "rev-parse", "default"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-worktree-and-parent/default");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-        // The dev branch must exist because we cloned with --no-single-branch.
-        {
-            let command = ["git", "rev-parse", "dev"];
-            let exec = cmd::exec_in_dir(&command, "tests/tmp/grow-worktree-and-parent/dev");
-            assert_eq!(0, cmd::status(exec.join()));
-        }
-
-        // Ensure that the "echo" command is available from the child worktree.
-        {
-            let command = [
-                "./target/debug/garden",
-                "--chdir",
-                "tests/tmp/grow-worktree-and-parent",
-                "--config",
-                "tests/data/worktree.yaml",
-                "echo",
-                "dev",
-                "--",
-                "hello",
-            ];
-            let exec = cmd::exec_cmd(&command);
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            // The "echo" command is: echo ${TREE_NAME} "$@"
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!("dev hello", output);
-        }
-
-        // Ensure that the "echo" command is available from the parent worktree.
-        {
-            let command = [
-                "./target/debug/garden",
-                "--chdir",
-                "tests/tmp/grow-worktree-and-parent",
-                "--config",
-                "tests/data/worktree.yaml",
-                "echo",
-                "default",
-                "--",
-                "hello",
-            ];
-            let exec = cmd::exec_cmd(&command);
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-
-            // The "echo" command is: echo ${TREE_NAME} "$@"
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert_eq!("default hello", output);
-        }
-
-        teardown("tests/tmp/grow-worktree-and-parent");
-
-        Ok(())
-    }
-
-    /// `garden plant` adds an empty repository
-    #[test]
-    fn plant_empty_repo() -> Result<()> {
-        setup("plant-empty-repo", "tests/tmp");
-
-        // garden plant in test/tmp/plant-empty-repo
-        let cmd = [
-            "./target/debug/garden",
-            "--chdir",
-            "tests/tmp/plant-empty-repo",
-            "init",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        // Empty garden.yaml should be created
-        assert!(Path::new("tests/tmp/plant-empty-repo/garden.yaml").exists());
-
-        // Create tests/tmp/plant-empty-repo/repo{1,2}
-        let cmd = ["git", "-C", "tests/tmp/plant-empty-repo", "init", "repo1"];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        let cmd = ["git", "-C", "tests/tmp/plant-empty-repo", "init", "repo2"];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // repo1 has two remotes: "origin" and "remote-1".
-        // git remote add origin repo-1-url
-        let cmd = [
-            "git",
-            "-C",
-            "tests/tmp/plant-empty-repo/repo1",
-            "remote",
-            "add",
-            "origin",
-            "repo-1-url",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        // git remote add remote-1 remote-1-url
-        let cmd = [
-            "git",
-            "-C",
-            "tests/tmp/plant-empty-repo/repo1",
-            "remote",
-            "add",
-            "remote-1",
-            "remote-1-url",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // garden plant repo1
-        let cmd = [
-            "./target/debug/garden",
-            "--chdir",
-            "tests/tmp/plant-empty-repo",
-            "plant",
-            "repo1",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        let path = Some(std::path::PathBuf::from(
-            "tests/tmp/plant-empty-repo/garden.yaml",
-        ));
-
-        // Load the configuration and assert that the remotes are configured.
-        let cfg = garden::config::new(&path, "", 0, None)?;
-        assert_eq!(1, cfg.trees.len());
-        assert_eq!("repo1", cfg.trees[0].get_name());
-        assert_eq!(2, cfg.trees[0].remotes.len());
-        assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
-        assert_eq!("repo-1-url", cfg.trees[0].remotes[0].get_expr());
-        assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
-        assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
-
-        // repo2 has two remotes: "remote-1" and "remote-2".
-        // git remote add remote-1 remote-1-url
-        let cmd = [
-            "git",
-            "-C",
-            "tests/tmp/plant-empty-repo/repo2",
-            "remote",
-            "add",
-            "remote-1",
-            "remote-1-url",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        // git remote add remote-2 remote-2-url
-        let cmd = [
-            "git",
-            "-C",
-            "tests/tmp/plant-empty-repo/repo2",
-            "remote",
-            "add",
-            "remote-2",
-            "remote-2-url",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // garden add repo2
-        let cmd = [
-            "./target/debug/garden",
-            "--chdir",
-            "tests/tmp/plant-empty-repo",
-            "plant",
-            "repo2",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Load the configuration and assert that the remotes are configured.
-        let cfg = garden::config::new(&path, "", 0, None)?;
-        assert_eq!(2, cfg.trees.len()); // Now we have two trees.
-        assert_eq!("repo2", cfg.trees[1].get_name());
-        assert_eq!(2, cfg.trees[1].remotes.len());
-        assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
-        assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
-        assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
-        assert_eq!("remote-2-url", cfg.trees[1].remotes[1].get_expr());
-
-        // Verify that "garden plant" will refresh the remote URLs
-        // for existing entries.
-
-        // Update repo1's origin url to repo-1-new-url.
-        // git config remote.origin.url repo-1-new-url
-        let cmd = [
-            "git",
-            "-C",
-            "tests/tmp/plant-empty-repo/repo1",
-            "config",
-            "remote.origin.url",
-            "repo-1-new-url",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Update repo2's remote-2 url to remote-2-new-url.
-        // git config remote.remote-2.url remote-2-new-url
-        let cmd = [
-            "git",
-            "-C",
-            "tests/tmp/plant-empty-repo/repo2",
-            "config",
-            "remote.remote-2.url",
-            "remote-2-new-url",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // garden plant repo1 repo2
-        let cmd = [
-            "./target/debug/garden",
-            "--chdir",
-            "tests/tmp/plant-empty-repo",
-            "plant",
-            "repo1",
-            "repo2",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // Load the configuration and assert that the remotes are configured.
-        let cfg = garden::config::new(&path, "", 0, None)?;
-        assert_eq!(2, cfg.trees.len());
-        assert_eq!("repo1", cfg.trees[0].get_name());
-        assert_eq!(2, cfg.trees[0].remotes.len());
-        assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
-        assert_eq!("repo-1-new-url", cfg.trees[0].remotes[0].get_expr()); // New value.
-        assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
-        assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
-
-        assert_eq!("repo2", cfg.trees[1].get_name());
-        assert_eq!(2, cfg.trees[1].remotes.len());
-        assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
-        assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
-        assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
-        // New value.
-        assert_eq!("remote-2-new-url", cfg.trees[1].remotes[1].get_expr());
-
-        teardown("tests/tmp/plant-empty-repo");
-
-        Ok(())
-    }
-
-    /// `garden plant` detects bare repositories.
-    #[test]
-    fn plant_bare_repo() -> Result<()> {
-        setup("plant-bare-repo", "tests/tmp");
-
-        // garden plant in test/tmp/plant-bare-repo
-        let cmd = [
-            "./target/debug/garden",
-            "--chdir",
-            "tests/tmp/plant-bare-repo",
-            "init",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-        // Empty garden.yaml should be created
-        assert!(Path::new("tests/tmp/plant-bare-repo/garden.yaml").exists());
-
-        // Create tests/tmp/plant-bare-repo/repo.git
-        let cmd = [
-            "git",
-            "-C",
-            "tests/tmp/plant-bare-repo",
-            "init",
-            "--bare",
-            "repo.git",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        // garden plant repo.git
-        let cmd = [
-            "./target/debug/garden",
-            "--chdir",
-            "tests/tmp/plant-bare-repo",
-            "plant",
-            "repo.git",
-        ];
-        assert_eq!(0, cmd::status(cmd::exec_cmd(&cmd).join()));
-
-        let path = Some(std::path::PathBuf::from(
-            "tests/tmp/plant-bare-repo/garden.yaml",
-        ));
-
-        // Load the configuration and assert that the remotes are configured.
-        let cfg = garden::config::new(&path, "", 0, None)?;
-        assert_eq!(1, cfg.trees.len());
-        assert_eq!("repo.git", cfg.trees[0].get_name());
-
-        // The generated config must have "bare: true" configured.
-        assert!(cfg.trees[0].is_bare_repository);
-
-        teardown("tests/tmp/plant-bare-repo");
-        Ok(())
-    }
-
-    /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
-    #[test]
-    fn eval_garden_config_dir() {
-        setup("configdir", "tests/tmp");
-
-        // garden eval ${GARDEN_CONFIG_DIR}
-        {
-            let cmd = [
-                "./target/debug/garden",
-                "--chdir",
-                "tests/tmp/configdir",
-                "--config",
-                "tests/data/garden.yaml",
-                "eval",
-                "${GARDEN_CONFIG_DIR}",
-            ];
-            let exec = cmd::exec_cmd(&cmd);
-            let capture = cmd::capture_stdout(exec);
-            assert!(capture.is_ok());
-            let output = cmd::trim_stdout(&capture.unwrap());
-            assert!(
-                output.ends_with("/tests/data"),
-                "{} does not end with /tests/data",
-                output
-            );
-        }
-
-        teardown("tests/tmp/configdir");
-    }
-} // slow
+}
+
+/// `garden grow` clones repositories
+#[test]
+#[named]
+fn grow_clone() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/tree
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/tree",
+    ])?;
+
+    // A repository was created.
+    let worktree = fixture.worktree("example/tree/repo");
+    // The repository has all branches.
+    assert_ref(&worktree, "origin/default");
+    assert_ref(&worktree, "origin/dev");
+
+    Ok(())
+}
+
+/// `garden grow` can create shallow clones with depth: 1.
+#[test]
+#[named]
+fn grow_clone_shallow() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/shallow
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/shallow",
+    ])?;
+
+    let worktree = fixture.worktree("example/tree/shallow"); // A repository was created.
+    // The repository has all branches.
+    assert_ref(&worktree, "origin/default");
+    assert_ref(&worktree, "origin/dev");
+
+    // Only one commit must be cloned because of "depth: 1".
+    let cmd = ["git", "rev-list", "HEAD"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    let lines = output.split("\n").collect::<Vec<&str>>();
+    assert_eq!(lines.len(), 1); // One commit only!
+
+    Ok(())
+}
+
+/// `garden grow` clones a single branch with "single-branch: true".
+#[test]
+#[named]
+fn grow_clone_single_branch() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/single-branch
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/single-branch",
+    ])?;
+
+    // A repository was created.
+    let worktree = fixture.worktree("example/tree/single-branch");
+
+    // The repository must have the default branch.
+    assert_ref(&worktree, "origin/default");
+    // The dev branch must *not* exist because we cloned with --single-branch.
+    assert_ref_missing(&worktree, "origin/dev");
+
+    // Only one commit must be cloned because of "depth: 1".
+    let cmd = ["git", "rev-list", "HEAD"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    let lines = output.split("\n").collect::<Vec<&str>>();
+    assert_eq!(lines.len(), 1); // One commit only!
+
+    Ok(())
+}
+
+#[test]
+#[named]
+fn grow_branch_default() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow default dev
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/branches.yaml",
+        "grow",
+        "default",
+        "dev",
+    ])?;
+
+    // Ensure the repositories were created.
+    let worktree_default = fixture.worktree("default");
+    let worktree_dev = fixture.worktree("dev");
+
+    // The "default" repository must have a branch called "default" checked-out.
+    let cmd = ["git", "symbolic-ref", "--short", "HEAD"];
+    let output = assert_cmd_capture(&cmd, &worktree_default);
+    let lines = output.split("\n").collect::<Vec<&str>>();
+    assert_eq!(lines.len(), 1);
+    assert_eq!(lines[0], "default");
+
+    // The "dev" repository must have a branch called "dev" checked-out.
+    let cmd = ["git", "symbolic-ref", "--short", "HEAD"];
+    let output = assert_cmd_capture(&cmd, &worktree_dev);
+    let lines = output.split("\n").collect::<Vec<&str>>();
+    assert_eq!(lines.len(), 1);
+    assert_eq!(lines[0], "dev");
+
+    // The origin/dev and origin/default branches must exist because we cloned with
+    // --no-single-branch.
+    assert_ref(&worktree_default, "origin/default");
+    assert_ref(&worktree_default, "origin/dev");
+
+    assert_ref(&worktree_dev, "origin/default");
+    assert_ref(&worktree_dev, "origin/dev");
+
+    Ok(())
+}
+
+/// This creates bare repositories based on the "bare.git" naming convention.
+/// The configuration does not specify "bare: true".
+#[test]
+#[named]
+fn grow_bare_repo() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow bare.git
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/bare.yaml",
+        "grow",
+        "bare.git",
+    ])?;
+
+    // A repository was created.
+    let bare_repo = fixture.path("bare.git");
+
+    // The all branches must exist because we cloned with --no-single-branch.
+    assert_ref(&bare_repo, "default");
+    assert_ref(&bare_repo, "dev");
+
+    // The repository must be bare.
+    let cmd = ["git", "config", "--bool", "core.bare"];
+    let output = assert_cmd_capture(&cmd, &bare_repo);
+    assert_eq!(output, String::from("true"));
+
+    Ok(())
+}
+
+/// This creates bare repositories using the "bare: true" configuration.
+#[test]
+#[named]
+fn grow_bare_repo_with_config() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow bare.git
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/bare.yaml",
+        "grow",
+        "bare",
+    ])?;
+
+    // Ensure the repository was created
+    // tests/tmp/grow-bare-repo-config/bare
+    let bare_repo = fixture.path("bare");
+    let repo = std::path::PathBuf::from(&bare_repo);
+    assert!(repo.exists());
+
+    // We cloned with --no-single-branch so "default" and "dev" must exist.
+    assert_ref(&bare_repo, "default");
+    assert_ref(&bare_repo, "dev");
+
+    // The repository must be bare.
+    let cmd = ["git", "config", "core.bare"];
+    let output = assert_cmd_capture(&cmd, &bare_repo);
+    assert_eq!(output, String::from("true"));
+
+    Ok(())
+}
+
+/// `garden grow` sets up remotes
+#[test]
+#[named]
+fn grow_remotes() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/tree
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/tree",
+    ])?;
+
+    // remote.origin.url is a read-only https:// URL
+    let worktree = fixture.path("example/tree/repo");
+    let cmd = ["git", "config", "remote.origin.url"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    assert!(
+        output.ends_with("/repos/example.git"),
+        "{} does not end with {}",
+        output,
+        "/repos/example.git"
+    );
+
+    // remote.publish.url is a ssh push URL
+    let cmd = ["git", "config", "remote.publish.url"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    assert_eq!("git@github.com:user/example.git", output);
+
+    Ok(())
+}
+
+/// `garden grow` creates symlinks
+#[test]
+#[named]
+fn grow_symlinks() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/tree examples/link
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/tree",
+        "link",
+        "example/link",
+    ])?;
+
+    let repo = std::path::PathBuf::from(fixture.path("example/tree/repo/.git"));
+    assert!(repo.exists());
+
+    // tests/tmp/symlinks/link is a symlink pointing to example/tree/repo
+    let link_str = fixture.path("link");
+    let link = std::path::PathBuf::from(&link_str);
+    assert!(link.exists(), "{} does not exist", link_str);
+    assert!(link.read_link().is_ok());
+
+    let target = link.read_link().unwrap();
+    assert_eq!("example/tree/repo", target.to_string_lossy());
+
+    // tests/tmp/symlinks/example/link is a symlink pointing to tree/repo
+    let link_str = fixture.path("example/link");
+    let link = std::path::PathBuf::from(&link_str);
+    assert!(link.exists(), "{} does not exist", link_str);
+    assert!(link.read_link().is_ok());
+
+    let target = link.read_link().unwrap();
+    assert_eq!("tree/repo", target.to_string_lossy());
+
+    Ok(())
+}
+
+/// `garden grow` sets up git config settings
+#[test]
+#[named]
+fn grow_gitconfig() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/tree
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/tree",
+    ])?;
+
+    // remote.origin.annex-ignore is true
+    let worktree = fixture.path("example/tree/repo");
+    let cmd = ["git", "config", "remote.origin.annex-ignore"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    assert_eq!("true", output);
+
+    // user.name is "A U Thor"
+    let cmd = ["git", "config", "user.name"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    assert_eq!("A U Thor", output);
+
+    // user.email is "author@example.com"
+    let cmd = ["git", "config", "user.email"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    assert_eq!("author@example.com", output);
+
+    Ok(())
+}
+
+/// This creates a worktree
+#[test]
+#[named]
+fn grow_worktree_and_parent() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow dev
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/worktree.yaml",
+        "grow",
+        "dev",
+    ])?;
+
+    // Ensure the repository was created
+    let worktree_default = fixture.worktree("default");
+    let worktree_dev = fixture.worktree("dev");
+
+    assert_ref(&worktree_default, "default");
+    assert_ref(&worktree_dev, "dev");
+
+    // Ensure that the "echo" command is available from the child worktree.
+    let output = garden_capture(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/worktree.yaml",
+        "echo",
+        "dev",
+        "--",
+        "hello",
+    ]);
+    // The "echo" command is: echo ${TREE_NAME} "$@"
+    assert_eq!("dev hello", output);
+
+    // Ensure that the "echo" command is available from the parent worktree.
+    let output = garden_capture(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/worktree.yaml",
+        "echo",
+        "default",
+        "--",
+        "hello",
+    ]);
+    // The "echo" command is: echo ${TREE_NAME} "$@"
+    assert_eq!("default hello", output);
+
+    Ok(())
+}
+
+/// `garden plant` adds an empty repository
+#[test]
+#[named]
+fn plant_empty_repo() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden plant in test/tmp/plant_empty_repo
+    exec_garden(&["--chdir", &fixture.root(), "init"])?;
+
+    // Empty garden.yaml should be created
+    fixture.path("garden.yaml");
+
+    // Create tests/tmp/plant_empty_repo/repo{1,2}
+    let cmd = ["git", "init", "repo1"];
+    assert_cmd(&cmd, &fixture.root());
+
+    let cmd = ["git", "init", "repo2"];
+    assert_cmd(&cmd, &fixture.root());
+
+    // repo1 has two remotes: "origin" and "remote-1".
+    // git remote add origin repo-1-url
+    let cmd = ["git", "remote", "add", "origin", "repo-1-url"];
+    let worktree_repo1 = fixture.worktree("repo1");
+    assert_cmd(&cmd, &worktree_repo1);
+
+    // git remote add remote-1 remote-1-url
+    let cmd = ["git", "remote", "add", "remote-1", "remote-1-url"];
+    assert_cmd(&cmd, &worktree_repo1);
+
+    // garden plant repo1
+    exec_garden(&["--chdir", &fixture.root(), "plant", "repo1"])?;
+
+    let path = Some(std::path::PathBuf::from(fixture.path("garden.yaml")));
+
+    // Load the configuration and assert that the remotes are configured.
+    let cfg = garden::config::new(&path, "", 0, None)?;
+    assert_eq!(1, cfg.trees.len());
+    assert_eq!("repo1", cfg.trees[0].get_name());
+    assert_eq!(2, cfg.trees[0].remotes.len());
+    assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
+    assert_eq!("repo-1-url", cfg.trees[0].remotes[0].get_expr());
+    assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
+    assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
+
+    // repo2 has two remotes: "remote-1" and "remote-2".
+    // git remote add remote-1 remote-1-url
+    let worktree_repo2 = fixture.worktree("repo2");
+    let cmd = ["git", "remote", "add", "remote-1", "remote-1-url"];
+    assert_cmd(&cmd, &worktree_repo2);
+
+    // git remote add remote-2 remote-2-url
+    let cmd = ["git", "remote", "add", "remote-2", "remote-2-url"];
+    assert_cmd(&cmd, &worktree_repo2);
+
+    // garden add repo2
+    exec_garden(&["--chdir", &fixture.root(), "plant", "repo2"])?;
+
+    // Load the configuration and assert that the remotes are configured.
+    let cfg = garden::config::new(&path, "", 0, None)?;
+    assert_eq!(2, cfg.trees.len()); // Now we have two trees.
+    assert_eq!("repo2", cfg.trees[1].get_name());
+    assert_eq!(2, cfg.trees[1].remotes.len());
+    assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
+    assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
+    assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
+    assert_eq!("remote-2-url", cfg.trees[1].remotes[1].get_expr());
+
+    // Verify that "garden plant" will refresh the remote URLs
+    // for existing entries.
+
+    // Update repo1's origin url to repo-1-new-url.
+    // git config remote.origin.url repo-1-new-url
+    let cmd = ["git", "config", "remote.origin.url", "repo-1-new-url"];
+    assert_cmd(&cmd, &worktree_repo1);
+
+    // Update repo2's remote-2 url to remote-2-new-url.
+    // git config remote.remote-2.url remote-2-new-url
+    let cmd = ["git", "config", "remote.remote-2.url", "remote-2-new-url"];
+    assert_cmd(&cmd, &worktree_repo2);
+
+    // garden plant repo1 repo2
+    exec_garden(&["--chdir", &fixture.root(), "plant", "repo1", "repo2"])?;
+
+    // Load the configuration and assert that the remotes are configured.
+    let cfg = garden::config::new(&path, "", 0, None)?;
+    assert_eq!(2, cfg.trees.len());
+    assert_eq!("repo1", cfg.trees[0].get_name());
+    assert_eq!(2, cfg.trees[0].remotes.len());
+    assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
+    assert_eq!("repo-1-new-url", cfg.trees[0].remotes[0].get_expr()); // New value.
+    assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
+    assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
+
+    assert_eq!("repo2", cfg.trees[1].get_name());
+    assert_eq!(2, cfg.trees[1].remotes.len());
+    assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
+    assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
+    assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
+    // New value.
+    assert_eq!("remote-2-new-url", cfg.trees[1].remotes[1].get_expr());
+
+    Ok(())
+}
+
+/// `garden plant` detects bare repositories.
+#[test]
+#[named]
+fn plant_bare_repo() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // Create an empty garden.yaml using "garden init".
+    exec_garden(&["--chdir", &fixture.root(), "init"])?;
+    let garden_yaml = fixture.path("garden.yaml");
+
+    let cmd = ["git", "init", "--bare", "repo.git"];  // Create repo.git
+    assert_cmd(&cmd, &fixture.root());
+
+    // garden plant repo.git
+    exec_garden(&["--chdir", &fixture.root(), "plant", "repo.git"])?;
+
+    // Load the configuration and assert that the remotes are configured.
+    let path = Some(std::path::PathBuf::from(&garden_yaml));
+    let cfg = garden::config::new(&path, "", 0, None)?;
+    assert_eq!(1, cfg.trees.len());
+    assert_eq!("repo.git", cfg.trees[0].get_name());
+
+    // The generated config must have "bare: true" configured.
+    assert!(cfg.trees[0].is_bare_repository);
+
+    Ok(())
+}
+
+/// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
+#[test]
+#[named]
+fn eval_garden_config_dir() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden eval ${GARDEN_CONFIG_DIR}
+    let output = garden_capture(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_CONFIG_DIR}",
+    ]);
+    assert!(output.ends_with("/tests/data"), "{} does not end with /tests/data", output);
+
+    Ok(())
+}
 
 /// Test eval behavior around the "--root" option
 #[test]
+#[named]
 fn eval_root_with_root() {
-    let cmd = [
-        "./target/debug/garden",
+    // garden eval ${GARDEN_ROOT}
+    let output = garden_capture(&[
         "--config",
         "tests/data/garden.yaml",
         "--root",
         "tests/tmp",
         "eval",
         "${GARDEN_ROOT}",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-
-    let output = cmd::trim_stdout(&capture.unwrap());
+    ]);
     assert!(output.ends_with("/tests/tmp"));
 
     let path = std::path::PathBuf::from(&output);
@@ -932,8 +674,7 @@ fn eval_root_with_root() {
 /// Test eval ${GARDEN_CONFIG_DIR} behavior with both "--root" and "--chdir"
 #[test]
 fn eval_config_dir_with_chdir_and_root() {
-    let cmd = [
-        "./target/debug/garden",
+    let output = garden_capture(&[
         "--chdir",
         "tests/tmp",
         "--config",
@@ -942,12 +683,7 @@ fn eval_config_dir_with_chdir_and_root() {
         "tests/tmp",
         "eval",
         "${GARDEN_CONFIG_DIR}",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-
-    let output = cmd::trim_stdout(&capture.unwrap());
+    ]);
     assert!(output.ends_with("/tests/data"));
 
     let path = std::path::PathBuf::from(&output);
@@ -958,8 +694,7 @@ fn eval_config_dir_with_chdir_and_root() {
 /// Test pwd with both "--root" and "--chdir"
 #[test]
 fn eval_exec_pwd_with_root_and_chdir() {
-    let cmd = [
-        "./target/debug/garden",
+    let output = garden_capture(&[
         "--chdir",
         "tests/tmp",
         "--config",
@@ -968,12 +703,7 @@ fn eval_exec_pwd_with_root_and_chdir() {
         "tests/tmp",
         "eval",
         "$ pwd",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-
-    let output = cmd::trim_stdout(&capture.unwrap());
+    ]);
     assert!(output.ends_with("/tests/tmp"));
 
     let path = std::path::PathBuf::from(&output);
@@ -984,8 +714,7 @@ fn eval_exec_pwd_with_root_and_chdir() {
 /// Test ${GARDEN_ROOT} with both "--root" and "--chdir"
 #[test]
 fn eval_root_with_root_and_chdir() {
-    let cmd = [
-        "./target/debug/garden",
+    let output = garden_capture(&[
         "--chdir",
         "tests/tmp",
         "--config",
@@ -994,12 +723,7 @@ fn eval_root_with_root_and_chdir() {
         "tests/tmp",
         "eval",
         "${GARDEN_ROOT}",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-
-    let output = cmd::trim_stdout(&capture.unwrap());
+    ]);
     assert!(output.ends_with("/tests/tmp"));
 
     let path = std::path::PathBuf::from(&output);
@@ -1010,8 +734,7 @@ fn eval_root_with_root_and_chdir() {
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
 fn cmd_dash_dash_arguments() {
-    let cmd = [
-        "./target/debug/garden",
+    let output = garden_capture(&[
         "--chdir",
         "tests/data",
         "--quiet",
@@ -1029,12 +752,7 @@ fn cmd_dash_dash_arguments() {
         "g",
         "h",
         "i",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-    let output = cmd::trim_stdout(&capture.unwrap());
-
+    ]);
     // Repeated command names were used to operate on the tree twice.
     let msg = format!(
         "data\ngarden\n{}",
@@ -1046,8 +764,7 @@ fn cmd_dash_dash_arguments() {
 /// Test dash-dash arguments in custom commands via "garden <custom> ..."
 #[test]
 fn cmd_dash_dash_arguments_custom() {
-    let cmd = [
-        "./target/debug/garden",
+    let output = garden_capture(&[
         "--chdir",
         "tests/data",
         "--quiet",
@@ -1062,12 +779,7 @@ fn cmd_dash_dash_arguments_custom() {
         "g",
         "h",
         "i",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-    let output = cmd::trim_stdout(&capture.unwrap());
-
+    ]);
     // `. .` was used to operate on the tree twice.
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
     assert_eq!(format!("{}\n{}", msg, msg), output);
@@ -1076,35 +788,14 @@ fn cmd_dash_dash_arguments_custom() {
 /// Test "." default for custom "garden <command>" with no arguments
 #[test]
 fn cmd_dot_default_no_args() {
-    let cmd = [
-        "./target/debug/garden",
-        "--quiet",
-        "--chdir",
-        "tests/data",
-        "echo-dir",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-    let output = cmd::trim_stdout(&capture.unwrap());
+    let output = garden_capture(&["--quiet", "--chdir", "tests/data", "echo-dir"]);
     assert_eq!("data", output);
 }
 
 /// Test "." default for "garden <command>" with no arguments and echo
 #[test]
 fn cmd_dot_default_no_args_echo() {
-    let cmd = [
-        "./target/debug/garden",
-        "--quiet",
-        "--chdir",
-        "tests/data",
-        "echo-args",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-    let output = cmd::trim_stdout(&capture.unwrap());
-
+    let output = garden_capture(&["--quiet", "--chdir", "tests/data", "echo-args"]);
     let msg = "garden\narguments -- a b c -- -- x y z";
     assert_eq!(msg, output);
 }
@@ -1112,19 +803,7 @@ fn cmd_dot_default_no_args_echo() {
 /// Test "." default for "garden <command>" with double-dash
 #[test]
 fn cmd_dot_default_double_dash() {
-    let cmd = [
-        "./target/debug/garden",
-        "--quiet",
-        "--chdir",
-        "tests/data",
-        "echo-args",
-        "--",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-    let output = cmd::trim_stdout(&capture.unwrap());
-
+    let output = garden_capture(&["--quiet", "--chdir", "tests/data", "echo-args", "--"]);
     let msg = "garden\narguments -- a b c -- -- x y z";
     assert_eq!(msg, output);
 }
@@ -1132,8 +811,7 @@ fn cmd_dot_default_double_dash() {
 /// Test "." default for "garden <command>" with extra arguments
 #[test]
 fn cmd_dot_default_double_dash_args() {
-    let cmd = [
-        "./target/debug/garden",
+    let output = garden_capture(&[
         "--quiet",
         "--chdir",
         "tests/data",
@@ -1146,12 +824,7 @@ fn cmd_dot_default_double_dash_args() {
         "g",
         "h",
         "i",
-    ];
-    let exec = cmd::exec_cmd(&cmd);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-    let output = cmd::trim_stdout(&capture.unwrap());
-
+    ]);
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
     assert_eq!(msg, output);
 }

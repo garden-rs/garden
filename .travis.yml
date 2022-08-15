@@ -6,6 +6,7 @@ matrix:
     - rust: beta
     - rust: nightly
     - rust: 1.45.0
+    - rust: 1.57.0
     - rust: nightly
       script: |
           if rustup component add clippy-preview
@@ -15,9 +16,9 @@ matrix:
 
 script:
   - rustup component add rustfmt
+  - rustup component add clippy
   - cargo install mdbook
-  - make all
-  - make doc
+  - make
   - make test
-  - make test-integration
-  - make check-format
+  - make check
+  - make doc
