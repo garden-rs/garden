@@ -32,7 +32,23 @@ fn garden_capture(args: &[&str]) -> String {
 /// Execute a command and ensure that the exit status is returned.
 fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
     let exec = cmd::exec_in_dir(&cmd, directory);
-    assert_eq!(status, cmd::status(exec.join()));
+    let capture = cmd::capture_stdout(exec);
+    assert!(capture.is_ok());
+
+    match capture.unwrap().exit_status {
+        subprocess::ExitStatus::Exited(val) => {
+            assert_eq!(val as i32, status);
+        },
+        subprocess::ExitStatus::Signaled(val) => {
+            assert_eq!(val as i32, status);
+        },
+        subprocess::ExitStatus::Other(val) => {
+            assert_eq!(val, status);
+        },
+        subprocess::ExitStatus::Undetermined => {
+            assert!(false, "undetermined exit status");
+        },
+    }
 }
 
 /// Execute a command and ensure that exit status 0 is returned.
@@ -515,10 +531,10 @@ fn plant_empty_repo() -> Result<()> {
     fixture.path("garden.yaml");
 
     // Create tests/tmp/plant_empty_repo/repo{1,2}
-    let cmd = ["git", "init", "repo1"];
+    let cmd = ["git", "init", "--quiet", "repo1"];
     assert_cmd(&cmd, &fixture.root());
 
-    let cmd = ["git", "init", "repo2"];
+    let cmd = ["git", "init", "--quiet", "repo2"];
     assert_cmd(&cmd, &fixture.root());
 
     // repo1 has two remotes: "origin" and "remote-1".
@@ -615,7 +631,7 @@ fn plant_bare_repo() -> Result<()> {
     exec_garden(&["--chdir", &fixture.root(), "init"])?;
     let garden_yaml = fixture.path("garden.yaml");
 
-    let cmd = ["git", "init", "--bare", "repo.git"]; // Create repo.git
+    let cmd = ["git", "init", "--quiet", "--bare", "repo.git"]; // Create repo.git
     assert_cmd(&cmd, &fixture.root());
 
     // garden plant repo.git

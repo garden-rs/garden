@@ -28,7 +28,7 @@ all:: build
 
 .PHONY: bench build test
 bench build test::
-	$(CARGO) $@ --all-targets $(CARGO_FLAGS) $(flags)
+	$(CARGO) $@ $(CARGO_FLAGS) $(flags)
 
 .PHONY: clean
 clean::
