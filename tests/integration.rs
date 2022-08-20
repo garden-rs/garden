@@ -38,16 +38,16 @@ fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
     match capture.unwrap().exit_status {
         subprocess::ExitStatus::Exited(val) => {
             assert_eq!(val as i32, status);
-        },
+        }
         subprocess::ExitStatus::Signaled(val) => {
             assert_eq!(val as i32, status);
-        },
+        }
         subprocess::ExitStatus::Other(val) => {
             assert_eq!(val, status);
-        },
+        }
         subprocess::ExitStatus::Undetermined => {
             assert!(false, "undetermined exit status");
-        },
+        }
     }
 }
 
