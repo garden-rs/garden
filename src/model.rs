@@ -3,6 +3,7 @@ use std::cell::RefCell;
 
 use super::errors;
 use super::eval;
+use super::path;
 use super::syntax;
 
 /// Tree index into config.trees
@@ -1018,7 +1019,7 @@ impl CommandOptions {
         if !self.filename_str.is_empty() {
             let path = std::path::PathBuf::from(&self.filename_str);
             if path.exists() {
-                let canon = path.canonicalize().unwrap_or(path);
+                let canon = path::abspath(&path);
                 self.filename = Some(canon);
             } else {
                 self.filename = Some(path);
@@ -1029,11 +1030,7 @@ impl CommandOptions {
         if !self.root.is_empty() {
             // Resolve the "--root" option to an absolute path
             let root_path = std::path::PathBuf::from(&self.root);
-            self.root = root_path
-                .canonicalize()
-                .unwrap_or(root_path)
-                .to_string_lossy()
-                .into();
+            self.root = path::abspath(&root_path).to_string_lossy().into();
         }
 
         // Change directories before searching for conifgs: garden --chdir <path>

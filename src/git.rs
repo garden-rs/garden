@@ -2,16 +2,14 @@ use super::cmd;
 use super::errors;
 use super::model::GitTreeDetails;
 use super::model::GitTreeType;
+use super::path;
 
 /// Return Ok(garden::model::GitTreeDetails) for the specified path on success
 /// or Err(garden::errors::CommandError) when Git commands error out.
 pub fn worktree_details(pathbuf: &std::path::Path) -> Result<GitTreeDetails, errors::CommandError> {
     let mut worktree_count = 0;
     let cmd = ["git", "worktree", "list", "--porcelain"];
-    let path = pathbuf
-        .to_path_buf()
-        .canonicalize()
-        .unwrap_or(pathbuf.to_path_buf());
+    let path = path::abspath(pathbuf);
     let exec = cmd::exec_in_dir(&cmd, &path);
     let output = cmd::capture(exec)?.stdout_str();
 
