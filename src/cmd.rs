@@ -137,17 +137,14 @@ where
         for (name, value) in env {
             // Loop until we find PATH.
             if name == "PATH" {
-                if let Some(path_buf) = std::env::split_paths(&value)
-                    .filter_map(|dir| {
-                        let full_path = dir.join(&cmd_path);
-                        if full_path.is_file() {
-                            Some(full_path)
-                        } else {
-                            None
-                        }
-                    })
-                    .next()
-                {
+                if let Some(path_buf) = std::env::split_paths(&value).find_map(|dir| {
+                    let full_path = dir.join(&cmd_path);
+                    if full_path.is_file() {
+                        Some(full_path)
+                    } else {
+                        None
+                    }
+                }) {
                     cmd_path = path_buf;
                 }
                 // Once we've seen $PATH we're done.
