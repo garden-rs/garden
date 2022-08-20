@@ -1,3 +1,7 @@
+/// Tests for the garden::query module.
+///
+/// These tests modify global environment variables (eg. $PATH) and cannot
+/// be used alongside tests that use BareRepoFixture.
 pub mod common;
 
 #[test]
