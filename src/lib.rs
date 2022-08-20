@@ -20,6 +20,9 @@ pub mod errors;
 /// Variable evaluation
 pub mod eval;
 
+/// Git queries
+pub mod git;
+
 /// Model objects
 pub mod model;
 

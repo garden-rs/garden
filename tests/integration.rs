@@ -1,4 +1,6 @@
 use garden::cmd;
+use garden::git;
+use garden::model;
 
 use anyhow::Result;
 use assert_cmd::prelude::CommandCargoExt;
@@ -124,6 +126,11 @@ impl<'a> BareRepoFixture<'a> {
         assert_path(&fixture_path);
 
         fixture_path
+    }
+
+    /// Return a PathBuf relative to the temporary directory for the current test.
+    fn pathbuf(&self, path: &str) -> std::path::PathBuf {
+        std::path::PathBuf::from(self.path(path))
     }
 
     /// Asserts that the path is a Git worktree.
@@ -668,6 +675,71 @@ fn eval_garden_config_dir() -> Result<()> {
         "{} does not end with /tests/data",
         output
     );
+
+    Ok(())
+}
+
+/// `garden::git::worktree_details(path)` returns a struct with branches and a
+/// GitTreeType (Tree, Bare, Parent, Worktree) for this worktree.
+#[test]
+#[named]
+fn git_worktree_details() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+
+    // repos/example.git is a bare repository.
+    let details = git::worktree_details(&fixture.pathbuf("repos/example.git"))?;
+    assert_eq!(details.branch, ""); // Bare repository has no branch.
+    assert_eq!(details.tree_type, model::GitTreeType::Bare);
+
+    // Create a plain git worktree called "tree" with a branch called "branch".
+    let cmd = ["git", "init", "--quiet", "tree"];
+    assert_cmd(&cmd, &fixture.root());
+
+    let cmd = ["git", "symbolic-ref", "HEAD", "refs/heads/branch"];
+    assert_cmd(&cmd, &fixture.path("tree"));
+
+    let details = git::worktree_details(&fixture.pathbuf("tree"))?;
+    assert_eq!(details.branch, "branch");
+    assert_eq!(details.tree_type, model::GitTreeType::Tree);
+
+    // Create a parent worktree called "parent" branched off of "default".
+    let cmd = ["git", "clone", "--quiet", "repos/example.git", "parent"];
+    assert_cmd(&cmd, &fixture.root());
+
+    // The initial query will be a Tree because there are no child worktrees.
+    let details = git::worktree_details(&fixture.pathbuf("parent"))?;
+    assert_eq!(details.branch, "default");
+    assert_eq!(details.tree_type, model::GitTreeType::Tree);
+
+    // Create a child worktree called "child" branched off of "dev".
+    let cmd = [
+        "git",
+        "worktree",
+        "add",
+        "--track",
+        "-B",
+        "dev",
+        "../child",
+        "origin/dev",
+    ];
+    assert_cmd(&cmd, &fixture.path("parent"));
+
+    // The "parent" repository is a GitTreeType::Parent.
+    let details = git::worktree_details(&fixture.pathbuf("parent"))?;
+    assert_eq!(details.branch, "default");
+    assert_eq!(details.tree_type, model::GitTreeType::Parent);
+
+    // The "child" repository is a GitTreeType::Worktree(parent_path).
+    let parent_path_relative = &fixture.pathbuf("parent");
+    let parent_path = parent_path_relative
+        .to_path_buf()
+        .canonicalize()
+        .unwrap_or(parent_path_relative.to_path_buf())
+        .to_string_lossy()
+        .to_string();
+    let details = git::worktree_details(&fixture.pathbuf("child"))?;
+    assert_eq!(details.branch, "dev");
+    assert_eq!(details.tree_type, model::GitTreeType::Worktree(parent_path));
 
     Ok(())
 }

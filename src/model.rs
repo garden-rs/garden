@@ -1106,3 +1106,23 @@ impl ApplicationContext {
         graft_id
     }
 }
+
+/// Represent the different types of Git worktree.
+#[derive(Clone, Debug, PartialEq)]
+pub enum GitTreeType {
+    Parent,           // A worktree with child worktrees attached to it.
+    Worktree(String), // A child worktree created with "git worktree".
+    Tree,             // A plain ole Git clone / worktree created with "git clone/init".
+    Bare,             // A bare repository.
+}
+
+impl_display!(GitTreeType);
+
+/// Represent "git worktree list" details queried from Git.
+#[derive(Clone, Debug)]
+pub struct GitTreeDetails {
+    pub branch: String,
+    pub tree_type: GitTreeType,
+}
+
+impl_display!(GitTreeDetails);
