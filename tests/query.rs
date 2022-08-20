@@ -1,4 +1,4 @@
-mod common;
+pub mod common;
 
 #[test]
 fn resolve_trees_default_query_finds_garden() {

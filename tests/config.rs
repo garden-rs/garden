@@ -1,4 +1,4 @@
-mod common;
+pub mod common;
 
 use anyhow::Result;
 
@@ -450,12 +450,16 @@ fn read_grafts() -> Result<()> {
     assert_eq!("graft", config.grafts[0].get_name());
     let graft_id = config.grafts[0].get_id();
     assert!(graft_id.is_some());
-    assert_eq!(2usize, graft_id.unwrap().into());
+
+    let graft_node_id: usize = graft_id.unwrap().into();
+    assert_eq!(2usize, graft_node_id);
 
     assert_eq!("libs", config.grafts[1].get_name());
     let graft_id = config.grafts[1].get_id();
     assert!(graft_id.is_some());
-    assert_eq!(5usize, graft_id.unwrap().into());
+
+    let graft_node_id: usize = graft_id.unwrap().into();
+    assert_eq!(5usize, graft_node_id);
 
     Ok(())
 }

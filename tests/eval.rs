@@ -1,4 +1,4 @@
-mod common;
+pub mod common;
 
 use anyhow::Result;
 
@@ -342,7 +342,9 @@ fn find_tree_in_graft() -> Result<()> {
     let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
     assert_eq!(0, ctx.tree);
     assert!(ctx.config.is_some());
-    assert_eq!(2usize, ctx.config.unwrap().into());
+
+    let node_id: usize = ctx.config.unwrap().into();
+    assert_eq!(2usize, node_id);
 
     Ok(())
 }
@@ -356,7 +358,9 @@ fn eval_graft_tree() -> Result<()> {
     // Get a tree context for "graft::graft" from the outer-most config.
     let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
     assert!(ctx.config.is_some());
-    assert_eq!(2usize, ctx.config.unwrap().into());
+
+    let node_id: usize = ctx.config.unwrap().into();
+    assert_eq!(2usize, node_id);
 
     // Evaluate the value for ${current_config} using the inner grafted config.
     let config = app.get_config(ctx.config.unwrap());

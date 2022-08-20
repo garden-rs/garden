@@ -1,154 +1,18 @@
-use garden::cmd;
+// The "path" attribute is needed to avoid this error:
+// Error writing files: failed to resolve mod `common`: garden/tests does not exist
+// https://github.com/rust-lang/rustfmt/issues/4510
+#[path = "common/mod.rs"]
+pub mod common;
+use common::{
+    assert_cmd, assert_cmd_capture, assert_ref, assert_ref_missing, exec_garden, garden_capture,
+    BareRepoFixture,
+};
+
 use garden::git;
 use garden::model;
 
 use anyhow::Result;
-use assert_cmd::prelude::CommandCargoExt;
 use function_name::named;
-
-use std::process::Command;
-
-/// Execute the "garden" command with the specified arguments.
-fn exec_garden(args: &[&str]) -> Result<()> {
-    let mut exec = Command::cargo_bin("garden").expect("garden not found");
-    exec.args(args);
-
-    assert!(exec.status().expect("garden returned an error").success());
-    Ok(())
-}
-
-/// Execute a command and ensure that exit status 0 is returned. Return the Exec object.
-fn garden_capture(args: &[&str]) -> String {
-    let mut exec = Command::cargo_bin("garden").expect("garden not found");
-    exec.args(args);
-
-    let capture = exec.output();
-    assert!(capture.is_ok());
-
-    let utf8_result = String::from_utf8(capture.unwrap().stdout);
-    assert!(utf8_result.is_ok());
-
-    utf8_result.unwrap().trim_end().into()
-}
-
-/// Execute a command and ensure that the exit status is returned.
-fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
-    let exec = cmd::exec_in_dir(&cmd, directory);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-
-    match capture.unwrap().exit_status {
-        subprocess::ExitStatus::Exited(val) => {
-            assert_eq!(val as i32, status);
-        }
-        subprocess::ExitStatus::Signaled(val) => {
-            assert_eq!(val as i32, status);
-        }
-        subprocess::ExitStatus::Other(val) => {
-            assert_eq!(val, status);
-        }
-        subprocess::ExitStatus::Undetermined => {
-            assert!(false, "undetermined exit status");
-        }
-    }
-}
-
-/// Execute a command and ensure that exit status 0 is returned.
-fn assert_cmd(cmd: &[&str], directory: &str) {
-    assert_cmd_status(cmd, directory, 0);
-}
-
-/// Execute a command and ensure that exit status 0 is returned. Return the Exec object.
-fn assert_cmd_capture(cmd: &[&str], directory: &str) -> String {
-    let exec = cmd::exec_in_dir(&cmd, directory);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-
-    cmd::trim_stdout(&capture.unwrap())
-}
-
-/// Assert that the specified path exists.
-fn assert_path(path: &str) {
-    let pathbuf = std::path::PathBuf::from(path);
-    assert!(pathbuf.exists());
-}
-
-/// Assert that the specified path is a Git worktree.
-fn assert_git_worktree(path: &str) {
-    assert_path(&format!("{}/.git", path));
-}
-
-/// Assert that the Git ref exists in the specified repository.
-fn assert_ref(repository: &str, refname: &str) {
-    let cmd = ["git", "rev-parse", "--quiet", "--verify", &refname];
-    assert_cmd(&cmd, &repository);
-}
-
-/// Assert that the Git ref does not exist in the specified repository.
-fn assert_ref_missing(repository: &str, refname: &str) {
-    let cmd = ["git", "rev-parse", "--quiet", "--verify", &refname];
-    assert_cmd_status(&cmd, &repository, 1);
-}
-
-/// Cleanup and create a bare repository for cloning
-fn setup(name: &str, path: &str) {
-    let cmd = ["../integration/setup.sh", name];
-    assert_cmd(&cmd, path);
-}
-
-fn teardown(path: &str) {
-    if let Err(err) = std::fs::remove_dir_all(path) {
-        assert!(false, "unable to remove '{}': {}", path, err);
-    }
-}
-
-/// Provide a bare repository fixture for the current test.
-struct BareRepoFixture<'a> {
-    name: &'a str,
-}
-
-impl<'a> BareRepoFixture<'a> {
-    /// Create the test bare repository.
-    fn new(name: &'a str) -> Self {
-        setup(name, "tests/tmp");
-
-        Self { name }
-    }
-
-    /// Return the temporary directory for the current test.
-    fn root(&self) -> String {
-        format!("tests/tmp/{}", self.name)
-    }
-
-    /// Return a path relative to the temporary directory for the current test.
-    fn path(&self, path: &str) -> String {
-        let fixture_path = format!("{}/{}", self.root(), path);
-        assert_path(&fixture_path);
-
-        fixture_path
-    }
-
-    /// Return a PathBuf relative to the temporary directory for the current test.
-    fn pathbuf(&self, path: &str) -> std::path::PathBuf {
-        std::path::PathBuf::from(self.path(path))
-    }
-
-    /// Asserts that the path is a Git worktree.
-    /// Returns the path to the specified worktree.
-    fn worktree(&self, path: &str) -> String {
-        let worktree = self.path(path);
-        assert_git_worktree(&worktree);
-
-        worktree
-    }
-}
-
-impl Drop for BareRepoFixture<'_> {
-    /// Teardown the test repository.
-    fn drop(&mut self) {
-        teardown(&self.root());
-    }
-}
 
 /// `garden grow` clones repositories
 #[test]
