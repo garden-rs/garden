@@ -82,6 +82,13 @@ pub enum GardenError {
     WriteConfigurationError { path: std::path::PathBuf },
 }
 
+#[derive(Error, Debug)]
+pub enum CommandError {
+    /// ExitStatus is used to exit without printing an error message.
+    #[error("{command} returned exit status {status}")]
+    ExitStatus { command: String, status: i32 },
+}
+
 // /usr/include/sysexits.h
 pub const EX_OK: i32 = 0;
 pub const EX_USAGE: i32 = 64;

@@ -51,11 +51,35 @@ pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
     capture.stdout_str().trim_end().into()
 }
 
+/// Convert a PopenError into a garden::errors::CommandError.
+pub fn command_error_from_popen_error(
+    command: String,
+    popen_err: subprocess::PopenError,
+) -> errors::CommandError {
+    let status = match popen_err {
+        subprocess::PopenError::IoError(err) => err.raw_os_error().unwrap_or(1),
+        _ => 1,
+    };
+    errors::CommandError::ExitStatus { command, status }
+}
+
 /// Return a CaptureData result for a subprocess's stdout.
 pub fn capture_stdout(
     exec: subprocess::Exec,
-) -> Result<subprocess::CaptureData, subprocess::PopenError> {
-    exec.stdout(subprocess::Redirection::Pipe).capture()
+) -> Result<subprocess::CaptureData, errors::CommandError> {
+    let command = exec.to_cmdline_lossy();
+    exec.stdout(subprocess::Redirection::Pipe)
+        .capture()
+        .map_err(|popen_err| command_error_from_popen_error(command, popen_err))
+}
+
+/// Return a CaptureData result for a subprocess's stdout and stderr.
+pub fn capture(exec: subprocess::Exec) -> Result<subprocess::CaptureData, errors::CommandError> {
+    let command = exec.to_cmdline_lossy();
+    exec.stdout(subprocess::Redirection::Pipe)
+        .stderr(subprocess::Redirection::Pipe)
+        .capture()
+        .map_err(|popen_err| command_error_from_popen_error(command, popen_err))
 }
 
 /// Return a `subprocess::Exec` for a command.
