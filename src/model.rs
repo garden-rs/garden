@@ -807,7 +807,7 @@ impl TreeQuery {
 }
 
 // Commands
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Command {
     Cmd,
     Custom(String),
