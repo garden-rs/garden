@@ -6,6 +6,7 @@ use super::super::cmd;
 use super::super::config;
 use super::super::errors::GardenError;
 use super::super::model;
+use super::super::query;
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut output = String::new();
@@ -113,23 +114,10 @@ fn plant_path(
     }
 
     // Tree name is updated when an existing tree is found.
-    let mut tree_name = tree_path;
-
-    // Do we already have a tree with this tree path?
-    for tree in &config.trees {
-        assert!(tree.path_is_valid());
-        // Skip entries that do not exist on disk.
-        // Check if this tree matches the specified path.
-        let tree_path_value = tree.path_as_ref()?;
-        let tree_pathbuf = std::path::PathBuf::from(tree_path_value);
-        if let Ok(canon_path) = tree_pathbuf.canonicalize() {
-            if canon_path == path {
-                // Existing tree found: use the configured name.
-                tree_name = tree.get_name().to_string();
-                break;
-            }
-        }
-    }
+    let tree_name = match query::tree_name_from_abspath(config, &path) {
+        Some(value) => value,
+        None => tree_path,
+    };
 
     // Key for the tree entry
     let key = Yaml::String(tree_name.clone());
@@ -175,13 +163,8 @@ fn plant_path(
     let mut remotes: Vec<(String, String)> = Vec::new();
     {
         for remote in &remote_names {
-            let command: Vec<String> = vec![
-                "git".into(),
-                "config".into(),
-                "remote.".to_string() + remote + ".url",
-            ];
-
-            let exec = cmd::exec_in_dir(&command, &path);
+            let cmd = ["git", "config", &format!("remote.{}.url", remote)];
+            let exec = cmd::exec_in_dir(&cmd, &path);
             if let Ok(x) = cmd::capture_stdout(exec) {
                 let output = cmd::trim_stdout(&x);
                 remotes.push((remote.clone(), output));

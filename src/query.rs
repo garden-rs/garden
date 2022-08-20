@@ -1,5 +1,6 @@
 use super::errors::GardenError;
 use super::model;
+use super::path;
 use super::query;
 use super::syntax;
 
@@ -221,10 +222,17 @@ pub fn trees_from_pattern(
     result
 }
 
-/// Return a tree context for the specified filesystem path.
-
+/// Return a tree context for the specified path string.
 pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model::TreeContext> {
-    let pathbuf = match std::path::PathBuf::from(path).canonicalize() {
+    tree_from_pathbuf(config, &std::path::PathBuf::from(path))
+}
+
+/// Return a tree context for the specified path.
+pub fn tree_from_pathbuf(
+    config: &model::Configuration,
+    path: &std::path::Path,
+) -> Option<model::TreeContext> {
+    let pathbuf = match path.canonicalize() {
         Ok(canon) => canon,
         Err(_) => return None,
     };
@@ -246,6 +254,44 @@ pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model
                 None,
                 None,
             ));
+        }
+    }
+
+    None
+}
+
+/// Return the name of an existing tree from the specified path.
+
+pub fn tree_name_from_path(
+    config: &model::Configuration,
+    path: &std::path::Path,
+) -> Option<String> {
+    tree_name_from_abspath(config, &path::abspath(path))
+}
+
+/// Return the name of an existing tree from an absolute path.
+
+pub fn tree_name_from_abspath(
+    config: &model::Configuration,
+    path: &std::path::Path,
+) -> Option<String> {
+    // Do we already have a tree with this tree path?
+    for tree in &config.trees {
+        // Skip entries that do not exist on disk.
+        if !tree.path_is_valid() {
+            continue;
+        }
+        let tree_path_str = match tree.path_as_ref() {
+            Ok(path_str) => path_str,
+            Err(_) => continue,
+        };
+        // Check if this tree matches the specified path.
+        let tree_pathbuf = std::path::PathBuf::from(tree_path_str);
+        if let Ok(canon_path) = tree_pathbuf.canonicalize() {
+            if canon_path == path {
+                // Existing tree found: use the configured name.
+                return Some(tree.get_name().to_string());
+            }
         }
     }
 
