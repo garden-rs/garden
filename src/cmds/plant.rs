@@ -4,8 +4,9 @@ use yaml_rust::yaml::Yaml;
 
 use super::super::cmd;
 use super::super::config;
-use super::super::errors::GardenError;
+use super::super::errors;
 use super::super::model;
+use super::super::path;
 use super::super::query;
 
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
@@ -79,14 +80,19 @@ fn plant_path(
 ) -> Result<()> {
     // Garden root path
     let root = config.root_path.canonicalize().map_err(|err| {
-        GardenError::ConfigurationError(format!("unable to canonicalize config root: {:?}", err))
+        errors::GardenError::ConfigurationError(format!(
+            "unable to canonicalize config root: {:?}",
+            err
+        ))
     })?;
 
     let pathbuf = std::path::PathBuf::from(raw_path);
     if !pathbuf.exists() {
-        return Err(
-            GardenError::ConfigurationError(format!("invalid tree path: {}", raw_path)).into(),
-        );
+        return Err(errors::GardenError::ConfigurationError(format!(
+            "invalid tree path: {}",
+            raw_path
+        ))
+        .into());
     }
 
     // Build the tree's path
@@ -94,24 +100,14 @@ fn plant_path(
 
     // Get a canonical tree path for comparison with the canonical root.
     let path = pathbuf.canonicalize().map_err(|err| {
-        GardenError::ConfigurationError(format!("unable to canonicalize {:?}: {:?}", raw_path, err))
+        errors::GardenError::ConfigurationError(format!(
+            "unable to canonicalize {:?}: {:?}",
+            raw_path, err
+        ))
     })?;
 
-    // Is the path a child of the current garden root?
-    if path.starts_with(&root) {
-        tree_path = path
-            .strip_prefix(&root)
-            .map_err(|err| {
-                GardenError::ConfigurationError(format!(
-                    "{:?} is not a child of {:?}: {:?}",
-                    path, root, err
-                ))
-            })?
-            .to_string_lossy()
-            .into();
-    } else {
-        tree_path = path.to_string_lossy().into();
-    }
+    // Build the tree's path
+    let tree_path = path::strip_prefix_into_string(&root, &path)?;
 
     // Tree name is updated when an existing tree is found.
     let tree_name = match query::tree_name_from_abspath(config, &path) {
@@ -180,9 +176,10 @@ fn plant_path(
         let remotes_hash: &mut YamlHash = match entry.get_mut(&remotes_key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
-                return Err(
-                    GardenError::ConfigurationError("trees: not a hash".to_string()).into(),
-                );
+                return Err(errors::GardenError::ConfigurationError(
+                    "trees: not a hash".to_string(),
+                )
+                .into());
             }
         };
 
