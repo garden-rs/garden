@@ -63,6 +63,22 @@ trees:
     depth: 1
     single-branch: true
 
+  tree1:
+    path: .
+    variables:
+      tree_var: x1
+  tree2:
+    path: .
+    variables:
+      tree_var: x2
+
+groups:
+  trees:
+    - tree1
+    - tree2
+
 commands:
   pwd: pwd
   basename: basename "$(pwd)"
+  tree-name: echo "${TREE_NAME}"
+  tree-var: echo "${tree_var}"

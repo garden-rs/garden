@@ -655,3 +655,37 @@ fn cmd_dot_default_double_dash_args() {
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
     assert_eq!(msg, output);
 }
+
+/// Test "garden cmd --breadth-first ..."
+/// Test "garden cmd ..."
+#[test]
+fn cmd_breadth_first_and_depth_first() {
+    // Commands are run in breadth-first order.
+    // Each command is run in each tree before proceeding to the next command.
+    let expect = "tree1\ntree2\nx1\nx2";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        "--breadth-first",
+        "trees",
+        "tree-name",
+        "tree-var",
+    ]);
+    assert_eq!(expect, actual);
+
+    // Commands are run in depth-first order.
+    // All commands are run in each tree before proceeding to the next tree.
+    let expect = "tree1\nx1\ntree2\nx2";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        "trees",
+        "tree-name",
+        "tree-var",
+    ]);
+    assert_eq!(expect, actual);
+}

@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.4.0
+
+**Features**:
+
+- `garden cmd` learned to run commands in breadth-first order when the
+  `-b/--breadth-first` option is used. Depth-first tree traversal is the default.
+  The `garden cmd --breadth-first` traversal runs all commands on a tree before
+  continuing on to the next tree. The default `garden cmd` depth-first traversal
+  runs a command across all trees before continuing on to the next command.
+  ([#3](https://github.com/davvid/garden/issues/3))
+
 ## v0.3.0
 
 **Features**:

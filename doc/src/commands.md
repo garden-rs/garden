@@ -234,6 +234,8 @@ called `build` and `test`, then running `garden cmd treesitters build test`
 will run the custom `build` and `test` commands over all of the trees in
 `treesitters` group.
 
+### Commands
+
 `garden cmd` and `garden <command>` interact with custom commands that are
 configured in the `commands` section for templates, trees, gardens,
 and the top-level scope.
@@ -261,6 +263,23 @@ subsequent variables will be set according to each argument.
     # Example usage
     garden test cola -- V=1
 
+### Depth-first and Breadth-first Tree Traversal
+
+The following two invocations run commands in a different order:
+
+    # Depth-first (default)
+    garden cmd treesitters build test
+
+    # Breadth-first
+    garden cmd --breadth-first treesitters build test
+
+The default traversal order for commands is depth-first. This means that *both* the
+`build` and `test` commands are run on each tree in the `treesitters` group
+*before* running any commands on the next tree.
+
+The `-b | --breadth-first` option enables a breadth-first traversal. A breadth-first
+traversal runs the `build` command over *all* of the trees in the `treesitters` group
+*before* the `test` command is run over all of the trees in the same group.
 
 ### Custom Commands
 

@@ -990,6 +990,7 @@ pub fn print_tree_details(tree: &Tree, verbose: u8, quiet: bool) {
 #[derive(Clone, Debug, Default)]
 pub struct CommandOptions {
     pub args: Vec<String>,
+    pub breadth_first: bool,
     pub debug: Vec<String>,
     pub chdir: String,
     pub color_mode: ColorMode,

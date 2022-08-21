@@ -15,9 +15,17 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
+    let breadth_first = app.options.breadth_first;
     let keep_going = app.options.keep_going;
     let exit_status = cmd(
-        app, quiet, verbose, keep_going, &query, &commands, &arguments,
+        app,
+        quiet,
+        verbose,
+        breadth_first,
+        keep_going,
+        &query,
+        &commands,
+        &arguments,
     )?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
@@ -34,6 +42,12 @@ fn parse_args(
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
         ap.set_description("garden cmd - run custom commands over gardens");
+
+        ap.refer(&mut options.breadth_first).add_option(
+            &["-b", "--breadth-first"],
+            argparse::StoreTrue,
+            "run a command in all trees before running the next command",
+        );
 
         ap.refer(&mut options.keep_going).add_option(
             &["-k", "--keep-going"],
@@ -147,46 +161,145 @@ pub fn cmd(
     app: &mut model::ApplicationContext,
     quiet: bool,
     verbose: u8,
+    breadth_first: bool,
     keep_going: bool,
     query: &str,
     commands: &[String],
     arguments: &[String],
 ) -> Result<i32> {
-    // Resolve the tree query into a vector of tree contexts.
-    let contexts;
-    let mut exit_status: i32 = errors::EX_OK;
     // Mutable scope for app.get_root_config_mut()
-    {
-        let config = app.get_root_config_mut();
-        contexts = query::resolve_trees(config, query);
-    }
+    let config = app.get_root_config_mut();
+    // Resolve the tree query into a vector of tree contexts.
+    let contexts = query::resolve_trees(config, query);
 
-    // Loop over each context, evaluate the tree environment,
-    // and run the command.
-    for context in &contexts {
-        // Skip symlink trees.
-        {
+    if breadth_first {
+        run_cmd_breadth_first(
+            app, quiet, verbose, keep_going, &contexts, commands, arguments,
+        )
+    } else {
+        run_cmd_depth_first(
+            app, quiet, verbose, keep_going, &contexts, commands, arguments,
+        )
+    }
+}
+
+pub fn run_cmd_breadth_first(
+    app: &mut model::ApplicationContext,
+    quiet: bool,
+    verbose: u8,
+    keep_going: bool,
+    contexts: &Vec<model::TreeContext>,
+    commands: &[String],
+    arguments: &[String],
+) -> Result<i32> {
+    let mut exit_status: i32 = errors::EX_OK;
+    // Loop over each command, evaluate the tree environment,
+    // and run the command in each context.
+    for name in commands {
+        // The "error" flag is set when a non-zero exit status is returned.
+        let mut error = false;
+
+        // Get the current executable name
+        let current_exe = cmd::current_exe();
+
+        // One invocation runs multiple commands
+        for context in contexts {
+            // Keep track of the error state per-context.
+            error = false;
+
+            // Skip symlink trees.
             let config = app.get_root_config();
             if config.trees[context.tree].is_symlink {
                 continue;
             }
-        }
-        // Evaluate the tree environment
-        let env;
-        {
-            env = eval::environment(app.get_root_config(), context);
-        }
+            // Evaluate the tree environment
+            let env = eval::environment(app.get_root_config(), context);
 
-        // Run each command in the tree's context
-        let path: String;
-        {
-            let config = app.get_root_config();
+            // Run each command in the tree's context
             let tree = &config.trees[context.tree];
-            path = tree.path_as_ref()?.to_string();
+            let path = tree.path_as_ref()?.to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !model::print_tree(tree, verbose, quiet) {
                 continue;
             }
+
+            // One command maps to multiple command sequences.
+            // When the scope is tree, only the tree's commands
+            // are included.  When the scope includes a gardens,
+            // its matching commands are appended to the end.
+            let cmd_seq_vec = eval::command(app, context, name);
+            app.get_root_config_mut().reset();
+
+            for cmd_seq in &cmd_seq_vec {
+                for cmd_str in cmd_seq {
+                    if verbose > 1 {
+                        println!(
+                            "{} {}",
+                            model::Color::cyan(":"),
+                            model::Color::green(&cmd_str),
+                        );
+                    }
+                    let mut exec = subprocess::Exec::shell(&cmd_str)
+                        .arg(&current_exe)
+                        .args(arguments)
+                        .cwd(&path);
+                    // Update the command environment
+                    for (k, v) in &env {
+                        exec = exec.env(k, v);
+                    }
+                    let status = cmd::status(exec.join());
+                    if status != errors::EX_OK {
+                        exit_status = status as i32;
+                        error = true;
+                        break;
+                    }
+                }
+                if error {
+                    break;
+                }
+            }
+            if error && !keep_going {
+                break;
+            }
+        }
+
+        if error && !keep_going {
+            break;
+        }
+    }
+
+    // Return the last non-zero exit status.
+    Ok(exit_status)
+}
+
+pub fn run_cmd_depth_first(
+    app: &mut model::ApplicationContext,
+    quiet: bool,
+    verbose: u8,
+    keep_going: bool,
+    contexts: &Vec<model::TreeContext>,
+    commands: &[String],
+    arguments: &[String],
+) -> Result<i32> {
+    let mut exit_status: i32 = errors::EX_OK;
+    // Loop over each context, evaluate the tree environment,
+    // and run the command.
+    for context in contexts {
+        // Skip symlink trees.
+        let config = app.get_root_config();
+        if config.trees[context.tree].is_symlink {
+            continue;
+        }
+        // Evaluate the tree environment
+        let env = eval::environment(app.get_root_config(), context);
+
+        // Run each command in the tree's context
+        let tree = &config.trees[context.tree];
+        let path = tree.path_as_ref()?.to_string();
+
+        // Sparse gardens/missing trees are ok -> skip these entries.
+        if !model::print_tree(tree, verbose, quiet) {
+            continue;
         }
 
         // The "error" flag is set when a non-zero exit status is returned.
@@ -233,7 +346,7 @@ pub fn cmd(
                     break;
                 }
             }
-            if error {
+            if error && !keep_going {
                 break;
             }
         }
@@ -262,8 +375,10 @@ pub fn cmds(
     let commands: Vec<String> = vec![command.to_string()];
 
     for query in queries {
-        let status = cmd(app, quiet, verbose, keep_going, query, &commands, arguments)
-            .unwrap_or(errors::EX_IOERR);
+        let status = cmd(
+            app, quiet, verbose, true, keep_going, query, &commands, arguments,
+        )
+        .unwrap_or(errors::EX_IOERR);
         if status != 0 {
             exit_status = status;
             if !keep_going {
