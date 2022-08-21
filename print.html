@@ -386,6 +386,9 @@ After <code>garden init</code> the following files are created.</p>
 <p>Add a pre-existing Git worktree to <code>garden.yaml</code>.</p>
 <p>The <code>trees</code> section in the <code>garden.yaml</code> file will be updated with details
 about the new tree.</p>
+<p><code>garden plant</code> records the Git remotes associated with a repository.</p>
+<p>Repositories created using <code>git worktree</code> are supported by <code>garden plant</code>.
+Parent trees must be planted first before planting a child tree.</p>
 <h2 id="garden--tree-query"><a class="header" href="#garden--tree-query">garden ... [tree-query]</a></h2>
 <p>Garden commands accept <a href="tree-queries.html">tree query</a> strings that are used to
 refer to sets of trees.</p>
@@ -908,6 +911,12 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, the
 latest development Git version and Git Cola ready to go for development.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v030"><a class="header" href="#v030">v0.3.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden plant</code> learned to detect <code>git worktree</code> repositories.
+(<a href="https://github.com/davvid/garden/issues/1">#1</a>)</li>
+</ul>
 <h2 id="v020"><a class="header" href="#v020">v0.2.0</a></h2>
 <p><strong>Breaking Changes</strong>:</p>
 <ul>

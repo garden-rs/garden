@@ -234,6 +234,9 @@ After <code>garden init</code> the following files are created.</p>
 <p>Add a pre-existing Git worktree to <code>garden.yaml</code>.</p>
 <p>The <code>trees</code> section in the <code>garden.yaml</code> file will be updated with details
 about the new tree.</p>
+<p><code>garden plant</code> records the Git remotes associated with a repository.</p>
+<p>Repositories created using <code>git worktree</code> are supported by <code>garden plant</code>.
+Parent trees must be planted first before planting a child tree.</p>
 <h2 id="garden--tree-query"><a class="header" href="#garden--tree-query">garden ... [tree-query]</a></h2>
 <p>Garden commands accept <a href="tree-queries.html">tree query</a> strings that are used to
 refer to sets of trees.</p>
