@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.0
+
+**Features**:
+
+- `garden plant` learned to detect `git worktree` repositories.
+  ([#1](https://github.com/davvid/garden/issues/1))
+
 ## v0.2.0
 
 **Breaking Changes**:
