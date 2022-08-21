@@ -115,17 +115,14 @@ fn plant_bare_repo() -> Result<()> {
     common::exec_garden(&["--chdir", &fixture.root(), "init"])?;
     let garden_yaml = fixture.path("garden.yaml");
 
-    let cmd = ["git", "init", "--quiet", "--bare", "repo.git"]; // Create repo.git
-    common::assert_cmd(&cmd, &fixture.root());
-
     // garden plant repo.git
-    common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo.git"])?;
+    common::exec_garden(&["--chdir", &fixture.root(), "plant", "repos/example.git"])?;
 
     // Load the configuration and assert that the remotes are configured.
     let path = Some(std::path::PathBuf::from(&garden_yaml));
     let cfg = garden::config::new(&path, "", 0, None)?;
     assert_eq!(1, cfg.trees.len());
-    assert_eq!("repo.git", cfg.trees[0].get_name());
+    assert_eq!("repos/example.git", cfg.trees[0].get_name());
 
     // The generated config must have "bare: true" configured.
     assert!(cfg.trees[0].is_bare_repository);
