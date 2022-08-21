@@ -78,6 +78,9 @@ pub enum GardenError {
     #[error("error creating worktree parent '{worktree:?}' for '{tree:?}'")]
     WorktreeParentCreationError { worktree: String, tree: String },
 
+    #[error("unable to plant {tree:?}: worktree parent {parent:?} has not been planted")]
+    WorktreeParentNotPlantedError { parent: String, tree: String },
+
     #[error("unable to write configuration: {path:?}")]
     WriteConfigurationError { path: std::path::PathBuf },
 }
@@ -122,6 +125,7 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::Usage(_) => EX_USAGE,
             GardenError::WorktreeGitCheckoutError { .. } => EX_CANTCREAT,
             GardenError::WorktreeParentCreationError { .. } => EX_CANTCREAT,
+            GardenError::WorktreeParentNotPlantedError { .. } => EX_CONFIG,
             GardenError::WorktreeNotFound { .. } => EX_CONFIG,
             GardenError::WriteConfigurationError { .. } => EX_CANTCREAT,
         }

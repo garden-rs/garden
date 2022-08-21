@@ -129,3 +129,46 @@ fn plant_bare_repo() -> Result<()> {
 
     Ok(())
 }
+
+/// `garden plant` detects "git worktree" repositories.
+#[test]
+#[named]
+fn plant_git_worktree() -> Result<()> {
+    let fixture = common::BareRepoFixture::new(function_name!());
+    // Create an empty garden.yaml using "garden init".
+    common::exec_garden(&["--chdir", &fixture.root(), "init"])?;
+
+    // Create a parent worktree called "parent" branched off of "default".
+    let cmd = ["git", "clone", "--quiet", "repos/example.git", "parent"];
+    common::assert_cmd(&cmd, &fixture.root());
+
+    // Create a child worktree called "child" branched off of "dev".
+    let cmd = [
+        "git",
+        "worktree",
+        "add",
+        "--track",
+        "-B",
+        "dev",
+        "../child",
+        "origin/dev",
+    ];
+    common::assert_cmd(&cmd, &fixture.path("parent"));
+
+    common::exec_garden(&["--chdir", &fixture.root(), "plant", "parent"])?;
+    common::exec_garden(&["--chdir", &fixture.root(), "plant", "child"])?;
+
+    let garden_yaml = fixture.path("garden.yaml");
+    let path = Some(std::path::PathBuf::from(&garden_yaml));
+
+    let cfg = garden::config::new(&path, &fixture.root(), 0, None)?;
+    assert_eq!(2, cfg.trees.len());
+    assert_eq!("parent", cfg.trees[0].get_name());
+
+    // The "child" repository is a child worktree of the "parent" tree.
+    assert!(cfg.trees[1].is_worktree);
+    assert_eq!(cfg.trees[1].worktree.get_expr(), "parent");
+    assert_eq!(cfg.trees[1].branch.get_expr(), "dev");
+
+    Ok(())
+}

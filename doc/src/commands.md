@@ -78,6 +78,11 @@ Add a pre-existing Git worktree to `garden.yaml`.
 The `trees` section in the `garden.yaml` file will be updated with details
 about the new tree.
 
+`garden plant` records the Git remotes associated with a repository.
+
+Repositories created using `git worktree` are supported by `garden plant`.
+Parent trees must be planted first before planting a child tree.
+
 
 ## garden ... [tree-query]
 

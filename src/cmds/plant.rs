@@ -5,6 +5,7 @@ use yaml_rust::yaml::Yaml;
 use super::super::cmd;
 use super::super::config;
 use super::super::errors;
+use super::super::git;
 use super::super::model;
 use super::super::path;
 use super::super::query;
@@ -95,8 +96,28 @@ fn plant_path(
         .into());
     }
 
-    // Build the tree's path
-    let tree_path: String;
+    let mut is_worktree = false;
+    let mut parent_tree_name = String::new();
+    let parent_pathbuf;
+    let worktree_details = git::worktree_details(&pathbuf)?;
+
+    // If this is a worktree child then automatically "garden plant" the parent worktree.
+    if let model::GitTreeType::Worktree(parent_path_abspath) = worktree_details.tree_type {
+        parent_pathbuf = std::path::PathBuf::from(parent_path_abspath);
+        let parent_path = path::strip_prefix_into_string(&root, &parent_pathbuf)?;
+        is_worktree = true;
+
+        parent_tree_name = match query::tree_name_from_abspath(config, &parent_pathbuf) {
+            Some(tree_name) => tree_name,
+            None => {
+                return Err(errors::GardenError::WorktreeParentNotPlantedError {
+                    parent: parent_path,
+                    tree: raw_path.into(),
+                }
+                .into())
+            }
+        };
+    }
 
     // Get a canonical tree path for comparison with the canonical root.
     let path = pathbuf.canonicalize().map_err(|err| {
@@ -128,6 +149,27 @@ fn plant_path(
             }
             entry = tree_hash.clone();
         }
+    }
+
+    // If this is a child worktree then record a "worktree" entry only.
+    if is_worktree {
+        entry.insert(
+            Yaml::String("worktree".to_string()),
+            Yaml::String(parent_tree_name),
+        );
+        entry.insert(
+            Yaml::String("branch".to_string()),
+            Yaml::String(worktree_details.branch.to_string()),
+        );
+
+        // Move the entry into the trees container
+        if let Some(tree_entry) = trees.get_mut(&key) {
+            *tree_entry = Yaml::Hash(entry);
+        } else {
+            trees.insert(key, Yaml::Hash(entry));
+        }
+
+        return Ok(());
     }
 
     let remotes_key = Yaml::String("remotes".into());
