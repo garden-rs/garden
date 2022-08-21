@@ -501,6 +501,7 @@ that match the specified tree query.</p>
 called <code>build</code> and <code>test</code>, then running <code>garden cmd treesitters build test</code>
 will run the custom <code>build</code> and <code>test</code> commands over all of the trees in
 <code>treesitters</code> group.</p>
+<h3 id="commands-1"><a class="header" href="#commands-1">Commands</a></h3>
 <p><code>garden cmd</code> and <code>garden &lt;command&gt;</code> interact with custom commands that are
 configured in the <code>commands</code> section for templates, trees, gardens,
 and the top-level scope.</p>
@@ -522,6 +523,20 @@ subsequent variables will be set according to each argument.</p>
 <pre><code># Example usage
 garden test cola -- V=1
 </code></pre>
+<h3 id="depth-first-and-breadth-first-tree-traversal"><a class="header" href="#depth-first-and-breadth-first-tree-traversal">Depth-first and Breadth-first Tree Traversal</a></h3>
+<p>The following two invocations run commands in a different order:</p>
+<pre><code># Depth-first (default)
+garden cmd treesitters build test
+
+# Breadth-first
+garden cmd --breadth-first treesitters build test
+</code></pre>
+<p>The default traversal order for commands is depth-first. This means that <em>both</em> the
+<code>build</code> and <code>test</code> commands are run on each tree in the <code>treesitters</code> group
+<em>before</em> running any commands on the next tree.</p>
+<p>The <code>-b | --breadth-first</code> option enables a breadth-first traversal. A breadth-first
+traversal runs the <code>build</code> command over <em>all</em> of the trees in the <code>treesitters</code> group
+<em>before</em> the <code>test</code> command is run over all of the trees in the same group.</p>
 <h3 id="custom-commands"><a class="header" href="#custom-commands">Custom Commands</a></h3>
 <pre><code>garden &lt;command&gt; &lt;query&gt; [&lt;query&gt;]* [-- &lt;arguments&gt;...]
 
@@ -911,6 +926,16 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, the
 latest development Git version and Git Cola ready to go for development.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v040"><a class="header" href="#v040">v0.4.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden cmd</code> learned to run commands in breadth-first order when the
+<code>-b/--breadth-first</code> option is used. Depth-first tree traversal is the default.
+The <code>garden cmd --breadth-first</code> traversal runs all commands on a tree before
+continuing on to the next tree. The default <code>garden cmd</code> depth-first traversal
+runs a command across all trees before continuing on to the next command.
+(<a href="https://github.com/davvid/garden/issues/3">#3</a>)</li>
+</ul>
 <h2 id="v030"><a class="header" href="#v030">v0.3.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>

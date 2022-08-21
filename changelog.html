@@ -177,6 +177,16 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v040"><a class="header" href="#v040">v0.4.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden cmd</code> learned to run commands in breadth-first order when the
+<code>-b/--breadth-first</code> option is used. Depth-first tree traversal is the default.
+The <code>garden cmd --breadth-first</code> traversal runs all commands on a tree before
+continuing on to the next tree. The default <code>garden cmd</code> depth-first traversal
+runs a command across all trees before continuing on to the next command.
+(<a href="https://github.com/davvid/garden/issues/3">#3</a>)</li>
+</ul>
 <h2 id="v030"><a class="header" href="#v030">v0.3.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
