@@ -52,7 +52,7 @@ pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
 }
 
 /// Convert a PopenError into a garden::errors::CommandError.
-pub fn command_error_from_popen_error(
+fn command_error_from_popen_error(
     command: String,
     popen_err: subprocess::PopenError,
 ) -> errors::CommandError {
@@ -151,7 +151,7 @@ where
 /// environment.  Resolve the path by looking for the presence of PATH
 /// and updating the command when it exists.
 
-pub fn resolve_command<S>(command: &[S], env: &[(String, String)]) -> Vec<String>
+fn resolve_command<S>(command: &[S], env: &[(String, String)]) -> Vec<String>
 where
     S: AsRef<std::ffi::OsStr>,
 {

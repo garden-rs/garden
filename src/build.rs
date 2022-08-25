@@ -3,10 +3,6 @@ use super::config;
 use super::errors;
 use super::model;
 
-pub fn command_options() -> model::CommandOptions {
-    model::CommandOptions::new()
-}
-
 pub fn context_from_path(
     path: &str,
     options: model::CommandOptions,
