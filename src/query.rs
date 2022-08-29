@@ -1,4 +1,5 @@
-use super::errors::GardenError;
+use super::errors;
+use super::eval;
 use super::model;
 use super::path;
 use super::query;
@@ -323,24 +324,25 @@ pub fn tree_context(
     config: &model::Configuration,
     tree: &str,
     garden: Option<&str>,
-) -> Result<model::TreeContext, GardenError> {
+) -> Result<model::TreeContext, errors::GardenError> {
     let mut ctx = model::TreeContext::new(0, config.get_id(), None, None);
     // TODO: grafted trees
     if let Some(context) = tree_from_name(config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
-        return Err(GardenError::TreeNotFound { tree: tree.into() });
+        return Err(errors::GardenError::TreeNotFound { tree: tree.into() });
     }
 
     if let Some(garden_name) = garden {
-        let pattern =
-            glob::Pattern::new(garden_name).map_err(|_| GardenError::GardenPatternError {
+        let pattern = glob::Pattern::new(garden_name).map_err(|_| {
+            errors::GardenError::GardenPatternError {
                 garden: garden_name.into(),
-            })?;
+            }
+        })?;
         let contexts = query::garden_trees(config, &pattern);
 
         if contexts.is_empty() {
-            return Err(GardenError::GardenNotFound {
+            return Err(errors::GardenError::GardenNotFound {
                 garden: garden_name.into(),
             });
         }
@@ -355,7 +357,7 @@ pub fn tree_context(
         }
 
         if !found {
-            return Err(GardenError::InvalidGardenArgument {
+            return Err(errors::GardenError::InvalidGardenArgument {
                 tree: tree.into(),
                 garden: garden_name.into(),
             });
@@ -370,7 +372,7 @@ pub fn find_tree(
     id: model::ConfigId,
     tree: &str,
     garden: Option<&str>,
-) -> Result<model::TreeContext, GardenError> {
+) -> Result<model::TreeContext, errors::GardenError> {
     {
         let config = app.get_config(id);
         if let Some(graft_name) = syntax::graft_basename(tree) {
@@ -387,4 +389,23 @@ pub fn find_tree(
 
     let config = app.get_config(id);
     tree_context(config, tree, garden)
+}
+
+/// Return a path that that is either the tree's path or the tree's shared worktree path.
+pub fn shared_worktree_path(config: &model::Configuration, ctx: &model::TreeContext) -> String {
+    let tree = &config.trees[ctx.tree];
+    if tree.is_worktree {
+        let worktree = eval::tree_value(config, tree.worktree.get_expr(), ctx.tree, ctx.garden);
+        if let Some(parent_ctx) = query::tree_from_name(config, &worktree, ctx.garden, ctx.group) {
+            if let Ok(path) = config.trees[parent_ctx.tree].path_as_ref() {
+                return path.to_string();
+            }
+        }
+    }
+
+    if let Ok(path) = tree.path_as_ref() {
+        return path.to_string();
+    }
+
+    tree.get_name().to_string()
 }
