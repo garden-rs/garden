@@ -12,21 +12,9 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let mut commands = Vec::new();
     let mut arguments = Vec::new();
     parse_args(&mut app.options, &mut query, &mut commands, &mut arguments);
-
-    let quiet = app.options.quiet;
-    let verbose = app.options.verbose;
     let breadth_first = app.options.breadth_first;
-    let keep_going = app.options.keep_going;
-    let exit_status = cmd(
-        app,
-        quiet,
-        verbose,
-        breadth_first,
-        keep_going,
-        &query,
-        &commands,
-        &arguments,
-    )?;
+
+    let exit_status = cmd(app, &query, &commands, &arguments, breadth_first)?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
@@ -92,13 +80,7 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
     let mut arguments = Vec::new();
     parse_args_custom(command, &mut app.options, &mut queries, &mut arguments);
 
-    let quiet = app.options.quiet;
-    let verbose = app.options.verbose;
-    let keep_going = app.options.keep_going;
-    cmds(
-        app, quiet, verbose, keep_going, command, &queries, &arguments,
-    )
-    .map_err(|err| err)
+    cmds(app, command, &queries, &arguments)
 }
 
 /// Parse custom command arguments.
@@ -159,18 +141,19 @@ fn parse_args_custom(
 
 pub fn cmd(
     app: &mut model::ApplicationContext,
-    quiet: bool,
-    verbose: u8,
-    breadth_first: bool,
-    keep_going: bool,
     query: &str,
     commands: &[String],
     arguments: &[String],
+    breadth_first: bool,
 ) -> Result<i32> {
     // Mutable scope for app.get_root_config_mut()
     let config = app.get_root_config_mut();
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
+
+    let quiet = app.options.quiet;
+    let verbose = app.options.verbose;
+    let keep_going = app.options.keep_going;
 
     if breadth_first {
         run_cmd_breadth_first(
@@ -188,7 +171,7 @@ pub fn run_cmd_breadth_first(
     quiet: bool,
     verbose: u8,
     keep_going: bool,
-    contexts: &Vec<model::TreeContext>,
+    contexts: &[model::TreeContext],
     commands: &[String],
     arguments: &[String],
 ) -> Result<i32> {
@@ -277,7 +260,7 @@ pub fn run_cmd_depth_first(
     quiet: bool,
     verbose: u8,
     keep_going: bool,
-    contexts: &Vec<model::TreeContext>,
+    contexts: &[model::TreeContext],
     commands: &[String],
     arguments: &[String],
 ) -> Result<i32> {
@@ -363,9 +346,6 @@ pub fn run_cmd_depth_first(
 /// Run cmd() over a Vec of tree queries
 pub fn cmds(
     app: &mut model::ApplicationContext,
-    quiet: bool,
-    verbose: u8,
-    keep_going: bool,
     command: &str,
     queries: &[String],
     arguments: &[String],
@@ -373,12 +353,10 @@ pub fn cmds(
     let mut exit_status: i32 = 0;
 
     let commands: Vec<String> = vec![command.to_string()];
+    let keep_going = app.options.keep_going;
 
     for query in queries {
-        let status = cmd(
-            app, quiet, verbose, true, keep_going, query, &commands, arguments,
-        )
-        .unwrap_or(errors::EX_IOERR);
+        let status = cmd(app, query, &commands, arguments, true).unwrap_or(errors::EX_IOERR);
         if status != 0 {
             exit_status = status;
             if !keep_going {
