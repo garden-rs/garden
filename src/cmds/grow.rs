@@ -1,4 +1,5 @@
 use anyhow::Result;
+use std::collections::HashSet;
 
 use super::super::cmd;
 use super::super::errors;
@@ -18,9 +19,10 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let verbose = app.options.verbose;
 
     let mut exit_status = errors::EX_OK;
+    let mut configured_worktrees: HashSet<String> = HashSet::new();
     let config = app.get_root_config_mut();
     for query in &queries {
-        let status = grow(config, quiet, verbose, query)?;
+        let status = grow(config, &mut configured_worktrees, quiet, verbose, query)?;
         if status != errors::EX_OK {
             exit_status = status;
         }
@@ -55,6 +57,7 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
 /// Create/update trees in the evaluated tree query.
 pub fn grow(
     config: &mut model::Configuration,
+    configured_worktrees: &mut HashSet<String>,
     quiet: bool,
     verbose: u8,
     query: &str,
@@ -63,7 +66,7 @@ pub fn grow(
     let mut exit_status: i32 = 0;
 
     for ctx in &contexts {
-        let status = grow_tree_from_context(config, ctx, quiet, verbose)?;
+        let status = grow_tree_from_context(config, configured_worktrees, ctx, quiet, verbose)?;
         if status != 0 {
             // Return the last non-zero exit status.
             exit_status = status;
@@ -77,6 +80,7 @@ pub fn grow(
 /// Trees without remotes are silently ignored.
 fn grow_tree_from_context(
     config: &model::Configuration,
+    configured_worktrees: &mut HashSet<String>,
     ctx: &model::TreeContext,
     quiet: bool,
     verbose: u8,
@@ -95,7 +99,14 @@ fn grow_tree_from_context(
     })?;
 
     if pathbuf.exists() {
-        return update_tree_from_context(config, ctx, &pathbuf, quiet, verbose);
+        return update_tree_from_context(
+            config,
+            configured_worktrees,
+            ctx,
+            &pathbuf,
+            quiet,
+            verbose,
+        );
     } else {
         if config.trees[ctx.tree].is_symlink {
             let status = grow_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
@@ -106,7 +117,13 @@ fn grow_tree_from_context(
         }
 
         if config.trees[ctx.tree].is_worktree {
-            return grow_tree_from_context_as_worktree(config, ctx, quiet, verbose);
+            return grow_tree_from_context_as_worktree(
+                config,
+                configured_worktrees,
+                ctx,
+                quiet,
+                verbose,
+            );
         }
 
         if config.trees[ctx.tree].remotes.is_empty() {
@@ -163,7 +180,8 @@ fn grow_tree_from_context(
         }
     }
 
-    let status = update_tree_from_context(config, ctx, &pathbuf, quiet, verbose)?;
+    let status =
+        update_tree_from_context(config, configured_worktrees, ctx, &pathbuf, quiet, verbose)?;
     if status != 0 {
         exit_status = status;
     }
@@ -189,6 +207,7 @@ fn print_command_str(cmd: &str) {
 /// Add remotes that do not already exist and synchronize .git/config values.
 fn update_tree_from_context(
     config: &model::Configuration,
+    configured_worktrees: &mut HashSet<String>,
     ctx: &model::TreeContext,
     path: &std::path::Path,
     _quiet: bool,
@@ -198,6 +217,14 @@ fn update_tree_from_context(
 
     // Existing symlinks require no further processing.
     if config.trees[ctx.tree].is_symlink {
+        return Ok(exit_status);
+    }
+
+    // Repositories created using "git worktree" share a common Git configuration
+    // and only need to be configured once. Skip configuring the repository
+    // if we've already processed it.
+    let shared_worktree_path = query::shared_worktree_path(config, ctx);
+    if !configured_worktrees.insert(shared_worktree_path) {
         return Ok(exit_status);
     }
 
@@ -274,6 +301,7 @@ fn update_tree_from_context(
 /// Grow the parent worktree first and then create our worktree.
 fn grow_tree_from_context_as_worktree(
     config: &model::Configuration,
+    configured_worktrees: &mut HashSet<String>,
     ctx: &model::TreeContext,
     quiet: bool,
     verbose: u8,
@@ -291,7 +319,8 @@ fn grow_tree_from_context_as_worktree(
             }
         })?;
 
-    exit_status = grow_tree_from_context(config, &parent_ctx, quiet, verbose)?;
+    exit_status =
+        grow_tree_from_context(config, configured_worktrees, &parent_ctx, quiet, verbose)?;
     if exit_status != 0 {
         return Err(errors::GardenError::WorktreeParentCreationError {
             tree: tree.get_name().into(),
