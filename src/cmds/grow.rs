@@ -135,25 +135,29 @@ fn grow_tree_from_context(
         let url = eval::tree_value(config, remote.get_expr(), ctx.tree, ctx.garden);
 
         // git clone [options] <url> <path>
-        let mut command: Vec<String> = vec!["git".into(), "clone".into()];
+        let mut cmd: Vec<&str> = ["git", "clone"].to_vec();
 
         // [options]
         //
         // "git clone --bare" clones bare repositories.
         if config.trees[ctx.tree].is_bare_repository {
-            command.push("--bare".into());
+            cmd.push("--bare");
         }
 
         // "git clone --branch=name" clones the named branch.
         let branch_var = config.trees[ctx.tree].branch.clone();
         let branch = eval::tree_value(config, branch_var.get_expr(), ctx.tree, ctx.garden);
+        let branch_opt;
         if !branch.is_empty() {
-            command.push(format!("--branch={}", branch));
+            branch_opt = format!("--branch={}", branch);
+            cmd.push(&branch_opt);
         }
         // "git clone --depth=N" creates shallow clones with truncated history.
         let clone_depth = config.trees[ctx.tree].clone_depth;
+        let clone_depth_opt;
         if clone_depth > 0 {
-            command.push(format!("--depth={}", clone_depth));
+            clone_depth_opt = format!("--depth={}", clone_depth);
+            cmd.push(&clone_depth_opt);
         }
         // "git clone --depth=N" clones a single branch by default.
         // We generally want all branches available in our clones so we default to
@@ -161,19 +165,19 @@ fn grow_tree_from_context(
         // all branches available by default.
         let is_single_branch = config.trees[ctx.tree].is_single_branch;
         if is_single_branch {
-            command.push("--single-branch".into());
+            cmd.push("--single-branch");
         } else {
-            command.push("--no-single-branch".into());
+            cmd.push("--no-single-branch");
         }
 
         // <url> <path>
-        command.push(url);
-        command.push(path.to_string());
+        cmd.push(&url);
+        cmd.push(&path);
         if verbose > 1 {
-            print_quoted_command(&command);
+            print_quoted_command(&cmd);
         }
 
-        let exec = cmd::exec_cmd(&command);
+        let exec = cmd::exec_cmd(&cmd);
         let status = cmd::status(exec.join());
         if status != 0 {
             exit_status = status;
@@ -189,10 +193,10 @@ fn grow_tree_from_context(
 }
 
 /// Print a command that will be executed.
-fn print_quoted_command(command: &[String]) {
+fn print_quoted_command(command: &[&str]) {
     let mut quoted_args: Vec<String> = Vec::new();
     for cmd in command {
-        let quoted = shlex::quote(cmd.as_str());
+        let quoted = shlex::quote(cmd);
         quoted_args.push(quoted.as_ref().to_string());
     }
 
@@ -332,31 +336,35 @@ fn grow_tree_from_context_as_worktree(
     let tree_path = tree.path_as_ref()?;
     let parent_path = config.trees[parent_ctx.tree].path_as_ref()?;
 
-    let mut command: Vec<String> = vec!["git".into(), "worktree".into(), "add".into()];
+    let mut cmd: Vec<&str> = ["git", "worktree", "add"].to_vec();
     if !branch.is_empty() {
-        command.push("--track".into());
-        command.push("-b".into());
-        command.push(branch.clone());
+        cmd.push("--track");
+        cmd.push("-b");
+        cmd.push(&branch);
     }
 
     // The parent_path is the base path from which we'll execute "git worktree add".
     // Compute a relative path to the child.
+    let relative_path_str;
     if let Some(relative_path) = pathdiff::diff_paths(tree_path, parent_path) {
-        command.push(relative_path.to_string_lossy().into());
+        relative_path_str = relative_path.to_string_lossy().to_string();
+        cmd.push(&relative_path_str);
     } else {
-        command.push(tree_path.into());
+        cmd.push(tree_path);
     }
 
+    let remote_branch;
     if !branch.is_empty() {
         // TODO: Support tree.<tree>.branches.<branch-name>.upstream
         // to generalize the remote branch name instead of hard-coding "origin/".
-        command.push(format!("origin/{}", branch));
+        remote_branch = format!("origin/{}", branch);
+        cmd.push(&remote_branch);
     }
 
     if verbose > 1 {
-        print_quoted_command(&command);
+        print_quoted_command(&cmd);
     }
-    let exec = cmd::exec_in_dir(&command, &parent_path);
+    let exec = cmd::exec_in_dir(&cmd, &parent_path);
     exit_status = cmd::status(exec.join());
 
     if exit_status != 0 {
