@@ -43,7 +43,7 @@ doc::
 
 
 # Installation
-# make DESDIR=/tmp/stage prefix=/usr/local install
+# make DESTDIR=/tmp/stage prefix=/usr/local install
 .PHONY: install
 install::
 	$(CARGO) install --path . --root '$(DESTDIR)$(prefix)'
