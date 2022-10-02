@@ -28,7 +28,7 @@ argparse = "0.2"
 atty = "0.2"
 dirs = "4.0"
 glob = "0.3"
-indextree = "4.4"
+indextree = "4.3.1"
 pathdiff = "0.2.1"
 shellexpand = "2.1"
 shlex = "1.1"
@@ -39,8 +39,8 @@ yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 yansi = "0.5"
 
 [dev-dependencies]
-assert_cmd = "0.2"
-function_name = "0.3"
+assert_cmd = "2.0.2"
+function_name = "0.2.0"
 
 [lib]
 name = "garden"
