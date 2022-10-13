@@ -796,11 +796,7 @@ TREE_NAME           -   current tree name
 TREE_PATH           -   current tree path
 </code></pre>
 <h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
-<p>The &quot;environment&quot; block defines variables that are stored in the environment.
-Names with an equals sign (<code>=</code>) suffix are treated as &quot;set&quot; operations and
-stored in the environment as-is.  Otherwise, the variable values are prepended
-to using colons (<code>:</code>).  A plus sign (<code>+</code>) suffix in the name append to a
-variable instead of prepending.</p>
+<p>The &quot;environment&quot; block defines variables that are stored in the environment.</p>
 <p>Environment variables are resolved in the same order as the garden variables:
 global scope, tree scope, and garden scope.  This allows gardens to
 prepend/append variables after a tree, thus allowing for customization
@@ -808,13 +804,32 @@ of behavior from the garden scope.</p>
 <p>Environment variables are resolved after garden variables.  This allows
 the use of garden variables when defining environment variable values.</p>
 <p>Environment variable names can use garden <code>${variable}</code> syntax when defining
-their name, for example,</p>
+both their name and values.</p>
+<p>Values in environment blocks prepend to the named environment variable.</p>
+<pre><code>trees:
+  foo:
+    environment:
+      PATH: ${TREE_PATH}/bin
+</code></pre>
+<p>The example above prepends the <code>foo/bin</code> directory to the colon (<code>:</code>)-delimeted <code>PATH</code>
+environment variable.</p>
+<p>Names with an equals sign (<code>=</code>) suffix are treated as &quot;store&quot; operations and are
+stored into the environment, fully replacing any pre-existing values.</p>
 <pre><code>trees:
   foo:
     environment:
       ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 </code></pre>
-<p>exports a variable called <code>foo_LOCATION</code> with the location of the <code>foo</code> tree.</p>
+<p>The example above exports a variable called <code>foo_LOCATION</code> with the location of the tree.
+If <code>foo_LOCATION</code> is already defined then it its value is replaced.</p>
+<p>A plus sign (<code>+</code>) suffix in the name append to a variable instead of prepending.</p>
+<pre><code>trees:
+  foo:
+    environment:
+      PATH+: ${TREE_PATH}/bin
+</code></pre>
+<p>The example above appends to the <code>PATH</code> environment variable.
+Note the <code>+</code> suffix after <code>PATH</code>.</p>
 <h3 id="os-environment-variables"><a class="header" href="#os-environment-variables">OS Environment Variables</a></h3>
 <p>OS-level environment variables that are present in garden's runtime
 environment can be referenced using garden <code>${variable}</code> expression syntax.
