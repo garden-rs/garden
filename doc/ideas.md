@@ -21,14 +21,13 @@ This reader will have to be changed to first parse the includes in the
 listed order copy their contents into the main configuration.
 This seems like this should be possible to attain through refactoring that
 allows the configuration to be iteratively updated by a config reader.
-Allow "graft" gardens by including the garden.yaml from an external garden.yaml
-and placings its tree, groups, and gardens in a "custom::" graft namespace.
-
 ## Grafts (WIP)
 
 Make it possible to graft configuration from one graden file into another.
-Trees, variables and groups are available under a "<graft>::" namespace
-that can be evaluated from the scope of the main garden file.
+Create "grafted" gardens by including an external garden.yaml
+and placings its trees, variables and groups are available under a
+`<graft>::` namespace that can be evaluated from the scope of the main garden file.
+
 Grafts are nestable, as a config inside a namespace can itself have grafts.
 
     grafts:
@@ -71,7 +70,7 @@ recorded into the parent Configuration's graft entry.
 
 - Stategy for Tree contexts
 
-When an Option<NodeId> is present in the tree context then the value must
+When an `Option<NodeId>` is present in the tree context then the value must
 be evaluated using the Configuration corresponding to the NodeId.
 The NodeId looks up the Configurtion for that context.
 
