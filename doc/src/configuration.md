@@ -98,10 +98,6 @@ when constructing values for variables, commands, and paths.
 ## Environment Variables
 
 The "environment" block defines variables that are stored in the environment.
-Names with an equals sign (`=`) suffix are treated as "set" operations and
-stored in the environment as-is.  Otherwise, the variable values are prepended
-to using colons (`:`).  A plus sign (`+`) suffix in the name append to a
-variable instead of prepending.
 
 Environment variables are resolved in the same order as the garden variables:
 global scope, tree scope, and garden scope.  This allows gardens to
@@ -112,14 +108,38 @@ Environment variables are resolved after garden variables.  This allows
 the use of garden variables when defining environment variable values.
 
 Environment variable names can use garden `${variable}` syntax when defining
-their name, for example,
+both their name and values.
+
+Values in environment blocks prepend to the named environment variable.
+
+    trees:
+      foo:
+        environment:
+          PATH: ${TREE_PATH}/bin
+
+The example above prepends the `foo/bin` directory to the colon (`:`)-delimeted `PATH`
+environment variable.
+
+Names with an equals sign (`=`) suffix are treated as "store" operations and are
+stored into the environment, fully replacing any pre-existing values.
 
     trees:
       foo:
         environment:
           ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 
-exports a variable called `foo_LOCATION` with the location of the `foo` tree.
+The example above exports a variable called `foo_LOCATION` with the location of the tree.
+If `foo_LOCATION` is already defined then it its value is replaced.
+
+A plus sign (`+`) suffix in the name append to a variable instead of prepending.
+
+    trees:
+      foo:
+        environment:
+          PATH+: ${TREE_PATH}/bin
+
+The example above appends to the `PATH` environment variable.
+Note the `+` suffix after `PATH`.
 
 
 ### OS Environment Variables
