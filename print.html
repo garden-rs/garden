@@ -594,6 +594,48 @@ query string then that tree's directory will be used when opening the shell.
 The optional tree argument is not needed for the case where a garden
 and tree share a name -- garden will chdir into that same-named tree when
 creating the shell.</p>
+<h2 id="garden-prune"><a class="header" href="#garden-prune">garden prune</a></h2>
+<pre><code>garden prune [options] [&lt;subdirs&gt;...]
+</code></pre>
+<p>Traverse the filesystem and interactively delete any repositories that are
+not referenced by the garden file.</p>
+<p>This command is intended to cleanup a garden-managed directory. Its intended
+usage is to delete repositories that were created (eg. via <code>garden grow</code>) and
+have since been removed from your version-controlled garden configuration.</p>
+<p><strong>Warning</strong>: <code>garden prune</code> is a dangerous command and must be run with care.
+<code>garden prune</code> deletes repositories and all of their files (including the <code>.git</code> storage)!</p>
+<p>The following options are supported.</p>
+<pre><code>--jobs &lt;jobs&gt;
+</code></pre>
+<p>The prune process runs in parallel across multiple cores. All cores are used by default.
+The <code>--jobs</code> option limits the number of cores to the specified number of jobs.</p>
+<pre><code>--min-depth &lt;minimum-depth&gt;
+--max-depth &lt;maximum-depth&gt;
+--exact-depth &lt;exact-depth&gt;
+</code></pre>
+<p>The cleanup process can be limited to specific traversal depths. The filesystem is
+traversed with no limits by default.</p>
+<p>Specifying a minimum depth will not remove repositories shallower than the specified
+depth. <code>--min-depth 1</code> will not remove repositories in the same directory
+as the garden file.</p>
+<p>Specifying a maximum depth will not remove repositories deeper than the specified
+depth. <code>--max-depth 0</code> will not remove repositories in subdirectories below
+the directory containing the graden file.</p>
+<pre><code>--no-prompt
+</code></pre>
+<p>The <code>garden prune</code> command interactively prompts before removing each repository.
+The prompt looks like the following:</p>
+<pre><code># /home/user/src/example
+Delete the &quot;example&quot; repository?
+WARNING: &quot;all&quot; deletes &quot;example&quot; and ALL subsequent repositories!
+Choices: yes, no, all, quit [y,n,all,q]?
+</code></pre>
+<p>Entering <code>y</code> (or <code>yes</code>) at the prompt will delete repository and all of its files.</p>
+<p>Entering <code>n</code> (or <code>no</code>) at the prompt will skip and not remove the repository.</p>
+<p>Entering <code>q</code> (or <code>quit</code>) will exit <code>git prune</code> without deleting the repository.</p>
+<p>Entering <code>all</code> will remove the repository and all subsequent repositories.</p>
+<p>Using the &quot;all&quot; option is dangerous and proceeds without further prompts!
+Be careful.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
 <p>Garden is configured through a YAML configuration file, typically called
 &quot;garden.yaml&quot;.</p>
@@ -944,12 +986,18 @@ latest development Git version and Git Cola ready to go for development.</p>
 <h2 id="v040"><a class="header" href="#v040">v0.4.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
-<li><code>garden cmd</code> learned to run commands in breadth-first order when the
+<li>
+<p><code>garden prune</code> was added for removing orphaned Git repositories.
+(<a href="https://github.com/davvid/garden/issues/4">#4</a>)</p>
+</li>
+<li>
+<p><code>garden cmd</code> learned to run commands in breadth-first order when the
 <code>-b/--breadth-first</code> option is used. Depth-first tree traversal is the default.
 The <code>garden cmd --breadth-first</code> traversal runs all commands on a tree before
 continuing on to the next tree. The default <code>garden cmd</code> depth-first traversal
 runs a command across all trees before continuing on to the next command.
-(<a href="https://github.com/davvid/garden/issues/3">#3</a>)</li>
+(<a href="https://github.com/davvid/garden/issues/3">#3</a>)</p>
+</li>
 </ul>
 <h2 id="v030"><a class="header" href="#v030">v0.3.0</a></h2>
 <p><strong>Features</strong>:</p>
