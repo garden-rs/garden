@@ -31,42 +31,53 @@ fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
         let mut parser = argparse::ArgumentParser::new();
         parser.set_description("garden prune - Remove unreferenced Git repositories");
 
-        parser.refer(&mut options.num_jobs).add_option(
-            &["-j", "--jobs"],
-            argparse::Parse,
-            "Specify the number of jobs to run concurrently.",
-        );
+        parser
+            .refer(&mut options.num_jobs)
+            .metavar("<N>")
+            .add_option(
+                &["-j", "--jobs"],
+                argparse::Parse,
+                "Number of parallel jobs, defaults to # of CPUs",
+            );
 
-        parser.refer(&mut options.max_depth).add_option(
-            &["-d", "--max-depth"],
-            argparse::Parse,
-            "Limit the directory traversal to the given depth. \
-            The traversal depth is unlimited by default.",
-        );
+        parser
+            .refer(&mut options.max_depth)
+            .metavar("<depth>")
+            .add_option(
+                &["-d", "--max-depth"],
+                argparse::Parse,
+                "Set maximum prune depth (default: none)",
+            );
 
-        parser.refer(&mut options.min_depth).add_option(
-            &["--min-depth"],
-            argparse::Parse,
-            "Only show search results starting at the given depth.",
-        );
+        parser
+            .refer(&mut options.min_depth)
+            .metavar("<depth>")
+            .add_option(
+                &["--min-depth"],
+                argparse::Parse,
+                "Only prune starting at the given depth",
+            );
 
-        parser.refer(&mut options.exact_depth).add_option(
-            &["--exact-depth"],
-            argparse::Parse,
-            "Only show search results at the exact given depth. \
-            This is an alias for '--min-depth <depth> --max-depth <depth>'.",
-        );
+        parser
+            .refer(&mut options.exact_depth)
+            .metavar("<depth>")
+            .add_option(
+                &["--exact-depth"],
+                argparse::Parse,
+                "Only prune at the exact depth. \
+                This is an alias for '--min-depth <depth> --max-depth <depth>'",
+            );
 
         parser.refer(&mut options.no_prompt).add_option(
             &["--no-prompt"],
             argparse::StoreTrue,
-            "Prune all repositories without prompting. (DANGEROUS!)",
+            "Prune all repositories without prompting (DANGEROUS!)",
         );
 
         parser.refer(paths).add_argument(
             "paths",
             argparse::List,
-            "Limit pruning to the specified subdirectories.",
+            "Limit pruning to the specified subdirectories",
         );
 
         if let Err(err) = parser.parse(

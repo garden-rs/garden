@@ -26,7 +26,7 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
     ap.refer(query).add_argument(
         "query",
         argparse::List,
-        "Gardens/Groups/Trees to exec (tree queries).",
+        "Tree queries for the gardens, groups or trees to inspect",
     );
 
     options.args.insert(0, "garden inspect".into());

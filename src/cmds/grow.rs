@@ -42,7 +42,7 @@ fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
     ap.refer(queries).required().add_argument(
         "queries",
         argparse::List,
-        "gardens/groups/trees to grow (tree queries)",
+        "Tree queries for the gardens, groups or trees to grow",
     );
 
     if let Err(err) = ap.parse(

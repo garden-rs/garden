@@ -78,13 +78,13 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.filename_str).add_option(
             &["-c", "--config"],
             argparse::Store,
-            "Set the config file to use.",
+            "Set the config file to use",
         );
 
         ap.refer(&mut options.chdir).add_option(
             &["-C", "--chdir"],
             argparse::Store,
-            "Change directories before searching for garden files.",
+            "Change directories before searching for garden files",
         );
 
         ap.refer(&mut options.color_mode)
@@ -93,31 +93,31 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.debug).add_option(
             &["-d", "--debug"],
             argparse::Collect,
-            "Increase verbosity for a debug category.",
+            "Increase verbosity for a debug category",
         );
 
         ap.refer(&mut options.root).add_option(
             &["-r", "--root"],
             argparse::Store,
-            "Set the garden tree root (${GARDEN_ROOT}).",
+            "Set the garden tree root (default: ${GARDEN_ROOT})",
         );
 
         ap.refer(&mut options.variables).add_option(
             &["-s", "--set"],
             argparse::Collect,
-            "Set variables using name=value tokens.",
+            "Set variables using 'name=value' expressions",
         );
 
         ap.refer(&mut options.verbose).add_option(
             &["-v", "--verbose"],
             argparse::IncrBy(1),
-            "Increase verbosity level (default 0).",
+            "Increase verbosity level (default: 0)",
         );
 
         ap.refer(&mut options.quiet).add_option(
             &["-q", "--quiet"],
             argparse::StoreTrue,
-            "Be quiet.",
+            "Be quiet",
         );
 
         ap.refer(&mut options.subcommand).required().add_argument(
@@ -127,7 +127,7 @@ fn parse_args() -> model::CommandOptions {
         );
 
         ap.refer(&mut options.args)
-            .add_argument("arguments", argparse::List, "Command arguments.");
+            .add_argument("arguments", argparse::List, "Command arguments");
 
         ap.parse_args_or_exit();
     }

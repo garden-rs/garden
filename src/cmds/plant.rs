@@ -62,12 +62,12 @@ fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &
     ap.refer(output).add_option(
         &["-o", "--output"],
         argparse::Store,
-        "File to write (defaults to the garden file).",
+        "File to write (default: garden.yaml)",
     );
 
     ap.refer(paths)
         .required()
-        .add_argument("paths", argparse::List, "Trees to plant.");
+        .add_argument("paths", argparse::List, "Trees to plant");
 
     options.args.insert(0, "garden plant".into());
     cmd::parse_args(ap, options.args.to_vec());

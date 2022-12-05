@@ -43,19 +43,21 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
         ap.refer(&mut init_options.force).add_option(
             &["-f", "--force"],
             argparse::StoreTrue,
-            "Overwrite existing config files.",
+            "Overwrite existing config files",
         );
 
-        ap.refer(&mut init_options.root).add_option(
-            &["-r", "--root"],
-            argparse::Store,
-            "Specify the garden root. Defaults to ${GARDEN_CONFIG_DIR}.",
-        );
+        ap.refer(&mut init_options.root)
+            .metavar("<path>")
+            .add_option(
+                &["-r", "--root"],
+                argparse::Store,
+                "Set the garden root path (default: ${GARDEN_CONFIG_DIR})",
+            );
 
         ap.refer(&mut init_options.filename).add_argument(
             "filename",
             argparse::Store,
-            "Config file to write. Defaults to garden.yaml.",
+            "Config file to write (default: garden.yaml)",
         );
 
         options.args.insert(0, "garden init".into());

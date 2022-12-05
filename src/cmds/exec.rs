@@ -30,13 +30,13 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut String, command: 
     ap.refer(query).required().add_argument(
         "query",
         argparse::Store,
-        "Gardens/Groups/Trees to exec (tree query).",
+        "Tree query for the gardens, groups or trees to run the command",
     );
 
     ap.refer(command).required().add_argument(
         "command",
         argparse::List,
-        "Command to run over resolved trees.",
+        "Command to run in the resolved tree(s)",
     );
 
     options.args.insert(0, "garden exec".into());
