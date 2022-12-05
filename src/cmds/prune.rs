@@ -24,7 +24,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 /// Parse "garden prune" arguments.
 
 fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden grow".into());
+    options.args.insert(0, "garden prune".into());
 
     // Mutable scope for parser.
     {
