@@ -2,7 +2,6 @@
 name = "garden-tools"
 version = "0.3.0"
 edition = "2021"
-
 description = """
 Garden Weaves Git Trees
 
@@ -16,11 +15,15 @@ categories = [
     "development-tools",
     "development-tools::build-utils",
 ]
-
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/davvid/garden"
+homepage = "https://davvid.github.io/garden/"
+documentation = "https://docs.rs/garden-tools/latest/garden/"
+repository = "https://github.com/davvid/garden"
 authors = ["David Aguilar <davvid@gmail.com>"]
+
+[badges]
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 anyhow = "1.0"
