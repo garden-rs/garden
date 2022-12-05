@@ -29,30 +29,30 @@ fn parse_args(
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
-        ap.set_description("garden cmd - run custom commands over gardens");
+        ap.set_description("garden cmd - Run custom commands over gardens");
 
         ap.refer(&mut options.breadth_first).add_option(
             &["-b", "--breadth-first"],
             argparse::StoreTrue,
-            "run a command in all trees before running the next command",
+            "Run a command in all trees before running the next command.",
         );
 
         ap.refer(&mut options.keep_going).add_option(
             &["-k", "--keep-going"],
             argparse::StoreTrue,
-            "continue to the next tree when errors occur",
+            "Continue to the next tree when errors occur.",
         );
 
         ap.refer(query).required().add_argument(
             "query",
             argparse::Store,
-            "gardens/groups/trees to exec (tree query)",
+            "Gardens/Groups/Trees to exec (tree query).",
         );
 
         ap.refer(&mut commands_and_args).required().add_argument(
             "commands",
             argparse::List,
-            "commands to run over resolved trees",
+            "Commands to run over resolved trees.",
         );
 
         options.args.insert(0, "garden cmd".into());
@@ -93,18 +93,18 @@ fn parse_args_custom(
     let mut queries_and_arguments: Vec<String> = Vec::new();
     let mut ap = argparse::ArgumentParser::new();
     ap.silence_double_dash(false);
-    ap.set_description("garden cmd - run custom commands over gardens");
+    ap.set_description("garden cmd - Run custom commands over gardens");
 
     ap.refer(&mut options.keep_going).add_option(
         &["-k", "--keep-going"],
         argparse::StoreTrue,
-        "continue to the next tree when errors occur",
+        "Continue to the next tree when errors occur.",
     );
 
     ap.refer(&mut queries_and_arguments).add_argument(
         "queries",
         argparse::List,
-        "gardens/groups/trees to exec (tree queries)",
+        "Gardens/Groups/Trees to exec (tree queries).",
     );
 
     options.args.insert(0, format!("garden {}", command));

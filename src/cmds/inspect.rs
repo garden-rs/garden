@@ -21,12 +21,12 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 /// Parse "inspect" arguments.
 fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
     let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("garden inspect - query tree status");
+    ap.set_description("garden inspect - Query tree status");
 
     ap.refer(query).add_argument(
         "query",
         argparse::List,
-        "gardens/groups/trees to exec (tree queries)",
+        "Gardens/Groups/Trees to exec (tree queries).",
     );
 
     options.args.insert(0, "garden inspect".into());

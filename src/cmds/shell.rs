@@ -73,16 +73,16 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 /// Parse "shell" arguments.
 fn parse_args(options: &mut model::CommandOptions, query: &mut String, tree: &mut String) {
     let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("garden shell - open a shell in a garden environment");
+    ap.set_description("garden shell - Open a shell in a garden environment");
 
     ap.refer(query).required().add_argument(
         "query",
         argparse::Store,
-        "query for trees to build an environment",
+        "Query for trees to build an environment.",
     );
 
     ap.refer(tree)
-        .add_argument("tree", argparse::Store, "tree to chdir into");
+        .add_argument("tree", argparse::Store, "Tree to chdir into.");
 
     options.args.insert(0, "garden shell".into());
     cmd::parse_args(ap, options.args.to_vec());

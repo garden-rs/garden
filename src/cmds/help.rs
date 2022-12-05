@@ -14,7 +14,7 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
     let mut cmd_name = String::new();
     {
         let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden help - command documentation");
+        ap.set_description("garden help - Display command documentation");
 
         ap.refer(&mut cmd_name).add_argument(
             "command",

@@ -66,24 +66,24 @@ fn cmd_main() -> Result<()> {
 
 fn parse_args() -> model::CommandOptions {
     let color_names = model::ColorMode::names();
-    let color_help = format!("set color mode {{{}}}", color_names);
+    let color_help = format!("Set color mode {{{}}}", color_names);
 
     let mut options = model::CommandOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden - cultivate git trees");
+        ap.set_description("garden - Cultivate git trees");
         ap.stop_on_first_argument(true);
 
         ap.refer(&mut options.filename_str).add_option(
             &["-c", "--config"],
             argparse::Store,
-            "set the config file to use",
+            "Set the config file to use.",
         );
 
         ap.refer(&mut options.chdir).add_option(
             &["-C", "--chdir"],
             argparse::Store,
-            "chdir before searching for configuration",
+            "Change directories before searching for garden files.",
         );
 
         ap.refer(&mut options.color_mode)
@@ -92,31 +92,31 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.debug).add_option(
             &["-d", "--debug"],
             argparse::Collect,
-            "increase verbosity for a debug category",
+            "Increase verbosity for a debug category.",
         );
 
         ap.refer(&mut options.root).add_option(
             &["-r", "--root"],
             argparse::Store,
-            "set the garden tree root (${GARDEN_ROOT})",
+            "Set the garden tree root (${GARDEN_ROOT}).",
         );
 
         ap.refer(&mut options.variables).add_option(
             &["-s", "--set"],
             argparse::Collect,
-            "set variables using name=value tokens",
+            "Set variables using name=value tokens.",
         );
 
         ap.refer(&mut options.verbose).add_option(
             &["-v", "--verbose"],
             argparse::IncrBy(1),
-            "increase verbosity level (default 0)",
+            "Increase verbosity level (default 0).",
         );
 
         ap.refer(&mut options.quiet).add_option(
             &["-q", "--quiet"],
             argparse::StoreTrue,
-            "be quiet",
+            "Be quiet.",
         );
 
         ap.refer(&mut options.subcommand).required().add_argument(
@@ -126,7 +126,7 @@ fn parse_args() -> model::CommandOptions {
         );
 
         ap.refer(&mut options.args)
-            .add_argument("arguments", argparse::List, "command arguments");
+            .add_argument("arguments", argparse::List, "Command arguments.");
 
         ap.parse_args_or_exit();
     }

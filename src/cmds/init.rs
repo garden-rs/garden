@@ -32,32 +32,30 @@ pub fn main(options: &mut model::CommandOptions) -> Result<()> {
     let mut init_options = InitOptions::default();
     {
         let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden init - create an empty garden.yaml");
+        ap.set_description("garden init - Create an empty garden.yaml");
 
         ap.refer(&mut init_options.global).add_option(
             &["--global"],
             argparse::StoreTrue,
-            "use the user-wide configuration directory
-                        (~/.config/garden/garden.yaml)",
+            "Use the user-wide configuration directory (~/.config/garden/garden.yaml)",
         );
 
         ap.refer(&mut init_options.force).add_option(
             &["-f", "--force"],
             argparse::StoreTrue,
-            "overwrite existing config files",
+            "Overwrite existing config files.",
         );
 
         ap.refer(&mut init_options.root).add_option(
             &["-r", "--root"],
             argparse::Store,
-            "specify the garden root
-                        (default: ${GARDEN_CONFIG_DIR}",
+            "Specify the garden root. Defaults to ${GARDEN_CONFIG_DIR}.",
         );
 
         ap.refer(&mut init_options.filename).add_argument(
             "filename",
             argparse::Store,
-            "config file to write (default: garden.yaml)",
+            "Config file to write. Defaults to garden.yaml.",
         );
 
         options.args.insert(0, "garden init".into());

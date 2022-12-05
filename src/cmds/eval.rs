@@ -38,19 +38,20 @@ fn parse_args(
     garden: &mut String,
 ) {
     let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("garden eval - evaluate garden expressions");
+    ap.set_description("garden eval - Evaluate garden expressions");
 
-    ap.refer(expr).required().add_argument(
-        "expr",
-        argparse::Store,
-        "garden expression to evaluate",
-    );
+    ap.refer(expr)
+        .required()
+        .add_argument("expr", argparse::Store, "Expression to evaluate");
 
     ap.refer(tree)
-        .add_argument("tree", argparse::Store, "tree to evaluate");
+        .add_argument("tree", argparse::Store, "Tree within which to evaluate.");
 
-    ap.refer(garden)
-        .add_argument("garden", argparse::Store, "garden to evaluate");
+    ap.refer(garden).add_argument(
+        "garden",
+        argparse::Store,
+        "Garden within which to evaluate.",
+    );
 
     options.args.insert(0, "garden eval".into());
     cmd::parse_args(ap, options.args.to_vec());

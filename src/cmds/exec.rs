@@ -25,18 +25,18 @@ fn parse_args(options: &mut model::CommandOptions, query: &mut String, command: 
     let mut ap = argparse::ArgumentParser::new();
     ap.silence_double_dash(false);
     ap.stop_on_first_argument(true);
-    ap.set_description("garden exec - run commands inside gardens");
+    ap.set_description("garden exec - Run commands inside gardens");
 
     ap.refer(query).required().add_argument(
         "query",
         argparse::Store,
-        "gardens/groups/trees to exec (tree query)",
+        "Gardens/Groups/Trees to exec (tree query).",
     );
 
     ap.refer(command).required().add_argument(
         "command",
         argparse::List,
-        "command to run over resolved trees",
+        "Command to run over resolved trees.",
     );
 
     options.args.insert(0, "garden exec".into());

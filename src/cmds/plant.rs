@@ -57,17 +57,17 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &mut Vec<String>) {
     let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("add pre-existing worktrees to a garden configuration");
+    ap.set_description("garden plant - Add pre-existing worktrees to a garden file");
 
     ap.refer(output).add_option(
         &["-o", "--output"],
         argparse::Store,
-        "file to write (defaults to the config file)",
+        "File to write (defaults to the garden file).",
     );
 
     ap.refer(paths)
         .required()
-        .add_argument("paths", argparse::List, "trees to add");
+        .add_argument("paths", argparse::List, "Trees to plant.");
 
     options.args.insert(0, "garden plant".into());
     cmd::parse_args(ap, options.args.to_vec());
