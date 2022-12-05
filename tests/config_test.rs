@@ -16,12 +16,12 @@ fn config_default() {
 fn core() {
     let string = r#"
     garden:
-        root: /tmp
+        root: /usr
     "#
     .to_string();
 
     let config = common::from_string(&string);
-    assert_eq!(std::path::PathBuf::from("/tmp"), config.root_path);
+    assert_eq!(std::path::PathBuf::from("/usr"), config.root_path);
 }
 
 /// Variables
