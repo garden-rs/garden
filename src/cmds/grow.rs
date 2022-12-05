@@ -7,7 +7,7 @@ use super::super::eval;
 use super::super::model;
 use super::super::query;
 
-/// Main entry point for the "garden exec" command
+/// Main entry point for the "garden grow" command
 /// Parameters:
 /// - options: `garden::model::CommandOptions`
 
