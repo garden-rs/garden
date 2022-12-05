@@ -358,3 +358,61 @@ query string then that tree's directory will be used when opening the shell.
 The optional tree argument is not needed for the case where a garden
 and tree share a name -- garden will chdir into that same-named tree when
 creating the shell.
+
+
+## garden prune
+
+    garden prune [options] [<subdirs>...]
+
+Traverse the filesystem and interactively delete any repositories that are
+not referenced by the garden file.
+
+This command is intended to cleanup a garden-managed directory. Its intended
+usage is to delete repositories that were created (eg. via `garden grow`) and
+have since been removed from your version-controlled garden configuration.
+
+**Warning**: `garden prune` is a dangerous command and must be run with care.
+`garden prune` deletes repositories and all of their files (including the `.git` storage)!
+
+The following options are supported.
+
+    --jobs <jobs>
+
+The prune process runs in parallel across multiple cores. All cores are used by default.
+The `--jobs` option limits the number of cores to the specified number of jobs.
+
+    --min-depth <minimum-depth>
+    --max-depth <maximum-depth>
+    --exact-depth <exact-depth>
+
+The cleanup process can be limited to specific traversal depths. The filesystem is
+traversed with no limits by default.
+
+Specifying a minimum depth will not remove repositories shallower than the specified
+depth. `--min-depth 1` will not remove repositories in the same directory
+as the garden file.
+
+Specifying a maximum depth will not remove repositories deeper than the specified
+depth. `--max-depth 0` will not remove repositories in subdirectories below
+the directory containing the graden file.
+
+    --no-prompt
+
+The `garden prune` command interactively prompts before removing each repository.
+The prompt looks like the following:
+
+    # /home/user/src/example
+    Delete the "example" repository?
+    WARNING: "all" deletes "example" and ALL subsequent repositories!
+    Choices: yes, no, all, quit [y,n,all,q]?
+
+Entering `y` (or `yes`) at the prompt will delete repository and all of its files.
+
+Entering `n` (or `no`) at the prompt will skip and not remove the repository.
+
+Entering `q` (or `quit`) will exit `git prune` without deleting the repository.
+
+Entering `all` will remove the repository and all subsequent repositories.
+
+Using the "all" option is dangerous and proceeds without further prompts!
+Be careful.

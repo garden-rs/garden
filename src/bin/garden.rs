@@ -60,6 +60,7 @@ fn cmd_main() -> Result<()> {
         model::Command::Inspect => cmds::inspect::main(&mut app),
         model::Command::List => cmds::list::main(&mut app),
         model::Command::Plant => cmds::plant::main(&mut app),
+        model::Command::Prune => cmds::prune::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
     }
 }
@@ -122,7 +123,7 @@ fn parse_args() -> model::CommandOptions {
         ap.refer(&mut options.subcommand).required().add_argument(
             "command",
             argparse::Store,
-            "{cmd, eval, exec, grow, help, init, inspect, ls, plant, shell, <custom>}",
+            "{cmd, eval, exec, grow, help, init, inspect, ls, plant, prune, shell, <custom>}",
         );
 
         ap.refer(&mut options.args)

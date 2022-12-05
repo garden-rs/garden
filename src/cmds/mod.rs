@@ -25,5 +25,8 @@ pub mod list;
 /// Plant command
 pub mod plant;
 
+/// Prune command
+pub mod prune;
+
 /// Shell command
 pub mod shell;

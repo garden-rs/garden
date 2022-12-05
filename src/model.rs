@@ -461,8 +461,11 @@ impl Configuration {
         // Evaluate garden.root
         let expr = String::from(self.root.get_expr());
         let value = eval::value(self, &expr);
-        // Store the resolved garden.root
+        // Store the resolved, canonicalized garden.root
         self.root_path = std::path::PathBuf::from(&value);
+        if let Ok(root_path_canon) = self.root_path.canonicalize() {
+            self.root_path = root_path_canon;
+        }
         self.root.set_value(value);
 
         // Resolve tree paths
@@ -562,6 +565,25 @@ impl Configuration {
             path_buf.push(path);
 
             path_buf.to_string_lossy().into()
+        }
+    }
+
+    /// Return a pathbuf relative to the garden root.
+    pub fn relative_pathbuf(&self, path: &str) -> std::path::PathBuf {
+        let pathbuf = std::path::PathBuf::from(path);
+        if pathbuf.is_absolute() {
+            // Absolute path, nothing to do
+            if let Ok(pathbuf_canon) = pathbuf.canonicalize() {
+                pathbuf_canon
+            } else {
+                pathbuf
+            }
+        } else {
+            // Make path relative to root_path
+            let mut path_buf = self.root_path.to_path_buf();
+            path_buf.push(path);
+
+            path_buf
         }
     }
 
@@ -835,6 +857,7 @@ pub enum Command {
     Inspect,
     List,
     Plant,
+    Prune,
     Shell,
 }
 
@@ -861,6 +884,7 @@ impl std::str::FromStr for Command {
             "list" => Ok(Command::List),
             "ls" => Ok(Command::List),
             "plant" => Ok(Command::Plant),
+            "prune" => Ok(Command::Prune),
             "sh" => Ok(Command::Shell),
             "shell" => Ok(Command::Shell),
             _ => Ok(Command::Custom(src.into())),
@@ -1012,16 +1036,31 @@ pub struct CommandOptions {
     pub filename: Option<std::path::PathBuf>,
     pub filename_str: String,
     pub keep_going: bool,
+    pub no_prompt: bool,
+    pub num_jobs: usize,
     pub quiet: bool,
     pub root: String,
     pub subcommand: Command,
     pub variables: Vec<String>,
+    pub exact_depth: isize,
+    pub max_depth: isize,
+    pub min_depth: isize,
     pub verbose: u8,
 }
 
 impl CommandOptions {
     pub fn new() -> Self {
-        CommandOptions::default()
+        let num_jobs = match std::thread::available_parallelism() {
+            Ok(value) => value.get(),
+            Err(_) => 4,
+        };
+        Self {
+            exact_depth: -1,
+            min_depth: -1,
+            max_depth: -1,
+            num_jobs,
+            ..CommandOptions::default()
+        }
     }
 
     // Builder function to update verbosity.

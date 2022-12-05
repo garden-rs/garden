@@ -688,3 +688,205 @@ fn cmd_breadth_first_and_depth_first() {
     ]);
     assert_eq!(expect, actual);
 }
+
+/// "garden prune" prunes specific depths
+#[test]
+#[named]
+fn cmd_prune_depth() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/tree creates "example/tree".
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/tree",
+    ])?;
+    // example/tree must exist.
+    let example_path = fixture.pathbuf("example");
+    let mut example_tree_path = example_path.to_path_buf();
+    example_tree_path.push("tree");
+    assert!(example_tree_path.exists());
+
+    // Create example/unknown.
+    let cmd = ["git", "init", "--quiet", "example/unknown"];
+    assert_cmd(&cmd, &fixture.root());
+
+    // Prune the example/ directory.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "example",
+    ])?;
+
+    // example/tree must be retained.
+    // example/unknown must be removed.
+    let mut example_unknown_path = example_path.to_path_buf();
+    example_unknown_path.push("unknown");
+    assert!(example_tree_path.exists());
+    assert!(!example_unknown_path.exists());
+
+    // Create level0-unknown, level1/unknown, level1/level2/unknown, level1/level2/level3/unknown
+    assert_cmd(
+        &["git", "init", "--quiet", "level0-unknown"],
+        &fixture.root(),
+    );
+    assert_cmd(
+        &["git", "init", "--quiet", "level1/unknown"],
+        &fixture.root(),
+    );
+    assert_cmd(
+        &["git", "init", "--quiet", "level1/level2/unknown"],
+        &fixture.root(),
+    );
+    assert_cmd(
+        &["git", "init", "--quiet", "level1/level2/level3/unknown"],
+        &fixture.root(),
+    );
+
+    let level0_unknown_path = fixture.pathbuf("level0-unknown");
+    let level1_path = fixture.pathbuf("level1");
+    let mut level2_path = level1_path.to_path_buf();
+    level2_path.push("level2");
+    let mut level3_path = level2_path.to_path_buf();
+    level3_path.push("level3");
+    let mut level1_unknown_path = level1_path.to_path_buf();
+    level1_unknown_path.push("unknown");
+    let mut level2_unknown_path = level2_path.to_path_buf();
+    level2_unknown_path.push("unknown");
+    let mut level3_unknown_path = level3_path.to_path_buf();
+    level3_unknown_path.push("unknown");
+
+    assert!(level0_unknown_path.exists());
+    assert!(level1_path.exists());
+    assert!(level1_unknown_path.exists());
+    assert!(level2_path.exists());
+    assert!(level2_unknown_path.exists());
+    assert!(level3_path.exists());
+    assert!(level3_unknown_path.exists());
+
+    // Prune level 1 only.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "--exact-depth",
+        "1",
+    ])?;
+    // Only level1/unknown should be removed.
+    assert!(level0_unknown_path.exists());
+    assert!(level1_path.exists());
+    assert!(!level1_unknown_path.exists());
+    assert!(level2_path.exists());
+    assert!(level2_unknown_path.exists());
+    assert!(level3_path.exists());
+    assert!(level3_unknown_path.exists());
+
+    // Prune with at max-depth 0.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "--max-depth",
+        "0",
+    ])?;
+    // Only level0-unknown should be removed.
+    assert!(!level0_unknown_path.exists());
+    assert!(level1_path.exists());
+    // level1/unknown was removed from the previous "garden prune".
+    assert!(level2_path.exists());
+    assert!(level2_unknown_path.exists());
+    assert!(level3_path.exists());
+    assert!(level3_unknown_path.exists());
+
+    // Prune with no limits with a bogus filter. Nothing should be removed.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "bogus-filter",
+    ])?;
+    // Nothing was removed.
+    assert!(!level0_unknown_path.exists());
+    assert!(level1_path.exists());
+    assert!(level2_path.exists());
+    assert!(level2_unknown_path.exists());
+    assert!(level3_path.exists());
+    assert!(level3_unknown_path.exists());
+
+    // Prune with min-depth 4. Nothing should be removed.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "--min-depth",
+        "4",
+    ])?;
+    // Nothing was removed.
+    assert!(level1_path.exists());
+    assert!(level2_path.exists());
+    assert!(level2_unknown_path.exists());
+    assert!(level3_path.exists());
+    assert!(level3_unknown_path.exists());
+
+    // Prune with min-depth 3. level3 and below should be removed.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "--min-depth",
+        "3",
+    ])?;
+    // level3 was removed.
+    assert!(level1_path.exists());
+    assert!(level2_path.exists());
+    assert!(level2_unknown_path.exists());
+    assert!(!level3_path.exists());
+    assert!(!level3_unknown_path.exists());
+
+    // Prune with no limits with a valid filter.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "level1",
+    ])?;
+    // level1 and below should be removed.
+    assert!(!level1_path.exists());
+    assert!(!level1_unknown_path.exists());
+    assert!(!level2_path.exists());
+    assert!(!level2_unknown_path.exists());
+
+    Ok(())
+}

@@ -4,6 +4,9 @@
 
 **Features**:
 
+- `garden prune` was added for removing orphaned Git repositories.
+  ([#4](https://github.com/davvid/garden/issues/4))
+
 - `garden cmd` learned to run commands in breadth-first order when the
   `-b/--breadth-first` option is used. Depth-first tree traversal is the default.
   The `garden cmd --breadth-first` traversal runs all commands on a tree before
