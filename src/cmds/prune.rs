@@ -402,18 +402,12 @@ impl PromptUser {
     fn prompt_for_deletion(&mut self) {
         loop {
             match self.recv_repo_path.recv() {
-                Err(_) => {
-                    self.send_remove_path
-                        .send(RepositoryPathMessage::Finished)
-                        .ok();
-                    break;
-                }
                 Ok(RepositoryPathMessage::Path(pathbuf)) => {
                     if !self.quit {
                         self.prompt_pathbuf_for_deletion(pathbuf);
                     }
                 }
-                Ok(RepositoryPathMessage::Finished) => {
+                Ok(RepositoryPathMessage::Finished) | Err(_) => {
                     self.send_remove_path
                         .send(RepositoryPathMessage::Finished)
                         .ok();
@@ -461,31 +455,19 @@ impl PromptUser {
     /// Display pending "Deleted" messages.
     fn display_finished_nonblocking(&self) {
         let mut printed = false;
-        loop {
-            match self.recv_finished_path.try_recv() {
-                Ok(RepositoryPathMessage::Path(pathbuf)) => {
-                    if !printed {
-                        printed = true;
-                        println!();
-                    }
-                    print_deleted_pathbuf(&pathbuf);
-                }
-                Ok(RepositoryPathMessage::Finished) => break,
-                Err(_) => break,
+        while let Ok(RepositoryPathMessage::Path(pathbuf)) = self.recv_finished_path.try_recv() {
+            if !printed {
+                printed = true;
+                println!();
             }
+            print_deleted_pathbuf(&pathbuf);
         }
     }
 
     /// Block and display all of the remaining "Deleted" messages.
     fn display_finished_blocking(&self) {
-        loop {
-            match self.recv_finished_path.recv() {
-                Ok(RepositoryPathMessage::Path(pathbuf)) => {
-                    print_deleted_pathbuf(&pathbuf);
-                }
-                Ok(RepositoryPathMessage::Finished) => break,
-                Err(_) => break,
-            }
+        while let Ok(RepositoryPathMessage::Path(pathbuf)) = self.recv_finished_path.recv() {
+            print_deleted_pathbuf(&pathbuf);
         }
     }
 }
