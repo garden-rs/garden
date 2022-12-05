@@ -67,7 +67,7 @@ fn grow_clone_shallow() -> Result<()> {
     let cmd = ["git", "rev-list", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree);
     let lines = output.split('\n').collect::<Vec<&str>>();
-    assert_eq!(lines.len(), 1); // One commit only!
+    assert_eq!(lines.len(), 1, "git rev-list HEAD outputs only one commit ");
 
     Ok(())
 }
@@ -101,7 +101,7 @@ fn grow_clone_single_branch() -> Result<()> {
     let cmd = ["git", "rev-list", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree);
     let lines = output.split('\n').collect::<Vec<&str>>();
-    assert_eq!(lines.len(), 1); // One commit only!
+    assert_eq!(lines.len(), 1, "git rev-list HEAD outputs only one commit ");
 
     Ok(())
 }
@@ -180,7 +180,7 @@ fn grow_bare_repo() -> Result<()> {
     // The repository must be bare.
     let cmd = ["git", "config", "--bool", "core.bare"];
     let output = assert_cmd_capture(&cmd, &bare_repo);
-    assert_eq!(output, String::from("true"));
+    assert_eq!(output.as_str(), "true");
 
     Ok(())
 }
@@ -215,7 +215,7 @@ fn grow_bare_repo_with_config() -> Result<()> {
     // The repository must be bare.
     let cmd = ["git", "config", "core.bare"];
     let output = assert_cmd_capture(&cmd, &bare_repo);
-    assert_eq!(output, String::from("true"));
+    assert_eq!(output.as_str(), "true");
 
     Ok(())
 }
@@ -275,22 +275,20 @@ fn grow_symlinks() -> Result<()> {
         "example/link",
     ])?;
 
-    let repo = std::path::PathBuf::from(fixture.path("example/tree/repo/.git"));
+    let repo = fixture.pathbuf("example/tree/repo/.git");
     assert!(repo.exists());
 
     // tests/tmp/symlinks/link is a symlink pointing to example/tree/repo
-    let link_str = fixture.path("link");
-    let link = std::path::PathBuf::from(&link_str);
-    assert!(link.exists(), "{} does not exist", link_str);
+    let link = fixture.pathbuf("link");
+    assert!(link.exists(), "{:?} must exist", link);
     assert!(link.read_link().is_ok());
 
     let target = link.read_link().unwrap();
     assert_eq!("example/tree/repo", target.to_string_lossy());
 
     // tests/tmp/symlinks/example/link is a symlink pointing to tree/repo
-    let link_str = fixture.path("example/link");
-    let link = std::path::PathBuf::from(&link_str);
-    assert!(link.exists(), "{} does not exist", link_str);
+    let link = fixture.pathbuf("example/link");
+    assert!(link.exists(), "{:?} does not exist", link);
     assert!(link.read_link().is_ok());
 
     let target = link.read_link().unwrap();
@@ -704,11 +702,10 @@ fn cmd_prune_depth() -> Result<()> {
         "grow",
         "example/tree",
     ])?;
-    // example/tree must exist.
     let example_path = fixture.pathbuf("example");
     let mut example_tree_path = example_path.to_path_buf();
     example_tree_path.push("tree");
-    assert!(example_tree_path.exists());
+    assert!(example_tree_path.exists(), "example/tree must exist");
 
     // Create example/unknown.
     let cmd = ["git", "init", "--quiet", "example/unknown"];
@@ -726,12 +723,13 @@ fn cmd_prune_depth() -> Result<()> {
         "example",
     ])?;
 
-    // example/tree must be retained.
-    // example/unknown must be removed.
     let mut example_unknown_path = example_path.to_path_buf();
     example_unknown_path.push("unknown");
-    assert!(example_tree_path.exists());
-    assert!(!example_unknown_path.exists());
+    assert!(example_tree_path.exists(), "example/tree must be retained");
+    assert!(
+        !example_unknown_path.exists(),
+        "example/unknown must be removed"
+    );
 
     // Create level0-unknown, level1/unknown, level1/level2/unknown, level1/level2/level3/unknown
     assert_cmd(
@@ -752,24 +750,24 @@ fn cmd_prune_depth() -> Result<()> {
     );
 
     let level0_unknown_path = fixture.pathbuf("level0-unknown");
-    let level1_path = fixture.pathbuf("level1");
+    let level1_path = fixture.pathbuf("level1"); // level/
     let mut level2_path = level1_path.to_path_buf();
-    level2_path.push("level2");
+    level2_path.push("level2"); // level1/level2/
     let mut level3_path = level2_path.to_path_buf();
-    level3_path.push("level3");
+    level3_path.push("level3"); // level1/level2/level3/
     let mut level1_unknown_path = level1_path.to_path_buf();
-    level1_unknown_path.push("unknown");
+    level1_unknown_path.push("unknown"); // level1/unknown
     let mut level2_unknown_path = level2_path.to_path_buf();
-    level2_unknown_path.push("unknown");
+    level2_unknown_path.push("unknown"); // level1/level2/unknown
     let mut level3_unknown_path = level3_path.to_path_buf();
-    level3_unknown_path.push("unknown");
+    level3_unknown_path.push("unknown"); // level1/level2/level3/unknown
 
-    assert!(level0_unknown_path.exists());
     assert!(level1_path.exists());
-    assert!(level1_unknown_path.exists());
     assert!(level2_path.exists());
-    assert!(level2_unknown_path.exists());
     assert!(level3_path.exists());
+    assert!(level0_unknown_path.exists());
+    assert!(level1_unknown_path.exists());
+    assert!(level2_unknown_path.exists());
     assert!(level3_unknown_path.exists());
 
     // Prune level 1 only.
@@ -784,13 +782,12 @@ fn cmd_prune_depth() -> Result<()> {
         "--exact-depth",
         "1",
     ])?;
-    // Only level1/unknown should be removed.
-    assert!(level0_unknown_path.exists());
     assert!(level1_path.exists());
-    assert!(!level1_unknown_path.exists());
     assert!(level2_path.exists());
-    assert!(level2_unknown_path.exists());
     assert!(level3_path.exists());
+    assert!(level0_unknown_path.exists());
+    assert!(!level1_unknown_path.exists()); // Only level1/unknown should be removed.
+    assert!(level2_unknown_path.exists());
     assert!(level3_unknown_path.exists());
 
     // Prune with at max-depth 0.
@@ -805,13 +802,15 @@ fn cmd_prune_depth() -> Result<()> {
         "--max-depth",
         "0",
     ])?;
-    // Only level0-unknown should be removed.
-    assert!(!level0_unknown_path.exists());
     assert!(level1_path.exists());
-    // level1/unknown was removed from the previous "garden prune".
     assert!(level2_path.exists());
-    assert!(level2_unknown_path.exists());
     assert!(level3_path.exists());
+    assert!(
+        !level0_unknown_path.exists(),
+        "level0-unknown must be removed"
+    );
+    // level1/unknown was removed from the previous "garden prune".
+    assert!(level2_unknown_path.exists());
     assert!(level3_unknown_path.exists());
 
     // Prune with no limits with a bogus filter. Nothing should be removed.
@@ -826,11 +825,10 @@ fn cmd_prune_depth() -> Result<()> {
         "bogus-filter",
     ])?;
     // Nothing was removed.
-    assert!(!level0_unknown_path.exists());
     assert!(level1_path.exists());
     assert!(level2_path.exists());
-    assert!(level2_unknown_path.exists());
     assert!(level3_path.exists());
+    assert!(level2_unknown_path.exists());
     assert!(level3_unknown_path.exists());
 
     // Prune with min-depth 4. Nothing should be removed.
@@ -848,8 +846,8 @@ fn cmd_prune_depth() -> Result<()> {
     // Nothing was removed.
     assert!(level1_path.exists());
     assert!(level2_path.exists());
-    assert!(level2_unknown_path.exists());
     assert!(level3_path.exists());
+    assert!(level2_unknown_path.exists());
     assert!(level3_unknown_path.exists());
 
     // Prune with min-depth 3. level3 and below should be removed.
@@ -884,8 +882,8 @@ fn cmd_prune_depth() -> Result<()> {
     ])?;
     // level1 and below should be removed.
     assert!(!level1_path.exists());
-    assert!(!level1_unknown_path.exists());
     assert!(!level2_path.exists());
+    assert!(!level1_unknown_path.exists());
     assert!(!level2_unknown_path.exists());
 
     Ok(())
