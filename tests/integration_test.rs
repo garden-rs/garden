@@ -66,7 +66,7 @@ fn grow_clone_shallow() -> Result<()> {
     // Only one commit must be cloned because of "depth: 1".
     let cmd = ["git", "rev-list", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree);
-    let lines = output.split("\n").collect::<Vec<&str>>();
+    let lines = output.split('\n').collect::<Vec<&str>>();
     assert_eq!(lines.len(), 1); // One commit only!
 
     Ok(())
@@ -100,7 +100,7 @@ fn grow_clone_single_branch() -> Result<()> {
     // Only one commit must be cloned because of "depth: 1".
     let cmd = ["git", "rev-list", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree);
-    let lines = output.split("\n").collect::<Vec<&str>>();
+    let lines = output.split('\n').collect::<Vec<&str>>();
     assert_eq!(lines.len(), 1); // One commit only!
 
     Ok(())
@@ -130,14 +130,14 @@ fn grow_branch_default() -> Result<()> {
     // The "default" repository must have a branch called "default" checked-out.
     let cmd = ["git", "symbolic-ref", "--short", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree_default);
-    let lines = output.split("\n").collect::<Vec<&str>>();
+    let lines = output.split('\n').collect::<Vec<&str>>();
     assert_eq!(lines.len(), 1);
     assert_eq!(lines[0], "default");
 
     // The "dev" repository must have a branch called "dev" checked-out.
     let cmd = ["git", "symbolic-ref", "--short", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree_dev);
-    let lines = output.split("\n").collect::<Vec<&str>>();
+    let lines = output.split('\n').collect::<Vec<&str>>();
     assert_eq!(lines.len(), 1);
     assert_eq!(lines[0], "dev");
 
@@ -480,7 +480,6 @@ fn git_worktree_details() -> Result<()> {
 
 /// Test eval behavior around the "--root" option
 #[test]
-#[named]
 fn eval_root_with_root() {
     // garden eval ${GARDEN_ROOT}
     let output = garden_capture(&[

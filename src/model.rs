@@ -808,7 +808,7 @@ impl TreeQuery {
 }
 
 // Commands
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Command {
     Cmd,
     Custom(String),
@@ -856,7 +856,7 @@ impl std::str::FromStr for Command {
 // Is color enabled?
 // --color=<auto,on,off> overrides the default "auto" value.
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ColorMode {
     Auto, // "auto" enables color when a tty is detected.
     Off,  // disable color
@@ -1106,7 +1106,7 @@ impl ApplicationContext {
 }
 
 /// Represent the different types of Git worktree.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GitTreeType {
     Parent,           // A worktree with child worktrees attached to it.
     Worktree(String), // A child worktree created with "git worktree".

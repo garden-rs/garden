@@ -94,7 +94,7 @@ fn grow_tree_from_context(
     let parent = pathbuf.parent().ok_or_else(|| {
         errors::GardenError::AssertionError(format!("unable to get parent directory for {}", path))
     })?;
-    std::fs::create_dir_all(&parent).map_err(|err| {
+    std::fs::create_dir_all(parent).map_err(|err| {
         errors::GardenError::OSError(format!("unable to create {}: {}", path, err))
     })?;
 
@@ -248,7 +248,7 @@ fn update_tree_from_context(
     let mut existing_remotes = std::collections::HashSet::new();
     {
         let command = ["git", "remote"];
-        let exec = cmd::exec_in_dir(&command, &path);
+        let exec = cmd::exec_in_dir(&command, path);
         if let Ok(x) = cmd::capture_stdout(exec) {
             let output = cmd::trim_stdout(&x);
             for line in output.lines() {
@@ -261,21 +261,21 @@ fn update_tree_from_context(
     for (k, v) in &config_remotes {
         let url = eval::tree_value(config, v, ctx.tree, ctx.garden);
 
-        let exec;
-        if existing_remotes.contains(k) {
+        let exec = if existing_remotes.contains(k) {
             let remote_key = format!("remote.{}.url", k);
             let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            exec = cmd::exec_in_dir(&command, &path);
+            cmd::exec_in_dir(&command, path)
         } else {
             let command = ["git", "remote", "add", k.as_ref(), url.as_ref()];
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            exec = cmd::exec_in_dir(&command, &path);
-        }
+            cmd::exec_in_dir(&command, path)
+        };
+
         let status = cmd::status(exec.join());
         if status != 0 {
             exit_status = status;
@@ -291,7 +291,7 @@ fn update_tree_from_context(
     for var in &gitconfig {
         let value = eval::tree_value(config, var.get_expr(), ctx.tree, ctx.garden);
         let command = ["git", "config", var.get_name(), value.as_ref()];
-        let exec = cmd::exec_in_dir(&command, &path);
+        let exec = cmd::exec_in_dir(&command, path);
         let status = cmd::status(exec.join());
         if status != 0 {
             exit_status = status;
@@ -364,7 +364,7 @@ fn grow_tree_from_context_as_worktree(
     if verbose > 1 {
         print_quoted_command(&cmd);
     }
-    let exec = cmd::exec_in_dir(&cmd, &parent_path);
+    let exec = cmd::exec_in_dir(&cmd, parent_path);
     exit_status = cmd::status(exec.join());
 
     if exit_status != 0 {
@@ -408,14 +408,14 @@ fn grow_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Resu
         .to_path_buf();
 
     // Is the link target a child of the link's parent directory?
-    let target: String;
-    if symlink.starts_with(&parent) && symlink.strip_prefix(&parent).is_ok() {
+    let target = if symlink.starts_with(&parent) && symlink.strip_prefix(&parent).is_ok() {
         // If so, create the symlink using a relative path.
-        target = symlink.strip_prefix(&parent)?.to_string_lossy().into();
+        symlink.strip_prefix(&parent)?.to_string_lossy()
     } else {
         // Use an absolute path otherwise.
-        target = symlink.to_string_lossy().into();
+        symlink.to_string_lossy()
     }
+    .to_string();
 
     std::os::unix::fs::symlink(&target, &path)?;
 

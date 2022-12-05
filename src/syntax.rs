@@ -1,6 +1,6 @@
 /// Return true if the string contains 0-9 digits only
 pub fn is_digit(string: &str) -> bool {
-    string.chars().all(|c| c.is_digit(10))
+    string.chars().all(|c| c.is_ascii_digit())
 }
 
 /// Return true if `string` is an `$ exec` expression.
@@ -60,14 +60,9 @@ pub fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str
     let split_len = split.len();
     // split offset, everything up to this point is before the split
     let before = string.find(split).unwrap_or(end);
-
-    let after; // offset after the split
     let ok = before <= (end - split_len);
-    if ok {
-        after = before + split_len;
-    } else {
-        after = before;
-    }
+    // offset after the split
+    let after = if ok { before + split_len } else { before };
 
     (ok, &string[..before], &string[after..])
 }
@@ -105,12 +100,12 @@ pub fn graft_basename(string: &str) -> Option<String> {
         return None;
     }
 
-    let result;
-    if is_garden(string) || is_group(string) || is_tree(string) {
-        result = trim(before).to_string();
+    let result = if is_garden(string) || is_group(string) || is_tree(string) {
+        trim(before)
     } else {
-        result = before.to_string();
+        before
     }
+    .to_string();
 
     Some(result)
 }

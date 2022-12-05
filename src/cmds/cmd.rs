@@ -222,7 +222,7 @@ pub fn run_cmd_breadth_first(
                             model::Color::green(&cmd_str),
                         );
                     }
-                    let mut exec = subprocess::Exec::shell(&cmd_str)
+                    let mut exec = subprocess::Exec::shell(cmd_str)
                         .arg(&current_exe)
                         .args(arguments)
                         .cwd(&path);
@@ -310,7 +310,7 @@ pub fn run_cmd_depth_first(
                             model::Color::green(&cmd_str),
                         );
                     }
-                    let mut exec = subprocess::Exec::shell(&cmd_str)
+                    let mut exec = subprocess::Exec::shell(cmd_str)
                         .arg(&current_exe)
                         .args(arguments)
                         .cwd(&path);

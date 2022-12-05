@@ -27,11 +27,9 @@ pub fn strip_prefix_into_string(
     root: &std::path::Path,
     path: &std::path::Path,
 ) -> Result<String, errors::GardenError> {
-    let tree_path: String;
-    // Is the path a child of the current garden root?
-    if path.starts_with(&root) {
-        tree_path = path
-            .strip_prefix(&root)
+    let tree_path = if path.starts_with(root) {
+        // Is the path a child of the current garden root?
+        path.strip_prefix(root)
             .map_err(|err| {
                 errors::GardenError::ConfigurationError(format!(
                     "{:?} is not a child of {:?}: {:?}",
@@ -39,10 +37,10 @@ pub fn strip_prefix_into_string(
                 ))
             })?
             .to_string_lossy()
-            .into();
     } else {
-        tree_path = path.to_string_lossy().into();
+        path.to_string_lossy()
     }
+    .to_string();
 
     Ok(tree_path)
 }

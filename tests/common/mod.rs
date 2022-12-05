@@ -161,7 +161,7 @@ pub fn garden_capture(args: &[&str]) -> String {
 
 /// Execute a command and ensure that the exit status is returned.
 pub fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
-    let exec = cmd::exec_in_dir(&cmd, directory);
+    let exec = cmd::exec_in_dir(cmd, directory);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
 
@@ -188,7 +188,7 @@ pub fn assert_cmd(cmd: &[&str], directory: &str) {
 
 /// Execute a command and ensure that exit status 0 is returned. Return the Exec object.
 pub fn assert_cmd_capture(cmd: &[&str], directory: &str) -> String {
-    let exec = cmd::exec_in_dir(&cmd, directory);
+    let exec = cmd::exec_in_dir(cmd, directory);
     let capture = cmd::capture_stdout(exec);
     assert!(capture.is_ok());
 
@@ -208,14 +208,14 @@ pub fn assert_git_worktree(path: &str) {
 
 /// Assert that the Git ref exists in the specified repository.
 pub fn assert_ref(repository: &str, refname: &str) {
-    let cmd = ["git", "rev-parse", "--quiet", "--verify", &refname];
-    assert_cmd(&cmd, &repository);
+    let cmd = ["git", "rev-parse", "--quiet", "--verify", refname];
+    assert_cmd(&cmd, repository);
 }
 
 /// Assert that the Git ref does not exist in the specified repository.
 pub fn assert_ref_missing(repository: &str, refname: &str) {
-    let cmd = ["git", "rev-parse", "--quiet", "--verify", &refname];
-    assert_cmd_status(&cmd, &repository, 1);
+    let cmd = ["git", "rev-parse", "--quiet", "--verify", refname];
+    assert_cmd_status(&cmd, repository, 1);
 }
 
 /// Cleanup and create a bare repository for cloning
