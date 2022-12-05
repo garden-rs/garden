@@ -208,6 +208,21 @@ impl Tree {
         self.path.get_value().is_some()
     }
 
+    /// Build a canonicalized pathbuf for the current tree.
+    pub fn canonical_pathbuf(&self) -> Option<std::path::PathBuf> {
+        if !self.path_is_valid() {
+            return None;
+        }
+        if let Some(value) = self.path.get_value() {
+            let pathbuf = std::path::PathBuf::from(value);
+            if let Ok(canon_path) = pathbuf.canonicalize() {
+                return Some(canon_path);
+            }
+        }
+
+        None
+    }
+
     pub fn path_as_ref(&self) -> Result<&String, errors::GardenError> {
         match self.path.get_value() {
             Some(value) => Ok(value),
