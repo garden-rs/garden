@@ -34,14 +34,14 @@ fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
         parser.refer(&mut options.num_jobs).add_option(
             &["-j", "--jobs"],
             argparse::Parse,
-            "Specify the number of jobs to run concurrently",
+            "Specify the number of jobs to run concurrently.",
         );
 
         parser.refer(&mut options.max_depth).add_option(
             &["-d", "--max-depth"],
             argparse::Parse,
             "Limit the directory traversal to the given depth. \
-            By default, there is no limit on the traversal depth.",
+            The traversal depth is unlimited by default.",
         );
 
         parser.refer(&mut options.min_depth).add_option(
