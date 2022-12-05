@@ -102,22 +102,22 @@ fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
     }
 }
 
-/// RepositoryPathMessage is sent across channels between the TraverseFilesystem,
+/// PathBufMessage is sent across channels between the TraverseFilesystem,
 /// PromptUser and RemovePaths tasks. The Path variant contains a PathBuf to process and
 /// the Finished variant is used to signal the end of the message stream.
 
-enum RepositoryPathMessage {
+enum PathBufMessage {
     Path(std::path::PathBuf),
     Finished,
 }
 
-/// TraverseFilesystem walks the filesystem and sends a RepositoryPathMessage as it
+/// TraverseFilesystem walks the filesystem and sends a PathBufMessage as it
 /// discovers Git repositories during its traversal.
 
 struct TraverseFilesystem<'a> {
     min_depth: isize,
     max_depth: isize,
-    send_repo_path: crossbeam::channel::Sender<RepositoryPathMessage>,
+    send_repo_path: crossbeam::channel::Sender<PathBufMessage>,
     root_path: std::path::PathBuf,
     path_filters: &'a Vec<std::path::PathBuf>,
     configured_tree_paths: &'a std::collections::HashSet<std::path::PathBuf>,
@@ -127,9 +127,7 @@ impl TraverseFilesystem<'_> {
     /// Start a parallel traversal over the "paths" Vec.
     fn traverse(&self) {
         self.traverse_toplevel(&self.root_path).ok();
-        self.send_repo_path
-            .send(RepositoryPathMessage::Finished)
-            .ok();
+        self.send_repo_path.send(PathBufMessage::Finished).ok();
     }
 
     /// Traverse all of the top-level directories specified on the command-line.
@@ -164,7 +162,7 @@ impl TraverseFilesystem<'_> {
         if git_dir.exists() {
             if is_within_bounds(current_depth, self.min_depth, self.max_depth) {
                 self.send_repo_path
-                    .send(RepositoryPathMessage::Path(pathbuf.to_path_buf()))
+                    .send(PathBufMessage::Path(pathbuf.to_path_buf()))
                     .ok();
             }
             return Ok(());
@@ -175,7 +173,7 @@ impl TraverseFilesystem<'_> {
             if extension == "git" {
                 if is_within_bounds(current_depth, self.min_depth, self.max_depth) {
                     self.send_repo_path
-                        .send(RepositoryPathMessage::Path(pathbuf.to_path_buf()))
+                        .send(PathBufMessage::Path(pathbuf.to_path_buf()))
                         .ok();
                 }
                 return Ok(());
@@ -249,14 +247,14 @@ fn is_within_max_bounds(value: isize, max_depth: isize) -> bool {
     max_depth == -1 || value <= max_depth
 }
 
-/// The RemovePaths task listens for RepositoryPathMessage messages and removes
+/// The RemovePaths task listens for PathBufMessage messages and removes
 /// paths emitted over the recv_remove_path channel.
 struct RemovePaths {
     /// Paths to remove are received on this channel from the PromptUser task.
-    recv_remove_path: crossbeam::channel::Receiver<RepositoryPathMessage>,
+    recv_remove_path: crossbeam::channel::Receiver<PathBufMessage>,
     /// Information about paths that have already been removed are reported by
     /// sending paths to the PromptUser task via the send_finished_path channel.
-    send_finished_path: crossbeam::channel::Sender<RepositoryPathMessage>,
+    send_finished_path: crossbeam::channel::Sender<PathBufMessage>,
 }
 
 impl RemovePaths {
@@ -264,7 +262,7 @@ impl RemovePaths {
     fn remove_paths(&self, remove_scope: &rayon::ScopeFifo<'_>) {
         loop {
             match self.recv_remove_path.recv() {
-                Ok(RepositoryPathMessage::Path(pathbuf)) => {
+                Ok(PathBufMessage::Path(pathbuf)) => {
                     // Remove paths from the filesystem and send a completion message.
                     {
                         let pathbuf = pathbuf.to_path_buf();
@@ -285,19 +283,11 @@ impl RemovePaths {
                         });
                     }
                     self.send_finished_path
-                        .send(RepositoryPathMessage::Path(pathbuf))
+                        .send(PathBufMessage::Path(pathbuf))
                         .ok();
                 }
-                Ok(RepositoryPathMessage::Finished) => {
-                    self.send_finished_path
-                        .send(RepositoryPathMessage::Finished)
-                        .ok();
-                    return;
-                }
-                Err(_) => {
-                    self.send_finished_path
-                        .send(RepositoryPathMessage::Finished)
-                        .ok();
+                Ok(PathBufMessage::Finished) | Err(_) => {
+                    self.send_finished_path.send(PathBufMessage::Finished).ok();
                     return;
                 }
             }
@@ -391,9 +381,9 @@ fn prompt_for_deletion(pathbuf: &std::path::Path) -> PromptResponse {
 }
 
 struct PromptUser {
-    recv_repo_path: crossbeam::channel::Receiver<RepositoryPathMessage>,
-    send_remove_path: crossbeam::channel::Sender<RepositoryPathMessage>,
-    recv_finished_path: crossbeam::channel::Receiver<RepositoryPathMessage>,
+    recv_repo_path: crossbeam::channel::Receiver<PathBufMessage>,
+    send_remove_path: crossbeam::channel::Sender<PathBufMessage>,
+    recv_finished_path: crossbeam::channel::Receiver<PathBufMessage>,
     no_prompt: bool,
     quit: bool,
 }
@@ -402,15 +392,13 @@ impl PromptUser {
     fn prompt_for_deletion(&mut self) {
         loop {
             match self.recv_repo_path.recv() {
-                Ok(RepositoryPathMessage::Path(pathbuf)) => {
+                Ok(PathBufMessage::Path(pathbuf)) => {
                     if !self.quit {
                         self.prompt_pathbuf_for_deletion(pathbuf);
                     }
                 }
-                Ok(RepositoryPathMessage::Finished) | Err(_) => {
-                    self.send_remove_path
-                        .send(RepositoryPathMessage::Finished)
-                        .ok();
+                Ok(PathBufMessage::Finished) | Err(_) => {
+                    self.send_remove_path.send(PathBufMessage::Finished).ok();
                     break;
                 }
             }
@@ -426,7 +414,7 @@ impl PromptUser {
     fn prompt_pathbuf_for_deletion(&mut self, pathbuf: std::path::PathBuf) {
         if self.no_prompt {
             self.send_remove_path
-                .send(RepositoryPathMessage::Path(pathbuf))
+                .send(PathBufMessage::Path(pathbuf))
                 .ok();
             return;
         }
@@ -434,20 +422,18 @@ impl PromptUser {
             PromptResponse::All => {
                 self.no_prompt = true;
                 self.send_remove_path
-                    .send(RepositoryPathMessage::Path(pathbuf))
+                    .send(PathBufMessage::Path(pathbuf))
                     .ok();
             }
             PromptResponse::Delete => {
                 self.send_remove_path
-                    .send(RepositoryPathMessage::Path(pathbuf))
+                    .send(PathBufMessage::Path(pathbuf))
                     .ok();
             }
             PromptResponse::Skip => (),
             PromptResponse::Quit => {
                 self.quit = true;
-                self.send_remove_path
-                    .send(RepositoryPathMessage::Finished)
-                    .ok();
+                self.send_remove_path.send(PathBufMessage::Finished).ok();
             }
         }
     }
@@ -455,7 +441,7 @@ impl PromptUser {
     /// Display pending "Deleted" messages.
     fn display_finished_nonblocking(&self) {
         let mut printed = false;
-        while let Ok(RepositoryPathMessage::Path(pathbuf)) = self.recv_finished_path.try_recv() {
+        while let Ok(PathBufMessage::Path(pathbuf)) = self.recv_finished_path.try_recv() {
             if !printed {
                 printed = true;
                 println!();
@@ -466,7 +452,7 @@ impl PromptUser {
 
     /// Block and display all of the remaining "Deleted" messages.
     fn display_finished_blocking(&self) {
-        while let Ok(RepositoryPathMessage::Path(pathbuf)) = self.recv_finished_path.recv() {
+        while let Ok(PathBufMessage::Path(pathbuf)) = self.recv_finished_path.recv() {
             print_deleted_pathbuf(&pathbuf);
         }
     }
@@ -496,30 +482,32 @@ pub fn prune(
         .num_threads(options.num_jobs)
         .build_global()?;
 
-    // Channels are used to exchange RepositoryPathMessage messages.
-    // These channels are used to emit repositories that are discovered through a filesystem
-    // traversal, filter paths through user interaction, remove selected paths from the
-    // filesytem and report removed paths to the user.
+    // Channels are used to exchange PathBufMessage messages.
+    // These channels are used to emit repositories that are discovered through a
+    // filesystem traversal, filter paths through user interaction, remove selected
+    // paths from the filesytem and report removed paths to the user.
     //
-    // The TraverseFilesystem task traverses the filesystem and sends paths to the PromptUser
-    // task through the send_repo_path channels.
+    // The TraverseFilesystem task traverses the filesystem and sends paths to the
+    // PromptUser task through the send_repo_path channels.
     //
     // The PromptUser task receives from the recv_repo_path channel and prompts
     // the user for each path. Paths that are marked for deletion are sent to the
     // send_remove_path channel.
     //
     // The RemovePaths task receives from te recv_remove_path and performs removals
-    // from the filesystem. Paths that have finished deleting are sent to the PromptUser
-    // task via the send_finished_path channel.
+    // from the filesystem. Paths that have finished deleting are sent to the
+    // PromptUser task via the send_finished_path channel.
     //
     // The PromptUser task drains the recv_finished_path channel to report paths that
     // have been deleted.
     //
     // TraverseFilesystem.traverse()
     // -> TraverseFilesystem.send_repo_path
-    // -> PromptUser.recv_repo_path -> prompts for deletion -> PromptUser.send_remove_path
-    // -> RemovePaths.recv_remove_path -> remove paths -> RemovePaths.send_finished_path
-    // -> PromptUser.recv_finished_path prints deletion mssages.
+    // -> PromptUser.recv_repo_path -> prompts for deletion
+    // -> PromptUser.send_remove_path
+    // -> RemovePaths.recv_remove_path -> removes paths
+    // -> RemovePaths.send_finished_path
+    // -> PromptUser.recv_finished_path -> prints deletion mssages.
     let (send_repo_path, recv_repo_path) = crossbeam::channel::unbounded();
     let (send_remove_path, recv_remove_path) = crossbeam::channel::unbounded();
     let (send_finished_path, recv_finished_path) = crossbeam::channel::unbounded();
