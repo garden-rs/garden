@@ -68,7 +68,7 @@ fn parse_args() -> model::CommandOptions {
     let color_names = model::ColorMode::names();
     let color_help = format!("Set color mode {{{}}}", color_names);
 
-    let mut options = model::CommandOptions::default();
+    let mut options = model::CommandOptions::new();
     {
         let mut ap = argparse::ArgumentParser::new();
         ap.set_description("garden - Cultivate git trees");
