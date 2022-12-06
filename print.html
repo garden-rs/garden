@@ -604,11 +604,21 @@ usage is to delete repositories that were created (eg. via <code>garden grow</co
 have since been removed from your version-controlled garden configuration.</p>
 <p><strong>Warning</strong>: <code>garden prune</code> is a dangerous command and must be run with care.
 <code>garden prune</code> deletes repositories and all of their files (including the <code>.git</code> storage)!</p>
-<p>The following options are supported.</p>
+<p>The following options are supported by <code>garden prune</code>.</p>
+<h2 id="enable-deletions"><a class="header" href="#enable-deletions">Enable deletions</a></h2>
+<pre><code>--rm
+</code></pre>
+<p>The <code>garden prune</code> command uses a no-op &quot;safe mode&quot; which does not actually
+delete repositories by default. Deletions must be enabled by specifying the
+<code>--rm</code> option.</p>
+<p>Use the <code>--rm</code> option only after you have verified that <code>garden prune</code> is not
+going to delete any unexpected repositories that you intended to keep.</p>
+<h2 id="limit-concurrency"><a class="header" href="#limit-concurrency">Limit concurrency</a></h2>
 <pre><code>--jobs &lt;jobs&gt;
 </code></pre>
 <p>The prune process runs in parallel across multiple cores. All cores are used by default.
 The <code>--jobs</code> option limits the number of cores to the specified number of jobs.</p>
+<h2 id="limit-filesystem-traversal-depth"><a class="header" href="#limit-filesystem-traversal-depth">Limit filesystem traversal depth</a></h2>
 <pre><code>--min-depth &lt;minimum-depth&gt;
 --max-depth &lt;maximum-depth&gt;
 --exact-depth &lt;exact-depth&gt;
@@ -616,11 +626,12 @@ The <code>--jobs</code> option limits the number of cores to the specified numbe
 <p>The cleanup process can be limited to specific traversal depths. The filesystem is
 traversed with no limits by default.</p>
 <p>Specifying a minimum depth will not remove repositories shallower than the specified
-depth. <code>--min-depth 1</code> will not remove repositories in the same directory
+depth. For example, <code>--min-depth 1</code> will not remove repositories in the same directory
 as the garden file.</p>
 <p>Specifying a maximum depth will not remove repositories deeper than the specified
-depth. <code>--max-depth 0</code> will not remove repositories in subdirectories below
-the directory containing the graden file.</p>
+depth. For example, <code>--max-depth 0</code> will not remove repositories in subdirectories
+below the directory containing the graden file.</p>
+<h2 id="enable-scripted-usage-by-answering-yes-to-all-prompts"><a class="header" href="#enable-scripted-usage-by-answering-yes-to-all-prompts">Enable scripted usage by answering &quot;yes&quot; to all prompts</a></h2>
 <pre><code>--no-prompt
 </code></pre>
 <p>The <code>garden prune</code> command interactively prompts before removing each repository.
@@ -630,12 +641,15 @@ Delete the &quot;example&quot; repository?
 WARNING: &quot;all&quot; deletes &quot;example&quot; and ALL subsequent repositories!
 Choices: yes, no, all, quit [y,n,all,q]?
 </code></pre>
-<p>Entering <code>y</code> (or <code>yes</code>) at the prompt will delete repository and all of its files.</p>
+<p>Entering <code>y</code> (or <code>yes</code>) at the prompt will delete the repository and all of its files.</p>
 <p>Entering <code>n</code> (or <code>no</code>) at the prompt will skip and not remove the repository.</p>
-<p>Entering <code>q</code> (or <code>quit</code>) will exit <code>git prune</code> without deleting the repository.</p>
-<p>Entering <code>all</code> will remove the repository and all subsequent repositories.</p>
-<p>Using the &quot;all&quot; option is dangerous and proceeds without further prompts!
+<p>Entering <code>q</code> (or <code>quit</code>) will exit <code>garden prune</code> without deleting the repository.</p>
+<p>Entering <code>all</code> will remove the repository and all subsequent repositories.
+<code>all</code> is equivalent to answering <code>yes</code> to all further prompts.</p>
+<p>Using the <code>all</code> option is dangerous and proceeds without further prompts!
 Be careful.</p>
+<p>Like the <code>all</code> option, using the <code>--no-prompt</code> mode equivalent to answering <code>yes</code>
+to all prompts.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
 <p>Garden is configured through a YAML configuration file, typically called
 &quot;garden.yaml&quot;.</p>
