@@ -432,8 +432,9 @@ Entering `q` (or `quit`) will exit `garden prune` without deleting the repositor
 Entering `all` will remove the repository and all subsequent repositories.
 `all` is equivalent to answering `yes` to all further prompts.
 
-Using the `all` option is dangerous and proceeds without further prompts!
-Be careful.
+Entering `all` is dangerous and proceeds without further prompts! Be careful.
 
-Like the `all` option, using the `--no-prompt` mode equivalent to answering `yes`
+Like the `all` option, using the `--no-prompt` option is equivalent to answering `yes`
 to all prompts.
+
+`--no-prompt` is intended for use in scripts where user interaction is not desired.
