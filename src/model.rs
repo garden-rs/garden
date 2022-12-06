@@ -1043,6 +1043,7 @@ pub struct CommandOptions {
     pub min_depth: isize,
     pub verbose: u8,
     pub breadth_first: bool,
+    pub dry_run: bool,
     pub keep_going: bool,
     pub no_prompt: bool,
     pub quiet: bool,

@@ -711,7 +711,7 @@ fn cmd_prune_depth() -> Result<()> {
     let cmd = ["git", "init", "--quiet", "example/unknown"];
     assert_cmd(&cmd, &fixture.root());
 
-    // Prune the example/ directory.
+    // Prune the example/ directory (dry-run mode).
     exec_garden(&[
         "--verbose",
         "--chdir",
@@ -720,6 +720,28 @@ fn cmd_prune_depth() -> Result<()> {
         "tests/data/garden.yaml",
         "prune",
         "--no-prompt",
+        "example",
+    ])?;
+
+    let mut example_unknown_path = example_path.to_path_buf();
+    example_unknown_path.push("unknown");
+    assert!(example_tree_path.exists(), "example/tree must exist");
+    assert!(
+        example_unknown_path.exists(),
+        "example/unknown must exist (dry-run)"
+    );
+
+    // Prune the example/ directory.
+    // This is the same "garden prune" command as above plus "--rm" to enable deletion.
+    exec_garden(&[
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "prune",
+        "--no-prompt",
+        "--rm",
         "example",
     ])?;
 
@@ -779,6 +801,7 @@ fn cmd_prune_depth() -> Result<()> {
         "tests/data/garden.yaml",
         "prune",
         "--no-prompt",
+        "--rm",
         "--exact-depth",
         "1",
     ])?;
@@ -799,6 +822,7 @@ fn cmd_prune_depth() -> Result<()> {
         "tests/data/garden.yaml",
         "prune",
         "--no-prompt",
+        "--rm",
         "--max-depth",
         "0",
     ])?;
@@ -822,6 +846,7 @@ fn cmd_prune_depth() -> Result<()> {
         "tests/data/garden.yaml",
         "prune",
         "--no-prompt",
+        "--rm",
         "bogus-filter",
     ])?;
     // Nothing was removed.
@@ -840,6 +865,7 @@ fn cmd_prune_depth() -> Result<()> {
         "tests/data/garden.yaml",
         "prune",
         "--no-prompt",
+        "--rm",
         "--min-depth",
         "4",
     ])?;
@@ -859,6 +885,7 @@ fn cmd_prune_depth() -> Result<()> {
         "tests/data/garden.yaml",
         "prune",
         "--no-prompt",
+        "--rm",
         "--min-depth",
         "3",
     ])?;
@@ -878,6 +905,7 @@ fn cmd_prune_depth() -> Result<()> {
         "tests/data/garden.yaml",
         "prune",
         "--no-prompt",
+        "--rm",
         "level1",
     ])?;
     // level1 and below should be removed.

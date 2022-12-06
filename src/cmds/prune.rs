@@ -25,6 +25,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
     options.args.insert(0, "garden prune".into());
+    options.dry_run = true; // Enable the safe dry-run mode by default.
 
     // Mutable scope for parser.
     {
@@ -72,6 +73,12 @@ fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
             &["--no-prompt"],
             argparse::StoreTrue,
             "Prune all repositories without prompting (DANGEROUS!)",
+        );
+
+        parser.refer(&mut options.dry_run).add_option(
+            &["--rm"],
+            argparse::StoreFalse,
+            "Enable deletions (default: deletions are not enabled)",
         );
 
         parser.refer(paths).add_argument(
@@ -266,6 +273,8 @@ struct RemovePaths {
     /// Information about paths that have already been removed are reported by
     /// sending paths to the PromptUser task via the send_finished_path channel.
     send_finished_path: crossbeam::channel::Sender<PathBufMessage>,
+    /// Dry-run mode does not actually perform deletions.
+    dry_run: bool,
 }
 
 impl RemovePaths {
@@ -275,7 +284,7 @@ impl RemovePaths {
             match self.recv_remove_path.recv() {
                 Ok(PathBufMessage::Path(pathbuf)) => {
                     // Remove paths from the filesystem and send a completion message.
-                    {
+                    if !self.dry_run {
                         let pathbuf = pathbuf.to_path_buf();
                         remove_scope.spawn_fifo(move |_| {
                             rm_rf::ensure_removed(&pathbuf).ok();
@@ -488,6 +497,13 @@ pub fn prune(
 ) -> Result<i32> {
     let exit_status: i32 = 0;
 
+    if options.dry_run {
+        let msg = "NOTE: Safe mode enabled. Repositories will not be deleted.";
+        println!("{}", Color::green(msg));
+        let msg = "Use '--rm' to enable deletion.";
+        println!("{}", Color::green(msg));
+    }
+
     // Initialize the global thread pool.
     rayon::ThreadPoolBuilder::new()
         .num_threads(options.num_jobs)
@@ -547,6 +563,7 @@ pub fn prune(
             let remove_paths = RemovePaths {
                 recv_remove_path,
                 send_finished_path,
+                dry_run: options.dry_run,
             };
             remove_paths.remove_paths(remove_scope);
         });

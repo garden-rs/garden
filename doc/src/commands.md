@@ -374,12 +374,27 @@ have since been removed from your version-controlled garden configuration.
 **Warning**: `garden prune` is a dangerous command and must be run with care.
 `garden prune` deletes repositories and all of their files (including the `.git` storage)!
 
-The following options are supported.
+The following options are supported by `garden prune`.
+
+## Enable deletions
+
+    --rm
+
+The `garden prune` command uses a no-op "safe mode" which does not actually
+delete repositories by default. Deletions must be enabled by specifying the
+`--rm` option.
+
+Use the `--rm` option only after you have verified that `garden prune` is not
+going to delete any unexpected repositories that you intended to keep.
+
+## Limit concurrency
 
     --jobs <jobs>
 
 The prune process runs in parallel across multiple cores. All cores are used by default.
 The `--jobs` option limits the number of cores to the specified number of jobs.
+
+## Limit filesystem traversal depth
 
     --min-depth <minimum-depth>
     --max-depth <maximum-depth>
@@ -389,12 +404,14 @@ The cleanup process can be limited to specific traversal depths. The filesystem 
 traversed with no limits by default.
 
 Specifying a minimum depth will not remove repositories shallower than the specified
-depth. `--min-depth 1` will not remove repositories in the same directory
+depth. For example, `--min-depth 1` will not remove repositories in the same directory
 as the garden file.
 
 Specifying a maximum depth will not remove repositories deeper than the specified
-depth. `--max-depth 0` will not remove repositories in subdirectories below
-the directory containing the graden file.
+depth. For example, `--max-depth 0` will not remove repositories in subdirectories
+below the directory containing the graden file.
+
+## Enable scripted usage by answering "yes" to all prompts
 
     --no-prompt
 
@@ -406,13 +423,17 @@ The prompt looks like the following:
     WARNING: "all" deletes "example" and ALL subsequent repositories!
     Choices: yes, no, all, quit [y,n,all,q]?
 
-Entering `y` (or `yes`) at the prompt will delete repository and all of its files.
+Entering `y` (or `yes`) at the prompt will delete the repository and all of its files.
 
 Entering `n` (or `no`) at the prompt will skip and not remove the repository.
 
-Entering `q` (or `quit`) will exit `git prune` without deleting the repository.
+Entering `q` (or `quit`) will exit `garden prune` without deleting the repository.
 
 Entering `all` will remove the repository and all subsequent repositories.
+`all` is equivalent to answering `yes` to all further prompts.
 
-Using the "all" option is dangerous and proceeds without further prompts!
+Using the `all` option is dangerous and proceeds without further prompts!
 Be careful.
+
+Like the `all` option, using the `--no-prompt` mode equivalent to answering `yes`
+to all prompts.
