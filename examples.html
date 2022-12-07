@@ -189,24 +189,26 @@ mkdir -p cola &amp;&amp; cd cola
 wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/garden.yaml
 cat garden.yaml
 
-# One-time setup: Clone all of the repos in the &quot;cola&quot; garden and run a custom
-# &quot;setup&quot; command to initialize the development environment.
-# &quot;garden grow&quot; is a garden built-in command.
+# One-time setup: Clone all of the repos in the &quot;cola&quot; garden and use a custom
+# &quot;garden setup&quot; command defined in &quot;garden.yaml&quot; to initializes the environment.
+# &quot;garden grow&quot; is a garden built-in command that clones.
 garden grow cola
-
-# The &quot;setup&quot; command is defined in garden.yaml.
 garden setup cola
-
-# Daily development workflow: run &quot;make&quot; to build each repository in-place.
-garden build cola
 
 # All set! Now we can run Git Cola from the development environment.
 garden run
+
+# Daily development workflow: run tests in each repository in-place.
+garden test cola
 
 # Commands can be passed to the underlying &quot;run&quot; command to run Git Cola
 # against any Git repository.
 garden run -- --repo path/to/any/git/tree
 
+# These projects don't need to be &quot;built&quot;, so this is technically a no-op.
+# A Rust or C++ Rust project could use something like this to run &quot;make&quot;
+# in each repository.
+garden build cola
 </code></pre>
 <p>The development repositories are now in your current directory and a
 development virtualenv is present in the <code>./dist</code> directory.</p>
@@ -226,8 +228,8 @@ garden shell cola
 </code></pre>
 <h3 id="self-contained-installation-demo"><a class="header" href="#self-contained-installation-demo">Self-contained installation demo</a></h3>
 <p>The <code>garden run</code> example runs <code>git</code> and <code>git cola</code> in-place in their
-respective trees. The software is not installed into the <code>./dist</code> directory.
-It contains just the virtualenv created by cola.</p>
+respective trees. The <code>git-cola</code> project is not installed into the <code>./dist</code> directory.
+It contains just the virtualenv created needed to run it.</p>
 <p>In order to create a self-contained installation to run the tools
 independently of their source repositories we have to install them into the
 <code>./dist</code> directory.</p>
@@ -239,8 +241,8 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <code>$PATH</code>, or just invoke the script directly:</p>
 <pre><code class="language-bash">./dist/bin/git-cola
 </code></pre>
-<p>Voila, we now have a fully functional development environment with PyQt5, the
-latest development Git version and Git Cola ready to go for development.</p>
+<p>Voila, we now have a fully functional development environment with PyQt5, qtpy
+and Git Cola ready to go for development.</p>
 
                     </main>
 
