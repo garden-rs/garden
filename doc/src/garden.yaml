@@ -42,6 +42,8 @@ variables:
   prefix: ${GARDEN_ROOT}/dist
   num_procs: $ nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 8
   python: python3
+  python_version: $ ${python} -c 'import sysconfig; print(sysconfig.get_python_version())'
+  python_sitepackages: lib/python${python_version}/site-packages
 
 commands:
   add-all: git add --update
@@ -96,6 +98,7 @@ trees:
     description: Qt abstraction library used by git-cola
     url: https://github.com/spyder-ide/qtpy.git
     templates: python
+    setup: vx ${prefix} pip install pytest-qt
 
   vx:
     description: Utility for activating Python virtualenvs
@@ -103,6 +106,8 @@ trees:
     depth: 1  # Create a shallow clone using "git clone --depth=1"
     environment:
       PATH: ${TREE_PATH}
+    commands:
+      test: make test
 
   # This tree allows the "run" command to be run from any directory.
   cwd:

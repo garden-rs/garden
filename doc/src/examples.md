@@ -16,24 +16,26 @@ mkdir -p cola && cd cola
 wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/garden.yaml
 cat garden.yaml
 
-# One-time setup: Clone all of the repos in the "cola" garden and run a custom
-# "setup" command to initialize the development environment.
-# "garden grow" is a garden built-in command.
+# One-time setup: Clone all of the repos in the "cola" garden and use a custom
+# "garden setup" command defined in "garden.yaml" to initializes the environment.
+# "garden grow" is a garden built-in command that clones.
 garden grow cola
-
-# The "setup" command is defined in garden.yaml.
 garden setup cola
-
-# Daily development workflow: run "make" to build each repository in-place.
-garden build cola
 
 # All set! Now we can run Git Cola from the development environment.
 garden run
+
+# Daily development workflow: run tests in each repository in-place.
+garden test cola
 
 # Commands can be passed to the underlying "run" command to run Git Cola
 # against any Git repository.
 garden run -- --repo path/to/any/git/tree
 
+# These projects don't need to be "built", so this is technically a no-op.
+# A Rust or C++ Rust project could use something like this to run "make"
+# in each repository.
+garden build cola
 ```
 
 The development repositories are now in your current directory and a
@@ -63,8 +65,8 @@ garden shell cola
 ### Self-contained installation demo
 
 The `garden run` example runs `git` and `git cola` in-place in their
-respective trees. The software is not installed into the `./dist` directory.
-It contains just the virtualenv created by cola.
+respective trees. The `git-cola` project is not installed into the `./dist` directory.
+It contains just the virtualenv created needed to run it.
 
 In order to create a self-contained installation to run the tools
 independently of their source repositories we have to install them into the
@@ -84,5 +86,5 @@ Now we can test the installed tools directly by adding `./dist/bin` to our
 ./dist/bin/git-cola
 ```
 
-Voila, we now have a fully functional development environment with PyQt5, the
-latest development Git version and Git Cola ready to go for development.
+Voila, we now have a fully functional development environment with PyQt5, qtpy
+and Git Cola ready to go for development.
