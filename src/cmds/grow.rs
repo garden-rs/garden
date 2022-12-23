@@ -63,11 +63,11 @@ pub fn grow(
     query: &str,
 ) -> Result<i32> {
     let contexts = query::resolve_trees(config, query);
-    let mut exit_status: i32 = 0;
+    let mut exit_status = errors::EX_OK;
 
     for ctx in &contexts {
         let status = grow_tree_from_context(config, configured_worktrees, ctx, quiet, verbose)?;
-        if status != 0 {
+        if status != errors::EX_OK {
             // Return the last non-zero exit status.
             exit_status = status;
         }
@@ -85,7 +85,7 @@ fn grow_tree_from_context(
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let mut exit_status: i32 = 0;
+    let mut exit_status = errors::EX_OK;
 
     let path = config.trees[ctx.tree].path_as_ref()?.clone();
     model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
@@ -186,7 +186,7 @@ fn grow_tree_from_context(
 
     let status =
         update_tree_from_context(config, configured_worktrees, ctx, &pathbuf, quiet, verbose)?;
-    if status != 0 {
+    if status != errors::EX_OK {
         exit_status = status;
     }
     Ok(exit_status)
@@ -217,7 +217,7 @@ fn update_tree_from_context(
     _quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let mut exit_status = 0;
+    let mut exit_status = errors::EX_OK;
 
     // Existing symlinks require no further processing.
     if config.trees[ctx.tree].is_symlink {
@@ -277,7 +277,7 @@ fn update_tree_from_context(
         };
 
         let status = cmd::status(exec.join());
-        if status != 0 {
+        if status != errors::EX_OK {
             exit_status = status;
         }
     }
@@ -293,7 +293,7 @@ fn update_tree_from_context(
         let command = ["git", "config", var.get_name(), value.as_ref()];
         let exec = cmd::exec_in_dir(&command, path);
         let status = cmd::status(exec.join());
-        if status != 0 {
+        if status != errors::EX_OK {
             exit_status = status;
         }
     }

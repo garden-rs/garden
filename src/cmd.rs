@@ -7,7 +7,7 @@ pub fn run<S>(cmd: &[S]) -> Result<(), errors::GardenError>
 where
     S: AsRef<std::ffi::OsStr>,
 {
-    let mut exit_status: i32 = 1;
+    let mut exit_status = errors::EX_ERROR;
 
     if let Ok(mut p) = subprocess::Popen::create(cmd, subprocess::PopenConfig::default()) {
         exit_status = status(p.wait());
@@ -19,14 +19,14 @@ where
 /// Convert an exit status to Result<(), GardenError>.
 pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
     match exit_status {
-        0 => Ok(()),
+        errors::EX_OK => Ok(()),
         _ => Err(errors::GardenError::ExitStatus(exit_status)),
     }
 }
 
 /// Extract the return status from subprocess::Result<subprocess::ExitStatus>.
 pub fn status(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
-    let mut exit_status: i32 = 1;
+    let mut exit_status = errors::EX_ERROR;
 
     if let Ok(status_result) = result {
         match status_result {

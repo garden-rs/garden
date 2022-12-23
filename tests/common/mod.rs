@@ -1,5 +1,6 @@
 use garden::cmd;
 use garden::config;
+use garden::errors;
 use garden::model;
 
 use anyhow::Result;
@@ -183,7 +184,7 @@ pub fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
 
 /// Execute a command and ensure that exit status 0 is returned.
 pub fn assert_cmd(cmd: &[&str], directory: &str) {
-    assert_cmd_status(cmd, directory, 0);
+    assert_cmd_status(cmd, directory, errors::EX_OK);
 }
 
 /// Execute a command and ensure that exit status 0 is returned. Return the Exec object.

@@ -353,14 +353,14 @@ pub fn cmds(
     queries: &[String],
     arguments: &[String],
 ) -> Result<()> {
-    let mut exit_status: i32 = 0;
+    let mut exit_status = errors::EX_OK;
 
     let commands: Vec<String> = vec![command.to_string()];
     let keep_going = app.options.keep_going;
 
     for query in queries {
         let status = cmd(app, query, &commands, arguments, true).unwrap_or(errors::EX_IOERR);
-        if status != 0 {
+        if status != errors::EX_OK {
             exit_status = status;
             if !keep_going {
                 break;

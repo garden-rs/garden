@@ -94,6 +94,7 @@ pub enum CommandError {
 
 // /usr/include/sysexits.h
 pub const EX_OK: i32 = 0;
+pub const EX_ERROR: i32 = 1;
 pub const EX_USAGE: i32 = 64;
 pub const EX_DATAERR: i32 = 65;
 pub const EX_SOFTWARE: i32 = 70;
