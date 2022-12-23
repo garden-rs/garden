@@ -199,9 +199,6 @@ pub fn run_cmd_breadth_first(
     // Loop over each command, evaluate the tree environment,
     // and run the command in each context.
     for name in commands {
-        // The "error" flag is set when a non-zero exit status is returned.
-        let mut error = false;
-
         // One invocation runs multiple commands
         for context in contexts {
             // Skip symlink trees.
@@ -227,24 +224,14 @@ pub fn run_cmd_breadth_first(
             let cmd_seq_vec = eval::command(app, context, name);
             app.get_root_config_mut().reset();
 
-            // Keep track of the error state per-context.
-            error = run_cmd_vec(
-                &app.options,
-                &path,
-                &shell,
-                &env,
-                &cmd_seq_vec,
-                arguments,
-                &mut exit_status,
-            );
-
-            if error && !keep_going {
-                break;
+            if let Err(cmd_status) =
+                run_cmd_vec(&app.options, &path, &shell, &env, &cmd_seq_vec, arguments)
+            {
+                exit_status = cmd_status;
+                if !keep_going {
+                    return Ok(cmd_status);
+                }
             }
-        }
-
-        if error && !keep_going {
-            break;
         }
     }
 
@@ -266,8 +253,7 @@ pub fn run_cmd_depth_first(
         let config = app.get_root_config();
         config.shell.to_string()
     };
-    // Loop over each context, evaluate the tree environment,
-    // and run the command.
+    // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
         // Skip symlink trees.
         let config = app.get_root_config();
@@ -286,9 +272,6 @@ pub fn run_cmd_depth_first(
             continue;
         }
 
-        // The "error" flag is set when a non-zero exit status is returned.
-        let mut error = false;
-
         // One invocation runs multiple commands
         for name in commands {
             // One command maps to multiple command sequences.
@@ -298,23 +281,14 @@ pub fn run_cmd_depth_first(
             let cmd_seq_vec = eval::command(app, context, name);
             app.get_root_config_mut().reset();
 
-            error = run_cmd_vec(
-                &app.options,
-                &path,
-                &shell,
-                &env,
-                &cmd_seq_vec,
-                arguments,
-                &mut exit_status,
-            );
-
-            if error && !keep_going {
-                break;
+            if let Err(cmd_status) =
+                run_cmd_vec(&app.options, &path, &shell, &env, &cmd_seq_vec, arguments)
+            {
+                exit_status = cmd_status;
+                if !keep_going {
+                    return Ok(cmd_status);
+                }
             }
-        }
-
-        if error && !keep_going {
-            break;
         }
     }
 
@@ -336,10 +310,7 @@ fn run_cmd_vec(
     env: &Vec<(String, String)>,
     cmd_seq_vec: &[Vec<String>],
     arguments: &[String],
-    exit_status: &mut i32,
-) -> bool {
-    let mut error = false;
-
+) -> Result<(), i32> {
     // Get the current executable name
     let current_exe = cmd::current_exe();
 
@@ -367,17 +338,12 @@ fn run_cmd_vec(
             }
             let status = cmd::status(exec.join());
             if status != errors::EX_OK {
-                *exit_status = status as i32;
-                error = true;
-                break;
+                return Err(status);
             }
-        }
-        if error {
-            break;
         }
     }
 
-    error
+    Ok(())
 }
 
 /// Run cmd() over a Vec of tree queries
