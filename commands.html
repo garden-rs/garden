@@ -359,8 +359,17 @@ If both a tree and the garden containing that tree defines a command called
 &quot;test&quot; then &quot;garden test&quot; will first run the tree's &quot;test&quot; command followed
 by the garden's &quot;test&quot; command.</p>
 <p>Commands are executed in a shell and shell expressions can be used in commands.
-Each command runs under <code>[&quot;sh&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> with the resolved
-environment from the corresponding garden, group, or tree.</p>
+Each command runs under <code>[&quot;zsh&quot;, &quot;-e&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> by default with the
+resolved environment from the corresponding garden, group, or tree.</p>
+<p>The <code>garden.shell</code> configuration value defaults to <code>zsh</code> but can be set to any
+shell that accepts <code>-e</code> and <code>-c '&lt;command&gt;</code> options (for example <code>bash</code>).</p>
+<p>Multi-line and multi-statement command strings will stop executing as soon as the
+first non-zero exit code is encountered due to the use of the <code>-e</code> shell option.
+Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> errexit option.</p>
+<p>The <code>--no-errexit</code> option causes commands with multiple statements to run to completion
+even when a non-zero exit code is encountered. This is akin to a regular shell script.</p>
+<p>You can also opt-out of the <code>errexit</code> behavior on a per-command basis by adding
+<code>set +e</code> as the first line of a multi-line command.</p>
 <p>Additional command-line <code>&lt;arguments&gt;</code> specified after a double-dash (<code>--</code>)
 end-of-options marker are forwarded to each command.</p>
 <p><code>&quot;$0&quot;</code> in a custom command points to the current garden executable and can be
