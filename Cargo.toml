@@ -40,6 +40,7 @@ shellexpand = "2.1"
 shlex = "1.1"
 subprocess = "0.2"
 thiserror = "1.0"
+which = "4.3.0"
 xdg = "2.4"
 yaml-rust = { version = "0.5", package = "yaml-rust-davvid" }
 yansi = "0.5"
