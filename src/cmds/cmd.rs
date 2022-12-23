@@ -113,6 +113,18 @@ fn parse_args_custom(
         "Continue to the next tree when errors occur.",
     );
 
+    ap.refer(&mut options.exit_on_error).add_option(
+        &["-n", "--no-errexit"],
+        argparse::StoreFalse,
+        "Do not pass \"-e\" to the shell. This prevents the \"errexit\" shell \
+        option from being set. By default, the \"-e\" option is passed to the \
+        configured shell so that multi-line and multi-statement commands halt \
+        execution when the first statement with a non-zero exit code is \
+        encountered. \"--no-errexit\" has the effect of making multi-line and \
+        multi-statement commands run all statements even when an earlier statement \
+        returns a non-zero exit code.",
+    );
+
     ap.refer(&mut queries_and_arguments).add_argument(
         "queries",
         argparse::List,
