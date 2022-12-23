@@ -14,6 +14,12 @@
   runs a command across all trees before continuing on to the next command.
   ([#3](https://github.com/davvid/garden/issues/3))
 
+- `garden cmd` now runs commands inside using `zsh -e -c '<command>'` by default.
+  The use of `-e` is a change in behavior and causes multi-line / multi-statement
+  commands to halt execution when the first non-zero exit code is encountered.
+  Use `set +e` at the top of of a multi-line command to opt-out of this behavior
+  on a per-command basis, or specify the `-n | --no-errexit` option.
+
 ## v0.3.0
 
 **Features**:
