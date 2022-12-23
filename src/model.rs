@@ -425,12 +425,13 @@ impl Garden {
 /// Return the default shell to use for custom commands and "garden shell".
 fn get_default_shell() -> String {
     if which("zsh").is_ok() {
-        "zsh".to_string()
+        "zsh"
     } else if which("bash").is_ok() {
-        "bash".to_string()
+        "bash"
     } else {
-        "sh".to_string()
+        "sh"
     }
+    .to_string()
 }
 
 // Configuration represents an instantiated garden configuration
