@@ -243,15 +243,19 @@ and the top-level scope.
 Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level extend commands defined on a tree.
 If both a tree and the garden containing that tree defines a command called
-"test" then "garden test" will first run the tree's "test" command followed
-by the garden's "test" command.
+`test` then `garden test` will first run the tree's `test` command followed
+by the garden's `test` command.
 
-Commands are executed in a shell and shell expressions can be used in commands.
-Each command runs under `["zsh", "-e", "-c", "<command>"]` by default with the
-resolved environment from the corresponding garden, group, or tree.
+Commands are executed in a shell so that shell expressions can be used in commands.
+A POSIX-compatible shell must be installed in your `$PATH`.
 
 The `garden.shell` configuration value defaults to `zsh` but can be set to any
 shell that accepts `-e` and `-c '<command>` options (for example `bash`).
+If `zsh` is not installed then `bash` will be used by default instead.
+If neither `zsh` nor `bash` is installed then `sh` will be used by default instead.
+
+Each command runs under `["zsh", "-e", "-c", "<command>"]` with the resolved
+environment from the corresponding garden, group, or tree.
 
 Multi-line and multi-statement command strings will stop executing as soon as the
 first non-zero exit code is encountered due to the use of the `-e` shell option.

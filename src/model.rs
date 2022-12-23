@@ -1,5 +1,6 @@
 use indextree::{Arena, NodeId};
 use std::cell::RefCell;
+use which::which;
 
 use super::errors;
 use super::eval;
@@ -421,6 +422,17 @@ impl Garden {
     }
 }
 
+/// Return the default shell to use for custom commands and "garden shell".
+fn get_default_shell() -> String {
+    if which("zsh").is_ok() {
+        "zsh".to_string()
+    } else if which("bash").is_ok() {
+        "bash".to_string()
+    } else {
+        "sh".to_string()
+    }
+}
+
 // Configuration represents an instantiated garden configuration
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
@@ -452,7 +464,7 @@ impl Configuration {
         Configuration {
             id: None,
             parent_id: None,
-            shell: "zsh".into(),
+            shell: get_default_shell(),
             ..std::default::Default::default()
         }
     }
