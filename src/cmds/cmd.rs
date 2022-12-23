@@ -43,6 +43,18 @@ fn parse_args(
             "Continue to the next tree when errors occur.",
         );
 
+        ap.refer(&mut options.exit_on_error).add_option(
+            &["-n", "--no-errexit"],
+            argparse::StoreFalse,
+            "Do not pass \"-e\" to the shell. This prevents the \"errexit\" shell \
+            option from being set. By default, the \"-e\" option is passed to the \
+            configured shell so that multi-line and multi-statement commands halt \
+            execution when the first statement with a non-zero exit code is \
+            encountered. \"--no-errexit\" has the effect of making multi-line and \
+            multi-statement commands run all statements even when an earlier statement \
+            returns a non-zero exit code.",
+        );
+
         ap.refer(query).required().add_argument(
             "query",
             argparse::Store,
@@ -151,45 +163,35 @@ pub fn cmd(
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
 
-    let quiet = app.options.quiet;
-    let verbose = app.options.verbose;
-    let keep_going = app.options.keep_going;
-
     if breadth_first {
-        run_cmd_breadth_first(
-            app, quiet, verbose, keep_going, &contexts, commands, arguments,
-        )
+        run_cmd_breadth_first(app, &contexts, commands, arguments)
     } else {
-        run_cmd_depth_first(
-            app, quiet, verbose, keep_going, &contexts, commands, arguments,
-        )
+        run_cmd_depth_first(app, &contexts, commands, arguments)
     }
 }
 
 pub fn run_cmd_breadth_first(
     app: &mut model::ApplicationContext,
-    quiet: bool,
-    verbose: u8,
-    keep_going: bool,
     contexts: &[model::TreeContext],
     commands: &[String],
     arguments: &[String],
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
+    let keep_going = app.options.keep_going;
+    let quiet = app.options.quiet;
+    let verbose = app.options.verbose;
+    let shell = {
+        let config = app.get_root_config();
+        config.shell.to_string()
+    };
     // Loop over each command, evaluate the tree environment,
     // and run the command in each context.
     for name in commands {
         // The "error" flag is set when a non-zero exit status is returned.
         let mut error = false;
 
-        // Get the current executable name
-        let current_exe = cmd::current_exe();
-
         // One invocation runs multiple commands
         for context in contexts {
-            // Keep track of the error state per-context.
-            error = false;
-
             // Skip symlink trees.
             let config = app.get_root_config();
             if config.trees[context.tree].is_symlink {
@@ -213,34 +215,17 @@ pub fn run_cmd_breadth_first(
             let cmd_seq_vec = eval::command(app, context, name);
             app.get_root_config_mut().reset();
 
-            for cmd_seq in &cmd_seq_vec {
-                for cmd_str in cmd_seq {
-                    if verbose > 1 {
-                        println!(
-                            "{} {}",
-                            model::Color::cyan(":"),
-                            model::Color::green(&cmd_str),
-                        );
-                    }
-                    let mut exec = subprocess::Exec::shell(cmd_str)
-                        .arg(&current_exe)
-                        .args(arguments)
-                        .cwd(&path);
-                    // Update the command environment
-                    for (k, v) in &env {
-                        exec = exec.env(k, v);
-                    }
-                    let status = cmd::status(exec.join());
-                    if status != errors::EX_OK {
-                        exit_status = status as i32;
-                        error = true;
-                        break;
-                    }
-                }
-                if error {
-                    break;
-                }
-            }
+            // Keep track of the error state per-context.
+            error = run_cmd_vec(
+                &app.options,
+                &path,
+                &shell,
+                &env,
+                &cmd_seq_vec,
+                arguments,
+                &mut exit_status,
+            );
+
             if error && !keep_going {
                 break;
             }
@@ -257,14 +242,18 @@ pub fn run_cmd_breadth_first(
 
 pub fn run_cmd_depth_first(
     app: &mut model::ApplicationContext,
-    quiet: bool,
-    verbose: u8,
-    keep_going: bool,
     contexts: &[model::TreeContext],
     commands: &[String],
     arguments: &[String],
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
+    let keep_going = app.options.keep_going;
+    let quiet = app.options.quiet;
+    let verbose = app.options.verbose;
+    let shell = {
+        let config = app.get_root_config();
+        config.shell.to_string()
+    };
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in contexts {
@@ -288,47 +277,25 @@ pub fn run_cmd_depth_first(
         // The "error" flag is set when a non-zero exit status is returned.
         let mut error = false;
 
-        // Get the current executable name
-        let current_exe = cmd::current_exe();
-
         // One invocation runs multiple commands
         for name in commands {
             // One command maps to multiple command sequences.
             // When the scope is tree, only the tree's commands
             // are included.  When the scope includes a gardens,
             // its matching commands are appended to the end.
-            error = false;
             let cmd_seq_vec = eval::command(app, context, name);
             app.get_root_config_mut().reset();
 
-            for cmd_seq in &cmd_seq_vec {
-                for cmd_str in cmd_seq {
-                    if verbose > 1 {
-                        println!(
-                            "{} {}",
-                            model::Color::cyan(":"),
-                            model::Color::green(&cmd_str),
-                        );
-                    }
-                    let mut exec = subprocess::Exec::shell(cmd_str)
-                        .arg(&current_exe)
-                        .args(arguments)
-                        .cwd(&path);
-                    // Update the command environment
-                    for (k, v) in &env {
-                        exec = exec.env(k, v);
-                    }
-                    let status = cmd::status(exec.join());
-                    if status != errors::EX_OK {
-                        exit_status = status as i32;
-                        error = true;
-                        break;
-                    }
-                }
-                if error {
-                    break;
-                }
-            }
+            error = run_cmd_vec(
+                &app.options,
+                &path,
+                &shell,
+                &env,
+                &cmd_seq_vec,
+                arguments,
+                &mut exit_status,
+            );
+
             if error && !keep_going {
                 break;
             }
@@ -341,6 +308,64 @@ pub fn run_cmd_depth_first(
 
     // Return the last non-zero exit status.
     Ok(exit_status)
+}
+
+/// Run a vector of custom commands using the configured shell.
+/// Parameters:
+/// - path: The current working directory for the command.
+/// - shell: The shell that will be used to run the command strings.
+/// - env: Environment variables to set.
+/// - cmd_seq_vec: Vector of vector of command strings to run.
+/// - arguments: Additional command line arguments available in $1, $2, $N.
+fn run_cmd_vec(
+    options: &model::CommandOptions,
+    path: &str,
+    shell: &str,
+    env: &Vec<(String, String)>,
+    cmd_seq_vec: &[Vec<String>],
+    arguments: &[String],
+    exit_status: &mut i32,
+) -> bool {
+    let mut error = false;
+
+    // Get the current executable name
+    let current_exe = cmd::current_exe();
+
+    for cmd_seq in cmd_seq_vec {
+        for cmd_str in cmd_seq {
+            if options.verbose > 1 {
+                println!(
+                    "{} {}",
+                    model::Color::cyan(":"),
+                    model::Color::green(&cmd_str),
+                );
+            }
+            let mut exec = subprocess::Exec::cmd(shell).cwd(path);
+            if options.exit_on_error {
+                exec = exec.arg("-e");
+            }
+            exec = exec
+                .arg("-c")
+                .arg(cmd_str)
+                .arg(&current_exe)
+                .args(arguments);
+            // Update the command environment
+            for (k, v) in env {
+                exec = exec.env(k, v);
+            }
+            let status = cmd::status(exec.join());
+            if status != errors::EX_OK {
+                *exit_status = status as i32;
+                error = true;
+                break;
+            }
+        }
+        if error {
+            break;
+        }
+    }
+
+    error
 }
 
 /// Run cmd() over a Vec of tree queries

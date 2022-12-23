@@ -1044,6 +1044,7 @@ pub struct CommandOptions {
     pub verbose: u8,
     pub breadth_first: bool,
     pub dry_run: bool,
+    pub exit_on_error: bool,
     pub keep_going: bool,
     pub no_prompt: bool,
     pub quiet: bool,
@@ -1057,6 +1058,7 @@ impl CommandOptions {
         };
         Self {
             exact_depth: -1,
+            exit_on_error: true,
             min_depth: -1,
             max_depth: -1,
             num_jobs,

@@ -82,3 +82,7 @@ commands:
   basename: basename "$(pwd)"
   tree-name: echo "${TREE_NAME}"
   tree-var: echo "${tree_var}"
+  error-command: |
+    echo ok
+    false
+    echo after error

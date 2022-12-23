@@ -247,8 +247,21 @@ If both a tree and the garden containing that tree defines a command called
 by the garden's "test" command.
 
 Commands are executed in a shell and shell expressions can be used in commands.
-Each command runs under `["sh", "-c", "<command>"]` with the resolved
-environment from the corresponding garden, group, or tree.
+Each command runs under `["zsh", "-e", "-c", "<command>"]` by default with the
+resolved environment from the corresponding garden, group, or tree.
+
+The `garden.shell` configuration value defaults to `zsh` but can be set to any
+shell that accepts `-e` and `-c '<command>` options (for example `bash`).
+
+Multi-line and multi-statement command strings will stop executing as soon as the
+first non-zero exit code is encountered due to the use of the `-e` shell option.
+Use the `-n | --no-errexit` option to inhibit the use of the `-e` errexit option.
+
+The `--no-errexit` option causes commands with multiple statements to run to completion
+even when a non-zero exit code is encountered. This is akin to a regular shell script.
+
+You can also opt-out of the `errexit` behavior on a per-command basis by adding
+`set +e` as the first line of a multi-line command.
 
 Additional command-line `<arguments>` specified after a double-dash (`--`)
 end-of-options marker are forwarded to each command.

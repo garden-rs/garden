@@ -687,6 +687,31 @@ fn cmd_breadth_first_and_depth_first() {
     assert_eq!(expect, actual);
 }
 
+/// Test -n / --no-fail-fast and the shell "-e" behavior.
+#[test]
+fn cmd_no_fail_fast() {
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        ".",
+        "error-command",
+    ]);
+    assert_eq!(output, "ok");
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        "--no-errexit",
+        ".",
+        "error-command",
+    ]);
+    assert_eq!(output, "ok\nafter error");
+}
+
 /// "garden prune" prunes specific depths
 #[test]
 #[named]
