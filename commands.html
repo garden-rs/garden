@@ -356,13 +356,16 @@ and the top-level scope.</p>
 <p>Custom commands can be defined at either the tree or garden level.
 Commands defined at the garden level extend commands defined on a tree.
 If both a tree and the garden containing that tree defines a command called
-&quot;test&quot; then &quot;garden test&quot; will first run the tree's &quot;test&quot; command followed
-by the garden's &quot;test&quot; command.</p>
-<p>Commands are executed in a shell and shell expressions can be used in commands.
-Each command runs under <code>[&quot;zsh&quot;, &quot;-e&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> by default with the
-resolved environment from the corresponding garden, group, or tree.</p>
+<code>test</code> then <code>garden test</code> will first run the tree's <code>test</code> command followed
+by the garden's <code>test</code> command.</p>
+<p>Commands are executed in a shell so that shell expressions can be used in commands.
+A POSIX-compatible shell must be installed in your <code>$PATH</code>.</p>
 <p>The <code>garden.shell</code> configuration value defaults to <code>zsh</code> but can be set to any
-shell that accepts <code>-e</code> and <code>-c '&lt;command&gt;</code> options (for example <code>bash</code>).</p>
+shell that accepts <code>-e</code> and <code>-c '&lt;command&gt;</code> options (for example <code>bash</code>).
+If <code>zsh</code> is not installed then <code>bash</code> will be used by default instead.
+If neither <code>zsh</code> nor <code>bash</code> is installed then <code>sh</code> will be used by default instead.</p>
+<p>Each command runs under <code>[&quot;zsh&quot;, &quot;-e&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> with the resolved
+environment from the corresponding garden, group, or tree.</p>
 <p>Multi-line and multi-statement command strings will stop executing as soon as the
 first non-zero exit code is encountered due to the use of the <code>-e</code> shell option.
 Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> errexit option.</p>
