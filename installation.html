@@ -178,6 +178,13 @@
                     <main>
                         <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>There are multiple ways to install garden.</p>
+<p>These instructions assume that you have <code>cargo</code> installed for Rust development.</p>
+<h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
+<p>If you already have <code>cargo</code> installed then you can skip this section.</p>
+<p>You may be able to install <code>cargo</code> on macOS and Linux using standard package
+managers, eg. <code>brew install rust</code> or <code>apt install rust-all</code>.</p>
+<p>Other platforms and older distributions can get a Rust development toolchain
+by going to <a href="https://rustup.rs">rustup.rs and following the installation instructions</a>.</p>
 <h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
 <p>This requires at least Rust 1.45 and Cargo to be installed. Once you have
 installed Rust, type the following in the terminal:</p>
@@ -194,15 +201,25 @@ build the Git version of Garden yourself using <code>cargo</code>.</p>
 <h2 id="build-and-install-from-source-for-development"><a class="header" href="#build-and-install-from-source-for-development">Build and Install from Source for Development</a></h2>
 <p>If you would like to develop features and contribute to Garden then you will
 have to clone the repository on your local machine.</p>
-<pre><code>git clone https://github.com/davvid/garden
+<pre><code>git clone https://github.com/davvid/garden.git
 cd garden
 
 # Build ./target/debug/garden
 cargo build
 
 # Install $HOME/.cargo/bin/garden
-cargo install
+cargo install --path .
 </code></pre>
+<p>A <code>Makefile</code> is also provided with a classic <code>make install</code> installation target.
+The <code>prefix</code> and <code>DESTDIR</code> variables specify the
+<a href="https://www.gnu.org/prep/standards/html_node/Directory-Variables.html#Directory-Variables">installation prefix</a>
+and optional
+<a href="https://www.gnu.org/prep/standards/html_node/DESTDIR.html#DESTDIR">temporary staging directory</a>,
+respectively.</p>
+<pre><code>make install prefix=/usr/local DESTDIR=/tmp/stage
+</code></pre>
+<p>Running <code>make install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
+<p><code>make test</code> runs the test suite and <code>make check</code> runs checks and linters.</p>
 
                     </main>
 
