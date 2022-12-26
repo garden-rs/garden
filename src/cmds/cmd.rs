@@ -8,29 +8,31 @@ use super::super::query;
 
 /// garden cmd <query> <command>...
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let cmd_options = parse_args(&mut app.options);
-    let exit_status = cmd(app, &cmd_options.query, &cmd_options)?;
+    let params = parse_args(&mut app.options);
+    let exit_status = cmd(app, &params.query, &params)?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
+/// CmdParams are used to control the execution of run_cmd_vec().
+///
 /// "garden cmd" and "garden <custom-cmd>" parse command line arguments into struct CmdOptions.
 #[derive(Clone, Debug, Default)]
-pub struct CmdOptions {
+pub struct CmdParams {
     commands: Vec<String>,
     arguments: Vec<String>,
     queries: Vec<String>,
     query: String,
 }
 
-impl CmdOptions {
+impl CmdParams {
     pub fn new() -> Self {
         Self::default()
     }
 }
 
 /// Parse "cmd" arguments.
-fn parse_args(options: &mut model::CommandOptions) -> CmdOptions {
-    let mut cmd_options = CmdOptions::new();
+fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
+    let mut params = CmdParams::new();
     let mut commands_and_args: Vec<String> = Vec::new();
     {
         let mut ap = argparse::ArgumentParser::new();
@@ -61,7 +63,7 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdOptions {
             returns a non-zero exit code.",
         );
 
-        ap.refer(&mut cmd_options.query).required().add_argument(
+        ap.refer(&mut params.query).required().add_argument(
             "query",
             argparse::Store,
             "Gardens/Groups/Trees to exec (tree query).",
@@ -79,36 +81,36 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdOptions {
 
     if options.debug_level("cmd") > 0 {
         debug!("subcommand: cmd");
-        debug!("query: {}", cmd_options.query);
+        debug!("query: {}", params.query);
         debug!("commands_and_args: {:?}", commands_and_args);
     }
 
     // Queries and arguments are separated by a double-dash "--" marker.
     cmd::split_on_dash(
         &commands_and_args,
-        &mut cmd_options.commands,
-        &mut cmd_options.arguments,
+        &mut params.commands,
+        &mut params.arguments,
     );
 
     if options.debug_level("cmd") > 0 {
-        debug!("commands: {:?}", cmd_options.commands);
-        debug!("arguments: {:?}", cmd_options.arguments);
+        debug!("commands: {:?}", params.commands);
+        debug!("arguments: {:?}", params.arguments);
     }
 
-    cmd_options
+    params
 }
 
 /// garden <command> <query>...
 pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
-    let cmd_options = parse_args_custom(command, &mut app.options);
-    cmds(app, &cmd_options)
+    let params = parse_args_custom(command, &mut app.options);
+    cmds(app, &params)
 }
 
 /// Parse custom command arguments.
-fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdOptions {
+fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdParams {
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
-    let mut cmd_options = CmdOptions::new();
-    cmd_options.commands.push(command.to_string());
+    let mut params = CmdParams::new();
+    params.commands.push(command.to_string());
 
     let mut queries_and_arguments: Vec<String> = Vec::new();
     let mut ap = argparse::ArgumentParser::new();
@@ -157,21 +159,21 @@ fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdO
     // Queries and arguments are separated by a double-dash "--" marker.
     cmd::split_on_dash(
         &queries_and_arguments,
-        &mut cmd_options.queries,
-        &mut cmd_options.arguments,
+        &mut params.queries,
+        &mut params.arguments,
     );
 
     // Default to "." when no queries have been specified.
-    if cmd_options.queries.is_empty() {
-        cmd_options.queries.push(".".into());
+    if params.queries.is_empty() {
+        params.queries.push(".".into());
     }
 
     if options.debug_level("cmd") > 0 {
-        debug!("queries {:?}", cmd_options.queries);
-        debug!("arguments: {:?}", cmd_options.arguments);
+        debug!("queries {:?}", params.queries);
+        debug!("arguments: {:?}", params.arguments);
     }
 
-    cmd_options
+    params
 }
 
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -187,7 +189,7 @@ fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdO
 pub fn cmd(
     app: &mut model::ApplicationContext,
     query: &str,
-    cmd_options: &CmdOptions,
+    params: &CmdParams,
 ) -> Result<i32> {
     // Mutable scope for app.get_root_config_mut()
     let config = app.get_root_config_mut();
@@ -198,15 +200,15 @@ pub fn cmd(
         run_cmd_breadth_first(
             app,
             &contexts,
-            &cmd_options.commands,
-            &cmd_options.arguments,
+            &params.commands,
+            &params.arguments,
         )
     } else {
         run_cmd_depth_first(
             app,
             &contexts,
-            &cmd_options.commands,
-            &cmd_options.arguments,
+            &params.commands,
+            &params.arguments,
         )
     }
 }
@@ -376,12 +378,12 @@ fn run_cmd_vec(
 }
 
 /// Run cmd() over a Vec of tree queries
-pub fn cmds(app: &mut model::ApplicationContext, cmd_options: &CmdOptions) -> Result<()> {
+pub fn cmds(app: &mut model::ApplicationContext, params: &CmdParams) -> Result<()> {
     let mut exit_status = errors::EX_OK;
     let keep_going = app.options.keep_going;
 
-    for query in &cmd_options.queries {
-        let status = cmd(app, query, cmd_options).unwrap_or(errors::EX_IOERR);
+    for query in &params.queries {
+        let status = cmd(app, query, params).unwrap_or(errors::EX_IOERR);
         if status != errors::EX_OK {
             exit_status = status;
             if !keep_going {
