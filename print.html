@@ -1033,7 +1033,29 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v041"><a class="header" href="#v041">v0.4.1</a></h2>
+<p><strong>Features</strong></p>
+<ul>
+<li>The <code>garden cmd --no-errexit</code> option was extended to work with commands that are
+configured using a YAML list of strings. Commands that are specified using lists
+are now indistinguishable from commands specified using multi-line strings.</li>
+</ul>
 <h2 id="v040"><a class="header" href="#v040">v0.4.0</a></h2>
+<p><strong>Breaking Changes</strong>:</p>
+<ul>
+<li>
+<p><code>garden cmd</code> now runs custom commands using <code>&lt;shell&gt; -e -c '&lt;command&gt;'</code> by default.
+The use of <code>-e</code> is a change in behavior and causes multi-line / multi-statement
+commands to halt execution when the first non-zero exit code is encountered.
+Use <code>set +e</code> at the top of of a multi-line command to opt-out of this behavior
+on a per-command basis, or specify the <code>-n | --no-errexit</code> option.</p>
+</li>
+<li>
+<p><code>garden</code> will now fallback to <code>bash</code> (and <code>sh</code>) as the default <code>garden.shell</code> value
+when <code>zsh</code> (and <code>bash</code>) are not installed. As before, the <code>garden.shell</code>
+configuration variable can be used to override the default shell.</p>
+</li>
+</ul>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
@@ -1047,18 +1069,6 @@ The <code>garden cmd --breadth-first</code> traversal runs all commands on a tre
 continuing on to the next tree. The default <code>garden cmd</code> depth-first traversal
 runs a command across all trees before continuing on to the next command.
 (<a href="https://github.com/davvid/garden/issues/3">#3</a>)</p>
-</li>
-<li>
-<p><code>garden cmd</code> now runs custom commands using <code>&lt;shell&gt; -e -c '&lt;command&gt;'</code> by default.
-The use of <code>-e</code> is a change in behavior and causes multi-line / multi-statement
-commands to halt execution when the first non-zero exit code is encountered.
-Use <code>set +e</code> at the top of of a multi-line command to opt-out of this behavior
-on a per-command basis, or specify the <code>-n | --no-errexit</code> option.</p>
-</li>
-<li>
-<p><code>garden</code> will now fallback to <code>bash</code> (and <code>sh</code>) as the default <code>garden.shell</code> value
-when <code>zsh</code> (and <code>bash</code>) are not installed. As before, the <code>garden.shell</code>
-configuration variable can be used to override the default shell.</p>
 </li>
 </ul>
 <h2 id="v030"><a class="header" href="#v030">v0.3.0</a></h2>
