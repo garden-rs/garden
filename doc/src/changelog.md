@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.4.1
+
+**Features**
+
+- The `garden cmd --no-errexit` option was extended to work with commands that are
+  configured using a YAML list of strings. Commands that are specified using lists
+  are now indistinguishable from commands specified using multi-line strings.
+
 ## v0.4.0
 
 **Breaking Changes**:
