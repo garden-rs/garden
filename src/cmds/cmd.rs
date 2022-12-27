@@ -38,19 +38,16 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
         let mut ap = argparse::ArgumentParser::new();
         ap.silence_double_dash(false);
         ap.set_description("garden cmd - Run custom commands over gardens");
-
         ap.refer(&mut options.breadth_first).add_option(
             &["-b", "--breadth-first"],
             argparse::StoreTrue,
             "Run a command in all trees before running the next command.",
         );
-
         ap.refer(&mut options.keep_going).add_option(
             &["-k", "--keep-going"],
             argparse::StoreTrue,
             "Continue to the next tree when errors occur.",
         );
-
         ap.refer(&mut options.exit_on_error).add_option(
             &["-n", "--no-errexit"],
             argparse::StoreFalse,
@@ -68,7 +65,6 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
             argparse::Store,
             "Gardens/Groups/Trees to exec (tree query).",
         );
-
         ap.refer(&mut commands_and_args).required().add_argument(
             "commands",
             argparse::List,
@@ -84,14 +80,12 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
         debug!("query: {}", params.query);
         debug!("commands_and_args: {:?}", commands_and_args);
     }
-
     // Queries and arguments are separated by a double-dash "--" marker.
     cmd::split_on_dash(
         &commands_and_args,
         &mut params.commands,
         &mut params.arguments,
     );
-
     if options.debug_level("cmd") > 0 {
         debug!("commands: {:?}", params.commands);
         debug!("arguments: {:?}", params.arguments);
@@ -129,7 +123,6 @@ fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdP
         argparse::StoreTrue,
         "Continue to the next tree when errors occur.",
     );
-
     ap.refer(&mut options.exit_on_error).add_option(
         &["-n", "--no-errexit"],
         argparse::StoreFalse,
@@ -141,7 +134,6 @@ fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdP
         multi-statement commands run all statements even when an earlier statement \
         returns a non-zero exit code.",
     );
-
     ap.refer(&mut queries_and_arguments).add_argument(
         "queries",
         argparse::List,
@@ -186,30 +178,16 @@ fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdP
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn cmd(
-    app: &mut model::ApplicationContext,
-    query: &str,
-    params: &CmdParams,
-) -> Result<i32> {
+pub fn cmd(app: &mut model::ApplicationContext, query: &str, params: &CmdParams) -> Result<i32> {
     // Mutable scope for app.get_root_config_mut()
     let config = app.get_root_config_mut();
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
 
     if app.options.breadth_first {
-        run_cmd_breadth_first(
-            app,
-            &contexts,
-            &params.commands,
-            &params.arguments,
-        )
+        run_cmd_breadth_first(app, &contexts, &params.commands, &params.arguments)
     } else {
-        run_cmd_depth_first(
-            app,
-            &contexts,
-            &params.commands,
-            &params.arguments,
-        )
+        run_cmd_depth_first(app, &contexts, &params.commands, &params.arguments)
     }
 }
 
