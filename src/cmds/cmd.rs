@@ -8,8 +8,8 @@ use super::super::query;
 
 /// garden cmd <query> <command>...
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let params = parse_args(&mut app.options);
-    let exit_status = cmd(app, &params.query, &params)?;
+    let (query, params) = parse_args_cmd(&mut app.options);
+    let exit_status = cmd(app, &query, &params)?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
@@ -21,7 +21,6 @@ pub struct CmdParams {
     commands: Vec<String>,
     arguments: Vec<String>,
     queries: Vec<String>,
-    query: String,
 }
 
 impl CmdParams {
@@ -31,10 +30,11 @@ impl CmdParams {
 }
 
 /// Parse "cmd" arguments.
-fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
+fn parse_args_cmd(options: &mut model::CommandOptions) -> (String, CmdParams) {
     // Display "garden cmd" in the "garden cmd -h" help text.
     options.args.insert(0, "garden cmd".into());
 
+    let mut query = String::new();
     let mut params = CmdParams::new();
     let mut commands_and_args: Vec<String> = Vec::new();
     {
@@ -62,8 +62,7 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
             multi-statement commands run all statements even when an earlier statement \
             returns a non-zero exit code.",
         );
-
-        ap.refer(&mut params.query).required().add_argument(
+        ap.refer(&mut query).required().add_argument(
             "query",
             argparse::Store,
             "Gardens/Groups/Trees to exec (tree query).",
@@ -78,7 +77,7 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
 
     if options.debug_level("cmd") > 0 {
         debug!("subcommand: cmd");
-        debug!("query: {}", params.query);
+        debug!("query: {}", query);
         debug!("commands_and_args: {:?}", commands_and_args);
     }
     // Queries and arguments are separated by a double-dash "--" marker.
@@ -92,7 +91,7 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
         debug!("arguments: {:?}", params.arguments);
     }
 
-    params
+    (query, params)
 }
 
 /// garden <command> <query>...
