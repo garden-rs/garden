@@ -687,9 +687,9 @@ fn cmd_breadth_first_and_depth_first() {
     assert_eq!(expect, actual);
 }
 
-/// Test -n / --no-fail-fast and the shell "-e" behavior.
+/// Test -n / --no-errexit and the shell "-e" behavior.
 #[test]
-fn cmd_no_fail_fast() {
+fn cmd_no_errexit() {
     let output = garden_capture(&[
         "--chdir",
         "tests/data",
@@ -710,6 +710,169 @@ fn cmd_no_fail_fast() {
         "error-command",
     ]);
     assert_eq!(output, "ok\nafter error");
+}
+
+#[test]
+fn cmd_no_errexit_for_command_lists() {
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        ".",
+        "error-command-list",
+    ]);
+    assert_eq!(output, "ok");
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        "--no-errexit",
+        ".",
+        "error-command-list",
+    ]);
+    assert_eq!(output, "ok\nafter error");
+}
+
+/// Test the interaction of --keep-going, --no-errexit and command lists.
+#[test]
+fn cmd_keep_going_and_no_errexit() {
+    // exit-on-error: true, keep-going: false, command: str
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok");
+
+    // exit-on-error: false, keep-going: false, command: str
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command",
+        "--no-errexit",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok\nafter error");
+
+    // exit-on-error: true, keep-going: true, command: str
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command",
+        "--keep-going",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok\nok");
+
+    // exit-on-error: false, keep-going: true, command: str
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command",
+        "--keep-going",
+        "--no-errexit",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok\nafter error\nok\nafter error");
+
+    // Same as above but with error-command-list instead of error-command.
+    // exit-on-error: true, keep-going: false, command: list
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command-list",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok");
+
+    // exit-on-error: false, keep-going: false, command: list
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command-list",
+        "--no-errexit",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok\nafter error");
+
+    // exit-on-error: true, keep-going: true, command: list
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command-list",
+        "--keep-going",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok\nok");
+
+    // exit-on-error: false, keep-going: true, command: list
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "error-command-list",
+        "--keep-going",
+        "--no-errexit",
+        "tree1",
+        "tree2",
+    ]);
+    assert_eq!(output, "ok\nafter error\nok\nafter error");
+
+    // exit-on-error: true, keep-going: false, command: multi
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        "tree*",
+        "error-command",
+        "error-command-list",
+    ]);
+    assert_eq!(output, "ok");
+
+    // exit-on-error: false, keep-going: false, command: multi
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        "--no-errexit",
+        "tree*",
+        "error-command",
+        "error-command-list",
+    ]);
+    assert_eq!(output, "ok\nafter error");
+
+    // exit-on-error: true, keep-going: true, command: multi
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        "--keep-going",
+        "tree*",
+        "error-command",
+        "error-command-list",
+    ]);
+    assert_eq!(output, "ok\nok\nok\nok");
 }
 
 /// "garden prune" prunes specific depths

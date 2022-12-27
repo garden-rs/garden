@@ -323,6 +323,7 @@ fn run_cmd_vec(
 ) -> Result<(), i32> {
     // Get the current executable name
     let current_exe = cmd::current_exe();
+    let mut exit_status = errors::EX_OK;
 
     for cmd_seq in cmd_seq_vec {
         for cmd_str in cmd_seq {
@@ -348,8 +349,14 @@ fn run_cmd_vec(
             }
             let status = cmd::status(exec.join());
             if status != errors::EX_OK {
-                return Err(status);
+                exit_status = status;
+                if options.exit_on_error {
+                    return Err(status);
+                }
             }
+        }
+        if exit_status != errors::EX_OK {
+            return Err(exit_status);
         }
     }
 

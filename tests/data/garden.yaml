@@ -86,3 +86,8 @@ commands:
     echo ok
     false
     echo after error
+    false
+  error-command-list:
+  - echo ok
+  - "false"
+  - echo after error
