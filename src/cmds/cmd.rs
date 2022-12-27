@@ -32,6 +32,9 @@ impl CmdParams {
 
 /// Parse "cmd" arguments.
 fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
+    // Display "garden cmd" in the "garden cmd -h" help text.
+    options.args.insert(0, "garden cmd".into());
+
     let mut params = CmdParams::new();
     let mut commands_and_args: Vec<String> = Vec::new();
     {
@@ -70,8 +73,6 @@ fn parse_args(options: &mut model::CommandOptions) -> CmdParams {
             argparse::List,
             "Commands to run over resolved trees.",
         );
-
-        options.args.insert(0, "garden cmd".into());
         cmd::parse_args(ap, options.args.to_vec());
     }
 
@@ -102,12 +103,8 @@ pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> 
 
 /// Parse custom command arguments.
 fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdParams {
-    // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
-    let mut params = CmdParams::new();
-    params.commands.push(command.to_string());
-
-    let mut queries_and_arguments: Vec<String> = Vec::new();
-    let mut ap = argparse::ArgumentParser::new();
+    // Display "garden <command>" in the "garden <commmand> -h" help text.
+    options.args.insert(0, format!("garden {}", command));
 
     // Custom commands run breadth-first. The distinction shouldn't make a difference in practice
     // because "garden <custom-cmd> ..." is only able to run a single command, but we use
@@ -115,6 +112,12 @@ fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdP
     // --breadth-first was added to "garden cmd" and made otp-in.
     options.breadth_first = true;
 
+    // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
+    let mut params = CmdParams::new();
+    params.commands.push(command.to_string());
+
+    let mut queries_and_arguments: Vec<String> = Vec::new();
+    let mut ap = argparse::ArgumentParser::new();
     ap.silence_double_dash(false);
     ap.set_description("garden cmd - Run custom commands over gardens");
 
@@ -140,7 +143,6 @@ fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdP
         "Gardens/Groups/Trees to exec (tree queries).",
     );
 
-    options.args.insert(0, format!("garden {}", command));
     cmd::parse_args(ap, options.args.to_vec());
 
     if options.debug_level("cmd") > 0 {
