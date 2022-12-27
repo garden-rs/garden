@@ -2,6 +2,18 @@
 
 ## v0.4.0
 
+**Breaking Changes**:
+
+- `garden cmd` now runs custom commands using `<shell> -e -c '<command>'` by default.
+  The use of `-e` is a change in behavior and causes multi-line / multi-statement
+  commands to halt execution when the first non-zero exit code is encountered.
+  Use `set +e` at the top of of a multi-line command to opt-out of this behavior
+  on a per-command basis, or specify the `-n | --no-errexit` option.
+
+- `garden` will now fallback to `bash` (and `sh`) as the default `garden.shell` value
+  when `zsh` (and `bash`) are not installed. As before, the `garden.shell`
+  configuration variable can be used to override the default shell.
+
 **Features**:
 
 - `garden prune` was added for removing orphaned Git repositories.
@@ -13,16 +25,6 @@
   continuing on to the next tree. The default `garden cmd` depth-first traversal
   runs a command across all trees before continuing on to the next command.
   ([#3](https://github.com/davvid/garden/issues/3))
-
-- `garden cmd` now runs custom commands using `<shell> -e -c '<command>'` by default.
-  The use of `-e` is a change in behavior and causes multi-line / multi-statement
-  commands to halt execution when the first non-zero exit code is encountered.
-  Use `set +e` at the top of of a multi-line command to opt-out of this behavior
-  on a per-command basis, or specify the `-n | --no-errexit` option.
-
-- `garden` will now fallback to `bash` (and `sh`) as the default `garden.shell` value
-  when `zsh` (and `bash`) are not installed. As before, the `garden.shell`
-  configuration variable can be used to override the default shell.
 
 ## v0.3.0
 
