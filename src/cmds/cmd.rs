@@ -348,11 +348,15 @@ fn run_cmd_vec(
                 exec = exec.env(k, v);
             }
             let status = cmd::status(exec.join());
+            // When a command list is used then the return code from the final command
+            // is the one that is returned when --no-errexit is in effect.
             if status != errors::EX_OK {
                 exit_status = status;
                 if options.exit_on_error {
                     return Err(status);
                 }
+            } else {
+                exit_status = errors::EX_OK;
             }
         }
         if exit_status != errors::EX_OK {
