@@ -1,0 +1,48 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  check:
+    name: Lints and checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy --no-self-update
+      - uses: Swatinem/rust-cache@v2
+      - name: Run cargo fmt checks
+        run: make check-format
+      - name: Run clippy checks
+        run: make check-clippy
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - run: rustup toolchain install stable --profile minimal --no-self-update
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo install mdbook
+      - name: Build documentation
+        run: make doc
+
+  test:
+    name: Test using Rust ${{ matrix.rust }} on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        rust: [stable]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - run: git config --global init.defaultBranch main
+      - run: git config --global user.email garden@localhost
+      - run: git config --global user.name garden
+      - run: rustup toolchain install ${{ matrix.rust }} --profile minimal --no-self-update
+      - uses: Swatinem/rust-cache@v2
+      - name: Run tests
+        run: make test
