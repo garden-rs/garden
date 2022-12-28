@@ -42,8 +42,6 @@ variables:
   prefix: ${GARDEN_ROOT}/dist
   num_procs: $ nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 8
   python: python3
-  python_version: $ ${python} -c 'import sysconfig; print(sysconfig.get_python_version())'
-  python_sitepackages: lib/python${python_version}/site-packages
 
 commands:
   add-all: git add --update

@@ -8,4 +8,6 @@
 - [Commands](commands.md)
 - [Configuration](configuration.md)
 - [Examples](examples.md)
+  - [Photo Restoration](examples/photo-restoration.md)
+  - [Git Cola](examples/git-cola.md)
 - [Changelog](changelog.md)

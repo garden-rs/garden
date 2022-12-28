@@ -19,7 +19,6 @@ following locations. The first one found is used.
     # Global configuration
     /etc/garden/garden.yaml
 
-
 Use `garden -c|--config <filename>` to specify a garden file and override
 garden's file discovery.
 
@@ -27,7 +26,7 @@ The following example `garden.yaml` is referred to by the documentation
 when showing examples.
 
 ```yaml
-{{#include garden.yaml}}
+{{#include examples/git-cola/garden.yaml}}
 ```
 
 ## Garden Root
