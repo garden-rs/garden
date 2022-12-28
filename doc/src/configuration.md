@@ -176,13 +176,42 @@ keyword with the name of another tree.  Only the first remote is used when
 extending a tree.
 
 
-## Automagic Lists
+## String to List Promotion
 
-Fields that expect lists can also be specified using a single string, and the
-list will be treated like a list with a single item.  This is useful, for
-example, when defining groups using wildcards, or commands which can sometimes
-be one-lines, and multi-line at other times.
+Fields that expect Lists can also be specified using a String value.
+Strings will be promoted to a List containing a single String.
+This is useful when defining `commands` and `groups`.
 
+The `commands` block defines commands that are specified using Lists of Strings.
+_String to List Promotion_ makes it easier to define commands by specifying a single
+String that can either be a simple value or a multi-line YAML String.
+
+The following commands show the various ways that `commands` can be specified
+due to the automatic promotion of Strings into Lists.
+
+```yaml
+commands:
+  # commands are a list of command strings.
+  cmd1:
+    - echo ${TREE_NAME}
+    - pwd
+
+  # strings are promoted to a list with a single item.
+  cmd2: echo ${TREE_NAME} && pwd
+
+  # cmd2 is promoted into
+  cmd2:
+    - echo ${TREE_NAME} && pwd
+
+  # multi-line command strings are supported using "|" YAML syntax.
+  cmd4: |
+    echo ${TREE_NAME}
+    pwd
+
+  # cmd4 is promoted into
+  cmd4:
+    - "echo ${TREE_NAME}\npwd"
+```
 
 ## Wildcards
 
