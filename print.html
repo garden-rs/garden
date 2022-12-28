@@ -100,7 +100,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -745,8 +745,6 @@ variables:
   prefix: ${GARDEN_ROOT}/dist
   num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
   python: python3
-  python_version: $ ${python} -c 'import sysconfig; print(sysconfig.get_python_version())'
-  python_sitepackages: lib/python${python_version}/site-packages
 
 commands:
   add-all: git add --update
@@ -966,22 +964,119 @@ matches &quot;cola&quot; only.</p>
 <p>The &quot;path&quot; entry behaves like the tree &quot;path&quot; entry -- when unspecified it
 defaults to a path named after the tree relative to the garden root.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
-<p>The garden documentation contains an example garden file that sets up a
-development garden with the latest version of Git, Git Cola, qtpy and vx.</p>
-<h2 id="build-and-run-git-cola"><a class="header" href="#build-and-run-git-cola">Build and Run Git Cola</a></h2>
-<p>To see this in action, runs the following commands from a clone of
-<a href="https://github.com/davvid/garden.git">Garden's git repository</a>.</p>
+<p>These examples demonstrate how to setup and run real-world projects using <code>garden</code>.</p>
+<h2 id="photo-restoration"><a class="header" href="#photo-restoration">Photo Restoration</a></h2>
+<p>The &quot;Photo Restoration&quot; example sets up the
+<a href="https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life">Bringing Old Photos Back to Life</a>
+software for restoring old photos that suffer from severe degradation using
+deep learning approaches.</p>
+<h2 id="git-cola-development"><a class="header" href="#git-cola-development">Git Cola Development</a></h2>
+<p>The &quot;Git Cola&quot; example sets up a development environment for
+<a href="https://git-cola.github.io/">Git Cola</a>, a PyQt-based graphical user interface for Git.</p>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="photo-restoration-1"><a class="header" href="#photo-restoration-1">Photo Restoration</a></h1>
+<p>This example demonstrates how to run the
+<a href="https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life">Bringing Old Photo Back to Life</a>
+photo restoration project.</p>
+<h2 id="setup-1"><a class="header" href="#setup-1">Setup</a></h2>
+<p>Run the following commands to clone the repository, download pre-trained deep-learning
+model data files used by the software and configure a Python virtualenv used to
+run the tools.</p>
+<p><em>NOTE</em>: this example uses almost 7GB of disk space.</p>
+<pre><code class="language-bash"># Create a directory we'll clone and build a few repositories.
+mkdir -p photo-restoration &amp;&amp; cd photo-restoration
+
+# Download and audit the garden file we're going to run.
+wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/examples/photo-restoration/garden.yaml
+cat garden.yaml
+
+# One-time setup: Clone all of the trees. This will clone an &quot;old-photos&quot; repo.
+garden grow old-photos
+
+# One-time setup: Download resources.
+garden setup old-photos
+</code></pre>
+<h2 id="run-the-software"><a class="header" href="#run-the-software">Run the Software</a></h2>
+<p>Now that everything is setup we can run the tools using the custom <code>run</code> command
+provided by the <code>garden.yaml</code> file. The <code>run.py</code> script takes several options.</p>
+<pre><code class="language-bash">garden run old-photos -- --help
+</code></pre>
+<p>Arguments can be passed directly to <code>run.py</code> by passing additional arguments
+after the special double-dash <code>--</code> &quot;end of options&quot; marker.</p>
+<p>The example above pases the <code>--help</code> option for demonstration purposes.
+You will have to specify the <code>--input_folder &lt;folder&gt;</code> and <code>--output_folder &lt;folder&gt;</code>
+in order to use the photo restoration tool. See the <code>--help</code> output for more details.</p>
+<h2 id="gardenyaml"><a class="header" href="#gardenyaml">garden.yaml</a></h2>
+<p>The following is the contents of the <code>garden.yaml</code> file used in this example.</p>
+<p>The <code>setup</code> command defines what happens during <code>garden setup old-photos</code>.</p>
+<p>The <code>run</code> command defines when happens during <code>garden run old-photos</code>.</p>
+<p>Additional command-line arguments specified after the double-dash <code>--</code> marker are
+available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$N</code>, ... <code>&quot;$@&quot;</code> shell variables.</p>
+<pre><code class="language-yaml">---
+garden:
+  root: ${GARDEN_CONFIG_DIR}
+variables:
+  env_py3: $ python3 -c 'import sys; print(&quot;env%s%s&quot; % sys.version_info[:2])'
+trees:
+  old-photos:
+    description: |
+      Restore old photos using machine-learning.
+      $ garden grow old-photos
+      $ garden setup old-photos
+      $ garden run old-photos -- --help
+    url: &quot;https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life.git&quot;
+    links:
+      - &quot;https://colab.research.google.com/drive/1NEm6AsybIiC5TwTU_4DqDkQO0nFRB-uA?usp=sharing&amp;authuser=2#scrollTo=32jCofdSr8AW&quot;
+      - &quot;http://raywzy.com/Old_Photo/&quot;
+      - &quot;https://news.ycombinator.com/item?id=25148253&quot;
+    environment:
+      PATH: &quot;${TREE_PATH}/${env_py3}/bin&quot;
+    commands:
+      setup: |
+        (
+          cd ./Face_Detection &amp;&amp; (
+            test -f shape_predictor_68_face_landmarks.dat || (
+              curl -L http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 -o shape_predictor_68_face_landmarks.dat.bz2
+              bzip2 -v -d shape_predictor_68_face_landmarks.dat.bz2
+            )
+          )
+        )
+        (
+          cd ./Face_Enhancement &amp;&amp; (
+            test -f checkpoints.zip ||
+            curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/face_checkpoints.zip -o checkpoints.zip
+            test -d checkpoints || unzip checkpoints.zip
+          )
+        )
+        (
+          cd ./Global &amp;&amp; (
+            test -f checkpoints.zip ||
+            curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/global_checkpoints.zip -o checkpoints.zip
+            test -d checkpoints || unzip checkpoints.zip
+          )
+        )
+        test -d ${env_py3} || (
+          python3 -m venv ${env_py3}
+          ${env_py3}/bin/pip install -r requirements.txt
+        )
+      run: ${env_py3}/bin/python3 run.py &quot;$@&quot;
+...
+</code></pre>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="git-cola-development-1"><a class="header" href="#git-cola-development-1">Git Cola Development</a></h1>
+<p>This garden file sets up a development garden with the latest version of Git, Git Cola,
+qtpy and vx.</p>
+<p>Run the following commands to see this in action.</p>
 <pre><code class="language-bash"># Create a directory we'll clone and build a few repositories.
 mkdir -p cola &amp;&amp; cd cola
 
 # Download and audit the garden file we're going to run.
-wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/garden.yaml
+wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/examples/git-cola/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the repos in the &quot;cola&quot; garden and use a custom
-# &quot;garden setup&quot; command defined in &quot;garden.yaml&quot; to initializes the environment.
 # &quot;garden grow&quot; is a garden built-in command that clones.
 garden grow cola
+
+# &quot;garden setup&quot; command defined in &quot;garden.yaml&quot; to initializes the environment.
 garden setup cola
 
 # All set! Now we can run Git Cola from the development environment.
@@ -1001,7 +1096,144 @@ garden build cola
 </code></pre>
 <p>The development repositories are now in your current directory and a
 development virtualenv is present in the <code>./dist</code> directory.</p>
-<h3 id="pre-defined-custom-commands-and-ad-hoc-commands"><a class="header" href="#pre-defined-custom-commands-and-ad-hoc-commands">Pre-defined Custom Commands and Ad-Hoc Commands</a></h3>
+<h2 id="gardenyaml-1"><a class="header" href="#gardenyaml-1">garden.yaml</a></h2>
+<p>The following is the contents of the <code>garden.yaml</code> file used in this example.</p>
+<pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
+#
+# The following gardens are defined: &quot;cola&quot;, &quot;cola-main&quot; and &quot;cola-next&quot;.
+#
+# The &quot;cola&quot; garden runs git-cola using the &quot;git&quot; command from your $PATH.
+# The &quot;cola-main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
+# The &quot;cola-next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
+#
+# One-time Setup:
+#
+# * Clone repositories and create worktrees:
+#
+#   garden grow cola-main cola-next
+#
+# * Initialize git-cola's Python virtualenv environment.
+#   garden setup cola
+#
+# Development workflows:
+#
+# * Build the &quot;cola-main&quot; garden using git.git's &quot;main&quot; branch:
+#   garden build cola-main
+#
+# * Build the &quot;cola-next&quot; garden using git.git's &quot;next&quot; branch:
+#   garden build cola-next
+#
+# * Run Git Cola's tests in each environment.
+#   garden test/git-cola cola
+#   garden test/git-cola cola-main
+#   garden test/git-cola cola-next
+#
+# * Run Git Cola in each environment.
+#   garden run cola
+#   garden run cola-main
+#   garden run cola-next
+
+garden:
+  root: ${GARDEN_CONFIG_DIR}
+
+# The following variables are used in the custom commands below.
+variables:
+  # A virtualenv is created in the ./dist directory.
+  prefix: ${GARDEN_ROOT}/dist
+  num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
+  python: python3
+
+commands:
+  add-all: git add --update
+  diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
+  lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
+  run: vx ${prefix} git cola &quot;$@&quot;
+  status:
+    - git status --short
+    - git branch
+
+templates:
+  bin:
+    environment:
+      PATH: ${TREE_PATH}/bin
+  python:
+    environment:
+      PYTHONPATH: ${TREE_PATH}
+  makefile:
+    commands:
+      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
+
+trees:
+  # git/main is the parent worktree that shares its .git storage with the child
+  # git/next worktrees using &quot;git worktree&quot; -- https://git-scm.com/docs/git-worktree
+  git/main:
+    url: https://github.com/git/git.git
+    templates: makefile
+    environment:
+      PATH: ${TREE_PATH}/bin-wrappers
+  # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
+  git/next:
+    worktree: git/main
+    branch: next
+
+  # git-cola's worktree can be reused alongside any of the git/* trees defined above.
+  git-cola:
+    url: https://github.com/git-cola/git-cola.git
+    templates: [bin, makefile, python]
+    commands:
+      setup: |
+        ${python} -m venv ${prefix}
+        vx ${prefix} make requirements
+        vx ${prefix} make requirements-dev
+        vx ${prefix} make requirements-optional
+      # Run just git-cola's tests
+      test/git-cola: make test &quot;$@&quot;
+
+  qtpy:
+    description: Qt abstraction library used by git-cola
+    url: https://github.com/spyder-ide/qtpy.git
+    templates: python
+    setup: vx ${prefix} pip install pytest-qt
+
+  vx:
+    description: Utility for activating Python virtualenvs
+    url: https://github.com/davvid/vx.git
+    depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
+    environment:
+      PATH: ${TREE_PATH}
+    commands:
+      test: make test
+
+  # This tree allows the &quot;run&quot; command to be run from any directory.
+  cwd:
+    path: ${PWD}
+
+groups:
+  cola-repos-grp:
+    - git-cola
+    - qtpy
+    - vx
+
+gardens:
+  cola:
+    groups: cola-repos-grp
+    environment:
+      PATH: ${prefix}/bin
+  cola-main:
+    groups: cola-repos-grp
+    trees: git/main
+    environment:
+      PATH: ${prefix}/bin
+  cola-next:
+    groups: cola-repos-grp
+    trees: git/next
+    environment:
+      PATH: ${prefix}/bin
+</code></pre>
+<h2 id="pre-defined-custom-commands-and-ad-hoc-commands"><a class="header" href="#pre-defined-custom-commands-and-ad-hoc-commands">Pre-defined Custom Commands and Ad-Hoc Commands</a></h2>
 <p>Included in <code>garden.yaml</code> are a few few helpful commands that give us a quick
 view of what's going on in each tree:</p>
 <pre><code class="language-bash">garden diff cola
@@ -1015,7 +1247,7 @@ always use <code>garden exec</code> to run arbitrary commands:</p>
 # When needed, we can hop into a shell with all of the environment variables set
 garden shell cola
 </code></pre>
-<h3 id="self-contained-installation-demo"><a class="header" href="#self-contained-installation-demo">Self-contained installation demo</a></h3>
+<h2 id="self-contained-installation-demo"><a class="header" href="#self-contained-installation-demo">Self-contained installation demo</a></h2>
 <p>The <code>garden run</code> example runs <code>git</code> and <code>git cola</code> in-place in their
 respective trees. The <code>git-cola</code> project is not installed into the <code>./dist</code> directory.
 It contains just the virtualenv created needed to run it.</p>

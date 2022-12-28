@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Configuration - Garden User Guide</title>
+        <title>Git Cola - Garden User Guide</title>
         
         
 
@@ -18,28 +18,28 @@
         <meta name="theme-color" content="#ffffff" />
 
         
-        <link rel="icon" href="favicon.svg">
+        <link rel="icon" href="../favicon.svg">
         
         
-        <link rel="shortcut icon" href="favicon.png">
+        <link rel="shortcut icon" href="../favicon.png">
         
-        <link rel="stylesheet" href="css/variables.css">
-        <link rel="stylesheet" href="css/general.css">
-        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
         
-        <link rel="stylesheet" href="css/print.css" media="print">
+        <link rel="stylesheet" href="../css/print.css" media="print">
         
 
         <!-- Fonts -->
-        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
         
-        <link rel="stylesheet" href="fonts/fonts.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
         
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
         
@@ -52,7 +52,7 @@
     <body>
         <!-- Provide site root to javascript -->
         <script type="text/javascript">
-            var path_to_root = "";
+            var path_to_root = "../";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
@@ -98,7 +98,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html" class="active"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="../tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="../commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="../configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="../examples/git-cola.html" class="active"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li></ol></li><li class="chapter-item expanded "><a href="../changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -134,7 +134,7 @@
 
                     <div class="right-buttons">
                         
-                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
                         
@@ -144,7 +144,7 @@
                         </a>
                         
                         
-                        <a href="https://github.com/davvid/garden/edit/main/doc/src/configuration.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://github.com/davvid/garden/edit/main/doc/src/examples/git-cola.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
                         
@@ -176,28 +176,43 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
-<p>Garden is configured through a YAML configuration file, typically called
-&quot;garden.yaml&quot;.</p>
-<p>Garden will find <code>garden.yaml</code> in current directory or in specific locations
-on the filesystem when unspecified.  Garden searches for <code>garden.yaml</code> in the
-following locations. The first one found is used.</p>
-<pre><code># Relative to the current directory
-./garden.yaml
-./garden/garden.yaml
-./etc/garden/garden.yaml
+                        <h1 id="git-cola-development"><a class="header" href="#git-cola-development">Git Cola Development</a></h1>
+<p>This garden file sets up a development garden with the latest version of Git, Git Cola,
+qtpy and vx.</p>
+<p>Run the following commands to see this in action.</p>
+<pre><code class="language-bash"># Create a directory we'll clone and build a few repositories.
+mkdir -p cola &amp;&amp; cd cola
 
-# Relative to $HOME
-~/.config/garden/garden.yaml
-~/etc/garden/garden.yaml
+# Download and audit the garden file we're going to run.
+wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/examples/git-cola/garden.yaml
+cat garden.yaml
 
-# Global configuration
-/etc/garden/garden.yaml
+# One-time setup: Clone all of the repos in the &quot;cola&quot; garden and use a custom
+# &quot;garden grow&quot; is a garden built-in command that clones.
+garden grow cola
+
+# &quot;garden setup&quot; command defined in &quot;garden.yaml&quot; to initializes the environment.
+garden setup cola
+
+# All set! Now we can run Git Cola from the development environment.
+garden run
+
+# Daily development workflow: run tests in each repository in-place.
+garden test cola
+
+# Commands can be passed to the underlying &quot;run&quot; command to run Git Cola
+# against any Git repository.
+garden run -- --repo path/to/any/git/tree
+
+# These projects don't need to be &quot;built&quot;, so this is technically a no-op.
+# A Rust or C++ Rust project could use something like this to run &quot;make&quot;
+# in each repository.
+garden build cola
 </code></pre>
-<p>Use <code>garden -c|--config &lt;filename&gt;</code> to specify a garden file and override
-garden's file discovery.</p>
-<p>The following example <code>garden.yaml</code> is referred to by the documentation
-when showing examples.</p>
+<p>The development repositories are now in your current directory and a
+development virtualenv is present in the <code>./dist</code> directory.</p>
+<h2 id="gardenyaml"><a class="header" href="#gardenyaml">garden.yaml</a></h2>
+<p>The following is the contents of the <code>garden.yaml</code> file used in this example.</p>
 <pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
 #
 # The following gardens are defined: &quot;cola&quot;, &quot;cola-main&quot; and &quot;cola-next&quot;.
@@ -333,146 +348,50 @@ gardens:
     environment:
       PATH: ${prefix}/bin
 </code></pre>
-<h2 id="garden-root"><a class="header" href="#garden-root">Garden Root</a></h2>
-<p>The garden root directory is configured in the <code>garden.root</code> field.
-This directory is the parent directory in which all trees will be cloned.</p>
-<p>Slashes in tree paths will create new directories on disk as needed.
-<code>garden.root</code> defaults to the current directory when unspecified.</p>
-<p>The built-in <code>${GARDEN_CONFIG_DIR}</code> variable can be used to create relocatable
-setups that define a <code>garden.root</code> relative to the garden file itself.</p>
-<p>To place all trees in a <code>src</code> directory sibling to the <code>garden.yaml</code> file, the
-following configuration can be used:</p>
-<pre><code>garden:
-  root: ${GARDEN_CONFIG_DIR}/src
+<h2 id="pre-defined-custom-commands-and-ad-hoc-commands"><a class="header" href="#pre-defined-custom-commands-and-ad-hoc-commands">Pre-defined Custom Commands and Ad-Hoc Commands</a></h2>
+<p>Included in <code>garden.yaml</code> are a few few helpful commands that give us a quick
+view of what's going on in each tree:</p>
+<pre><code class="language-bash">garden diff cola
+garden status cola
+garden lol cola
 </code></pre>
-<p>To place all trees in a <code>src</code> directory in your <code>$HOME</code> directory, the
-following configuration can be used:</p>
-<pre><code>garden:
-  root: ~/src
+<p>If we want to perform git stuff (like fetch the latest changes), we can
+always use <code>garden exec</code> to run arbitrary commands:</p>
+<pre><code class="language-bash">garden exec cola git fetch --verbose
+
+# When needed, we can hop into a shell with all of the environment variables set
+garden shell cola
 </code></pre>
-<h2 id="variables"><a class="header" href="#variables">Variables</a></h2>
-<p>Garden configuration contains a &quot;variables&quot; block that allows defining
-variables that are can be referenced by other garden values.</p>
-<pre><code>variables:
-  flavor: debug
-  user: $ whoami
-  libdir: $ test -e /usr/lib64 &amp;&amp; echo lib64 || echo lib
-  nproc: $ nproc
-  prefix: ~/.local
-  py_ver_code: from sys import version_info as v; print(&quot;%s.%s&quot; % v[:2])
-  py_ver: $ python -c '${py_ver_code}'
-  py_site: ${libdir}/python${py_ver}/site-packages
+<h2 id="self-contained-installation-demo"><a class="header" href="#self-contained-installation-demo">Self-contained installation demo</a></h2>
+<p>The <code>garden run</code> example runs <code>git</code> and <code>git cola</code> in-place in their
+respective trees. The <code>git-cola</code> project is not installed into the <code>./dist</code> directory.
+It contains just the virtualenv created needed to run it.</p>
+<p>In order to create a self-contained installation to run the tools
+independently of their source repositories we have to install them into the
+<code>./dist</code> directory.</p>
+<p>The following example installs Git and Git Cola into the <code>./dist</code> directory
+by running the &quot;make install&quot; targets in each repo:</p>
+<pre><code class="language-bash">garden install cola
 </code></pre>
-<p>Variables definitions can reference environment variables and other garden
-variables.</p>
-<p>Variable references use shell <code>${variable}</code> syntax.</p>
-<p>Values that start with dollar-sign+space (<code>$ </code>) are called &quot;exec expressions&quot;.
-Exec expressions are run through a shell after evaluation and replaced with
-the output of the evaluated command.</p>
-<p>When resolving values, variables defined in a tree scope override/replace
-variables defined at the global scope.  Variables defined in garden scope
-override/replace variables defined in a tree scope.</p>
-<h2 id="built-in-variables"><a class="header" href="#built-in-variables">Built-in variables</a></h2>
-<p>Garden automatically defines some built-in variables that can be useful
-when constructing values for variables, commands, and paths.</p>
-<pre><code>GARDEN_CONFIG_DIR   -   directory containing the &quot;garden.yaml&quot; config file
-GARDEN_ROOT         -   root directory for trees
-TREE_NAME           -   current tree name
-TREE_PATH           -   current tree path
+<p>Now we can test the installed tools directly by adding <code>./dist/bin</code> to our
+<code>$PATH</code>, or just invoke the script directly:</p>
+<pre><code class="language-bash">./dist/bin/git-cola
 </code></pre>
-<h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
-<p>The &quot;environment&quot; block defines variables that are stored in the environment.</p>
-<p>Environment variables are resolved in the same order as the garden variables:
-global scope, tree scope, and garden scope.  This allows gardens to
-prepend/append variables after a tree, thus allowing for customization
-of behavior from the garden scope.</p>
-<p>Environment variables are resolved after garden variables.  This allows
-the use of garden variables when defining environment variable values.</p>
-<p>Environment variable names can use garden <code>${variable}</code> syntax when defining
-both their name and values.</p>
-<p>Values in environment blocks prepend to the named environment variable.</p>
-<pre><code>trees:
-  foo:
-    environment:
-      PATH: ${TREE_PATH}/bin
-</code></pre>
-<p>The example above prepends the <code>foo/bin</code> directory to the colon (<code>:</code>)-delimeted <code>PATH</code>
-environment variable.</p>
-<p>Names with an equals sign (<code>=</code>) suffix are treated as &quot;store&quot; operations and are
-stored into the environment, fully replacing any pre-existing values.</p>
-<pre><code>trees:
-  foo:
-    environment:
-      ${TREE_NAME}_LOCATION=: ${TREE_PATH}
-</code></pre>
-<p>The example above exports a variable called <code>foo_LOCATION</code> with the location of the tree.
-If <code>foo_LOCATION</code> is already defined then it its value is replaced.</p>
-<p>A plus sign (<code>+</code>) suffix in the name append to a variable instead of prepending.</p>
-<pre><code>trees:
-  foo:
-    environment:
-      PATH+: ${TREE_PATH}/bin
-</code></pre>
-<p>The example above appends to the <code>PATH</code> environment variable.
-Note the <code>+</code> suffix after <code>PATH</code>.</p>
-<h3 id="os-environment-variables"><a class="header" href="#os-environment-variables">OS Environment Variables</a></h3>
-<p>OS-level environment variables that are present in garden's runtime
-environment can be referenced using garden <code>${variable}</code> expression syntax.
-Garden variables have higher precedence than environment variables when
-resolving <code>${variable}</code> references -- the environment is checked only when
-no garden variables exist by that name.</p>
-<h2 id="gardens-groups-and-trees"><a class="header" href="#gardens-groups-and-trees">Gardens, Groups and Trees</a></h2>
-<p>Trees are Git repositories with configuration that allows for the
-specification of arbitrary commands and workflows.  Groups are a simple
-named grouping mechanism.</p>
-<p>Gardens aggregate groups and trees.  Define a group and reuse the group in
-different gardens to share tree lists between gardens.  Defining gardens
-and groups make those names available when querying and performing operations
-over trees.</p>
-<p>Gardens can also include environment, gitconfig, and custom group-level
-commands in addition to the commands provided by each tree.</p>
-<h2 id="templates"><a class="header" href="#templates">Templates</a></h2>
-<p>Templates allow sharing of variables, gitconfig, and environments between
-trees. Adding an entry to the &quot;templates&quot; configuration block and they can
-then be referenced into trees using <code>templates: &lt;template-name&gt;</code>.</p>
-<p>Trees can also reuse another tree definition by specifying the &quot;extend&quot;
-keyword with the name of another tree.  Only the first remote is used when
-extending a tree.</p>
-<h2 id="automagic-lists"><a class="header" href="#automagic-lists">Automagic Lists</a></h2>
-<p>Fields that expect lists can also be specified using a single string, and the
-list will be treated like a list with a single item.  This is useful, for
-example, when defining groups using wildcards, or commands which can sometimes
-be one-lines, and multi-line at other times.</p>
-<h2 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h2>
-<p>The names in garden <code>tree</code> and <code>group</code> lists, and group member names accept glob
-wildcard patterns.</p>
-<p>The &quot;annex&quot; group definition is: <code>annex/*</code>.   This matches all trees that
-start with &quot;annex/&quot;.  The &quot;git-all&quot; group has two entries -- <code>git*</code> and
-<code>cola</code>.  the first matches all trees that start with &quot;git&quot;, and the second one
-matches &quot;cola&quot; only.</p>
-<h2 id="symlinks"><a class="header" href="#symlinks">Symlinks</a></h2>
-<p>Symlink trees create a symlink on the filesystem during <code>garden init</code>.
-<code>garden exec</code>, and custom <code>garden cmd</code> commands ignore symlink trees.</p>
-<pre><code>trees:
-  media:
-    path: ~/media
-    symlink: /media/${USER}
-</code></pre>
-<p>The &quot;path&quot; entry behaves like the tree &quot;path&quot; entry -- when unspecified it
-defaults to a path named after the tree relative to the garden root.</p>
+<p>Voila, we now have a fully functional development environment with PyQt5, qtpy
+and Git Cola ready to go for development.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
                         
-                            <a rel="prev" href="commands.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../examples/photo-restoration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
                         
 
                         
-                            <a rel="next" href="examples.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next" href="../changelog.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -484,13 +403,13 @@ defaults to a path named after the tree relative to the garden root.</p>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
                 
-                    <a rel="prev" href="commands.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../examples/photo-restoration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="examples.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next" href="../changelog.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -515,22 +434,22 @@ defaults to a path named after the tree relative to the garden root.</p>
         
 
         
-        <script src="ace.js" type="text/javascript" charset="utf-8"></script>
-        <script src="editor.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mode-rust.js" type="text/javascript" charset="utf-8"></script>
-        <script src="theme-dawn.js" type="text/javascript" charset="utf-8"></script>
-        <script src="theme-tomorrow_night.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../ace.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../editor.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mode-rust.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../theme-dawn.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../theme-tomorrow_night.js" type="text/javascript" charset="utf-8"></script>
         
 
         
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../searcher.js" type="text/javascript" charset="utf-8"></script>
         
 
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="../book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
         
