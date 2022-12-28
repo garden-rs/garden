@@ -941,11 +941,37 @@ then be referenced into trees using <code>templates: &lt;template-name&gt;</code
 <p>Trees can also reuse another tree definition by specifying the &quot;extend&quot;
 keyword with the name of another tree.  Only the first remote is used when
 extending a tree.</p>
-<h2 id="automagic-lists"><a class="header" href="#automagic-lists">Automagic Lists</a></h2>
-<p>Fields that expect lists can also be specified using a single string, and the
-list will be treated like a list with a single item.  This is useful, for
-example, when defining groups using wildcards, or commands which can sometimes
-be one-lines, and multi-line at other times.</p>
+<h2 id="string-to-list-promotion"><a class="header" href="#string-to-list-promotion">String to List Promotion</a></h2>
+<p>Fields that expect Lists can also be specified using a String value.
+Strings will be promoted to a List containing a single String.
+This is useful when defining <code>commands</code> and <code>groups</code>.</p>
+<p>The <code>commands</code> block defines commands that are specified using Lists of Strings.
+<em>String to List Promotion</em> makes it easier to define commands by specifying a single
+String that can either be a simple value or a multi-line YAML String.</p>
+<p>The following commands show the various ways that <code>commands</code> can be specified
+due to the automatic promotion of Strings into Lists.</p>
+<pre><code class="language-yaml">commands:
+  # commands are a list of command strings.
+  cmd1:
+    - echo ${TREE_NAME}
+    - pwd
+
+  # strings are promoted to a list with a single item.
+  cmd2: echo ${TREE_NAME} &amp;&amp; pwd
+
+  # cmd2 is promoted into
+  cmd2:
+    - echo ${TREE_NAME} &amp;&amp; pwd
+
+  # multi-line command strings are supported using &quot;|&quot; YAML syntax.
+  cmd4: |
+    echo ${TREE_NAME}
+    pwd
+
+  # cmd4 is promoted into
+  cmd4:
+    - &quot;echo ${TREE_NAME}\npwd&quot;
+</code></pre>
 <h2 id="wildcards-2"><a class="header" href="#wildcards-2">Wildcards</a></h2>
 <p>The names in garden <code>tree</code> and <code>group</code> lists, and group member names accept glob
 wildcard patterns.</p>
