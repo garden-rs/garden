@@ -341,7 +341,7 @@ fn run_cmd_vec(
             exec = exec
                 .arg("-c")
                 .arg(cmd_str)
-                .arg(&current_exe)
+                .arg(current_exe.as_str())
                 .args(arguments);
             // Update the command environment
             for (k, v) in env {
