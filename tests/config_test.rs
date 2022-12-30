@@ -6,7 +6,12 @@ use anyhow::Result;
 #[test]
 fn config_default() {
     let config = garden::model::Configuration::new();
-    assert_eq!("zsh", config.shell);
+    assert!(match config.shell.as_str() {
+        "bash" => true,
+        "sh" => true,
+        "zsh" => true,
+        _ => false,
+    });
     assert_eq!(0, config.verbose);
     assert_eq!("", config.root.get_expr());
 }
