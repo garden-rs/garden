@@ -19,7 +19,7 @@ will attempt to load a "global" configuration file, typically located in
 `~/.config/garden/garden.yaml`.
 
 The following `garden init` invocation creates an empty `garden.yaml` with a
-root directory of `~/src` in the user's home confiuration directory. This is
+root directory of `~/src` in the user's home configuration directory. This is
 typically `~/.config/garden/garden.yaml`.
 
 ```bash
