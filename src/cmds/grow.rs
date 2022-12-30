@@ -416,8 +416,8 @@ fn grow_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Resu
         symlink.to_string_lossy()
     }
     .to_string();
-
-    std::os::unix::fs::symlink(&target, &path)?;
+    let target_path = std::path::PathBuf::from(&target);
+    std::os::unix::fs::symlink(target_path, &path)?;
 
     Ok(errors::EX_OK)
 }

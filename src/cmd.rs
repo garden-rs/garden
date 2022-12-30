@@ -137,7 +137,7 @@ where
     let command_vec = resolve_command(command, &env);
 
     // Create an Exec object.
-    let mut exec = exec_in_dir(&command_vec, &path);
+    let mut exec = exec_in_dir(&command_vec, path);
 
     //  Update the command environment
     for (name, value) in &env {
