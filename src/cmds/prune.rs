@@ -144,8 +144,10 @@ struct TraverseFilesystem<'a> {
 impl TraverseFilesystem<'_> {
     /// Start a parallel traversal over the "paths" Vec.
     fn traverse(&self) {
-        self.traverse_toplevel(&self.root_path).ok();
-        self.send_repo_path.send(PathBufMessage::Finished).ok();
+        self.traverse_toplevel(&self.root_path).unwrap_or(());
+        self.send_repo_path
+            .send(PathBufMessage::Finished)
+            .unwrap_or(());
     }
 
     /// Traverse all of the top-level directories specified on the command-line.
@@ -159,7 +161,8 @@ impl TraverseFilesystem<'_> {
             if let Ok(entry) = entry_result {
                 let path = entry.path();
                 if let Some(path_canon) = self.validate_entry_for_traversal(&path) {
-                    self.traverse_subdir(&path_canon, current_depth).ok();
+                    self.traverse_subdir(&path_canon, current_depth)
+                        .unwrap_or(());
                 }
             }
         });
@@ -181,7 +184,7 @@ impl TraverseFilesystem<'_> {
             if is_within_bounds(current_depth, self.min_depth, self.max_depth) {
                 self.send_repo_path
                     .send(PathBufMessage::Path(pathbuf.to_path_buf()))
-                    .ok();
+                    .unwrap_or(());
             }
             return Ok(());
         }
@@ -192,7 +195,7 @@ impl TraverseFilesystem<'_> {
                 if is_within_bounds(current_depth, self.min_depth, self.max_depth) {
                     self.send_repo_path
                         .send(PathBufMessage::Path(pathbuf.to_path_buf()))
-                        .ok();
+                        .unwrap_or(());
                 }
                 return Ok(());
             }
@@ -205,7 +208,8 @@ impl TraverseFilesystem<'_> {
                 let path = entry.path();
                 if let Some(path_canon) = self.validate_entry_for_traversal(&path) {
                     if is_within_max_bounds(current_depth, self.max_depth) {
-                        self.traverse_subdir(&path_canon, current_depth + 1).ok();
+                        self.traverse_subdir(&path_canon, current_depth + 1)
+                            .unwrap_or(());
                     }
                 }
             }
@@ -287,7 +291,7 @@ impl RemovePaths {
                     if !self.dry_run {
                         let pathbuf = pathbuf.to_path_buf();
                         remove_scope.spawn_fifo(move |_| {
-                            rm_rf::ensure_removed(&pathbuf).ok();
+                            rm_rf::ensure_removed(&pathbuf).unwrap_or(());
 
                             // Remove empty parent directorires leading up to this path.
                             let mut parent_option = pathbuf.parent();
@@ -304,10 +308,12 @@ impl RemovePaths {
                     }
                     self.send_finished_path
                         .send(PathBufMessage::Path(pathbuf))
-                        .ok();
+                        .unwrap_or(());
                 }
                 Ok(PathBufMessage::Finished) | Err(_) => {
-                    self.send_finished_path.send(PathBufMessage::Finished).ok();
+                    self.send_finished_path
+                        .send(PathBufMessage::Finished)
+                        .unwrap_or(());
                     return;
                 }
             }
@@ -366,7 +372,7 @@ fn prompt_for_deletion(pathbuf: &std::path::Path) -> PromptResponse {
             Color::green("q"),
         );
 
-        stdout.flush().ok();
+        stdout.flush().unwrap_or(());
 
         buffer.clear();
         if stdin.read_line(&mut buffer).is_ok() {
@@ -418,7 +424,9 @@ impl PromptUser {
                     }
                 }
                 Ok(PathBufMessage::Finished) | Err(_) => {
-                    self.send_remove_path.send(PathBufMessage::Finished).ok();
+                    self.send_remove_path
+                        .send(PathBufMessage::Finished)
+                        .unwrap_or(());
                     break;
                 }
             }
@@ -435,7 +443,7 @@ impl PromptUser {
         if self.no_prompt {
             self.send_remove_path
                 .send(PathBufMessage::Path(pathbuf))
-                .ok();
+                .unwrap_or(());
             return;
         }
         match prompt_for_deletion(&pathbuf) {
@@ -443,17 +451,19 @@ impl PromptUser {
                 self.no_prompt = true;
                 self.send_remove_path
                     .send(PathBufMessage::Path(pathbuf))
-                    .ok();
+                    .unwrap_or(());
             }
             PromptResponse::Delete => {
                 self.send_remove_path
                     .send(PathBufMessage::Path(pathbuf))
-                    .ok();
+                    .unwrap_or(());
             }
             PromptResponse::Skip => (),
             PromptResponse::Quit => {
                 self.quit = true;
-                self.send_remove_path.send(PathBufMessage::Finished).ok();
+                self.send_remove_path
+                    .send(PathBufMessage::Finished)
+                    .unwrap_or(());
             }
         }
     }

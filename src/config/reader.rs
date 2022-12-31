@@ -787,7 +787,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
 
 pub fn empty_doc() -> Yaml {
     let mut doc = Yaml::Hash(YamlHash::new());
-    add_missing_sections(&mut doc).ok();
+    add_missing_sections(&mut doc).unwrap_or(());
 
     doc
 }
