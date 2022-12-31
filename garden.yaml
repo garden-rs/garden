@@ -1,0 +1,50 @@
+# usage:
+# garden <cmd> [<tree>] [-- [<args>]]
+commands:
+  bench: cargo bench "$@"
+  build: cargo build "$@"
+  check: garden -vv cmd garden check/clippy check/fmt
+  check/clippy: cargo clippy --all "$@" -- -D warnings
+  check/fmt: cargo fmt --check "$@"
+  clean: cargo clean "$@"
+  clippy: cargo clippy --all --fix "$@" -- -D warnings
+  commit: git commit "$@"
+  coverage: cargo kcov "$@"
+  doc: |
+    cargo doc --no-deps --package ${cargo_package}
+    cd doc
+    mdbook build --dest-dir book.new
+    rsync -r --delete --exclude=.git book.new/ book/
+    rm -rf book.new
+  fmt: cargo fmt "$@"
+  install-doc: |
+    garden doc
+    mkdir -p "${DESTDIR}${docdir}"
+    rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
+  setup: $0 grow doc/book
+  stat: git status -s "$@"
+  status: git status "$@"
+  test: cargo test "$@"
+  update-deps: cargo update "$@"
+
+# Variables can be defined externally. eg.:
+#   garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc
+variables:
+  cargo_package: garden-tools
+  DESTDIR: ""
+  docdir: ${prefix}/share/doc/garden
+  prefix: ~/.cargo
+
+groups:
+  garden: garden
+  doc: doc/book
+  all:
+    - garden
+    - doc/book
+
+trees:
+  garden:
+    path: ${GARDEN_CONFIG_DIR}
+  doc/book:
+    worktree: garden
+    branch: gh-pages
