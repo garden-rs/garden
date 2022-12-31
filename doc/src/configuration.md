@@ -59,6 +59,24 @@ garden:
   root: ~/src
 ```
 
+## Includes
+
+Garden files can be split apart into several files for modularity and reuse.
+You can use the `garden.includes` list to specify other garden files to include
+into the current garden file.
+
+```yaml
+garden:
+  includes:
+    # Includes are relative to the GARDEN_CONFIG_DIR by default.
+    - variables.yaml
+    # Includes can reference custom and built-in ${variables}.
+    - ${include_dir}/commands.yaml
+
+variables:
+  include_dir: ${GARDEN_ROOT}
+```
+
 
 ## Variables
 

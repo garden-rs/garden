@@ -1,9 +1,18 @@
 ---
+garden:
+  includes:
+    # Paths are implicitly relative to ${GARDEN_CONFIG_DIR}.
+    - variables.yaml
+    # # Paths can use ${variables} defined in the current config file.
+    - trees.yaml
+    # # Includes are recursive.
+    - includes.yaml
 
 variables:
   current_config: main
   gh_ssh: "git@github.com"
   repos: ${GARDEN_ROOT}/repos
+  config_dir: ${GARDEN_CONFIG_DIR}
 
 trees:
   # repos/example.git is created by setup.sh during the integration test.
