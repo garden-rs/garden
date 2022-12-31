@@ -133,13 +133,12 @@ pub fn new(
     if found {
         // Read file contents.
         let config_path = cfg.get_path()?;
-        let config_string = match std::fs::read_to_string(config_path) {
-            Ok(content) => content,
+        if let Ok(config_string) = std::fs::read_to_string(config_path) {
+            parse(&config_string, config_verbose, &mut cfg)?;
+        } else {
             // Return a default Configuration If we are unable to read the file.
-            Err(_) => return Ok(cfg),
-        };
-
-        parse(&config_string, config_verbose, &mut cfg)?;
+            return Ok(cfg);
+        }
     }
 
     // Default to the current directory when garden.root is unspecified
