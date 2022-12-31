@@ -217,8 +217,20 @@ are either available to any tree or scoped to specific gardens only.</p>
 <p>Groups are lighter-weight than a garden. They group trees together into named
 collections that can be referenced by gardens and commands.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
-<p>There are multiple ways to install garden.</p>
+<p>There are multiple ways to install <code>garden</code>.</p>
 <p>These instructions assume that you have <code>cargo</code> installed for Rust development.</p>
+<h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
+<p>You can install the latest stable release on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
+<p><em>NOTE</em>: The custom <code>brew tap</code> will not be needed in the future once the
+<a href="https://github.com/Homebrew/homebrew-core/pull/119195">Garden repository gets enough stars, forks or watchers</a>
+to allow <code>garden</code> to be added to the main homebrew-core repository.</p>
+<pre><code>brew tap davvid/homebrew-garden
+brew install garden
+</code></pre>
+<p>To install the latest development version from Git:</p>
+<pre><code>brew install --head garden
+</code></pre>
+<p>Read on for how to build garden from source.</p>
 <h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
 <p>If you already have <code>cargo</code> installed then you can skip this section.</p>
 <p>You may be able to install <code>cargo</code> on macOS and Linux using standard package
@@ -260,6 +272,14 @@ respectively.</p>
 </code></pre>
 <p>Running <code>make install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
 <p><code>make test</code> runs the test suite and <code>make check</code> runs checks and linters.</p>
+<h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
+<p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
+<p>Garden is not supported on Windows.</p>
+<p>Garden &quot;should&quot; work fine on Windows if you install a shell (eg. <code>bash.exe</code> or
+<code>zsh.exe</code>) in <code>$PATH</code> and patch a few details to deal with Windows-isms, but Garden is
+untested and not supported by the core team on Windows or WSL.</p>
+<p>Issues related to Windows will be closed. Pull requests related to these systems are
+welcome as long as they do not clutter the core or test suite with Windows-isms.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="setup-and-usage"><a class="header" href="#setup-and-usage">Setup and Usage</a></h1>
 <h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
 <p>A garden can be created in any directory. Run <code>garden init</code> to create
