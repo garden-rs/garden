@@ -10,10 +10,11 @@ self-contained and interdependent Git worktrees.
 [![Build status](https://github.com/davvid/garden/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/davvid/garden/actions/workflows/ci.yml)
 [![MIT License](https://img.shields.io/github/license/davvid/garden.svg)](LICENSE)
 
-Garden is under development and not yet feature complete, but its current features are
-considered stable.
+Garden is actively maintained and its current features are stable.
 
-The [ideas](doc/ideas.md) page contains a list of ideas to explore in the future.
+Garden is nearly feature-complete and `v1.0.0` will be released sometime in 2023.
+
+The [ideas page](doc/ideas.md) contains ideas to explore before `v1.0.0`.
 
 
 ## Documentation
