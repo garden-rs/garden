@@ -1,9 +1,4 @@
 /doc/book
 /doc/book.new
-/doc/src/dist
-/doc/src/git
-/doc/src/git-cola
-/doc/src/qtpy
-/doc/src/vx
 /target
 /*.html
