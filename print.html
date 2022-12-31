@@ -685,7 +685,7 @@ Use with caution!</p>
 <p>Garden will find <code>garden.yaml</code> in current directory or in specific locations
 on the filesystem when unspecified.  Garden searches for <code>garden.yaml</code> in the
 following locations. The first one found is used.</p>
-<pre><code># Relative to the current directory
+<pre><code class="language-sh"># Relative to the current directory
 ./garden.yaml
 ./garden/garden.yaml
 ./etc/garden/garden.yaml
@@ -845,18 +845,32 @@ This directory is the parent directory in which all trees will be cloned.</p>
 setups that define a <code>garden.root</code> relative to the garden file itself.</p>
 <p>To place all trees in a <code>src</code> directory sibling to the <code>garden.yaml</code> file, the
 following configuration can be used:</p>
-<pre><code>garden:
+<pre><code class="language-yaml">garden:
   root: ${GARDEN_CONFIG_DIR}/src
 </code></pre>
 <p>To place all trees in a <code>src</code> directory in your <code>$HOME</code> directory, the
 following configuration can be used:</p>
-<pre><code>garden:
+<pre><code class="language-yaml">garden:
   root: ~/src
+</code></pre>
+<h2 id="includes"><a class="header" href="#includes">Includes</a></h2>
+<p>Garden files can be split apart into several files for modularity and reuse.
+You can use the <code>garden.includes</code> list to specify other garden files to include
+into the current garden file.</p>
+<pre><code class="language-yaml">garden:
+  includes:
+    # Includes are relative to the GARDEN_CONFIG_DIR by default.
+    - variables.yaml
+    # Includes can reference custom and built-in ${variables}.
+    - ${include_dir}/commands.yaml
+
+variables:
+  include_dir: ${GARDEN_ROOT}
 </code></pre>
 <h2 id="variables"><a class="header" href="#variables">Variables</a></h2>
 <p>Garden configuration contains a &quot;variables&quot; block that allows defining
 variables that are can be referenced by other garden values.</p>
-<pre><code>variables:
+<pre><code class="language-yaml">variables:
   flavor: debug
   user: $ whoami
   libdir: $ test -e /usr/lib64 &amp;&amp; echo lib64 || echo lib
@@ -878,11 +892,12 @@ override/replace variables defined in a tree scope.</p>
 <h2 id="built-in-variables"><a class="header" href="#built-in-variables">Built-in variables</a></h2>
 <p>Garden automatically defines some built-in variables that can be useful
 when constructing values for variables, commands, and paths.</p>
-<pre><code>GARDEN_CONFIG_DIR   -   directory containing the &quot;garden.yaml&quot; config file
-GARDEN_ROOT         -   root directory for trees
-TREE_NAME           -   current tree name
-TREE_PATH           -   current tree path
-</code></pre>
+<ul>
+<li><strong>GARDEN_CONFIG_DIR</strong> -- Directory containing the <code>garden.yaml</code> config file.</li>
+<li><strong>GARDEN_ROOT</strong> -- Root directory for trees.</li>
+<li><strong>TREE_NAME</strong> -- Current tree name.</li>
+<li><strong>TREE_PATH</strong> -- Current tree path.</li>
+</ul>
 <h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
 <p>The &quot;environment&quot; block defines variables that are stored in the environment.</p>
 <p>Environment variables are resolved in the same order as the garden variables:
@@ -894,7 +909,7 @@ the use of garden variables when defining environment variable values.</p>
 <p>Environment variable names can use garden <code>${variable}</code> syntax when defining
 both their name and values.</p>
 <p>Values in environment blocks prepend to the named environment variable.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   foo:
     environment:
       PATH: ${TREE_PATH}/bin
@@ -903,7 +918,7 @@ both their name and values.</p>
 environment variable.</p>
 <p>Names with an equals sign (<code>=</code>) suffix are treated as &quot;store&quot; operations and are
 stored into the environment, fully replacing any pre-existing values.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   foo:
     environment:
       ${TREE_NAME}_LOCATION=: ${TREE_PATH}
@@ -911,7 +926,7 @@ stored into the environment, fully replacing any pre-existing values.</p>
 <p>The example above exports a variable called <code>foo_LOCATION</code> with the location of the tree.
 If <code>foo_LOCATION</code> is already defined then it its value is replaced.</p>
 <p>A plus sign (<code>+</code>) suffix in the name append to a variable instead of prepending.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   foo:
     environment:
       PATH+: ${TREE_PATH}/bin
@@ -982,7 +997,7 @@ matches &quot;cola&quot; only.</p>
 <h2 id="symlinks"><a class="header" href="#symlinks">Symlinks</a></h2>
 <p>Symlink trees create a symlink on the filesystem during <code>garden init</code>.
 <code>garden exec</code>, and custom <code>garden cmd</code> commands ignore symlink trees.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   media:
     path: ~/media
     symlink: /media/${USER}
@@ -1291,6 +1306,17 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v050"><a class="header" href="#v050">v0.5.0</a></h2>
+<p><strong>Features</strong></p>
+<ul>
+<li><a href="https://davvid.github.io/garden/configuration.html#includes">Garden configuration files can now include other configuration files
+</a> by specifying
+the additional files to include in the <code>garden.includes</code> field.
+The <code>includes</code> feature makes it possible to create modular and reusable garden files.
+The <code>trees</code>, <code>variables</code>, <code>commands</code>, <code>groups</code> and <code>gardens</code> defined in the included
+files are added to the current configuration.
+(<a href="https://github.com/davvid/garden/pull/7">#7</a>)</li>
+</ul>
 <h2 id="v041"><a class="header" href="#v041">v0.4.1</a></h2>
 <p><strong>Features</strong></p>
 <ul>
