@@ -217,6 +217,25 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
     false
 }
 
+/// Yaml::String or Yaml::Array<Yaml::String> -> Vec<Variable>
+fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
+    if let Yaml::String(yaml_string) = yaml {
+        vec.push(model::Variable::new(yaml_string.clone(), None));
+        return true;
+    }
+
+    if let Yaml::Array(ref yaml_vec) = yaml {
+        for value in yaml_vec {
+            if let Yaml::String(ref value_str) = value {
+                vec.push(model::Variable::new(value_str.clone(), None));
+            }
+        }
+        return true;
+    }
+
+    false
+}
+
 // Yaml::String -> Variable
 fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
     let mut result = false;
