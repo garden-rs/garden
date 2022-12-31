@@ -245,7 +245,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                             vec.push(model::NamedVariable::new(
                                 key.to_string(),
                                 yaml_str.clone(),
-                                None,
+                                None, // Defer resolution of string values.
                             ));
                         }
                     }
@@ -255,7 +255,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     vec.push(model::NamedVariable::new(
                         key,
                         value.clone(),
-                        Some(value.clone()),
+                        Some(value.clone()), // Integer values are already resolved.
                     ));
                 }
                 Yaml::Boolean(ref yaml_bool) => {
@@ -263,7 +263,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     vec.push(model::NamedVariable::new(
                         key,
                         value.clone(),
-                        Some(value.clone()),
+                        Some(value.clone()), // Booleans are already resolved.
                     ));
                 }
                 _ => {
