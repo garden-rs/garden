@@ -84,3 +84,17 @@ respectively.
 Running `make install` with no arguments installs to `~/.cargo/bin/garden` by default.
 
 `make test` runs the test suite and `make check` runs checks and linters.
+
+
+## Windows
+
+Garden is developed on Linux and supported on macOS and BSDs where Rust is available.
+
+Garden is not supported on Windows.
+
+Garden "should" work fine on Windows if you install a shell (eg. `bash.exe` or
+`zsh.exe`) in `$PATH` and patch a few details to deal with Windows-isms, but Garden is
+untested and not supported by the core team on Windows or WSL.
+
+Issues related to Windows will be closed. Pull requests related to these systems are
+welcome as long as they do not clutter the core or test suite with Windows-isms.
