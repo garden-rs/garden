@@ -7,17 +7,19 @@ Garden will find `garden.yaml` in current directory or in specific locations
 on the filesystem when unspecified.  Garden searches for `garden.yaml` in the
 following locations. The first one found is used.
 
-    # Relative to the current directory
-    ./garden.yaml
-    ./garden/garden.yaml
-    ./etc/garden/garden.yaml
+```sh
+# Relative to the current directory
+./garden.yaml
+./garden/garden.yaml
+./etc/garden/garden.yaml
 
-    # Relative to $HOME
-    ~/.config/garden/garden.yaml
-    ~/etc/garden/garden.yaml
+# Relative to $HOME
+~/.config/garden/garden.yaml
+~/etc/garden/garden.yaml
 
-    # Global configuration
-    /etc/garden/garden.yaml
+# Global configuration
+/etc/garden/garden.yaml
+```
 
 Use `garden -c|--config <filename>` to specify a garden file and override
 garden's file discovery.
@@ -29,6 +31,7 @@ when showing examples.
 {{#include examples/git-cola/garden.yaml}}
 ```
 
+
 ## Garden Root
 
 The garden root directory is configured in the `garden.root` field.
@@ -37,21 +40,42 @@ This directory is the parent directory in which all trees will be cloned.
 Slashes in tree paths will create new directories on disk as needed.
 `garden.root` defaults to the current directory when unspecified.
 
-
 The built-in `${GARDEN_CONFIG_DIR}` variable can be used to create relocatable
 setups that define a `garden.root` relative to the garden file itself.
 
 To place all trees in a `src` directory sibling to the `garden.yaml` file, the
 following configuration can be used:
 
-    garden:
-      root: ${GARDEN_CONFIG_DIR}/src
+```yaml
+garden:
+  root: ${GARDEN_CONFIG_DIR}/src
+```
 
 To place all trees in a `src` directory in your `$HOME` directory, the
 following configuration can be used:
 
-    garden:
-      root: ~/src
+```yaml
+garden:
+  root: ~/src
+```
+
+## Includes
+
+Garden files can be split apart into several files for modularity and reuse.
+You can use the `garden.includes` list to specify other garden files to include
+into the current garden file.
+
+```yaml
+garden:
+  includes:
+    # Includes are relative to the GARDEN_CONFIG_DIR by default.
+    - variables.yaml
+    # Includes can reference custom and built-in ${variables}.
+    - ${include_dir}/commands.yaml
+
+variables:
+  include_dir: ${GARDEN_ROOT}
+```
 
 
 ## Variables
@@ -59,15 +83,17 @@ following configuration can be used:
 Garden configuration contains a "variables" block that allows defining
 variables that are can be referenced by other garden values.
 
-    variables:
-      flavor: debug
-      user: $ whoami
-      libdir: $ test -e /usr/lib64 && echo lib64 || echo lib
-      nproc: $ nproc
-      prefix: ~/.local
-      py_ver_code: from sys import version_info as v; print("%s.%s" % v[:2])
-      py_ver: $ python -c '${py_ver_code}'
-      py_site: ${libdir}/python${py_ver}/site-packages
+```yaml
+variables:
+  flavor: debug
+  user: $ whoami
+  libdir: $ test -e /usr/lib64 && echo lib64 || echo lib
+  nproc: $ nproc
+  prefix: ~/.local
+  py_ver_code: from sys import version_info as v; print("%s.%s" % v[:2])
+  py_ver: $ python -c '${py_ver_code}'
+  py_site: ${libdir}/python${py_ver}/site-packages
+```
 
 Variables definitions can reference environment variables and other garden
 variables.
@@ -88,11 +114,10 @@ override/replace variables defined in a tree scope.
 Garden automatically defines some built-in variables that can be useful
 when constructing values for variables, commands, and paths.
 
-    GARDEN_CONFIG_DIR   -   directory containing the "garden.yaml" config file
-    GARDEN_ROOT         -   root directory for trees
-    TREE_NAME           -   current tree name
-    TREE_PATH           -   current tree path
-
+* **GARDEN_CONFIG_DIR** -- Directory containing the `garden.yaml` config file.
+* **GARDEN_ROOT** -- Root directory for trees.
+* **TREE_NAME** -- Current tree name.
+* **TREE_PATH** -- Current tree path.
 
 ## Environment Variables
 
@@ -111,10 +136,12 @@ both their name and values.
 
 Values in environment blocks prepend to the named environment variable.
 
-    trees:
-      foo:
-        environment:
-          PATH: ${TREE_PATH}/bin
+```yaml
+trees:
+  foo:
+    environment:
+      PATH: ${TREE_PATH}/bin
+```
 
 The example above prepends the `foo/bin` directory to the colon (`:`)-delimeted `PATH`
 environment variable.
@@ -122,20 +149,24 @@ environment variable.
 Names with an equals sign (`=`) suffix are treated as "store" operations and are
 stored into the environment, fully replacing any pre-existing values.
 
-    trees:
-      foo:
-        environment:
-          ${TREE_NAME}_LOCATION=: ${TREE_PATH}
+```yaml
+trees:
+  foo:
+    environment:
+      ${TREE_NAME}_LOCATION=: ${TREE_PATH}
+```
 
 The example above exports a variable called `foo_LOCATION` with the location of the tree.
 If `foo_LOCATION` is already defined then it its value is replaced.
 
 A plus sign (`+`) suffix in the name append to a variable instead of prepending.
 
-    trees:
-      foo:
-        environment:
-          PATH+: ${TREE_PATH}/bin
+```yaml
+trees:
+  foo:
+    environment:
+      PATH+: ${TREE_PATH}/bin
+```
 
 The example above appends to the `PATH` environment variable.
 Note the `+` suffix after `PATH`.
@@ -229,10 +260,12 @@ matches "cola" only.
 Symlink trees create a symlink on the filesystem during `garden init`.
 `garden exec`, and custom `garden cmd` commands ignore symlink trees.
 
-    trees:
-      media:
-        path: ~/media
-        symlink: /media/${USER}
+```yaml
+trees:
+  media:
+    path: ~/media
+    symlink: /media/${USER}
+```
 
 The "path" entry behaves like the tree "path" entry -- when unspecified it
 defaults to a path named after the tree relative to the garden root.

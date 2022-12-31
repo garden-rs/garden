@@ -14,6 +14,15 @@ pub fn parse(
     config_verbose: u8,
     config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
+    parse_recursive(string, config_verbose, config, true)
+}
+
+fn parse_recursive(
+    string: &str,
+    config_verbose: u8,
+    config: &mut model::Configuration,
+    is_root_config: bool,
+) -> Result<(), errors::GardenError> {
     let docs =
         YamlLoader::load_from_str(string).map_err(|scan_err| errors::GardenError::ReadConfig {
             err: scan_err,
@@ -52,38 +61,73 @@ pub fn parse(
         debug!("yaml: garden.shell = {}", config.shell);
     }
 
+    // built-in variables
+    if config_verbose > 1 {
+        debug!("yaml: variables");
+    }
+
+    // GARDEN_ROOT and GARDEN_CONFIG_DIR are relative to the root configuration.
+    // Referencing these variables from garden files included using garden.includes
+    // resolves to the root config's location, not the included location.
+    if is_root_config {
+        // Provide GARDEN_ROOT.
+        config.variables.push(model::NamedVariable::new(
+            "GARDEN_ROOT".to_string(),
+            config.root.get_expr().to_string(),
+            None,
+        ));
+
+        if let Some(config_path_raw) = config.dirname.as_ref() {
+            // Calculate an absolute path for GARDEN_CONFIG_DIR.
+            if let Ok(config_path) = config_path_raw.canonicalize() {
+                config.variables.push(model::NamedVariable::new(
+                    "GARDEN_CONFIG_DIR".to_string(),
+                    config_path.to_string_lossy().to_string(),
+                    None,
+                ));
+            }
+        }
+    }
+
+    // custom variables
+    if !get_variables(&doc["variables"], &mut config.variables) && config_verbose > 1 {
+        debug!("yaml: no variables");
+    }
+
+    // Process "includes" after initializing the GARDEN_ROOT and GARDEN_CONFIG_DIR.
+    // This allows the path strings to reference these ${variables}.
+    // This also means that variables defined by the outer-most garden config
+    // override the same variables when also defined in an included garden file.
+    let mut config_includes = Vec::new();
+    if get_vec_variables(&doc["garden"]["includes"], &mut config_includes) {
+        for garden_include in &config_includes {
+            let pathbuf = match config.eval_config_pathbuf(garden_include.get_expr()) {
+                Some(pathbuf) => pathbuf,
+                None => continue,
+            };
+            if !pathbuf.exists() {
+                if config_verbose > 0 {
+                    debug!(
+                        "warning: garden.includes entry not found: {:?} -> {:?}",
+                        garden_include, pathbuf
+                    );
+                }
+                continue;
+            }
+            if pathbuf.exists() {
+                if let Ok(content) = std::fs::read_to_string(pathbuf) {
+                    parse_recursive(&content, config_verbose, config, false).unwrap_or(());
+                }
+            }
+        }
+    }
+
     // grafts
     if config_verbose > 1 {
         debug!("yaml: grafts");
     }
     if !get_grafts(&doc["grafts"], &mut config.grafts) && config_verbose > 1 {
         debug!("yaml: no grafts");
-    }
-
-    // variables
-    if config_verbose > 1 {
-        debug!("yaml: variables");
-    }
-    // Provide GARDEN_ROOT
-    config.variables.push(model::NamedVariable::new(
-        "GARDEN_ROOT".to_string(),
-        config.root.get_expr().to_string(),
-        None,
-    ));
-
-    if let Some(config_path_raw) = config.dirname.as_ref() {
-        // Calculate an absolute path for GARDEN_CONFIG_DIR.
-        if let Ok(config_path) = config_path_raw.canonicalize() {
-            config.variables.push(model::NamedVariable::new(
-                "GARDEN_CONFIG_DIR".to_string(),
-                config_path.to_string_lossy().to_string(),
-                None,
-            ));
-        }
-    }
-
-    if !get_variables(&doc["variables"], &mut config.variables) && config_verbose > 1 {
-        debug!("yaml: no variables");
     }
 
     // commands
@@ -217,6 +261,25 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
     false
 }
 
+/// Yaml::String or Yaml::Array<Yaml::String> -> Vec<Variable>
+fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
+    if let Yaml::String(yaml_string) = yaml {
+        vec.push(model::Variable::new(yaml_string.clone(), None));
+        return true;
+    }
+
+    if let Yaml::Array(ref yaml_vec) = yaml {
+        for value in yaml_vec {
+            if let Yaml::String(ref value_str) = value {
+                vec.push(model::Variable::new(value_str.clone(), None));
+            }
+        }
+        return true;
+    }
+
+    false
+}
+
 // Yaml::String -> Variable
 fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
     let mut result = false;
@@ -245,7 +308,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                             vec.push(model::NamedVariable::new(
                                 key.to_string(),
                                 yaml_str.clone(),
-                                None,
+                                None, // Defer resolution of string values.
                             ));
                         }
                     }
@@ -255,7 +318,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     vec.push(model::NamedVariable::new(
                         key,
                         value.clone(),
-                        Some(value.clone()),
+                        Some(value.clone()), // Integer values are already resolved.
                     ));
                 }
                 Yaml::Boolean(ref yaml_bool) => {
@@ -263,7 +326,7 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                     vec.push(model::NamedVariable::new(
                         key,
                         value.clone(),
-                        Some(value.clone()),
+                        Some(value.clone()), // Booleans are already resolved.
                     ));
                 }
                 _ => {
@@ -787,7 +850,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
 
 pub fn empty_doc() -> Yaml {
     let mut doc = Yaml::Hash(YamlHash::new());
-    add_missing_sections(&mut doc).ok();
+    add_missing_sections(&mut doc).unwrap_or(());
 
     doc
 }

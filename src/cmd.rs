@@ -223,5 +223,5 @@ pub fn parse_args(parser: argparse::ArgumentParser, arguments: Vec<String>) {
     parser
         .parse(arguments, &mut std::io::stdout(), &mut std::io::stderr())
         .map_err(std::process::exit)
-        .ok();
+        .unwrap_or(());
 }

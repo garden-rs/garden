@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5.0
+
+**Features**
+
+- [Garden configuration files can now include other configuration files
+  ](https://davvid.github.io/garden/configuration.html#includes) by specifying
+  the additional files to include in the `garden.includes` field.
+  The `includes` feature makes it possible to create modular and reusable garden files.
+  The `trees`, `variables`, `commands`, `groups` and `gardens` defined in the included
+  files are added to the current configuration.
+  ([#7](https://github.com/davvid/garden/pull/7))
+
 ## v0.4.1
 
 **Features**

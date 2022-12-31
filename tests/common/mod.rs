@@ -20,7 +20,7 @@ pub fn from_string(string: &str) -> model::Configuration {
     initialize_environment();
 
     let mut config = model::Configuration::new();
-    config::parse(string, 0, &mut config).ok();
+    config::parse(string, 0, &mut config).unwrap_or(());
 
     config
 }

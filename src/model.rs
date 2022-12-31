@@ -606,17 +606,27 @@ impl Configuration {
         self.tree_path(&value)
     }
 
-    /// Resolve a path string relative to the config dir.
-    pub fn config_path(&self, path: &str) -> String {
-        if std::path::PathBuf::from(path).is_absolute() {
+    /// Resolve a pathbuf relative to the config dir.
+    pub fn config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
+        let mut path_buf = std::path::PathBuf::from(path);
+        if path_buf.is_absolute() {
             // Absolute path, nothing to do
-            path.into()
+            Some(path_buf)
         } else if let Some(dirname) = self.dirname.as_ref() {
             // Make path relative to the configuration's dirname
-            let mut path_buf = dirname.to_path_buf();
+            path_buf = dirname.to_path_buf();
             path_buf.push(path);
 
-            path_buf.to_string_lossy().into()
+            Some(path_buf)
+        } else {
+            None
+        }
+    }
+
+    /// Resolve a path string relative to the config dir.
+    pub fn config_path(&self, path: &str) -> String {
+        if let Some(path_buf) = self.config_pathbuf(path) {
+            path_buf.to_string_lossy().to_string()
         } else {
             self.tree_path(path)
         }
@@ -625,8 +635,13 @@ impl Configuration {
     /// Evaluate and resolve a path string and relative to the config dir.
     pub fn eval_config_path(&self, path: &str) -> String {
         let value = eval::value(self, path);
-
         self.config_path(&value)
+    }
+
+    /// Evaluate and resolve a pathbuf relative to the config dir.
+    pub fn eval_config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
+        let value = eval::value(self, path);
+        self.config_pathbuf(&value)
     }
 
     /// Reset resolved variables

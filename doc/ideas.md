@@ -1,26 +1,5 @@
 # Ideas, New Features, Usability Enhancements
 
-- config::reader should stop creating `${TREE_NAME}`, `${GARDEN_ROOT}`,
-  and `${GARDEN_CONFIG_DIR}`.  config.rs should create the NamedVariables.
-
-- Modular/reusable garden.yaml configuration.
-
-- Make it possible to full-on include another garden config file inline
-  into a garden file so that we can reuse variables and commands across
-  garden files.
-
-```yaml
-garden:
-    root: "${GARDEN_CONFIG_DIR}"
-    include:
-      - "${GARDEN_CONFIG_DIR}/etc/garden/commands.yaml"
-      - "${GARDEN_CONFIG_DIR}/etc/garden/variables.yaml"
-```
-
-This reader will have to be changed to first parse the includes in the
-listed order copy their contents into the main configuration.
-This seems like this should be possible to attain through refactoring that
-allows the configuration to be iteratively updated by a config reader.
 ## Grafts (WIP)
 
 Make it possible to graft configuration from one graden file into another.

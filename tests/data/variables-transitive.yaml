@@ -1,0 +1,5 @@
+---
+variables:
+  var_1: one
+  var_2: two
+...

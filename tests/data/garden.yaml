@@ -1,27 +1,18 @@
 ---
-grafts:
-  graft: grafts/graft.yaml
-  libs:
-    config: grafts/libs.yaml
-    root: libs
+garden:
+  includes:
+    # Paths are implicitly relative to ${GARDEN_CONFIG_DIR}.
+    - variables.yaml
+    # # Paths can use ${variables} defined in the current config file.
+    - trees.yaml
+    # # Includes are recursive.
+    - includes.yaml
 
 variables:
   current_config: main
   gh_ssh: "git@github.com"
   repos: ${GARDEN_ROOT}/repos
-
-gardens:
-  dev:
-    groups:
-      - libs::core
-      - graft::core
-    trees:
-      - graft::graft
-      - example/tree
-  graft_garden:
-    trees:
-      - graft::graft
-      - graft::core
+  config_dir: ${GARDEN_CONFIG_DIR}
 
 trees:
   # repos/example.git is created by setup.sh during the integration test.
@@ -92,3 +83,26 @@ commands:
   - "false"
   - echo after error
   - "false"
+
+gardens:
+  # WIP(grafts)
+  dev:
+    groups:
+      - libs::core
+      - graft::core
+    trees:
+      - graft::graft
+      - example/tree
+  graft_garden:
+    trees:
+      - graft::graft
+      - graft::core
+
+# WIP(grafts): grafts are not yet implemented. If implemented, the "grafts" block
+# will provide the namespaced "graft::*" and "libs::*" trees and variables that
+# can then be referenced within this file.
+grafts:
+  graft: grafts/graft.yaml
+  libs:
+    config: grafts/libs.yaml
+    root: libs
