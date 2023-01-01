@@ -35,10 +35,10 @@ the basename of a file in the configuration search path.
 
 Enable verbose debugging output.
 
-    -s | --set name=value
+    -D | --define name=value
 
 Override a configured variable by passing a `name=value` string to
-the `--set` option.  The variable named `name` will be updated with the
+the `-D | --define` option.  The variable named `name` will be updated with the
 garden expression `value`.  Multiple variables can be set by specifying the
 flag multiple times.
 
