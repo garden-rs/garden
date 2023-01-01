@@ -205,7 +205,7 @@ pub fn value(config: &model::Configuration, expr: &str) -> String {
     exec_expression(&expanded)
 }
 
-/// Evaluate "$ <command>" command strings, AKA "exec expressions".
+/// Evaluate `$ <command>` command strings, AKA "exec expressions".
 /// The result of the expression is the stdout output from the command.
 pub fn exec_expression(string: &str) -> String {
     if syntax::is_exec(string) {

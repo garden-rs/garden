@@ -70,7 +70,7 @@ impl Variable {
         *self.value.borrow_mut() = Some(value);
     }
 
-    /// Transform the RefCell<Option<String>> value into an Option<&String>.
+    /// Transform the `RefCell<Option<String>>` value into `Option<&String>`.
     pub fn get_value(&self) -> Option<&String> {
         let ptr = self.value.as_ptr();
         unsafe { (*ptr).as_ref() }
