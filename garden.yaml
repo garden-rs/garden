@@ -10,6 +10,8 @@ commands:
   clippy: cargo clippy --all --fix "$@" -- -D warnings
   commit: git commit "$@"
   coverage: cargo kcov "$@"
+  diff: git diff "$@"
+  diffs: git diff --staged "$@"
   doc: |
     cargo doc --no-deps --package ${cargo_package}
     cd doc
@@ -22,6 +24,7 @@ commands:
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
   setup: $0 grow doc/book
+  stage: git add -u "$@"
   stat: git status -s "$@"
   status: git status "$@"
   test: cargo test "$@"
