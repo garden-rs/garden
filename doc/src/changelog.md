@@ -2,7 +2,7 @@
 
 ## v0.5.0
 
-**Features**
+**Features**:
 
 - [Garden configuration files can now include other configuration files
   ](https://davvid.github.io/garden/configuration.html#includes) by specifying
@@ -12,9 +12,20 @@
   files are added to the current configuration.
   ([#7](https://github.com/davvid/garden/pull/7))
 
+**Development**:
+
+- The `Makefile` has been replaced by a `garden.yaml` Garden file.
+  We can now use `garden {build, test, check, fmt, clippy, ...}` instead of `make ...`.
+  See [garden.yaml @ 5ef8d0ab16 for more details](https://github.com/davvid/garden/blob/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml).
+  Packagers can use `cargo install` to install `garden` and invoke `mdbook` directly
+  to install the user manual. We also provide
+  `garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc` if distros
+  want to install the user manual using our recipe.
+  ([#8](https://github.com/davvid/garden/pull/8))
+
 ## v0.4.1
 
-**Features**
+**Features**:
 
 - The `garden cmd --no-errexit` option was extended to work with commands that are
   configured using a YAML list of strings. Commands that are specified using lists
