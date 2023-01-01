@@ -72,19 +72,18 @@ cargo build
 cargo install --path .
 ```
 
-A `Makefile` is also provided with a classic `make install` installation target.
-The `prefix` and `DESTDIR` variables specify the
-[installation prefix](https://www.gnu.org/prep/standards/html_node/Directory-Variables.html#Directory-Variables)
-and optional
-[temporary staging directory](https://www.gnu.org/prep/standards/html_node/DESTDIR.html#DESTDIR),
-respectively.
+Running `cargo install` with no arguments installs to `~/.cargo/bin/garden` by default.
 
-    make install prefix=/usr/local DESTDIR=/tmp/stage
+Once you have `garden` installed then you can use Garden's `garden.yaml` to run
+Garden's custom worfkflow commands.
 
-Running `make install` with no arguments installs to `~/.cargo/bin/garden` by default.
+* `garden test` runs the test suite using `cargo test`.
+* `garden check` runs checks and linters.
+* `garden doc` builds the documentation.
+* `garden fmt` formats the source code.
+* `garden install-doc` installs the documentation.
 
-`make test` runs the test suite and `make check` runs checks and linters.
-
+See Garden's `garden.yaml` for more details.
 
 ## Windows
 

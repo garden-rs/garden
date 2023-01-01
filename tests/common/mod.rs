@@ -177,7 +177,7 @@ pub fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
             assert_eq!(val, status);
         }
         subprocess::ExitStatus::Undetermined => {
-            assert!(false, "undetermined exit status");
+            panic!("undetermined exit status");
         }
     }
 }
@@ -227,7 +227,7 @@ fn setup_tmp_bare_repo(name: &str, path: &str) {
 
 fn teardown_tmp_test_data(path: &str) {
     if let Err(err) = std::fs::remove_dir_all(path) {
-        assert!(false, "unable to remove '{}': {}", path, err);
+        panic!("unable to remove '{}': {}", path, err);
     }
 }
 

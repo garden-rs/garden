@@ -66,8 +66,12 @@ fn grow_clone_shallow() -> Result<()> {
     // Only one commit must be cloned because of "depth: 1".
     let cmd = ["git", "rev-list", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree);
-    let lines = output.split('\n').collect::<Vec<&str>>();
-    assert_eq!(lines.len(), 1, "git rev-list HEAD outputs only one commit ");
+    let lines = output.split('\n');
+    assert_eq!(
+        lines.count(),
+        1,
+        "git rev-list HEAD outputs only one commit "
+    );
 
     Ok(())
 }
@@ -100,8 +104,12 @@ fn grow_clone_single_branch() -> Result<()> {
     // Only one commit must be cloned because of "depth: 1".
     let cmd = ["git", "rev-list", "HEAD"];
     let output = assert_cmd_capture(&cmd, &worktree);
-    let lines = output.split('\n').collect::<Vec<&str>>();
-    assert_eq!(lines.len(), 1, "git rev-list HEAD outputs only one commit ");
+    let lines = output.split('\n');
+    assert_eq!(
+        lines.count(),
+        1,
+        "git rev-list HEAD outputs only one commit "
+    );
 
     Ok(())
 }
@@ -464,9 +472,9 @@ fn git_worktree_details() -> Result<()> {
     // The "child" repository is a GitTreeType::Worktree(parent_path).
     let parent_path_relative = &fixture.pathbuf("parent");
     let parent_path = parent_path_relative
-        .to_path_buf()
+        .clone()
         .canonicalize()
-        .unwrap_or(parent_path_relative.to_path_buf())
+        .unwrap_or_else(|_| parent_path_relative.clone())
         .to_string_lossy()
         .to_string();
     let details = git::worktree_details(&fixture.pathbuf("child"))?;
@@ -891,7 +899,7 @@ fn cmd_prune_depth() -> Result<()> {
         "example/tree",
     ])?;
     let example_path = fixture.pathbuf("example");
-    let mut example_tree_path = example_path.to_path_buf();
+    let mut example_tree_path = example_path.clone();
     example_tree_path.push("tree");
     assert!(example_tree_path.exists(), "example/tree must exist");
 
@@ -911,7 +919,7 @@ fn cmd_prune_depth() -> Result<()> {
         "example",
     ])?;
 
-    let mut example_unknown_path = example_path.to_path_buf();
+    let mut example_unknown_path = example_path;
     example_unknown_path.push("unknown");
     assert!(example_tree_path.exists(), "example/tree must exist");
     assert!(
@@ -933,8 +941,6 @@ fn cmd_prune_depth() -> Result<()> {
         "example",
     ])?;
 
-    let mut example_unknown_path = example_path.to_path_buf();
-    example_unknown_path.push("unknown");
     assert!(example_tree_path.exists(), "example/tree must be retained");
     assert!(
         !example_unknown_path.exists(),
@@ -961,15 +967,15 @@ fn cmd_prune_depth() -> Result<()> {
 
     let level0_unknown_path = fixture.pathbuf("level0-unknown");
     let level1_path = fixture.pathbuf("level1"); // level/
-    let mut level2_path = level1_path.to_path_buf();
+    let mut level2_path = level1_path.clone();
     level2_path.push("level2"); // level1/level2/
-    let mut level3_path = level2_path.to_path_buf();
+    let mut level3_path = level2_path.clone();
     level3_path.push("level3"); // level1/level2/level3/
-    let mut level1_unknown_path = level1_path.to_path_buf();
+    let mut level1_unknown_path = level1_path.clone();
     level1_unknown_path.push("unknown"); // level1/unknown
-    let mut level2_unknown_path = level2_path.to_path_buf();
+    let mut level2_unknown_path = level2_path.clone();
     level2_unknown_path.push("unknown"); // level1/level2/unknown
-    let mut level3_unknown_path = level3_path.to_path_buf();
+    let mut level3_unknown_path = level3_path.clone();
     level3_unknown_path.push("unknown"); // level1/level2/level3/unknown
 
     assert!(level1_path.exists());

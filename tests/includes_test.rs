@@ -7,13 +7,13 @@ fn read_includes() -> Result<()> {
     let config = app.get_root_config();
 
     // var_0 is from the included variables.yaml..
-    let actual = garden::eval::value(&config, "${var_0}");
+    let actual = garden::eval::value(config, "${var_0}");
     assert_eq!(actual, "zero");
     // var_1 is provided by variables-transitive.yaml and overridden by includes.yaml.
-    let actual = garden::eval::value(&config, "${var_1}");
+    let actual = garden::eval::value(config, "${var_1}");
     assert_eq!(actual, "ONE");
     // var_2 is provided by variables-transitive.yaml.
-    let actual = garden::eval::value(&config, "${var_2}");
+    let actual = garden::eval::value(config, "${var_2}");
     assert_eq!(actual, "two");
 
     // Trees are provided by included configs.

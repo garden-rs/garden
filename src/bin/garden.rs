@@ -103,7 +103,7 @@ fn parse_args() -> model::CommandOptions {
         );
 
         ap.refer(&mut options.variables).add_option(
-            &["-s", "--set"],
+            &["-D", "-s", "--define", "--set"],
             argparse::Collect,
             "Set variables using 'name=value' expressions",
         );

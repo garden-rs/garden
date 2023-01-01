@@ -6,7 +6,7 @@ use super::super::eval;
 use super::super::model;
 use super::super::query;
 
-/// garden cmd <query> <command>...
+/// Main entry point for `garden cmd <query> <command>...`.
 pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     let (query, params) = parse_args_cmd(&mut app.options);
     let exit_status = cmd(app, &query, &params)?;
@@ -15,7 +15,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
 /// CmdParams are used to control the execution of run_cmd_vec().
 ///
-/// "garden cmd" and "garden <custom-cmd>" parse command line arguments into struct CmdOptions.
+/// `garden cmd` and `garden <custom-cmd>` parse command line arguments into CmdParams.
 #[derive(Clone, Debug, Default)]
 pub struct CmdParams {
     commands: Vec<String>,
@@ -94,7 +94,7 @@ fn parse_args_cmd(options: &mut model::CommandOptions) -> (String, CmdParams) {
     (query, params)
 }
 
-/// garden <command> <query>...
+/// Main entry point for `garden <command> <query>...`.
 pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
     let params = parse_args_custom(command, &mut app.options);
     cmds(app, &params)
