@@ -222,16 +222,17 @@ cargo build
 # Install $HOME/.cargo/bin/garden
 cargo install --path .
 </code></pre>
-<p>A <code>Makefile</code> is also provided with a classic <code>make install</code> installation target.
-The <code>prefix</code> and <code>DESTDIR</code> variables specify the
-<a href="https://www.gnu.org/prep/standards/html_node/Directory-Variables.html#Directory-Variables">installation prefix</a>
-and optional
-<a href="https://www.gnu.org/prep/standards/html_node/DESTDIR.html#DESTDIR">temporary staging directory</a>,
-respectively.</p>
-<pre><code>make install prefix=/usr/local DESTDIR=/tmp/stage
-</code></pre>
-<p>Running <code>make install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
-<p><code>make test</code> runs the test suite and <code>make check</code> runs checks and linters.</p>
+<p>Running <code>cargo install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
+<p>Once you have <code>garden</code> installed then you can use Garden's <code>garden.yaml</code> to run
+Garden's custom worfkflow commands.</p>
+<ul>
+<li><code>garden test</code> runs the test suite using <code>cargo test</code>.</li>
+<li><code>garden check</code> runs checks and linters.</li>
+<li><code>garden doc</code> builds the documentation.</li>
+<li><code>garden fmt</code> formats the source code.</li>
+<li><code>garden install-doc</code> installs the documentation.</li>
+</ul>
+<p>See Garden's <code>garden.yaml</code> for more details.</p>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
 <p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
 <p>Garden is not supported on Windows.</p>

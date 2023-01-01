@@ -178,7 +178,7 @@
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="v050"><a class="header" href="#v050">v0.5.0</a></h2>
-<p><strong>Features</strong></p>
+<p><strong>Features</strong>:</p>
 <ul>
 <li><a href="https://davvid.github.io/garden/configuration.html#includes">Garden configuration files can now include other configuration files
 </a> by specifying
@@ -188,8 +188,19 @@ The <code>trees</code>, <code>variables</code>, <code>commands</code>, <code>gro
 files are added to the current configuration.
 (<a href="https://github.com/davvid/garden/pull/7">#7</a>)</li>
 </ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>The <code>Makefile</code> has been replaced by a <code>garden.yaml</code> Garden file.
+We can now use <code>garden {build, test, check, fmt, clippy, ...}</code> instead of <code>make ...</code>.
+See <a href="https://github.com/davvid/garden/blob/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
+Packagers can use <code>cargo install</code> to install <code>garden</code> and invoke <code>mdbook</code> directly
+to install the user manual. We also provide
+<code>garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc</code> if distros
+want to install the user manual using our recipe.
+(<a href="https://github.com/davvid/garden/pull/8">#8</a>)</li>
+</ul>
 <h2 id="v041"><a class="header" href="#v041">v0.4.1</a></h2>
-<p><strong>Features</strong></p>
+<p><strong>Features</strong>:</p>
 <ul>
 <li>The <code>garden cmd --no-errexit</code> option was extended to work with commands that are
 configured using a YAML list of strings. Commands that are specified using lists
