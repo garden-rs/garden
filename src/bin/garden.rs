@@ -9,23 +9,7 @@ use garden::model;
 fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
-        let exit_status: i32 = match err.downcast::<errors::GardenError>() {
-            Ok(garden_err) => {
-                match garden_err {
-                    // ExitStatus exits without printing a message.
-                    errors::GardenError::ExitStatus(status) => status,
-                    // Other GardenError variants print a message before exiting.
-                    _ => {
-                        eprintln!("error: {:#}", garden_err);
-                        garden_err.into()
-                    }
-                }
-            }
-            Err(other_err) => {
-                eprintln!("error: {:#}", other_err);
-                1
-            }
-        };
+        let exit_status = exit_status_from_error(err);
         std::process::exit(exit_status);
     }
 
@@ -62,6 +46,27 @@ fn cmd_main() -> Result<()> {
         model::Command::Plant => cmds::plant::main(&mut app),
         model::Command::Prune => cmds::prune::main(&mut app),
         model::Command::Shell => cmds::shell::main(&mut app),
+    }
+}
+
+/// Transform an anyhow::Error into an exit code when an error occurs.
+fn exit_status_from_error(err: anyhow::Error) -> i32 {
+    match err.downcast::<errors::GardenError>() {
+        Ok(garden_err) => {
+            match garden_err {
+                // ExitStatus exits without printing a message.
+                errors::GardenError::ExitStatus(status) => status,
+                // Other GardenError variants print a message before exiting.
+                _ => {
+                    eprintln!("error: {:#}", garden_err);
+                    garden_err.into()
+                }
+            }
+        }
+        Err(other_err) => {
+            eprintln!("error: {:#}", other_err);
+            1
+        }
     }
 }
 
