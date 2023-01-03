@@ -3,9 +3,9 @@ name = "garden-tools"
 version = "0.4.1"
 edition = "2021"
 description = """
-Garden Weaves Git Trees
+Cultivate Git Trees
 
-Garden makes it easy to define, create, and run commands over collections
+Garden allows you to define, create, and run commands over collections
 of configuration-defined multi-worktree Git environments.
 
 """
