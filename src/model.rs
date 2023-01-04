@@ -6,7 +6,6 @@ use which::which;
 use super::cli;
 use super::errors;
 use super::eval;
-use super::path;
 use super::syntax;
 
 /// Tree index into config.trees
@@ -1005,74 +1004,6 @@ pub fn print_tree_details(tree: &Tree, verbose: u8, quiet: bool) {
         if let Ok(path) = tree.path_as_ref() {
             eprintln!("{}", display_tree(tree, path, verbose));
         }
-    }
-}
-
-#[derive(Clone, Debug, Default)]
-pub struct CommandOptions {
-    pub args: Vec<String>,
-    pub debug: Vec<String>,
-    pub variables: Vec<String>,
-    pub filename: Option<std::path::PathBuf>,
-    pub subcommand: Command,
-    pub chdir: String,
-    pub filename_str: String,
-    pub root: String,
-    pub color_mode: ColorMode,
-    pub verbose: u8,
-    pub breadth_first: bool,
-    pub dry_run: bool,
-    pub exit_on_error: bool,
-    pub keep_going: bool,
-    pub quiet: bool,
-    pub cli: cli::MainOptions,
-}
-
-impl CommandOptions {
-    pub fn new() -> Self {
-        Self {
-            exit_on_error: true,
-            ..CommandOptions::default()
-        }
-    }
-
-    // Builder function to update verbosity.
-    pub fn verbose(mut self, value: u8) -> Self {
-        self.verbose = value;
-        self
-    }
-
-    pub fn update(&mut self) {
-        // Allow specifying the config file: garden --config <path>
-        if !self.filename_str.is_empty() {
-            let path = std::path::PathBuf::from(&self.filename_str);
-            if path.exists() {
-                let canon = path::abspath(&path);
-                self.filename = Some(canon);
-            } else {
-                self.filename = Some(path);
-            }
-        }
-
-        // Override garden.root: garden --root <path>
-        if !self.root.is_empty() {
-            // Resolve the "--root" option to an absolute path
-            let root_path = std::path::PathBuf::from(&self.root);
-            self.root = path::abspath(&root_path).to_string_lossy().into();
-        }
-
-        // Change directories before searching for conifgs: garden --chdir <path>
-        if !self.chdir.is_empty() {
-            if let Err(err) = std::env::set_current_dir(&self.chdir) {
-                error!("could not chdir to '{}': {}", self.chdir, err);
-            }
-        }
-
-        self.color_mode.update();
-    }
-
-    pub fn debug_level(&self, name: &str) -> u8 {
-        self.debug.iter().filter(|&x| x == name).count() as u8
     }
 }
 
