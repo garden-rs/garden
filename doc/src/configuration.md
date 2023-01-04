@@ -77,6 +77,12 @@ variables:
   include_dir: ${GARDEN_ROOT}
 ```
 
+Include files are treated like "optional" includes and are silently ignored when
+missing.
+
+Enable the `garden -d config ...` debug flag to display warnings about missing include
+files.
+
 
 ## Variables
 
