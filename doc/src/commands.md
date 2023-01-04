@@ -501,6 +501,8 @@ command.
 `garden completion` uses [clap complete](https://crates.io/crates/clap_complete)
 to generate its completions.
 
+The `--commands` options will additionally generate completions for custom commands.
+
 ### Zsh
 
 Ensure that your `~/.zshrc` file has completions enabled and that you have a
@@ -525,6 +527,9 @@ mkdir -p ~/.config/zsh/completion
 garden completion zsh >~/.config/zsh/completion/_garden
 ```
 
+Use `garden completion --commands zsh` instead of `garden completion zsh`
+to include completions for custom commands.
+
 *NOTE*: You will should regenerate the `_garden` zsh completion script
 whenever `garden` is upgraded to ensure that all of the options and commands have
 up to date completions.
@@ -540,10 +545,16 @@ then
 fi
 ```
 
+Use `garden completion --commands bash` instead of `garden completion bash`
+to include completions for custom commands.
+
 ### Future shell completion enhancements
 
-Tab completion do not currently include user-defined commands.
-Improvements to the shell completions can be made once traction has been made on the
-following upstream issues.
+Tab completion can only be made to include a static set of user-defined commands.
+Custom commands cannot be defined dynamically, which means that the same completions
+will be used irrespective of your current directory.
+
+Improvements to the shell completions can be made once traction has been made on this
+upstream issue:
 
 * [clapng #92](https://github.com/epage/clapng/issues/92) - Dynamic completion support

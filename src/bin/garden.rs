@@ -25,7 +25,7 @@ fn cmd_main() -> Result<()> {
 
     match options.command.clone() {
         cli::Command::Completion(completion) => {
-            return cmds::completion::main(completion.shell);
+            return cmds::completion::main(&options, &completion);
         }
         cli::Command::Init(mut init_options) => {
             return cmds::init::main(&options, &mut init_options);
