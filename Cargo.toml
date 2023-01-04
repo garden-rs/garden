@@ -27,6 +27,8 @@ maintenance = { status = "actively-developed" }
 anyhow = "1.0"
 argparse = "0.2"
 atty = "0.2"
+clap = { version = "4.0.32", features = ["derive"] }
+clap_complete = "4.0.7"
 crossbeam = "0.8"
 dirs = "4.0"
 glob = "0.3"
