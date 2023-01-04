@@ -3,7 +3,7 @@ name = "garden-tools"
 version = "0.5.0-beta"
 edition = "2021"
 description = """
-Cultivate Git Trees
+Garden grows and cultivates collections of Git trees
 
 Garden lets you define and run commands over collections of configuration-defined
 multi-worktree Git environments."""
