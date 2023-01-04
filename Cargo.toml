@@ -5,10 +5,8 @@ edition = "2021"
 description = """
 Cultivate Git Trees
 
-Garden allows you to define, create, and run commands over collections
-of configuration-defined multi-worktree Git environments.
-
-"""
+Garden lets you define and run commands over collections of configuration-defined
+multi-worktree Git environments."""
 keywords = ["git", "development", "sandboxes", "vcs", "worktree"]
 categories = [
     "command-line-utilities",
