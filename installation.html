@@ -180,18 +180,30 @@
 <p>There are multiple ways to install <code>garden</code>.</p>
 <p>These instructions assume that you have <code>cargo</code> installed for Rust development.</p>
 <h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
-<p>You can install the latest stable release on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
+<p>You can install <code>garden</code> on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
+<h3 id="add-the-homebrew-garden-tap"><a class="header" href="#add-the-homebrew-garden-tap">Add the homebrew-garden tap</a></h3>
 <p><em>NOTE</em>: The custom <code>brew tap</code> will not be needed in the future once the
 <a href="https://github.com/Homebrew/homebrew-core/pull/119195">Garden repository gets enough stars, forks or watchers</a>
 to allow <code>garden</code> to be added to the main homebrew-core repository.</p>
-<pre><code>brew tap davvid/homebrew-garden
-brew install garden
+<p>You will need to enable the <code>homebrew-garden</code> tap until then.</p>
+<pre><code class="language-bash">brew tap davvid/homebrew-garden
 </code></pre>
+<h3 id="stable-release"><a class="header" href="#stable-release">Stable Release</a></h3>
+<p>To install the latest stable release from the <code>homebrew-garden</code> tap:</p>
+<pre><code class="language-bash">brew install garden
+</code></pre>
+<p>Upgrade <code>garden</code> in the future by using <code>brew upgrade garden</code>.</p>
+<h3 id="development-version"><a class="header" href="#development-version">Development Version</a></h3>
 <p>To install the latest development version from Git:</p>
-<pre><code>brew install --head garden
+<pre><code class="language-bash">brew install --head garden
 </code></pre>
-<p>Installing <code>garden</code> with Homebrew may leave behind the Rust development tools.
-Use <code>brew remove rust</code> after <code>garden</code> is installed to save on disk space.</p>
+<p><em>NOTE</em>: If you install the latest development version with <code>--head</code> then you will need to use
+<code>brew upgrade --fetch-HEAD garden</code>  to upgrade it.</p>
+<p>If you don't specify <code>--fetch-HEAD</code> when upgrading then <code>brew upgrade garden</code> will
+actually downgrade <code>garden</code> to the latest stable release.</p>
+<h3 id="cleanup"><a class="header" href="#cleanup">Cleanup</a></h3>
+<p>Installing <code>garden</code> with Homebrew may leave behind the Rust development tools.</p>
+<p>Use <code>brew remove rust</code> after <code>garden</code> is installed to save on disk space.</p>
 <p>Read on for how to build garden from source.</p>
 <h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
 <p>If you already have <code>cargo</code> installed then you can skip this section.</p>
