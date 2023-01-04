@@ -6,23 +6,45 @@ These instructions assume that you have `cargo` installed for Rust development.
 
 ## Install using Homebrew
 
-You can install the latest stable release on macOS using [Homebrew](https://brew.sh/).
+You can install `garden` on macOS using [Homebrew](https://brew.sh/).
+
+### Add the homebrew-garden tap
 
 *NOTE*: The custom `brew tap` will not be needed in the future once the
 [Garden repository gets enough stars, forks or watchers](https://github.com/Homebrew/homebrew-core/pull/119195)
 to allow `garden` to be added to the main homebrew-core repository.
 
-```
+You will need to enable the `homebrew-garden` tap until then.
+
+```bash
 brew tap davvid/homebrew-garden
-brew install garden
 ```
 
-To install the latest development version from Git:
+### Stable Release
+
+To install the latest stable release from the `homebrew-garden` tap:
+```bash
+brew install garden
 ```
+Upgrade `garden` in the future by using `brew upgrade garden`.
+
+### Development Version
+
+To install the latest development version from Git:
+```bash
 brew install --head garden
 ```
 
+*NOTE*: If you install the latest development version with `--head` then you will need to use
+`brew upgrade --fetch-HEAD garden`  to upgrade it.
+
+If you don't specify `--fetch-HEAD` when upgrading then `brew upgrade garden` will
+actually downgrade `garden` to the latest stable release.
+
+### Cleanup
+
 Installing `garden` with Homebrew may leave behind the Rust development tools.
+
 Use `brew remove rust` after `garden` is installed to save on disk space.
 
 Read on for how to build garden from source.
