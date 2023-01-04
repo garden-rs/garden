@@ -230,6 +230,8 @@ brew install garden
 <p>To install the latest development version from Git:</p>
 <pre><code>brew install --head garden
 </code></pre>
+<p>Installing <code>garden</code> with Homebrew may leave behind the Rust development tools.
+Use <code>brew remove rust</code> after <code>garden</code> is installed to save on disk space.</p>
 <p>Read on for how to build garden from source.</p>
 <h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
 <p>If you already have <code>cargo</code> installed then you can skip this section.</p>
@@ -1330,24 +1332,41 @@ and Git Cola ready to go for development.</p>
 <h2 id="v050"><a class="header" href="#v050">v0.5.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
-<li><a href="https://davvid.github.io/garden/configuration.html#includes">Garden configuration files can now include other configuration files
+<li>
+<p><a href="https://davvid.github.io/garden/configuration.html#includes">Garden configuration files can now include other configuration files
 </a> by specifying
 the additional files to include in the <code>garden.includes</code> field.
 The <code>includes</code> feature makes it possible to create modular and reusable garden files.
 The <code>trees</code>, <code>variables</code>, <code>commands</code>, <code>groups</code> and <code>gardens</code> defined in the included
 files are added to the current configuration.
-(<a href="https://github.com/davvid/garden/pull/7">#7</a>)</li>
+(<a href="https://github.com/davvid/garden/pull/7">#7</a>)</p>
+</li>
+<li>
+<p>A new <code>garden completion</code> subcommand was added for providing shell command-line
+completion using the <a href="https://crates.io/crates/clap_complete">clap_complete</a> crate.
+(<a href="https://github.com/davvid/garden/pull/9">#9</a>)</p>
+</li>
+<li>
+<p><code>garden -V | --version</code> was added alongside the <code>clap</code> rewrite for displaying
+the <code>garden</code> command version.</p>
+</li>
 </ul>
 <p><strong>Development</strong>:</p>
 <ul>
-<li>The <code>Makefile</code> has been replaced by a <code>garden.yaml</code> Garden file.
+<li>
+<p>The <code>Makefile</code> has been replaced by a <code>garden.yaml</code> Garden file.
 We can now use <code>garden {build, test, check, fmt, clippy, ...}</code> instead of <code>make ...</code>.
 See <a href="https://github.com/davvid/garden/blob/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
 Packagers can use <code>cargo install</code> to install <code>garden</code> and invoke <code>mdbook</code> directly
 to install the user manual. We also provide
 <code>garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc</code> if distros
 want to install the user manual using our recipe.
-(<a href="https://github.com/davvid/garden/pull/8">#8</a>)</li>
+(<a href="https://github.com/davvid/garden/pull/8">#8</a>)</p>
+</li>
+<li>
+<p>Garden's command-line parsing has been rewritten to leverage the
+<a href="https://crates.io/crates/clap">clap</a> crate and ecosystem.</p>
+</li>
 </ul>
 <h2 id="v041"><a class="header" href="#v041">v0.4.1</a></h2>
 <p><strong>Features</strong>:</p>
