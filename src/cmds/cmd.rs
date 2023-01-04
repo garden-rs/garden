@@ -1,15 +1,80 @@
 use anyhow::Result;
+use clap::{CommandFactory, Error, FromArgMatches, Parser};
 
+use super::super::cli;
 use super::super::cmd;
 use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::query;
 
+/// Run one or more custom commands over a tree query
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct Cmd {
+    /// Run a command in all trees before running the next command
+    #[arg(long, short)]
+    breadth_first: bool,
+    /// Continue to the next tree when errors occur
+    #[arg(long, short)]
+    keep_going: bool,
+    /// Do not pass "-e" to the shell.
+    /// Prevent the "errexit" shell option from being set. By default, the "-e" option
+    /// is passed to the configured shell so that multi-line and multi-statement
+    /// commands halt execution when the first statement with a non-zero exit code is
+    /// encountered. "--no-errexit" has the effect of making multi-line and
+    /// multi-statement commands run all statements even when an earlier statement
+    /// returns a non-zero exit code.
+    #[arg(long, short)]
+    no_errexit: bool,
+    /// Tree query for the gardens, groups or trees to execute commands within
+    query: String,
+    /// Custom commands to run over the resolved trees
+    commands: Vec<String>,
+    /// Arguments to forward to custom commands
+    #[arg(last = true)]
+    arguments: Vec<String>,
+}
+
+/// Run custom garden commands
+#[derive(Parser, Clone, Debug)]
+#[command(bin_name = "garden")]
+pub struct Custom {
+    /// Continue to the next tree when errors occur
+    #[arg(long, short)]
+    keep_going: bool,
+    /// Do not pass "-e" to the shell.
+    /// Prevent the "errexit" shell option from being set. By default, the "-e" option
+    /// is passed to the configured shell so that multi-line and multi-statement
+    /// commands halt execution when the first statement with a non-zero exit code is
+    /// encountered. "--no-errexit" has the effect of making multi-line and
+    /// multi-statement commands run all statements even when an earlier statement
+    /// returns a non-zero exit code.
+    #[arg(long, short)]
+    no_errexit: bool,
+    /// Tree queries for the Gardens/Groups/Trees to execute commands within
+    queries: Vec<String>,
+    /// Arguments to forward to custom commands
+    #[arg(last = true)]
+    arguments: Vec<String>,
+}
+
 /// Main entry point for `garden cmd <query> <command>...`.
-pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let (query, params) = parse_args_cmd(&mut app.options);
-    let exit_status = cmd(app, &query, &params)?;
+pub fn main_cmd(app: &mut model::ApplicationContext, options: &Cmd) -> Result<()> {
+    let mut params = CmdParams::new();
+    params.commands = options.commands.clone();
+    params.arguments = options.arguments.clone();
+    params.breadth_first = options.breadth_first;
+    params.exit_on_error = !options.no_errexit;
+    params.keep_going = options.keep_going;
+
+    if app.options.debug_level("cmd") > 0 {
+        debug!("query: {}", options.query);
+        debug!("commands: {:?}", options.commands);
+        debug!("arguments: {:?}", options.arguments);
+    }
+
+    let exit_status = cmd(app, &options.query, &params)?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
@@ -21,152 +86,60 @@ pub struct CmdParams {
     commands: Vec<String>,
     arguments: Vec<String>,
     queries: Vec<String>,
+    breadth_first: bool,
+    keep_going: bool,
+    exit_on_error: bool,
 }
 
 impl CmdParams {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            exit_on_error: true,
+            ..CmdParams::default()
+        }
     }
 }
 
-/// Parse "cmd" arguments.
-fn parse_args_cmd(options: &mut model::CommandOptions) -> (String, CmdParams) {
-    // Display "garden cmd" in the "garden cmd -h" help text.
-    options.args.insert(0, "garden cmd".into());
-
-    let mut query = String::new();
-    let mut params = CmdParams::new();
-    let mut commands_and_args: Vec<String> = Vec::new();
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.silence_double_dash(false);
-        ap.set_description("garden cmd - Run custom commands over gardens");
-        ap.refer(&mut options.breadth_first).add_option(
-            &["-b", "--breadth-first"],
-            argparse::StoreTrue,
-            "Run a command in all trees before running the next command.",
-        );
-        ap.refer(&mut options.keep_going).add_option(
-            &["-k", "--keep-going"],
-            argparse::StoreTrue,
-            "Continue to the next tree when errors occur.",
-        );
-        ap.refer(&mut options.exit_on_error).add_option(
-            &["-n", "--no-errexit"],
-            argparse::StoreFalse,
-            "Do not pass \"-e\" to the shell. This prevents the \"errexit\" shell \
-            option from being set. By default, the \"-e\" option is passed to the \
-            configured shell so that multi-line and multi-statement commands halt \
-            execution when the first statement with a non-zero exit code is \
-            encountered. \"--no-errexit\" has the effect of making multi-line and \
-            multi-statement commands run all statements even when an earlier statement \
-            returns a non-zero exit code.",
-        );
-        ap.refer(&mut query).required().add_argument(
-            "query",
-            argparse::Store,
-            "Gardens/Groups/Trees to exec (tree query).",
-        );
-        ap.refer(&mut commands_and_args).required().add_argument(
-            "commands",
-            argparse::List,
-            "Commands to run over resolved trees.",
-        );
-        cmd::parse_args(ap, options.args.to_vec());
-    }
-
-    if options.debug_level("cmd") > 0 {
-        debug!("subcommand: cmd");
-        debug!("query: {}", query);
-        debug!("commands_and_args: {:?}", commands_and_args);
-    }
-    // Queries and arguments are separated by a double-dash "--" marker.
-    cmd::split_on_dash(
-        &commands_and_args,
-        &mut params.commands,
-        &mut params.arguments,
-    );
-    if options.debug_level("cmd") > 0 {
-        debug!("commands: {:?}", params.commands);
-        debug!("arguments: {:?}", params.arguments);
-    }
-
-    (query, params)
+/// Format an error
+fn format_error<I: CommandFactory>(err: Error) -> clap::Error {
+    let mut cmd = I::command();
+    err.format(&mut cmd)
 }
 
 /// Main entry point for `garden <command> <query>...`.
-pub fn custom(app: &mut model::ApplicationContext, command: &str) -> Result<()> {
-    let params = parse_args_custom(command, &mut app.options);
-    cmds(app, &params)
-}
+pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>) -> Result<()> {
+    // Set the command name to "garden <custom>".
+    let name = &arguments[0];
+    let garden_custom = format!("garden {}", name);
+    let cli = Custom::command().bin_name(garden_custom);
+    let matches = cli.get_matches_from(arguments);
+    let options =
+        <Custom as FromArgMatches>::from_arg_matches(&matches).map_err(format_error::<Custom>)?;
 
-/// Parse custom command arguments.
-fn parse_args_custom(command: &str, options: &mut model::CommandOptions) -> CmdParams {
-    // Display "garden <command>" in the "garden <commmand> -h" help text.
-    options.args.insert(0, format!("garden {}", command));
-
-    // Custom commands run breadth-first. The distinction shouldn't make a difference in practice
-    // because "garden <custom-cmd> ..." is only able to run a single command, but we use
-    // breadth-first because it retains the original implementation/behavior from before
-    // --breadth-first was added to "garden cmd" and made otp-in.
-    options.breadth_first = true;
-
-    // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
-    let mut params = CmdParams::new();
-    params.commands.push(command.to_string());
-
-    let mut queries_and_arguments: Vec<String> = Vec::new();
-    let mut ap = argparse::ArgumentParser::new();
-    ap.silence_double_dash(false);
-    ap.set_description("garden cmd - Run custom commands over gardens");
-
-    ap.refer(&mut options.keep_going).add_option(
-        &["-k", "--keep-going"],
-        argparse::StoreTrue,
-        "Continue to the next tree when errors occur.",
-    );
-    ap.refer(&mut options.exit_on_error).add_option(
-        &["-n", "--no-errexit"],
-        argparse::StoreFalse,
-        "Do not pass \"-e\" to the shell. This prevents the \"errexit\" shell \
-        option from being set. By default, the \"-e\" option is passed to the \
-        configured shell so that multi-line and multi-statement commands halt \
-        execution when the first statement with a non-zero exit code is \
-        encountered. \"--no-errexit\" has the effect of making multi-line and \
-        multi-statement commands run all statements even when an earlier statement \
-        returns a non-zero exit code.",
-    );
-    ap.refer(&mut queries_and_arguments).add_argument(
-        "queries",
-        argparse::List,
-        "Gardens/Groups/Trees to exec (tree queries).",
-    );
-
-    cmd::parse_args(ap, options.args.to_vec());
-
-    if options.debug_level("cmd") > 0 {
-        debug!("command: {}", command);
-        debug!("queries_and_arguments: {:?}", queries_and_arguments);
+    if app.options.debug_level("cmd") > 0 {
+        debug!("command: {}", name);
+        debug!("queries: {:?}", options.queries);
+        debug!("arguments: {:?}", options.arguments);
     }
-
-    // Queries and arguments are separated by a double-dash "--" marker.
-    cmd::split_on_dash(
-        &queries_and_arguments,
-        &mut params.queries,
-        &mut params.arguments,
-    );
-
+    let mut params = CmdParams::new();
+    // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
+    params.commands.push(name.to_string());
+    params.arguments = options.arguments.clone();
+    params.queries = options.queries.clone();
     // Default to "." when no queries have been specified.
     if params.queries.is_empty() {
         params.queries.push(".".into());
     }
 
-    if options.debug_level("cmd") > 0 {
-        debug!("queries {:?}", params.queries);
-        debug!("arguments: {:?}", params.arguments);
-    }
+    // Custom commands run breadth-first. The distinction shouldn't make a difference in practice
+    // because "garden <custom-cmd> ..." is only able to run a single command, but we use
+    // breadth-first because it retains the original implementation/behavior from before
+    // --breadth-first was added to "garden cmd" and made opt-in.
+    params.breadth_first = true;
+    params.keep_going = options.keep_going;
+    params.exit_on_error = !options.no_errexit;
 
-    params
+    cmds(app, &params)
 }
 
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -185,21 +158,19 @@ pub fn cmd(app: &mut model::ApplicationContext, query: &str, params: &CmdParams)
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
 
-    if app.options.breadth_first {
-        run_cmd_breadth_first(app, &contexts, &params.commands, &params.arguments)
+    if params.breadth_first {
+        run_cmd_breadth_first(app, &contexts, params)
     } else {
-        run_cmd_depth_first(app, &contexts, &params.commands, &params.arguments)
+        run_cmd_depth_first(app, &contexts, params)
     }
 }
 
 pub fn run_cmd_breadth_first(
     app: &mut model::ApplicationContext,
     contexts: &[model::TreeContext],
-    commands: &[String],
-    arguments: &[String],
+    params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
-    let keep_going = app.options.keep_going;
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
     let shell = {
@@ -208,7 +179,7 @@ pub fn run_cmd_breadth_first(
     };
     // Loop over each command, evaluate the tree environment,
     // and run the command in each context.
-    for name in commands {
+    for name in &params.commands {
         // One invocation runs multiple commands
         for context in contexts {
             // Skip symlink trees.
@@ -234,11 +205,17 @@ pub fn run_cmd_breadth_first(
             let cmd_seq_vec = eval::command(app, context, name);
             app.get_root_config_mut().reset();
 
-            if let Err(cmd_status) =
-                run_cmd_vec(&app.options, &path, &shell, &env, &cmd_seq_vec, arguments)
-            {
+            if let Err(cmd_status) = run_cmd_vec(
+                &app.options,
+                &path,
+                &shell,
+                &env,
+                &cmd_seq_vec,
+                &params.arguments,
+                params.exit_on_error,
+            ) {
                 exit_status = cmd_status;
-                if !keep_going {
+                if !params.keep_going {
                     return Ok(cmd_status);
                 }
             }
@@ -252,11 +229,9 @@ pub fn run_cmd_breadth_first(
 pub fn run_cmd_depth_first(
     app: &mut model::ApplicationContext,
     contexts: &[model::TreeContext],
-    commands: &[String],
-    arguments: &[String],
+    params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
-    let keep_going = app.options.keep_going;
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
     let shell = {
@@ -283,7 +258,7 @@ pub fn run_cmd_depth_first(
         }
 
         // One invocation runs multiple commands
-        for name in commands {
+        for name in &params.commands {
             // One command maps to multiple command sequences.
             // When the scope is tree, only the tree's commands
             // are included.  When the scope includes a gardens,
@@ -291,11 +266,17 @@ pub fn run_cmd_depth_first(
             let cmd_seq_vec = eval::command(app, context, name);
             app.get_root_config_mut().reset();
 
-            if let Err(cmd_status) =
-                run_cmd_vec(&app.options, &path, &shell, &env, &cmd_seq_vec, arguments)
-            {
+            if let Err(cmd_status) = run_cmd_vec(
+                &app.options,
+                &path,
+                &shell,
+                &env,
+                &cmd_seq_vec,
+                &params.arguments,
+                params.exit_on_error,
+            ) {
                 exit_status = cmd_status;
-                if !keep_going {
+                if !params.keep_going {
                     return Ok(cmd_status);
                 }
             }
@@ -314,12 +295,13 @@ pub fn run_cmd_depth_first(
 /// - cmd_seq_vec: Vector of vector of command strings to run.
 /// - arguments: Additional command line arguments available in $1, $2, $N.
 fn run_cmd_vec(
-    options: &model::CommandOptions,
+    options: &cli::MainOptions,
     path: &str,
     shell: &str,
     env: &Vec<(String, String)>,
     cmd_seq_vec: &[Vec<String>],
     arguments: &[String],
+    exit_on_error: bool,
 ) -> Result<(), i32> {
     // Get the current executable name
     let current_exe = cmd::current_exe();
@@ -335,7 +317,7 @@ fn run_cmd_vec(
                 );
             }
             let mut exec = subprocess::Exec::cmd(shell).cwd(path);
-            if options.exit_on_error {
+            if exit_on_error {
                 exec = exec.arg("-e");
             }
             exec = exec
@@ -352,7 +334,7 @@ fn run_cmd_vec(
             // is the one that is returned when --no-errexit is in effect.
             if status != errors::EX_OK {
                 exit_status = status;
-                if options.exit_on_error {
+                if exit_on_error {
                     return Err(status);
                 }
             } else {
@@ -370,13 +352,12 @@ fn run_cmd_vec(
 /// Run cmd() over a Vec of tree queries
 pub fn cmds(app: &mut model::ApplicationContext, params: &CmdParams) -> Result<()> {
     let mut exit_status = errors::EX_OK;
-    let keep_going = app.options.keep_going;
 
     for query in &params.queries {
         let status = cmd(app, query, params).unwrap_or(errors::EX_IOERR);
         if status != errors::EX_OK {
             exit_status = status;
-            if !keep_going {
+            if !params.keep_going {
                 break;
             }
         }

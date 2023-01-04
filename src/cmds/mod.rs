@@ -1,6 +1,9 @@
 /// Configuration-defined commands
 pub mod cmd;
 
+/// Completion command
+pub mod completion;
+
 /// Exec command
 pub mod exec;
 

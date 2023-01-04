@@ -1,9 +1,27 @@
 use anyhow::Result;
+use clap::Parser;
+
+/// List available gardens, groups, trees and commands
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct List {
+    /// List commands
+    #[arg(long, short)]
+    commands: bool,
+}
 
 use super::super::model;
 
-pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, options: &List) -> Result<()> {
     let config = app.get_root_config_mut();
+
+    if options.commands {
+        println!("commands:");
+        for cmd in &config.commands {
+            println!("- {}", cmd.get_name());
+        }
+        return Ok(());
+    }
 
     if !config.gardens.is_empty() {
         println!("gardens:");

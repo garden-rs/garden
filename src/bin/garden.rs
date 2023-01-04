@@ -1,11 +1,13 @@
 use anyhow::Result;
+use clap::Parser;
 
 use garden::build;
+use garden::cli;
 use garden::cmds;
 use garden::config;
 use garden::errors;
-use garden::model;
 
+/// Main entry point
 fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
@@ -16,36 +18,37 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+/// Parse command-line options and delegate to the command implementation
 fn cmd_main() -> Result<()> {
-    let mut options = parse_args();
+    let mut options = cli::MainOptions::parse();
+    options.update();
 
-    // The following commands run without a configuration file
-    match options.subcommand {
-        model::Command::Help => {
-            return cmds::help::main(&mut options);
+    match options.command.clone() {
+        cli::Command::Completion(completion) => {
+            return cmds::completion::main(completion.shell);
         }
-        model::Command::Init => {
-            return cmds::init::main(&mut options);
+        cli::Command::Init(mut init_options) => {
+            return cmds::init::main(&options, &mut init_options);
         }
-        _ => (),
+        _ => (), // Handled below
     }
 
     let config = config::from_options(&options)?;
-    let mut app = build::context_from_config(config, options)?;
+    let mut app = build::context_from_config(config, &options)?;
 
-    match app.options.subcommand.clone() {
-        model::Command::Cmd => cmds::cmd::main(&mut app),
-        model::Command::Custom(cmd) => cmds::cmd::custom(&mut app, &cmd),
-        model::Command::Exec => cmds::exec::main(&mut app),
-        model::Command::Eval => cmds::eval::main(&mut app),
-        model::Command::Grow => cmds::grow::main(&mut app),
-        model::Command::Help => Ok(()), // Handled above
-        model::Command::Init => Ok(()), // Handled above
-        model::Command::Inspect => cmds::inspect::main(&mut app),
-        model::Command::List => cmds::list::main(&mut app),
-        model::Command::Plant => cmds::plant::main(&mut app),
-        model::Command::Prune => cmds::prune::main(&mut app),
-        model::Command::Shell => cmds::shell::main(&mut app),
+    match options.command.clone() {
+        cli::Command::Cmd(cmd) => cmds::cmd::main_cmd(&mut app, &cmd),
+        cli::Command::Completion(_) => Ok(()), // Handled above
+        cli::Command::Custom(args) => cmds::cmd::main_custom(&mut app, &args),
+        cli::Command::Eval(eval) => cmds::eval::main(&mut app, &eval),
+        cli::Command::Exec(exec) => cmds::exec::main(&mut app, &exec),
+        cli::Command::Grow(grow) => cmds::grow::main(&mut app, &grow),
+        cli::Command::Init(_) => Ok(()), // Handled above
+        cli::Command::Inspect(mut inspect) => cmds::inspect::main(&mut app, &mut inspect),
+        cli::Command::List(list) => cmds::list::main(&mut app, &list),
+        cli::Command::Plant(plant) => cmds::plant::main(&mut app, &plant),
+        cli::Command::Prune(mut prune) => cmds::prune::main(&mut app, &mut prune),
+        cli::Command::Shell(shell) => cmds::shell::main(&mut app, &shell),
     }
 }
 
@@ -68,75 +71,4 @@ fn exit_status_from_error(err: anyhow::Error) -> i32 {
             1
         }
     }
-}
-
-fn parse_args() -> model::CommandOptions {
-    let color_names = model::ColorMode::names();
-    let color_help = format!("Set color mode {{{}}}", color_names);
-
-    let mut options = model::CommandOptions::new();
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden - Cultivate git trees");
-        ap.stop_on_first_argument(true);
-
-        ap.refer(&mut options.filename_str).add_option(
-            &["-c", "--config"],
-            argparse::Store,
-            "Set the config file to use",
-        );
-
-        ap.refer(&mut options.chdir).add_option(
-            &["-C", "--chdir"],
-            argparse::Store,
-            "Change directories before searching for garden files",
-        );
-
-        ap.refer(&mut options.color_mode)
-            .add_option(&["--color"], argparse::Store, &color_help);
-
-        ap.refer(&mut options.debug).add_option(
-            &["-d", "--debug"],
-            argparse::Collect,
-            "Increase verbosity for a debug category",
-        );
-
-        ap.refer(&mut options.root).add_option(
-            &["-r", "--root"],
-            argparse::Store,
-            "Set the garden tree root (default: ${GARDEN_ROOT})",
-        );
-
-        ap.refer(&mut options.variables).add_option(
-            &["-D", "-s", "--define", "--set"],
-            argparse::Collect,
-            "Set variables using 'name=value' expressions",
-        );
-
-        ap.refer(&mut options.verbose).add_option(
-            &["-v", "--verbose"],
-            argparse::IncrBy(1),
-            "Increase verbosity level (default: 0)",
-        );
-
-        ap.refer(&mut options.quiet).add_option(
-            &["-q", "--quiet"],
-            argparse::StoreTrue,
-            "Be quiet",
-        );
-
-        ap.refer(&mut options.subcommand).required().add_argument(
-            "command",
-            argparse::Store,
-            "{cmd, eval, exec, grow, help, init, inspect, ls, plant, prune, shell, <custom>}",
-        );
-
-        ap.refer(&mut options.args)
-            .add_argument("arguments", argparse::List, "Command arguments");
-
-        ap.parse_args_or_exit();
-    }
-    options.update();
-
-    options
 }

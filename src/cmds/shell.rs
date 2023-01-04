@@ -1,4 +1,5 @@
 use anyhow::Result;
+use clap::Parser;
 
 use super::super::cmd;
 use super::super::errors;
@@ -6,16 +7,22 @@ use super::super::eval;
 use super::super::model;
 use super::super::query;
 
-pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let mut query = String::new();
-    let mut tree = String::new();
-    parse_args(&mut app.options, &mut query, &mut tree);
+/// Open a shell in a garden environment
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct Shell {
+    /// Query for trees to build an environment
+    query: String,
+    /// Tree to chdir into
+    tree: Option<String>,
+}
 
+pub fn main(app: &mut model::ApplicationContext, shell: &Shell) -> Result<()> {
     let config = app.get_root_config_mut();
-    let contexts = query::resolve_trees(config, &query);
+    let contexts = query::resolve_trees(config, &shell.query);
     if contexts.is_empty() {
-        // TODO errors::GardenError::TreeQueryMatchedNoTrees { query: query.into() }
-        error!("tree query matched zero trees: '{}'", query);
+        // TODO errors::GardenError::TreeQueryMatchedNoTrees { query: shell.query.into() }
+        error!("tree query matched zero trees: '{}'", shell.query);
     }
 
     let mut context = contexts[0].clone();
@@ -24,7 +31,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     // query that was used to find it then chdir into that tree.
     // This makes it convenient to have gardens and trees with the same name.
     for ctx in &contexts {
-        if config.trees[ctx.tree].get_name() == &query {
+        if config.trees[ctx.tree].get_name() == &shell.query {
             context.tree = ctx.tree;
             context.garden = ctx.garden;
             context.group = ctx.group;
@@ -32,10 +39,9 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         }
     }
 
-    if !tree.is_empty() {
+    if let Some(tree) = &shell.tree {
         let mut found = false;
-
-        if let Some(ctx) = query::tree_from_name(config, &tree, None, None) {
+        if let Some(ctx) = query::tree_from_name(config, tree, None, None) {
             for query_ctx in &contexts {
                 if ctx.tree == query_ctx.tree {
                     context.tree = query_ctx.tree;
@@ -49,7 +55,10 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             error!("unable to find '{}': No tree exists with that name", tree);
         }
         if !found {
-            error!("'{}' was not found in the tree query '{}'", tree, query);
+            error!(
+                "'{}' was not found in the tree query '{}'",
+                tree, shell.query
+            );
         }
     }
 
@@ -68,22 +77,4 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
         }
         .into())
     }
-}
-
-/// Parse "shell" arguments.
-fn parse_args(options: &mut model::CommandOptions, query: &mut String, tree: &mut String) {
-    let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("garden shell - Open a shell in a garden environment");
-
-    ap.refer(query).required().add_argument(
-        "query",
-        argparse::Store,
-        "Query for trees to build an environment.",
-    );
-
-    ap.refer(tree)
-        .add_argument("tree", argparse::Store, "Tree to chdir into.");
-
-    options.args.insert(0, "garden shell".into());
-    cmd::parse_args(ap, options.args.to_vec());
 }

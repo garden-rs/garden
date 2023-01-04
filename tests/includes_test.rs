@@ -2,8 +2,7 @@ use anyhow::Result;
 
 #[test]
 fn read_includes() -> Result<()> {
-    let options = garden::model::CommandOptions::new();
-    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
+    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
     let config = app.get_root_config();
 
     // var_0 is from the included variables.yaml..

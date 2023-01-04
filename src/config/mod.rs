@@ -1,3 +1,4 @@
+use super::cli;
 use super::errors;
 use super::model;
 use super::model::ConfigId;
@@ -169,10 +170,10 @@ pub fn from_path_string(
 
 /// Create a model::Configuration instance from model::CommandOptions
 pub fn from_options(
-    options: &model::CommandOptions,
+    options: &cli::MainOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
     let config_verbose = options.debug_level("config");
-    let mut config = new(&options.filename, &options.root, config_verbose, None)?;
+    let mut config = new(&options.config, &options.root, config_verbose, None)?;
 
     if config.path.is_none() {
         error!("unable to find a configuration file -- use --config <path>");
@@ -189,7 +190,7 @@ pub fn from_options(
         config.debug.insert(key.into(), current + 1);
     }
 
-    for k_eq_v in &options.variables {
+    for k_eq_v in &options.define {
         let name: String;
         let expr: String;
         let values: Vec<&str> = k_eq_v.splitn(2, '=').collect();
