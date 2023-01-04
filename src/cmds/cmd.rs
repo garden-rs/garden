@@ -1,5 +1,6 @@
 use anyhow::Result;
-use clap::{CommandFactory, Error, FromArgMatches, Parser};
+use clap;
+use clap::{CommandFactory, FromArgMatches, Parser};
 
 use super::super::cli;
 use super::super::cmd;
@@ -61,19 +62,12 @@ pub struct Custom {
 
 /// Main entry point for `garden cmd <query> <command>...`.
 pub fn main_cmd(app: &mut model::ApplicationContext, options: &Cmd) -> Result<()> {
-    let mut params = CmdParams::new();
-    params.commands = options.commands.clone();
-    params.arguments = options.arguments.clone();
-    params.breadth_first = options.breadth_first;
-    params.exit_on_error = !options.no_errexit;
-    params.keep_going = options.keep_going;
-
     if app.options.debug_level("cmd") > 0 {
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
         debug!("arguments: {:?}", options.arguments);
     }
-
+    let params = CmdParams::from_cmd_options(options);
     let exit_status = cmd(app, &options.query, &params)?;
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
@@ -98,10 +92,44 @@ impl CmdParams {
             ..CmdParams::default()
         }
     }
+
+    /// Build CmdParams from a CmdOptions struct
+    pub fn from_cmd_options(options: &Cmd) -> Self {
+        let mut params = Self::new();
+        params.commands = options.commands.clone();
+        params.arguments = options.arguments.clone();
+        params.breadth_first = options.breadth_first;
+        params.exit_on_error = !options.no_errexit;
+        params.keep_going = options.keep_going;
+
+        params
+    }
+
+    /// Build CmdParams from a CustomOptions struct
+    pub fn from_custom_options(options: &Custom) -> Self {
+        let mut params = CmdParams::new();
+        // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
+        params.arguments = options.arguments.clone();
+        params.queries = options.queries.clone();
+        // Default to "." when no queries have been specified.
+        if params.queries.is_empty() {
+            params.queries.push(".".into());
+        }
+
+        // Custom commands run breadth-first. The distinction shouldn't make a difference in
+        // practice because "garden <custom-cmd> ..." is only able to run a single command, but we
+        // use breadth-first because it retains the original implementation/behavior from before
+        // --breadth-first was added to "garden cmd" and made opt-in.
+        params.breadth_first = true;
+        params.keep_going = options.keep_going;
+        params.exit_on_error = !options.no_errexit;
+
+        params
+    }
 }
 
 /// Format an error
-fn format_error<I: CommandFactory>(err: Error) -> clap::Error {
+fn format_error<I: CommandFactory>(err: clap::Error) -> clap::Error {
     let mut cmd = I::command();
     err.format(&mut cmd)
 }
@@ -121,23 +149,10 @@ pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>)
         debug!("queries: {:?}", options.queries);
         debug!("arguments: {:?}", options.arguments);
     }
-    let mut params = CmdParams::new();
+
+    let mut params = CmdParams::from_custom_options(&options);
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
     params.commands.push(name.to_string());
-    params.arguments = options.arguments.clone();
-    params.queries = options.queries.clone();
-    // Default to "." when no queries have been specified.
-    if params.queries.is_empty() {
-        params.queries.push(".".into());
-    }
-
-    // Custom commands run breadth-first. The distinction shouldn't make a difference in practice
-    // because "garden <custom-cmd> ..." is only able to run a single command, but we use
-    // breadth-first because it retains the original implementation/behavior from before
-    // --breadth-first was added to "garden cmd" and made opt-in.
-    params.breadth_first = true;
-    params.keep_going = options.keep_going;
-    params.exit_on_error = !options.no_errexit;
 
     cmds(app, &params)
 }
