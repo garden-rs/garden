@@ -707,6 +707,7 @@ Use with caution!</p>
 command.</p>
 <p><code>garden completion</code> uses <a href="https://crates.io/crates/clap_complete">clap complete</a>
 to generate its completions.</p>
+<p>The <code>--commands</code> options will additionally generate completions for custom commands.</p>
 <h3 id="zsh"><a class="header" href="#zsh">Zsh</a></h3>
 <p>Ensure that your <code>~/.zshrc</code> file has completions enabled and that you have a
 directory configured in your <code>$fpath</code> for <code>zsh</code> completion scripts.
@@ -723,6 +724,8 @@ zsh shell completion script.</p>
 <pre><code class="language-bash">mkdir -p ~/.config/zsh/completion
 garden completion zsh &gt;~/.config/zsh/completion/_garden
 </code></pre>
+<p>Use <code>garden completion --commands zsh</code> instead of <code>garden completion zsh</code>
+to include completions for custom commands.</p>
 <p><em>NOTE</em>: You will should regenerate the <code>_garden</code> zsh completion script
 whenever <code>garden</code> is upgraded to ensure that all of the options and commands have
 up to date completions.</p>
@@ -733,10 +736,14 @@ then
     eval &quot;$(garden completion bash)&quot; 2&gt;/dev/null
 fi
 </code></pre>
+<p>Use <code>garden completion --commands bash</code> instead of <code>garden completion bash</code>
+to include completions for custom commands.</p>
 <h3 id="future-shell-completion-enhancements"><a class="header" href="#future-shell-completion-enhancements">Future shell completion enhancements</a></h3>
-<p>Tab completion do not currently include user-defined commands.
-Improvements to the shell completions can be made once traction has been made on the
-following upstream issues.</p>
+<p>Tab completion can only be made to include a static set of user-defined commands.
+Custom commands cannot be defined dynamically, which means that the same completions
+will be used irrespective of your current directory.</p>
+<p>Improvements to the shell completions can be made once traction has been made on this
+upstream issue:</p>
 <ul>
 <li><a href="https://github.com/epage/clapng/issues/92">clapng #92</a> - Dynamic completion support</li>
 </ul>
