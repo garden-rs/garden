@@ -12,6 +12,13 @@
   files are added to the current configuration.
   ([#7](https://github.com/davvid/garden/pull/7))
 
+- A new `garden completion` subcommand was added for providing shell command-line
+  completion using the [clap_complete](https://crates.io/crates/clap_complete) crate.
+  ([#9](https://github.com/davvid/garden/pull/9))
+
+- `garden -V | --version` was added alongside the `clap` rewrite for displaying
+  the `garden` command version.
+
 **Development**:
 
 - The `Makefile` has been replaced by a `garden.yaml` Garden file.
@@ -22,6 +29,9 @@
   `garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc` if distros
   want to install the user manual using our recipe.
   ([#8](https://github.com/davvid/garden/pull/8))
+
+- Garden's command-line parsing has been rewritten to leverage the
+  [clap](https://crates.io/crates/clap) crate and ecosystem.
 
 ## v0.4.1
 
