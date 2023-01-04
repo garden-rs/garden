@@ -22,6 +22,9 @@ To install the latest development version from Git:
 brew install --head garden
 ```
 
+Installing `garden` with Homebrew may leave behind the Rust development tools.
+Use `brew remove rust` after `garden` is installed to save on disk space.
+
 Read on for how to build garden from source.
 
 ## Rust and Cargo
