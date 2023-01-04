@@ -10,9 +10,11 @@ useful features.
 Run `garden help` to display usage information for garden commands.
 The usage information is where the command-line options are documented.
 
-    garden help
-    garden help <command>
-    garden <command> --help
+```bash
+garden help
+garden help <command>
+garden <command> --help
+```
 
 Built-in commands use this basic syntax:
 
@@ -45,13 +47,15 @@ flag multiple times.
 
 ## garden init
 
-    garden init [options] [<filename>]
+```bash
+garden init [options] [<filename>]
 
-    # create a local garden config rooted at the current directory
-    garden init --root '${GARDEN_CONFIG_DIR}'
+# create a local garden config rooted at the current directory
+garden init --root '${GARDEN_CONFIG_DIR}'
 
-    # create a global garden config rooted at ~/src
-    garden init --global --root '~/src'
+# create a global garden config rooted at ~/src
+garden init --global --root '~/src'
+```
 
 The init command will create an empty Garden YAML file with the minimal
 boilerplate to start using garden. If no `<filename>` is specified,
@@ -71,7 +75,9 @@ current-directory/
 
 ## garden plant
 
-    garden plant <tree>
+```bash
+garden plant <tree>
+```
 
 Add a pre-existing Git worktree to `garden.yaml`.
 
@@ -95,10 +101,12 @@ groups or trees defined in "garden.yaml".
 
 ## garden grow
 
-    garden grow <tree-query>
+```bash
+garden grow <tree-query>
 
-    # Example usage
-    garden grow cola
+# Example usage
+garden grow cola
+```
 
 If you have a `garden.yaml` file, either one that you authored yourself or
 one that was provided to you, then you will need to grow the Git trees
@@ -116,10 +124,12 @@ repositories are created by cloning the configured tree url.
 The `branch: <branch-name>` tree variable is used to specify which branch should be
 cloned and checked out when the tree is grown.
 
-    trees:
-      example:
-        branch: dev
-        url: <url>
+```yaml
+trees:
+  example:
+    branch: dev
+    url: url
+```
 
 `graden grow example` clones the repository using `git clone --branch=dev`.
 The `branch` setting is a tree variable and supports `${variable}` expressions.
@@ -129,14 +139,18 @@ The `branch` setting is a tree variable and supports `${variable}` expressions.
 
 The `depth: <integer>` tree parameter is used to create shallow clones.
 
-    trees:
-      example:
-        depth: 42
-        url: <url>
+```yaml
+trees:
+  example:
+    depth: 42
+    url: url
+```
 
 `garden grow example` clones the repository using:
 
-    git clone --depth=42 --no-single-branch
+```bash
+git clone --depth=42 --no-single-branch
+```
 
 Even though a shallow clone is created, all of the remote tracking branches
 (eg. `origin/*`) are available because we clone the repository using
@@ -149,12 +163,14 @@ of repositories by only having a single branch available.
 This paramter is typically used in conjunction with `branch: <branch-name>` and
 `depth: 1` to create a 1-commit shallow clone with a single branch.
 
-    trees:
-      example:
-        branch: dev
-        depth: 1
-        single-branch: true
-        url: <url>
+```yaml
+trees:
+  example:
+    branch: dev
+    depth: 1
+    single-branch: true
+    url: url
+```
 
 
 ### Wildcards
@@ -181,16 +197,18 @@ To create shared storage, define the primary worktree where the `.git`
 storage will reside and then define additional trees that reference the
 worktrees.
 
-    trees:
-      example/main: <url>
+```yaml
+trees:
+  example/main: url
 
-      example/dev:
-        worktree: example/main
-        branch: dev
+  example/dev:
+    worktree: example/main
+    branch: dev
 
-    example/v2:
-        worktree: example/main
-        branch: v2
+  example/v2:
+    worktree: example/main
+    branch: v2
+```
 
 This example uses `example/main` tree for the shared storage and two additional worktrees.
 `example/dev` uses the `dev` branch and `example/v2` uses the `v2` branch.
@@ -200,31 +218,38 @@ This example uses `example/main` tree for the shared storage and two additional 
 
 To clone bare repositories use `bare: true` in the tree configuration.
 
-    trees:
-      example:
-        bare: true
-        url: <url>
+```yaml
+trees:
+  example:
+    bare: true
+    url: url
+```
 
 Bare clones are created by default when the tree path ends in `.git`.
 For example, a tree called `example.git` will be `bare: true` by default.
 
-    trees:
-      example.git: <url>
+```yaml
+trees:
+  example.git: url
+```
 
 Setting `bare: false` overrides the name-based detection of bare repositories.
 
-    trees:
-      example.git:
-        bare: false
-        url: <url>
-
+```yaml
+trees:
+  example.git:
+    bare: false
+    url: url
+```
 
 ## garden cmd
 
-    garden cmd <tree-query> <command> [<command>]... [-- <arguments>..]
+```bash
+garden cmd <tree-query> <command> [<command>]... [-- <arguments>..]
 
-    # Example usage
-    garden cmd cola build test -- V=1
+# Example usage
+garden cmd cola build test -- V=1
+```
 
 Run one or more user-defined commands over the gardens, groups or trees
 that match the specified tree query.
@@ -277,18 +302,22 @@ Additional arguments are available to command strings by using the traditional
 `"$@"` shell syntax.  When additional arguments are present `"$1"`, `"$2"`, and
 subsequent variables will be set according to each argument.
 
-    # Example usage
-    garden test cola -- V=1
+```bash
+# Example usage
+garden test cola -- V=1
+```
 
 ### Depth-first and Breadth-first Tree Traversal
 
 The following two invocations run commands in a different order:
 
-    # Depth-first (default)
-    garden cmd treesitters build test
+```
+# Depth-first (default)
+garden cmd treesitters build test
 
-    # Breadth-first
-    garden cmd --breadth-first treesitters build test
+# Breadth-first
+garden cmd --breadth-first treesitters build test
+```
 
 The default traversal order for commands is depth-first. This means that *both* the
 `build` and `test` commands are run on each tree in the `treesitters` group
@@ -300,11 +329,13 @@ traversal runs the `build` command over *all* of the trees in the `treesitters` 
 
 ### Custom Commands
 
-    garden <command> <query> [<query>]* [-- <arguments>...]
+``` bash
+garden <command> <query> [<query>]* [-- <arguments>...]
 
-    # Example usage
-    garden status @git-cola .
-    garden build cola -- V=1
+# Example usage
+garden status @git-cola .
+garden build cola -- V=1
+```
 
 `garden <command>` is another way to execute a user-defined `<command>`.
 This form allows you to specify multiple queries rather than multiple commands.
@@ -325,10 +356,12 @@ command over both the `treesitters`  and `catsitters` groups.
 
 ## garden exec
 
-    garden exec <tree-query> <command> [<arguments>]*
+```bash
+garden exec <tree-query> <command> [<arguments>]*
 
-    # example
-    garden exec cola git status -s
+# example
+garden exec cola git status -s
+```
 
 Run commands over the trees, groups or gardens matched by tree query.
 When the `<tree-query>` resolves to a garden then the environment
@@ -338,11 +371,13 @@ custom commands from both the tree and the garden.
 
 ## garden eval
 
-    garden eval <expression> [<tree>] [<garden>]
+```bash
+garden eval <expression> [<tree>] [<garden>]
 
-    # example
-    garden eval '${GARDEN_ROOT}'
-    garden eval '${TREE_PATH}' cola
+# example
+garden eval '${GARDEN_ROOT}'
+garden eval '${TREE_PATH}' cola
+```
 
 Evaluate a Garden Expression in the specified tree context and output
 the result to stdout.
@@ -435,10 +470,12 @@ below the directory containing the graden file.
 The `garden prune` command interactively prompts before removing each repository.
 The prompt looks like the following:
 
-    # /home/user/src/example
-    Delete the "example" repository?
-    WARNING: "all" deletes "example" and ALL subsequent repositories!
-    Choices: yes, no, all, quit [y,n,all,q]?
+```bash
+# /home/user/src/example
+Delete the "example" repository?
+WARNING: "all" deletes "example" and ALL subsequent repositories!
+Choices: yes, no, all, quit [y,n,all,q]?
+```
 
 Entering `y` (or `yes`) at the prompt will delete the repository and all of its files.
 
