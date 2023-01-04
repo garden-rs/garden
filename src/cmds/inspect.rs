@@ -1,47 +1,32 @@
 use anyhow::Result;
+use clap::Parser;
 
-use super::super::cmd;
 use super::super::model;
 use super::super::model::Color;
 use super::super::query;
 
-/// Main entry point for the "garden exec" command
-/// Parameters:
-/// - options: `garden::model::CommandOptions`
+/// Query tree status
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct InspectOptions {
+    /// Tree query for the gardens, groups or trees to inspect
+    queries: Vec<String>,
+}
 
-pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let mut query: Vec<String> = Vec::new();
-    parse_args(&mut app.options, &mut query);
-
+/// Main entry point for the "garden inspect" command
+pub fn main(app: &mut model::ApplicationContext, options: &mut InspectOptions) -> Result<()> {
+    if options.queries.is_empty() {
+        options.queries.push(".".into());
+    }
+    if app.options.debug_level("inspect") > 0 {
+        debug!("queries: {:?}", options.queries);
+    }
     let verbose = app.options.verbose;
     let config = app.get_root_config_mut();
-    inspect(config, verbose, &query)
+    inspect(config, verbose, &options.queries)
 }
 
-/// Parse "inspect" arguments.
-fn parse_args(options: &mut model::CommandOptions, query: &mut Vec<String>) {
-    let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("garden inspect - Query tree status");
-
-    ap.refer(query).add_argument(
-        "query",
-        argparse::List,
-        "Tree queries for the gardens, groups or trees to inspect",
-    );
-
-    options.args.insert(0, "garden inspect".into());
-    cmd::parse_args(ap, options.args.to_vec());
-
-    if query.is_empty() {
-        query.push(".".into());
-    }
-
-    if options.debug_level("inspect") > 0 {
-        debug!("query: {:?}", query);
-    }
-}
-
-/// Execute a command over every tree in the evaluated tree query.
+/// Inspect every tree in the evaluated tree query
 pub fn inspect(config: &mut model::Configuration, verbose: u8, queries: &[String]) -> Result<()> {
     for query in queries {
         // Resolve the tree query into a vector of tree contexts.

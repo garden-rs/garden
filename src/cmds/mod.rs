@@ -1,6 +1,9 @@
 /// Configuration-defined commands
 pub mod cmd;
 
+/// Completion command
+pub mod completion;
+
 /// Exec command
 pub mod exec;
 
@@ -9,9 +12,6 @@ pub mod eval;
 
 /// Grow command
 pub mod grow;
-
-/// Help command
-pub mod help;
 
 /// Init command
 pub mod init;

@@ -1,4 +1,5 @@
 use anyhow::Result;
+use clap::Parser;
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
 
@@ -10,20 +11,29 @@ use super::super::model;
 use super::super::path;
 use super::super::query;
 
-pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let mut output = String::new();
-    let mut paths: Vec<String> = Vec::new();
-    parse_args(&mut app.options, &mut output, &mut paths);
+// Add pre-existing worktrees to a garden configuration file
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct PlantOptions {
+    /// Garden configuration file to write [default: "garden.yaml"]
+    #[arg(long, short)]
+    output: Option<String>,
+    /// Trees to plant
+    #[arg(required = true)]
+    paths: Vec<String>,
+}
 
+pub fn main(app: &mut model::ApplicationContext, options: &PlantOptions) -> Result<()> {
     // Read existing configuration
     let verbose = app.options.verbose;
     let config = app.get_root_config_mut();
     let mut doc = config::reader::read_yaml(config.get_path()?)?;
 
     // Output filename defaults to the input filename.
-    if output.is_empty() {
-        output = config.get_path()?.to_string_lossy().into();
-    }
+    let output = match &options.output {
+        Some(output) => output.to_string(),
+        None => config.get_path()?.to_string_lossy().to_string(),
+    };
 
     // Mutable YAML scope.
     {
@@ -44,7 +54,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
             }
         };
 
-        for path in &paths {
+        for path in &options.paths {
             if let Err(msg) = plant_path(config, verbose, path, trees) {
                 error!("{}", msg);
             }
@@ -52,25 +62,7 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
     }
 
     // Emit the YAML configuration into a string
-    Ok(config::writer::write_yaml(&doc, &output)?)
-}
-
-fn parse_args(options: &mut model::CommandOptions, output: &mut String, paths: &mut Vec<String>) {
-    let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("garden plant - Add pre-existing worktrees to a garden file");
-
-    ap.refer(output).add_option(
-        &["-o", "--output"],
-        argparse::Store,
-        "File to write (default: garden.yaml)",
-    );
-
-    ap.refer(paths)
-        .required()
-        .add_argument("paths", argparse::List, "Trees to plant");
-
-    options.args.insert(0, "garden plant".into());
-    cmd::parse_args(ap, options.args.to_vec());
+    Ok(config::writer::write_yaml(&doc, output)?)
 }
 
 fn plant_path(

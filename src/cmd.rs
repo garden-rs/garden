@@ -191,37 +191,10 @@ where
     command_vec
 }
 
-/// Split a vector into two vectors -- pre-dash and post-dash
-pub fn split_on_dash<S>(strings: &[S], pre_dash: &mut Vec<String>, post_dash: &mut Vec<String>)
-where
-    S: AsRef<std::ffi::OsStr> + std::string::ToString + std::cmp::PartialEq,
-{
-    let mut is_pre_dash = true;
-    for string in strings {
-        if is_pre_dash {
-            if string.as_ref() == "--" {
-                is_pre_dash = false;
-                continue;
-            }
-            pre_dash.push(string.to_string());
-        } else {
-            post_dash.push(string.to_string());
-        }
-    }
-}
-
 /// Return the current executable path.
 pub fn current_exe() -> String {
     match std::env::current_exe() {
         Err(_) => "garden".into(),
         Ok(path) => path.to_string_lossy().into(),
     }
-}
-
-/// Parse arguments or exit with an error.
-pub fn parse_args(parser: argparse::ArgumentParser, arguments: Vec<String>) {
-    parser
-        .parse(arguments, &mut std::io::stdout(), &mut std::io::stderr())
-        .map_err(std::process::exit)
-        .unwrap_or(());
 }

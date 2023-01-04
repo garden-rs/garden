@@ -1,10 +1,11 @@
+use clap::ValueEnum;
 use indextree::{Arena, NodeId};
 use std::cell::RefCell;
 use which::which;
 
+use super::cli;
 use super::errors;
 use super::eval;
-use super::path;
 use super::syntax;
 
 /// Tree index into config.trees
@@ -872,62 +873,14 @@ impl TreeQuery {
     }
 }
 
-// Commands
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum Command {
-    Cmd,
-    Custom(String),
-    Exec,
-    Eval,
-    Grow,
-    Help,
-    Init,
-    Inspect,
-    List,
-    Plant,
-    Prune,
-    Shell,
-}
-
-impl std::default::Default for Command {
-    fn default() -> Self {
-        Command::Help
-    }
-}
-
-impl_display_brief!(Command);
-
-impl std::str::FromStr for Command {
-    type Err = (); // For the FromStr trait
-
-    fn from_str(src: &str) -> Result<Command, ()> {
-        match src {
-            "cmd" => Ok(Command::Cmd),
-            "exec" => Ok(Command::Exec),
-            "eval" => Ok(Command::Eval),
-            "grow" => Ok(Command::Grow),
-            "help" => Ok(Command::Help),
-            "init" => Ok(Command::Init),
-            "inspect" => Ok(Command::Inspect),
-            "list" => Ok(Command::List),
-            "ls" => Ok(Command::List),
-            "plant" => Ok(Command::Plant),
-            "prune" => Ok(Command::Prune),
-            "sh" => Ok(Command::Shell),
-            "shell" => Ok(Command::Shell),
-            _ => Ok(Command::Custom(src.into())),
-        }
-    }
-}
-
-// Is color enabled?
-// --color=<auto,on,off> overrides the default "auto" value.
-
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
 pub enum ColorMode {
-    Auto, // "auto" enables color when a tty is detected.
-    Off,  // disable color
-    On,   // enable color
+    /// Enable color when a tty is detected
+    Auto,
+    /// Disable color
+    Off,
+    /// Enable color
+    On,
 }
 
 impl ColorMode {
@@ -1054,89 +1007,9 @@ pub fn print_tree_details(tree: &Tree, verbose: u8, quiet: bool) {
     }
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct CommandOptions {
-    pub args: Vec<String>,
-    pub debug: Vec<String>,
-    pub variables: Vec<String>,
-    pub filename: Option<std::path::PathBuf>,
-    pub subcommand: Command,
-    pub chdir: String,
-    pub filename_str: String,
-    pub root: String,
-    pub color_mode: ColorMode,
-    pub num_jobs: usize,
-    pub exact_depth: isize,
-    pub max_depth: isize,
-    pub min_depth: isize,
-    pub verbose: u8,
-    pub breadth_first: bool,
-    pub dry_run: bool,
-    pub exit_on_error: bool,
-    pub keep_going: bool,
-    pub no_prompt: bool,
-    pub quiet: bool,
-}
-
-impl CommandOptions {
-    pub fn new() -> Self {
-        let num_jobs = match std::thread::available_parallelism() {
-            Ok(value) => value.get(),
-            Err(_) => 4,
-        };
-        Self {
-            exact_depth: -1,
-            exit_on_error: true,
-            min_depth: -1,
-            max_depth: -1,
-            num_jobs,
-            ..CommandOptions::default()
-        }
-    }
-
-    // Builder function to update verbosity.
-    pub fn verbose(mut self, value: u8) -> Self {
-        self.verbose = value;
-        self
-    }
-
-    pub fn update(&mut self) {
-        // Allow specifying the config file: garden --config <path>
-        if !self.filename_str.is_empty() {
-            let path = std::path::PathBuf::from(&self.filename_str);
-            if path.exists() {
-                let canon = path::abspath(&path);
-                self.filename = Some(canon);
-            } else {
-                self.filename = Some(path);
-            }
-        }
-
-        // Override garden.root: garden --root <path>
-        if !self.root.is_empty() {
-            // Resolve the "--root" option to an absolute path
-            let root_path = std::path::PathBuf::from(&self.root);
-            self.root = path::abspath(&root_path).to_string_lossy().into();
-        }
-
-        // Change directories before searching for conifgs: garden --chdir <path>
-        if !self.chdir.is_empty() {
-            if let Err(err) = std::env::set_current_dir(&self.chdir) {
-                error!("could not chdir to '{}': {}", self.chdir, err);
-            }
-        }
-
-        self.color_mode.update();
-    }
-
-    pub fn debug_level(&self, name: &str) -> u8 {
-        self.debug.iter().filter(|&x| x == name).count() as u8
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct ApplicationContext {
-    pub options: CommandOptions,
+    pub options: cli::MainOptions,
     arena: Arena<Configuration>,
     root_id: ConfigId,
 }
@@ -1144,7 +1017,7 @@ pub struct ApplicationContext {
 impl_display!(ApplicationContext);
 
 impl ApplicationContext {
-    pub fn new(config: Configuration, options: CommandOptions) -> Self {
+    pub fn new(config: Configuration, options: cli::MainOptions) -> Self {
         let mut arena = Arena::new();
         let root_id = arena.new_node(config);
 

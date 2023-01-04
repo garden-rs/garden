@@ -1,14 +1,12 @@
 [package]
 name = "garden-tools"
-version = "0.4.1"
+version = "0.5.0-beta"
 edition = "2021"
 description = """
-Garden Weaves Git Trees
+Garden grows and cultivates collections of Git trees
 
-Garden makes it easy to define, create, and run commands over collections
-of configuration-defined multi-worktree Git environments.
-
-"""
+Garden lets you define and run commands over collections of configuration-defined
+multi-worktree Git environments."""
 keywords = ["git", "development", "sandboxes", "vcs", "worktree"]
 categories = [
     "command-line-utilities",
@@ -27,8 +25,9 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 anyhow = "1.0"
-argparse = "0.2"
 atty = "0.2"
+clap = { version = "4.0.32", features = ["derive", "string"] }
+clap_complete = "4.0.7"
 crossbeam = "0.8"
 dirs = "4.0"
 glob = "0.3"

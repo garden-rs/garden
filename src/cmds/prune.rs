@@ -1,4 +1,5 @@
 use anyhow::Result;
+use clap::Parser;
 use rayon::prelude::*;
 use std::io::prelude::*;
 
@@ -7,94 +8,43 @@ use super::super::errors;
 use super::super::model;
 use super::super::model::Color;
 
-/// Main entry point for the "garden prune" command
-
-pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let mut paths = Vec::new();
-    parse_args(&mut paths, &mut app.options);
-
-    let options = app.options.clone();
-    let config = app.get_root_config_mut();
-    let exit_status = prune(config, &options, &paths)?;
-
-    // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
+/// Get the default number of prune jobs to run in parallel
+fn default_num_jobs() -> usize {
+    match std::thread::available_parallelism() {
+        Ok(value) => std::cmp::max(value.get(), 3),
+        Err(_) => 4,
+    }
 }
 
-/// Parse "garden prune" arguments.
+/// Remove unreferenced Git repositories
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct PruneOptions {
+    /// Number of parallel jobs
+    #[arg(short = 'j', long = "jobs", default_value_t = default_num_jobs())]
+    num_jobs: usize,
+    /// Set the maximum prune depth
+    #[arg(long, short = 'd', default_value_t = -1)]
+    max_depth: isize,
+    /// Only prune starting at the given depth
+    #[arg(long, default_value_t = -1)]
+    min_depth: isize,
+    /// Only prune at the exact depth. Alias for '--min-depth=# --max-depth=#'
+    #[arg(long, default_value_t = -1)]
+    exact_depth: isize,
+    /// Prune all repositories without prompting (DANGER!)
+    #[arg(long)]
+    no_prompt: bool,
+    /// Enable deletion [default: deletion is disabled]
+    #[arg(long = "rm")]
+    remove: bool,
+    /// Limit pruning to the specified subdirectories
+    paths: Vec<String>,
+}
 
-fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden prune".into());
-    options.dry_run = true; // Enable the safe dry-run mode by default.
-
-    // Mutable scope for parser.
-    {
-        let mut parser = argparse::ArgumentParser::new();
-        parser.set_description("garden prune - Remove unreferenced Git repositories");
-
-        parser
-            .refer(&mut options.num_jobs)
-            .metavar("<N>")
-            .add_option(
-                &["-j", "--jobs"],
-                argparse::Parse,
-                "Number of parallel jobs, defaults to # of CPUs",
-            );
-
-        parser
-            .refer(&mut options.max_depth)
-            .metavar("<depth>")
-            .add_option(
-                &["-d", "--max-depth"],
-                argparse::Parse,
-                "Set maximum prune depth (default: none)",
-            );
-
-        parser
-            .refer(&mut options.min_depth)
-            .metavar("<depth>")
-            .add_option(
-                &["--min-depth"],
-                argparse::Parse,
-                "Only prune starting at the given depth",
-            );
-
-        parser
-            .refer(&mut options.exact_depth)
-            .metavar("<depth>")
-            .add_option(
-                &["--exact-depth"],
-                argparse::Parse,
-                "Only prune at the exact depth. \
-                This is an alias for '--min-depth <depth> --max-depth <depth>'",
-            );
-
-        parser.refer(&mut options.no_prompt).add_option(
-            &["--no-prompt"],
-            argparse::StoreTrue,
-            "Prune all repositories without prompting (DANGEROUS!)",
-        );
-
-        parser.refer(&mut options.dry_run).add_option(
-            &["--rm"],
-            argparse::StoreFalse,
-            "Enable deletions (default: deletions are not enabled)",
-        );
-
-        parser.refer(paths).add_argument(
-            "paths",
-            argparse::List,
-            "Limit pruning to the specified subdirectories",
-        );
-
-        if let Err(err) = parser.parse(
-            options.args.to_vec(),
-            &mut std::io::stdout(),
-            &mut std::io::stderr(),
-        ) {
-            std::process::exit(err);
-        }
-    }
+/// Main entry point for the "garden prune" command
+pub fn main(app: &mut model::ApplicationContext, options: &mut PruneOptions) -> Result<()> {
+    let config = app.get_root_config_mut();
 
     // At least two threads must be running in order for the TraverseFilesystem task to
     // be able to produce results. Otherwise we'll block in the PromptUser thread without
@@ -118,6 +68,11 @@ fn parse_args(paths: &mut Vec<String>, options: &mut model::CommandOptions) {
         options.min_depth = options.exact_depth;
         options.max_depth = options.exact_depth;
     }
+
+    let exit_status = prune(config, options, &options.paths)?;
+
+    // Return the last non-zero exit status.
+    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
 /// PathBufMessage is sent across channels between the TraverseFilesystem,
@@ -502,12 +457,12 @@ fn print_deleted_pathbuf(pathbuf: &std::path::Path) {
 /// by the garden file. This can be run when branches or trees have been removed.
 pub fn prune(
     config: &model::Configuration,
-    options: &model::CommandOptions,
+    options: &PruneOptions,
     paths: &[String],
 ) -> Result<i32> {
     let exit_status: i32 = 0;
 
-    if options.dry_run {
+    if !options.remove {
         let msg = "NOTE: Safe mode enabled. Repositories will not be deleted.";
         println!("{}", Color::green(msg));
         let msg = "Use '--rm' to enable deletion.";
@@ -573,7 +528,7 @@ pub fn prune(
             let remove_paths = RemovePaths {
                 recv_remove_path,
                 send_finished_path,
-                dry_run: options.dry_run,
+                dry_run: !options.remove,
             };
             remove_paths.remove_paths(remove_scope);
         });

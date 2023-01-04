@@ -268,8 +268,8 @@ fn environment_empty_value() {
 #[test]
 fn command_garden_scope() -> Result<()> {
     let config = common::garden_config();
-    let options = garden::model::CommandOptions::new();
-    let app = garden::build::context_from_config(config, options)?;
+    let options = garden::cli::MainOptions::new();
+    let app = garden::build::context_from_config(config, &options)?;
     let context = garden::model::TreeContext::new(1, None, Some(0), None);
 
     // Garden scope
@@ -287,9 +287,9 @@ fn command_garden_scope() -> Result<()> {
 
 #[test]
 fn command_tree_scope() -> Result<()> {
-    let options = garden::model::CommandOptions::new();
+    let options = garden::cli::MainOptions::new();
     let config = common::garden_config();
-    let app = garden::build::context_from_config(config, options)?;
+    let app = garden::build::context_from_config(config, &options)?;
 
     let context = garden::model::TreeContext::new(1, None, None, None);
 
@@ -336,8 +336,7 @@ fn environment_variables() {
 #[test]
 fn find_tree_in_graft() -> Result<()> {
     // See the "config.rs" tests for config-level validations.
-    let options = garden::model::CommandOptions::new();
-    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
+    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
     let id = app.get_root_id();
     let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
     assert_eq!(0, ctx.tree);
@@ -351,8 +350,7 @@ fn find_tree_in_graft() -> Result<()> {
 
 #[test]
 fn eval_graft_tree() -> Result<()> {
-    let options = garden::model::CommandOptions::new();
-    let app = garden::build::context_from_path("tests/data/garden.yaml", options)?;
+    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
     let id = app.get_root_id();
 
     // Get a tree context for "graft::graft" from the outer-most config.

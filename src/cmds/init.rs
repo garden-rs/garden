@@ -1,73 +1,33 @@
 use anyhow::Result;
+use clap::Parser;
+
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
 
-use super::super::cmd;
+use super::super::cli;
 use super::super::config;
 use super::super::errors;
-use super::super::model;
 use super::super::path;
 
-struct InitOptions {
-    pub dirname: std::path::PathBuf,
-    pub filename: String,
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct InitOptions {
+    /// Overwrite existing config files
+    #[arg(long, short)]
     pub force: bool,
+    /// Use the user-wide configuration directory (~/.config/garden/garden.yaml)
+    #[arg(long)]
     pub global: bool,
+    /// Set the garden root path
+    #[arg(long, default_value_t = String::from("${GARDEN_CONFIG_DIR}"))]
     pub root: String,
+    /// Config filename to write
+    #[arg(default_value_t = String::from("garden.yaml"))]
+    pub filename: String,
 }
 
-impl std::default::Default for InitOptions {
-    fn default() -> Self {
-        InitOptions {
-            dirname: path::current_dir(),
-            filename: "garden.yaml".to_string(),
-            force: false,
-            global: false,
-            root: "${GARDEN_CONFIG_DIR}".to_string(),
-        }
-    }
-}
-
-pub fn main(options: &mut model::CommandOptions) -> Result<()> {
-    let mut init_options = InitOptions::default();
-    {
-        let mut ap = argparse::ArgumentParser::new();
-        ap.set_description("garden init - Create an empty garden.yaml");
-
-        ap.refer(&mut init_options.global).add_option(
-            &["--global"],
-            argparse::StoreTrue,
-            "Use the user-wide configuration directory (~/.config/garden/garden.yaml)",
-        );
-
-        ap.refer(&mut init_options.force).add_option(
-            &["-f", "--force"],
-            argparse::StoreTrue,
-            "Overwrite existing config files",
-        );
-
-        ap.refer(&mut init_options.root)
-            .metavar("<path>")
-            .add_option(
-                &["-r", "--root"],
-                argparse::Store,
-                "Set the garden root path (default: ${GARDEN_CONFIG_DIR})",
-            );
-
-        ap.refer(&mut init_options.filename).add_argument(
-            "filename",
-            argparse::Store,
-            "Config file to write (default: garden.yaml)",
-        );
-
-        options.args.insert(0, "garden init".into());
-        cmd::parse_args(ap, options.args.to_vec());
-    }
-
-    init(options, &mut init_options)
-}
-
-fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Result<()> {
+pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Result<()> {
+    let mut dirname = path::current_dir();
     let file_path = std::path::PathBuf::from(&init_options.filename);
     if file_path.is_absolute() {
         if init_options.global {
@@ -77,7 +37,7 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
             .into());
         }
 
-        init_options.dirname = file_path
+        dirname = file_path
             .parent()
             .as_ref()
             .ok_or_else(|| {
@@ -101,10 +61,10 @@ fn init(options: &model::CommandOptions, init_options: &mut InitOptions) -> Resu
             .to_string();
     }
     if init_options.global {
-        init_options.dirname = config::xdg_dir();
+        dirname = config::xdg_dir();
     }
 
-    let mut config_path = init_options.dirname.to_path_buf();
+    let mut config_path = dirname;
     config_path.push(&init_options.filename);
 
     if !init_options.force && config_path.exists() {

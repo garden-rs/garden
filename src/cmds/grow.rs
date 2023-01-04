@@ -1,4 +1,5 @@
 use anyhow::Result;
+use clap::Parser;
 use std::collections::HashSet;
 
 use super::super::cmd;
@@ -7,21 +8,24 @@ use super::super::eval;
 use super::super::model;
 use super::super::query;
 
+/// Grow garden worktrees
+#[derive(Parser, Clone, Debug)]
+#[command(author, about, long_about)]
+pub struct GrowOptions {
+    /// Tree query for the gardens, groups or trees to grow
+    #[arg(required = true)]
+    queries: Vec<String>,
+}
+
 /// Main entry point for the "garden grow" command
-/// Parameters:
-/// - options: `garden::model::CommandOptions`
-
-pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
-    let mut queries = Vec::new();
-    parse_args(&mut queries, &mut app.options);
-
+pub fn main(app: &mut model::ApplicationContext, options: &GrowOptions) -> Result<()> {
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
 
     let mut exit_status = errors::EX_OK;
     let mut configured_worktrees: HashSet<String> = HashSet::new();
     let config = app.get_root_config_mut();
-    for query in &queries {
+    for query in &options.queries {
         let status = grow(config, &mut configured_worktrees, quiet, verbose, query)?;
         if status != errors::EX_OK {
             exit_status = status;
@@ -30,28 +34,6 @@ pub fn main(app: &mut model::ApplicationContext) -> Result<()> {
 
     // Return the last non-zero exit status.
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
-}
-
-/// Parse "garden grow" arguments.
-fn parse_args(queries: &mut Vec<String>, options: &mut model::CommandOptions) {
-    options.args.insert(0, "garden grow".into());
-
-    let mut ap = argparse::ArgumentParser::new();
-    ap.set_description("garden grow - Create and update gardens");
-
-    ap.refer(queries).required().add_argument(
-        "queries",
-        argparse::List,
-        "Tree queries for the gardens, groups or trees to grow",
-    );
-
-    if let Err(err) = ap.parse(
-        options.args.to_vec(),
-        &mut std::io::stdout(),
-        &mut std::io::stderr(),
-    ) {
-        std::process::exit(err);
-    }
 }
 
 /// Create/update trees in the evaluated tree query.
