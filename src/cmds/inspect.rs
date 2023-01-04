@@ -8,22 +8,22 @@ use super::super::query;
 /// Query tree status
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Inspect {
+pub struct InspectOptions {
     /// Tree query for the gardens, groups or trees to inspect
     queries: Vec<String>,
 }
 
 /// Main entry point for the "garden inspect" command
-pub fn main(app: &mut model::ApplicationContext, inspect_options: &mut Inspect) -> Result<()> {
-    if inspect_options.queries.is_empty() {
-        inspect_options.queries.push(".".into());
+pub fn main(app: &mut model::ApplicationContext, options: &mut InspectOptions) -> Result<()> {
+    if options.queries.is_empty() {
+        options.queries.push(".".into());
     }
     if app.options.debug_level("inspect") > 0 {
-        debug!("queries: {:?}", inspect_options.queries);
+        debug!("queries: {:?}", options.queries);
     }
     let verbose = app.options.verbose;
     let config = app.get_root_config_mut();
-    inspect(config, verbose, &inspect_options.queries)
+    inspect(config, verbose, &options.queries)
 }
 
 /// Inspect every tree in the evaluated tree query

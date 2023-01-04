@@ -12,7 +12,7 @@ use super::super::query;
 /// Run one or more custom commands over a tree query
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Cmd {
+pub struct CmdOptions {
     /// Run a command in all trees before running the next command
     #[arg(long, short)]
     breadth_first: bool,
@@ -40,7 +40,7 @@ pub struct Cmd {
 /// Run custom garden commands
 #[derive(Parser, Clone, Debug)]
 #[command(bin_name = "garden")]
-pub struct Custom {
+pub struct CustomOptions {
     /// Continue to the next tree when errors occur
     #[arg(long, short)]
     keep_going: bool,
@@ -61,7 +61,7 @@ pub struct Custom {
 }
 
 /// Main entry point for `garden cmd <query> <command>...`.
-pub fn main_cmd(app: &mut model::ApplicationContext, options: &Cmd) -> Result<()> {
+pub fn main_cmd(app: &mut model::ApplicationContext, options: &CmdOptions) -> Result<()> {
     if app.options.debug_level("cmd") > 0 {
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
@@ -94,7 +94,7 @@ impl CmdParams {
     }
 
     /// Build CmdParams from a CmdOptions struct
-    pub fn from_cmd_options(options: &Cmd) -> Self {
+    pub fn from_cmd_options(options: &CmdOptions) -> Self {
         let mut params = Self::new();
         params.commands = options.commands.clone();
         params.arguments = options.arguments.clone();
@@ -106,7 +106,7 @@ impl CmdParams {
     }
 
     /// Build CmdParams from a CustomOptions struct
-    pub fn from_custom_options(options: &Custom) -> Self {
+    pub fn from_custom_options(options: &CustomOptions) -> Self {
         let mut params = CmdParams::new();
         // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
         params.arguments = options.arguments.clone();
@@ -139,10 +139,10 @@ pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>)
     // Set the command name to "garden <custom>".
     let name = &arguments[0];
     let garden_custom = format!("garden {}", name);
-    let cli = Custom::command().bin_name(garden_custom);
+    let cli = CustomOptions::command().bin_name(garden_custom);
     let matches = cli.get_matches_from(arguments);
-    let options =
-        <Custom as FromArgMatches>::from_arg_matches(&matches).map_err(format_error::<Custom>)?;
+    let options = <CustomOptions as FromArgMatches>::from_arg_matches(&matches)
+        .map_err(format_error::<CustomOptions>)?;
 
     if app.options.debug_level("cmd") > 0 {
         debug!("command: {}", name);

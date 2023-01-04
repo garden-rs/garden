@@ -11,21 +11,21 @@ use super::super::query;
 /// Grow garden worktrees
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Grow {
+pub struct GrowOptions {
     /// Tree query for the gardens, groups or trees to grow
     #[arg(required = true)]
     queries: Vec<String>,
 }
 
 /// Main entry point for the "garden grow" command
-pub fn main(app: &mut model::ApplicationContext, grow_options: &Grow) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, options: &GrowOptions) -> Result<()> {
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
 
     let mut exit_status = errors::EX_OK;
     let mut configured_worktrees: HashSet<String> = HashSet::new();
     let config = app.get_root_config_mut();
-    for query in &grow_options.queries {
+    for query in &options.queries {
         let status = grow(config, &mut configured_worktrees, quiet, verbose, query)?;
         if status != errors::EX_OK {
             exit_status = status;

@@ -19,9 +19,9 @@ fn default_num_jobs() -> u32 {
 /// Remove unreferenced Git repositories
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Prune {
+pub struct PruneOptions {
     /// Number of parallel jobs
-    #[arg(short = 'j', long = "jobs", default_value_t = default_num_jobs(), value_parser = clap::value_parser!(u32).range(3..))]
+    #[arg(short = 'j', long = "jobs", default_value_t = default_num_jobs(), value_parser = clap::value_parser!(u32).range(1..))]
     num_jobs: u32,
     /// Set the maximum prune depth
     #[arg(long, short = 'd', default_value_t = -1)]
@@ -43,7 +43,7 @@ pub struct Prune {
 }
 
 /// Main entry point for the "garden prune" command
-pub fn main(app: &mut model::ApplicationContext, options: &mut Prune) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, options: &mut PruneOptions) -> Result<()> {
     let config = app.get_root_config_mut();
 
     // At least two threads must be running in order for the TraverseFilesystem task to
@@ -455,7 +455,11 @@ fn print_deleted_pathbuf(pathbuf: &std::path::Path) {
 
 /// Prune the garden config directory to remove trees that are no longer referenced
 /// by the garden file. This can be run when branches or trees have been removed.
-pub fn prune(config: &model::Configuration, options: &Prune, paths: &[String]) -> Result<i32> {
+pub fn prune(
+    config: &model::Configuration,
+    options: &PruneOptions,
+    paths: &[String],
+) -> Result<i32> {
     let exit_status: i32 = 0;
 
     if !options.remove {

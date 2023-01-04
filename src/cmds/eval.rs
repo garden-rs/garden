@@ -8,7 +8,7 @@ use super::super::query;
 /// Evaluate garden expressions
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Eval {
+pub struct EvalOptions {
     /// Expression to evaluate
     expr: String,
     /// Tree within which to evaluate
@@ -18,7 +18,7 @@ pub struct Eval {
 }
 
 /// Evaluate a garden expression using the Eval parameters
-pub fn main(app: &mut model::ApplicationContext, eval: &Eval) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, eval: &EvalOptions) -> Result<()> {
     let config = app.get_root_config_mut();
     let mut garden_opt: Option<&str> = None;
     if let Some(garden) = &eval.garden {

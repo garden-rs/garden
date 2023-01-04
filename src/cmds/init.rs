@@ -11,7 +11,7 @@ use super::super::path;
 
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Init {
+pub struct InitOptions {
     /// Overwrite existing config files
     #[arg(long, short)]
     pub force: bool,
@@ -26,7 +26,7 @@ pub struct Init {
     pub filename: String,
 }
 
-pub fn main(options: &cli::MainOptions, init_options: &mut Init) -> Result<()> {
+pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Result<()> {
     let mut dirname = path::current_dir();
     let file_path = std::path::PathBuf::from(&init_options.filename);
     if file_path.is_absolute() {

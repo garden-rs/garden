@@ -14,7 +14,7 @@ use super::super::query;
 // Add pre-existing worktrees to a garden configuration file
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Plant {
+pub struct PlantOptions {
     /// Garden configuration file to write [default: "garden.yaml"]
     #[arg(long, short)]
     output: Option<String>,
@@ -23,14 +23,14 @@ pub struct Plant {
     paths: Vec<String>,
 }
 
-pub fn main(app: &mut model::ApplicationContext, plant: &Plant) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, options: &PlantOptions) -> Result<()> {
     // Read existing configuration
     let verbose = app.options.verbose;
     let config = app.get_root_config_mut();
     let mut doc = config::reader::read_yaml(config.get_path()?)?;
 
     // Output filename defaults to the input filename.
-    let output = match &plant.output {
+    let output = match &options.output {
         Some(output) => output.to_string(),
         None => config.get_path()?.to_string_lossy().to_string(),
     };
@@ -54,7 +54,7 @@ pub fn main(app: &mut model::ApplicationContext, plant: &Plant) -> Result<()> {
             }
         };
 
-        for path in &plant.paths {
+        for path in &options.paths {
             if let Err(msg) = plant_path(config, verbose, path, trees) {
                 error!("{}", msg);
             }

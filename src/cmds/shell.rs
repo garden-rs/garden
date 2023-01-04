@@ -10,19 +10,19 @@ use super::super::query;
 /// Open a shell in a garden environment
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Shell {
+pub struct ShellOptions {
     /// Query for trees to build an environment
     query: String,
     /// Tree to chdir into
     tree: Option<String>,
 }
 
-pub fn main(app: &mut model::ApplicationContext, shell: &Shell) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Result<()> {
     let config = app.get_root_config_mut();
-    let contexts = query::resolve_trees(config, &shell.query);
+    let contexts = query::resolve_trees(config, &options.query);
     if contexts.is_empty() {
         // TODO errors::GardenError::TreeQueryMatchedNoTrees { query: shell.query.into() }
-        error!("tree query matched zero trees: '{}'", shell.query);
+        error!("tree query matched zero trees: '{}'", options.query);
     }
 
     let mut context = contexts[0].clone();
@@ -31,7 +31,7 @@ pub fn main(app: &mut model::ApplicationContext, shell: &Shell) -> Result<()> {
     // query that was used to find it then chdir into that tree.
     // This makes it convenient to have gardens and trees with the same name.
     for ctx in &contexts {
-        if config.trees[ctx.tree].get_name() == &shell.query {
+        if config.trees[ctx.tree].get_name() == &options.query {
             context.tree = ctx.tree;
             context.garden = ctx.garden;
             context.group = ctx.group;
@@ -39,7 +39,7 @@ pub fn main(app: &mut model::ApplicationContext, shell: &Shell) -> Result<()> {
         }
     }
 
-    if let Some(tree) = &shell.tree {
+    if let Some(tree) = &options.tree {
         let mut found = false;
         if let Some(ctx) = query::tree_from_name(config, tree, None, None) {
             for query_ctx in &contexts {
@@ -57,7 +57,7 @@ pub fn main(app: &mut model::ApplicationContext, shell: &Shell) -> Result<()> {
         if !found {
             error!(
                 "'{}' was not found in the tree query '{}'",
-                tree, shell.query
+                tree, options.query
             );
         }
     }

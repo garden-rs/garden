@@ -94,32 +94,32 @@ pub fn debug_level(debug: &[String], name: &str) -> u8 {
 #[derive(Clone, Debug, Subcommand)]
 pub enum Command {
     /// Run custom commands over gardens
-    Cmd(cmds::cmd::Cmd),
+    Cmd(cmds::cmd::CmdOptions),
     /// Generate shell completions
-    Completion(cmds::completion::Completion),
+    Completion(cmds::completion::CompletionOptions),
     /// Custom commands
     #[command(external_subcommand)]
     Custom(Vec<String>),
     /// Evaluate garden expressions
-    Eval(cmds::eval::Eval),
+    Eval(cmds::eval::EvalOptions),
     /// Run commands inside garden environments
-    Exec(cmds::exec::Exec),
+    Exec(cmds::exec::ExecOptions),
     /// Grow garden worktrees into existence
-    Grow(cmds::grow::Grow),
+    Grow(cmds::grow::GrowOptions),
     /// Initialize a "garden.yaml" garden configuration file
-    Init(cmds::init::Init),
+    Init(cmds::init::InitOptions),
     /// Query tree status
-    Inspect(cmds::inspect::Inspect),
+    Inspect(cmds::inspect::InspectOptions),
     /// List available gardens, groups, trees and commands
     #[command(alias = "ls")]
-    List(cmds::list::List),
+    List(cmds::list::ListOptions),
     /// Add pre-existing worktrees to a garden configuration file
-    Plant(cmds::plant::Plant),
+    Plant(cmds::plant::PlantOptions),
     /// Remove unreferenced Git repositories
-    Prune(cmds::prune::Prune),
+    Prune(cmds::prune::PruneOptions),
     /// Open a shell in a garden environment
     #[command(alias = "sh")]
-    Shell(cmds::shell::Shell),
+    Shell(cmds::shell::ShellOptions),
 }
 
 impl std::default::Default for Command {

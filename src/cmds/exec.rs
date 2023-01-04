@@ -9,7 +9,7 @@ use super::super::query;
 /// Evaluate garden expressions
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Exec {
+pub struct ExecOptions {
     /// Tree query for the gardens, groups or trees to run the command
     query: String,
     /// Command to run in the resolved environments
@@ -18,7 +18,7 @@ pub struct Exec {
 }
 
 /// Main entry point for the "garden exec" command
-pub fn main(app: &mut model::ApplicationContext, exec_options: &Exec) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
     // parse_args(&mut app.options, &mut query, &mut command);
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;

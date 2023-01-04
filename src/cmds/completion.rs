@@ -10,7 +10,7 @@ use super::super::cli::MainOptions;
 /// Generate shell completions
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct Completion {
+pub struct CompletionOptions {
     /// Shell syntax to emit
     #[arg(default_value_t = Shell::Bash, value_parser = value_parser!(Shell))]
     pub shell: Shell,

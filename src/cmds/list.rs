@@ -4,7 +4,7 @@ use clap::Parser;
 /// List available gardens, groups, trees and commands
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
-pub struct List {
+pub struct ListOptions {
     /// List commands
     #[arg(long, short)]
     commands: bool,
@@ -12,7 +12,7 @@ pub struct List {
 
 use super::super::model;
 
-pub fn main(app: &mut model::ApplicationContext, options: &List) -> Result<()> {
+pub fn main(app: &mut model::ApplicationContext, options: &ListOptions) -> Result<()> {
     let config = app.get_root_config_mut();
 
     if options.commands {

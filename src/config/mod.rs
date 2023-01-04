@@ -168,7 +168,7 @@ pub fn from_path_string(
     from_path(std::path::PathBuf::from(path), "", verbose, None)
 }
 
-/// Create a model::Configuration instance from model::CommandOptions
+/// Build model::Configuration from cli::MainOptions
 pub fn from_options(
     options: &cli::MainOptions,
 ) -> Result<model::Configuration, errors::GardenError> {
