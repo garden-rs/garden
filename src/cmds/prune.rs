@@ -9,9 +9,9 @@ use super::super::model;
 use super::super::model::Color;
 
 /// Get the default number of prune jobs to run in parallel
-fn default_num_jobs() -> u32 {
+fn default_num_jobs() -> usize {
     match std::thread::available_parallelism() {
-        Ok(value) => std::cmp::max(value.get(), 3) as u32,
+        Ok(value) => std::cmp::max(value.get(), 3),
         Err(_) => 4,
     }
 }
@@ -21,8 +21,8 @@ fn default_num_jobs() -> u32 {
 #[command(author, about, long_about)]
 pub struct PruneOptions {
     /// Number of parallel jobs
-    #[arg(short = 'j', long = "jobs", default_value_t = default_num_jobs(), value_parser = clap::value_parser!(u32).range(1..))]
-    num_jobs: u32,
+    #[arg(short = 'j', long = "jobs", default_value_t = default_num_jobs())]
+    num_jobs: usize,
     /// Set the maximum prune depth
     #[arg(long, short = 'd', default_value_t = -1)]
     max_depth: isize,
@@ -471,7 +471,7 @@ pub fn prune(
 
     // Initialize the global thread pool.
     rayon::ThreadPoolBuilder::new()
-        .num_threads(options.num_jobs as usize)
+        .num_threads(options.num_jobs)
         .build_global()?;
 
     // Channels are used to exchange PathBufMessage messages.
