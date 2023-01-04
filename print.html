@@ -375,7 +375,7 @@ useful features.</p>
 <h2 id="command-line-conventions"><a class="header" href="#command-line-conventions">Command-Line Conventions</a></h2>
 <p>Run <code>garden help</code> to display usage information for garden commands.
 The usage information is where the command-line options are documented.</p>
-<pre><code>garden help
+<pre><code class="language-bash">garden help
 garden help &lt;command&gt;
 garden &lt;command&gt; --help
 </code></pre>
@@ -402,7 +402,7 @@ the <code>-D | --define</code> option.  The variable named <code>name</code> wil
 garden expression <code>value</code>.  Multiple variables can be set by specifying the
 flag multiple times.</p>
 <h2 id="garden-init"><a class="header" href="#garden-init">garden init</a></h2>
-<pre><code>garden init [options] [&lt;filename&gt;]
+<pre><code class="language-bash">garden init [options] [&lt;filename&gt;]
 
 # create a local garden config rooted at the current directory
 garden init --root '${GARDEN_CONFIG_DIR}'
@@ -421,7 +421,7 @@ After <code>garden init</code> the following files are created.</p>
 └── garden.yaml
 </code></pre>
 <h2 id="garden-plant"><a class="header" href="#garden-plant">garden plant</a></h2>
-<pre><code>garden plant &lt;tree&gt;
+<pre><code class="language-bash">garden plant &lt;tree&gt;
 </code></pre>
 <p>Add a pre-existing Git worktree to <code>garden.yaml</code>.</p>
 <p>The <code>trees</code> section in the <code>garden.yaml</code> file will be updated with details
@@ -435,7 +435,7 @@ refer to sets of trees.</p>
 <p>Tree queries are glob string patterns that can be used to match the gardens,
 groups or trees defined in &quot;garden.yaml&quot;.</p>
 <h2 id="garden-grow"><a class="header" href="#garden-grow">garden grow</a></h2>
-<pre><code>garden grow &lt;tree-query&gt;
+<pre><code class="language-bash">garden grow &lt;tree-query&gt;
 
 # Example usage
 garden grow cola
@@ -451,22 +451,22 @@ repositories are created by cloning the configured tree url.</p>
 <h3 id="branches"><a class="header" href="#branches">Branches</a></h3>
 <p>The <code>branch: &lt;branch-name&gt;</code> tree variable is used to specify which branch should be
 cloned and checked out when the tree is grown.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   example:
     branch: dev
-    url: &lt;url&gt;
+    url: url
 </code></pre>
 <p><code>graden grow example</code> clones the repository using <code>git clone --branch=dev</code>.
 The <code>branch</code> setting is a tree variable and supports <code>${variable}</code> expressions.</p>
 <h3 id="shallow-clones"><a class="header" href="#shallow-clones">Shallow Clones</a></h3>
 <p>The <code>depth: &lt;integer&gt;</code> tree parameter is used to create shallow clones.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   example:
     depth: 42
-    url: &lt;url&gt;
+    url: url
 </code></pre>
 <p><code>garden grow example</code> clones the repository using:</p>
-<pre><code>git clone --depth=42 --no-single-branch
+<pre><code class="language-bash">git clone --depth=42 --no-single-branch
 </code></pre>
 <p>Even though a shallow clone is created, all of the remote tracking branches
 (eg. <code>origin/*</code>) are available because we clone the repository using
@@ -476,12 +476,12 @@ a single branch only. This is useful if you want to limit the on-disk footprint
 of repositories by only having a single branch available.</p>
 <p>This paramter is typically used in conjunction with <code>branch: &lt;branch-name&gt;</code> and
 <code>depth: 1</code> to create a 1-commit shallow clone with a single branch.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   example:
     branch: dev
     depth: 1
     single-branch: true
-    url: &lt;url&gt;
+    url: url
 </code></pre>
 <h3 id="wildcards-1"><a class="header" href="#wildcards-1">Wildcards</a></h3>
 <p>Wildcards are supported in the trees queries supported by <code>garden grow</code>.
@@ -498,14 +498,14 @@ using <a href="https://git-scm.com/docs/git-worktree">git worktree</a>.</p>
 <p>To create shared storage, define the primary worktree where the <code>.git</code>
 storage will reside and then define additional trees that reference the
 worktrees.</p>
-<pre><code>trees:
-  example/main: &lt;url&gt;
+<pre><code class="language-yaml">trees:
+  example/main: url
 
   example/dev:
     worktree: example/main
     branch: dev
 
-example/v2:
+  example/v2:
     worktree: example/main
     branch: v2
 </code></pre>
@@ -513,24 +513,24 @@ example/v2:
 <code>example/dev</code> uses the <code>dev</code> branch and <code>example/v2</code> uses the <code>v2</code> branch.</p>
 <h3 id="bare-repositories"><a class="header" href="#bare-repositories">Bare Repositories</a></h3>
 <p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   example:
     bare: true
-    url: &lt;url&gt;
+    url: url
 </code></pre>
 <p>Bare clones are created by default when the tree path ends in <code>.git</code>.
 For example, a tree called <code>example.git</code> will be <code>bare: true</code> by default.</p>
-<pre><code>trees:
-  example.git: &lt;url&gt;
+<pre><code class="language-yaml">trees:
+  example.git: url
 </code></pre>
 <p>Setting <code>bare: false</code> overrides the name-based detection of bare repositories.</p>
-<pre><code>trees:
+<pre><code class="language-yaml">trees:
   example.git:
     bare: false
-    url: &lt;url&gt;
+    url: url
 </code></pre>
 <h2 id="garden-cmd"><a class="header" href="#garden-cmd">garden cmd</a></h2>
-<pre><code>garden cmd &lt;tree-query&gt; &lt;command&gt; [&lt;command&gt;]... [-- &lt;arguments&gt;..]
+<pre><code class="language-bash">garden cmd &lt;tree-query&gt; &lt;command&gt; [&lt;command&gt;]... [-- &lt;arguments&gt;..]
 
 # Example usage
 garden cmd cola build test -- V=1
@@ -572,7 +572,7 @@ used to rerun garden from within a garden command.</p>
 <p>Additional arguments are available to command strings by using the traditional
 <code>&quot;$@&quot;</code> shell syntax.  When additional arguments are present <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and
 subsequent variables will be set according to each argument.</p>
-<pre><code># Example usage
+<pre><code class="language-bash"># Example usage
 garden test cola -- V=1
 </code></pre>
 <h3 id="depth-first-and-breadth-first-tree-traversal"><a class="header" href="#depth-first-and-breadth-first-tree-traversal">Depth-first and Breadth-first Tree Traversal</a></h3>
@@ -590,7 +590,7 @@ garden cmd --breadth-first treesitters build test
 traversal runs the <code>build</code> command over <em>all</em> of the trees in the <code>treesitters</code> group
 <em>before</em> the <code>test</code> command is run over all of the trees in the same group.</p>
 <h3 id="custom-commands"><a class="header" href="#custom-commands">Custom Commands</a></h3>
-<pre><code>garden &lt;command&gt; &lt;query&gt; [&lt;query&gt;]* [-- &lt;arguments&gt;...]
+<pre><code class="language-bash">garden &lt;command&gt; &lt;query&gt; [&lt;query&gt;]* [-- &lt;arguments&gt;...]
 
 # Example usage
 garden status @git-cola .
@@ -607,7 +607,7 @@ garden or tree scope.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
 <h2 id="garden-exec"><a class="header" href="#garden-exec">garden exec</a></h2>
-<pre><code>garden exec &lt;tree-query&gt; &lt;command&gt; [&lt;arguments&gt;]*
+<pre><code class="language-bash">garden exec &lt;tree-query&gt; &lt;command&gt; [&lt;arguments&gt;]*
 
 # example
 garden exec cola git status -s
@@ -617,7 +617,7 @@ When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environme
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
-<pre><code>garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
+<pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 
 # example
 garden eval '${GARDEN_ROOT}'
@@ -688,7 +688,7 @@ below the directory containing the graden file.</p>
 </code></pre>
 <p>The <code>garden prune</code> command interactively prompts before removing each repository.
 The prompt looks like the following:</p>
-<pre><code># /home/user/src/example
+<pre><code class="language-bash"># /home/user/src/example
 Delete the &quot;example&quot; repository?
 WARNING: &quot;all&quot; deletes &quot;example&quot; and ALL subsequent repositories!
 Choices: yes, no, all, quit [y,n,all,q]?
@@ -702,6 +702,44 @@ Choices: yes, no, all, quit [y,n,all,q]?
 <p><code>--no-prompt</code> is also equivalent to answering <code>yes</code> to all prompts.
 <code>--no-prompt</code> is intended for use in scripts where user interaction is not desired.
 Use with caution!</p>
+<h2 id="garden-completion"><a class="header" href="#garden-completion">garden completion</a></h2>
+<p>Shell completions for <code>garden</code> can be generated by running the <code>garden completion</code>
+command.</p>
+<p><code>garden completion</code> uses <a href="https://crates.io/crates/clap_complete">clap complete</a>
+to generate its completions.</p>
+<h3 id="zsh"><a class="header" href="#zsh">Zsh</a></h3>
+<p>Ensure that your <code>~/.zshrc</code> file has completions enabled and that you have a
+directory configured in your <code>$fpath</code> for <code>zsh</code> completion scripts.
+Add the following snippet to your <code>~/.zshrc</code> to enable completions and
+configure <code>~/.config/zsh/completion</code> for providing completion scripts.</p>
+<pre><code class="language-bash">autoload -U +X compinit
+compinit -i
+fpath=(~/.config/zsh/completion $fpath)
+</code></pre>
+<p>These settings make <code>zsh</code> look for a script called <code>_garden</code> in the directory when
+tab-completing for <code>garden</code>.</p>
+<p>Lastly, create the directory and generate the <code>~/.config/zsh/completion/_garden</code>
+zsh shell completion script.</p>
+<pre><code class="language-bash">mkdir -p ~/.config/zsh/completion
+garden completion zsh &gt;~/.config/zsh/completion/_garden
+</code></pre>
+<p><em>NOTE</em>: You will should regenerate the <code>_garden</code> zsh completion script
+whenever <code>garden</code> is upgraded to ensure that all of the options and commands have
+up to date completions.</p>
+<h3 id="bash"><a class="header" href="#bash">Bash</a></h3>
+<p>Add the following snippet to your <code>~/.bashrc</code> to enable <code>bash</code> tab completions.</p>
+<pre><code class="language-bash">if test -n &quot;$PS1&quot; &amp;&amp; type garden &gt;/dev/null 2&gt;&amp;1
+then
+    eval &quot;$(garden completion bash)&quot; 2&gt;/dev/null
+fi
+</code></pre>
+<h3 id="future-shell-completion-enhancements"><a class="header" href="#future-shell-completion-enhancements">Future shell completion enhancements</a></h3>
+<p>Tab completion do not currently include user-defined commands.
+Improvements to the shell completions can be made once traction has been made on the
+following upstream issues.</p>
+<ul>
+<li><a href="https://github.com/epage/clapng/issues/92">clapng #92</a> - Dynamic completion support</li>
+</ul>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
 <p>Garden is configured through a YAML configuration file, typically called
 &quot;garden.yaml&quot;.</p>
