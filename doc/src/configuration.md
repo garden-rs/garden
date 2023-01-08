@@ -213,13 +213,39 @@ commands in addition to the commands provided by each tree.
 
 ## Templates
 
-Templates allow sharing of variables, gitconfig, and environments between
-trees. Adding an entry to the "templates" configuration block and they can
-then be referenced into trees using `templates: <template-name>`.
+Templates allow sharing of command, variable, gitconfig, and environment
+definitions across trees. Adding an entry to the `templates` configuration block
+makes a template available when defining trees.
+
+Specify `templates: <template-name>` to inherit the the specified template's
+settings when defining trees. The `templates` field also accepts a list of
+template names.
 
 Trees can also reuse another tree definition by specifying the "extend"
 keyword with the name of another tree.  Only the first remote is used when
 extending a tree.
+
+```yaml
+templates:
+  hello:
+    variables:
+      message: Hello ${TREE_NAME}.
+    commands:
+      echo: echo ${message}
+
+trees:
+  hello-tree:
+    templates: hello
+
+  hello-tree-extended:
+    extend: hello-tree
+    variables:
+      message: The time is now: $(date)
+```
+
+When a tree specifies multiple templates then all of the tempaltes are merged into
+the tree's definitions. If variables are multiply-defined across multiple templates
+then the variable's value from the last specified template will be used.
 
 
 ## String to List Promotion

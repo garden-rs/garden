@@ -714,8 +714,10 @@ fn get_tree(
     if let Some(mut base_tree) = base_tree_opt {
         tree.variables.append(&mut base_tree.variables);
     }
-    // Process templates in reverse order so that variables get defined by the first template
-    // that defines them.
+    // Process templates in reverse order so that variables get defined by the last
+    // template that defines them. Variables are looked up in first-found order.
+    // Processing templates in reverse ensures that variables from templates later
+    // in the list will have higher precedence.
     for template_name in tree.templates.iter().rev() {
         if let Some(template) = config.templates.get(template_name) {
             tree.variables.append(&mut template.tree.variables.clone());
