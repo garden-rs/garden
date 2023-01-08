@@ -524,15 +524,17 @@ zsh shell completion script.
 
 ```bash
 mkdir -p ~/.config/zsh/completion
-garden completion zsh >~/.config/zsh/completion/_garden
+garden completion zsh |
+grep -v \*::arguments >~/.config/zsh/completion/_garden
 ```
 
 Use `garden completion --commands zsh` instead of `garden completion zsh`
 to include completions for custom commands.
 
-*NOTE*: You will should regenerate the `_garden` zsh completion script
-whenever `garden` is upgraded to ensure that all of the options and commands have
-up to date completions.
+The `grep` filter is needed to workaround [clap #3022](https://github.com/clap-rs/clap/issues/3022).
+
+*NOTE*: You should regenerate the `_garden` zsh completion script whenever `garden`
+is upgraded to ensure that all of the options and commands have up to date completions.
 
 ### Bash
 
@@ -554,7 +556,9 @@ Tab completion can only be made to include a static set of user-defined commands
 Custom commands cannot be defined dynamically, which means that the same completions
 will be used irrespective of your current directory.
 
-Improvements to the shell completions can be made once traction has been made on this
-upstream issue:
+Improvements to the shell completions can be made once traction has been made on the
+following upstream issues:
+
+* [clap #3022](https://github.com/clap-rs/clap/issues/3022) - zsh broken with two multi length arguments
 
 * [clapng #92](https://github.com/epage/clapng/issues/92) - Dynamic completion support
