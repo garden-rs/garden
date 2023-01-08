@@ -7,7 +7,6 @@ commands:
   check/clippy: cargo clippy --all "$@" -- -D warnings
   check/fmt: cargo fmt --check "$@"
   clean: cargo clean "$@"
-  clippy: cargo clippy --all --fix "$@" -- -D warnings
   commit: git commit "$@"
   coverage: cargo kcov "$@"
   diff: git diff "$@"
@@ -18,6 +17,7 @@ commands:
     mdbook build --dest-dir book.new
     rsync -r --delete --exclude=.git book.new/ book/
     rm -rf book.new
+  fix: cargo clippy --all --fix "$@" -- -D warnings
   fmt: cargo fmt "$@"
   install-doc: |
     garden doc
@@ -28,7 +28,7 @@ commands:
   stat: git status -s "$@"
   status: git status "$@"
   test: cargo test "$@"
-  update-deps: cargo update "$@"
+  update: cargo update "$@"
 
 # Variables can be defined externally. eg.:
 #   garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc
