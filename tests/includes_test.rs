@@ -30,3 +30,43 @@ fn read_includes() -> Result<()> {
 
     Ok(())
 }
+
+/// Ensure that templates can be included.
+#[test]
+fn template_includes() -> Result<()> {
+    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let config_id = app.get_root_id();
+    let context = garden::query::find_tree(&app, config_id, "tree-echo", None)?;
+    let config = app.get_root_config();
+
+    let tree = &config.trees[context.tree];
+    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
+    assert_eq!(result, "template");
+    let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
+    assert_eq!(constant, "constant");
+    assert_eq!(tree.commands.len(), 1);
+    assert_eq!(tree.commands[0].get_name(), "echo");
+    assert_eq!(
+        tree.commands[0].get(0).get_expr(),
+        "echo Hello, ${TREE_NAME}"
+    );
+
+    // Test a template that uses "extend" on a template defined via an include file.
+    // The "tree-echo-extended" uses "extend: tree-echo".
+    let context = garden::query::find_tree(&app, config_id, "tree-echo-extended", None)?;
+    let tree = &config.trees[context.tree];
+    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
+    let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
+    assert_eq!(result, "extended");
+    assert_eq!(constant, "constant");
+    assert_eq!(tree.commands.len(), 2);
+    assert_eq!(tree.commands[0].get_name(), "echo");
+    assert_eq!(
+        tree.commands[0].get(0).get_expr(),
+        "echo Hello, ${TREE_NAME}"
+    );
+    assert_eq!(tree.commands[1].get_name(), "echo");
+    assert_eq!(tree.commands[1].get(0).get_expr(), "echo extended");
+
+    Ok(())
+}

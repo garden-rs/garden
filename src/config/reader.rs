@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
@@ -146,7 +147,12 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: templates");
     }
-    if !get_templates(&doc["templates"], &mut config.templates) && config_verbose > 1 {
+    if !get_templates(
+        &doc["templates"],
+        &config.templates.clone(),
+        &mut config.templates,
+    ) && config_verbose > 1
+    {
         debug!("yaml: no templates");
     }
 
@@ -154,7 +160,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: trees");
     }
-    if !get_trees(config, &doc["trees"], &doc["templates"]) && config_verbose > 1 {
+    if !get_trees(config, &doc["trees"]) && config_verbose > 1 {
         debug!("yaml: no trees");
     }
 
@@ -392,10 +398,21 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
 }
 
 /// Read template definitions
-fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
+fn get_templates(
+    yaml: &Yaml,
+    config_templates: &HashMap<String, model::Template>,
+    templates: &mut HashMap<String, model::Template>,
+) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
-            templates.push(get_template(name, value, yaml));
+            let template_name = match &name.as_str() {
+                Some(template_name) => template_name.to_string(),
+                None => continue,
+            };
+            templates.insert(
+                template_name,
+                get_template(name, value, config_templates, yaml),
+            );
         }
         return true;
     }
@@ -404,7 +421,12 @@ fn get_templates(yaml: &Yaml, templates: &mut Vec<model::Template>) -> bool {
 }
 
 /// Read a single template definition
-fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template {
+fn get_template(
+    name: &Yaml,
+    value: &Yaml,
+    config_templates: &HashMap<String, model::Template>,
+    templates: &Yaml,
+) -> model::Template {
     let mut template = model::Template::default();
     get_str(name, template.get_name_mut());
 
@@ -437,14 +459,25 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     // "environment" follow last-set-wins semantics.
     get_vec_str(&value["extend"], &mut template.extend);
     for template_name in &template.extend {
+        // First check if we have this template in the local YAML data.
+        // We check here first so that parsing is not order-dependent.
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let base = get_template(
                 &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
+                config_templates,
                 templates,
             );
 
             base.apply(&mut template.tree);
+        } else {
+            // If the template didn't exist in the local YAML then read it from
+            // the previously-parsed templates. This allows templates to be used
+            // from include files where the template definition is in a different
+            // file and not present in the current YAML payload.
+            if let Some(base) = config_templates.get(template_name) {
+                base.apply(&mut template.tree);
+            }
         }
     }
 
@@ -467,16 +500,30 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
     template.tree.update_flags();
 
     // These follow first-found semantics; process the base templates in
-    // reverse order.
+    // reverse order. We use apply(), which does not process variables.
+    // Variables are handled separately here.
     for template_name in template.extend.iter().rev() {
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
-            let mut base = get_template(
+            let base = get_template(
                 &Yaml::String(template_name.clone()),
                 &templates[template_name.as_ref()],
+                config_templates,
                 templates,
             );
 
-            template.tree.variables.append(&mut base.tree.variables);
+            template
+                .tree
+                .variables
+                .append(&mut base.tree.variables.clone());
+        } else {
+            // If the template didn't exist in the local YAML then read it from the
+            // previously-parsed templates. This follows the same logic as above.
+            if let Some(base) = config_templates.get(template_name) {
+                template
+                    .tree
+                    .variables
+                    .append(&mut base.tree.variables.clone());
+            }
         }
     }
 
@@ -484,13 +531,13 @@ fn get_template(name: &Yaml, value: &Yaml, templates: &Yaml) -> model::Template 
 }
 
 /// Read tree definitions
-fn get_trees(config: &mut model::Configuration, yaml: &Yaml, templates: &Yaml) -> bool {
+fn get_trees(config: &mut model::Configuration, yaml: &Yaml) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if let Yaml::String(ref url) = value {
                 config.trees.push(get_tree_from_url(name, url));
             } else {
-                let tree = get_tree(config, name, value, templates, hash, true);
+                let tree = get_tree(config, name, value, hash, true);
                 config.trees.push(tree);
             }
         }
@@ -546,7 +593,6 @@ fn get_tree(
     config: &mut model::Configuration,
     name: &Yaml,
     value: &Yaml,
-    templates: &Yaml,
     trees: &YamlHash,
     variables: bool,
 ) -> model::Tree {
@@ -557,7 +603,7 @@ fn get_tree(
     if get_str(&value["extend"], &mut extend) {
         let tree_name = Yaml::String(extend);
         if let Some(tree_values) = trees.get(&tree_name) {
-            tree = get_tree(config, &tree_name, tree_values, templates, trees, false);
+            tree = get_tree(config, &tree_name, tree_values, trees, false);
             tree.remotes.truncate(1); // Keep origin only
             tree.templates.truncate(0); // Parent templates have already been processed.
         }
@@ -611,26 +657,9 @@ fn get_tree(
     // Process the base templates in the specified order before processing
     // the template itself.
     for template_name in &tree.templates.clone() {
-        let yaml_template = &templates[template_name.as_ref()];
-
-        // Templates defined with just a string value can only specify a single
-        // "origin" remote and nothing more.
-        if let Yaml::String(_) = yaml_template {
-            let mut base = get_template(
-                &Yaml::String(template_name.clone()),
-                &templates[template_name.as_ref()],
-                templates,
-            );
-            if tree.remotes.is_empty() {
-                tree.remotes.append(&mut base.tree.remotes);
-            }
-        } else if let Yaml::Hash(_) = yaml_template {
-            let base = get_template(
-                &Yaml::String(template_name.clone()),
-                &templates[template_name.as_ref()],
-                templates,
-            );
-            base.apply(&mut tree);
+        // Do we have a template by this name? If so, apply the template.
+        if let Some(template) = config.templates.get(template_name) {
+            template.apply(&mut tree);
         }
     }
 
@@ -641,7 +670,7 @@ fn get_tree(
         if !parent_expr.is_empty() {
             let tree_name = Yaml::String(parent_name);
             if let Some(tree_values) = trees.get(&tree_name) {
-                let base = get_tree(config, &tree_name, tree_values, templates, trees, true);
+                let base = get_tree(config, &tree_name, tree_values, trees, true);
                 tree.clone_from_tree(&base, true);
             }
         }
@@ -669,14 +698,8 @@ fn get_tree(
     // These follow first-found semantics; process templates in
     // reverse order.
     for template_name in tree.templates.iter().rev() {
-        if let Yaml::Hash(_) = templates[template_name.as_ref()] {
-            let mut base = get_template(
-                &Yaml::String(template_name.clone()),
-                &templates[template_name.as_ref()],
-                templates,
-            );
-
-            tree.variables.append(&mut base.tree.variables);
+        if let Some(template) = config.templates.get(template_name) {
+            tree.variables.append(&mut template.tree.variables.clone());
         }
     }
 

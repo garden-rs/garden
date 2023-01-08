@@ -1,6 +1,7 @@
 use clap::ValueEnum;
 use indextree::{Arena, NodeId};
 use std::cell::RefCell;
+use std::collections::HashMap;
 use which::which;
 
 use super::cli;
@@ -439,7 +440,7 @@ fn get_default_shell() -> String {
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
     pub commands: Vec<MultiVariable>,
-    pub debug: std::collections::HashMap<String, u8>,
+    pub debug: HashMap<String, u8>,
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
     pub grafts: Vec<Graft>,
@@ -449,7 +450,7 @@ pub struct Configuration {
     pub root: Variable,
     pub root_path: std::path::PathBuf,
     pub shell: String,
-    pub templates: Vec<Template>,
+    pub templates: HashMap<String, Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: Vec<Tree>,
     pub variables: Vec<NamedVariable>,

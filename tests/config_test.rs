@@ -107,48 +107,38 @@ fn templates() {
 
     let config = common::from_string(&string);
     assert_eq!(3, config.templates.len());
-    assert_eq!("template1", config.templates[0].get_name());
-    assert_eq!(1, config.templates[0].tree.variables.len());
-    assert_eq!("foo", config.templates[0].tree.variables[0].get_name());
-    assert_eq!("bar", config.templates[0].tree.variables[0].get_expr());
 
-    assert_eq!(2, config.templates[0].tree.environment.len());
-    assert_eq!("ENV=", config.templates[0].tree.environment[0].get_name());
-    assert_eq!(1, config.templates[0].tree.environment[0].len());
-    assert_eq!(
-        "${foo}env",
-        config.templates[0].tree.environment[0].get(0).get_expr()
-    );
+    let template1 = config.templates.get("template1").unwrap();
+    assert_eq!("template1", template1.get_name());
+    assert_eq!(1, template1.tree.variables.len());
+    assert_eq!("foo", template1.tree.variables[0].get_name());
+    assert_eq!("bar", template1.tree.variables[0].get_expr());
+    assert_eq!(2, template1.tree.environment.len());
+    assert_eq!("ENV=", template1.tree.environment[0].get_name());
+    assert_eq!(1, template1.tree.environment[0].len());
+    assert_eq!("${foo}env", template1.tree.environment[0].get(0).get_expr());
+    assert_eq!("THEPATH", template1.tree.environment[1].get_name());
+    assert_eq!(2, template1.tree.environment[1].len());
+    assert_eq!("${foo}", template1.tree.environment[1].get(0).get_expr());
+    assert_eq!("${ENV}", template1.tree.environment[1].get(1).get_expr());
 
-    assert_eq!(
-        "THEPATH",
-        config.templates[0].tree.environment[1].get_name()
-    );
-    assert_eq!(2, config.templates[0].tree.environment[1].len());
-    assert_eq!(
-        "${foo}",
-        config.templates[0].tree.environment[1].get(0).get_expr()
-    );
-    assert_eq!(
-        "${ENV}",
-        config.templates[0].tree.environment[1].get(1).get_expr()
-    );
+    let template2 = config.templates.get("template2").unwrap();
+    assert_eq!("template2", template2.get_name());
+    assert_eq!(vec!["template1"], template2.extend);
+    assert_eq!(3, template2.tree.variables.len());
+    assert_eq!("baz", template2.tree.variables[0].get_name());
+    assert_eq!("zax", template2.tree.variables[0].get_expr());
+    assert_eq!("zee", template2.tree.variables[1].get_name());
+    assert_eq!("${foo}", template2.tree.variables[1].get_expr());
+    assert_eq!("foo", template2.tree.variables[2].get_name());
+    assert_eq!("bar", template2.tree.variables[2].get_expr());
 
-    assert_eq!("template2", config.templates[1].get_name());
-    assert_eq!(vec!["template1"], config.templates[1].extend);
-    assert_eq!(3, config.templates[1].tree.variables.len());
-    assert_eq!("baz", config.templates[1].tree.variables[0].get_name());
-    assert_eq!("zax", config.templates[1].tree.variables[0].get_expr());
-    assert_eq!("zee", config.templates[1].tree.variables[1].get_name());
-    assert_eq!("${foo}", config.templates[1].tree.variables[1].get_expr());
-    assert_eq!("foo", config.templates[1].tree.variables[2].get_name());
-    assert_eq!("bar", config.templates[1].tree.variables[2].get_expr());
-
-    assert_eq!("template3", config.templates[2].get_name());
-    assert_eq!(vec!["template1", "template2"], config.templates[2].extend);
-    assert_eq!(5, config.templates[2].tree.variables.len());
-    assert_eq!("foo", config.templates[2].tree.variables[0].get_name());
-    assert_eq!("boo", config.templates[2].tree.variables[0].get_expr());
+    let template3 = config.templates.get("template3").unwrap();
+    assert_eq!("template3", template3.get_name());
+    assert_eq!(vec!["template1", "template2"], template3.extend);
+    assert_eq!(5, template3.tree.variables.len());
+    assert_eq!("foo", template3.tree.variables[0].get_name());
+    assert_eq!("boo", template3.tree.variables[0].get_expr());
 }
 
 /// Groups

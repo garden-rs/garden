@@ -65,6 +65,20 @@ trees:
     variables:
       tree_var: x2
 
+  # Trees can use templates defined via includes.
+  tree-echo:
+    templates: echo-template
+  tree-echo-extended:
+    templates: echo-template-extended
+
+templates:
+  echo-template-extended:
+    extend: echo-template
+    commands:
+      echo: echo extended
+    variables:
+      template-variable: extended
+
 groups:
   trees:
     - tree1

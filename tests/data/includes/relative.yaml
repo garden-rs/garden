@@ -1,2 +1,4 @@
 garden:
-  includes: variables.yaml
+  includes:
+    - variables.yaml
+    - templates.yaml
