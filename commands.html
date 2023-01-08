@@ -530,13 +530,14 @@ tab-completing for <code>garden</code>.</p>
 <p>Lastly, create the directory and generate the <code>~/.config/zsh/completion/_garden</code>
 zsh shell completion script.</p>
 <pre><code class="language-bash">mkdir -p ~/.config/zsh/completion
-garden completion zsh &gt;~/.config/zsh/completion/_garden
+garden completion zsh |
+grep -v \*::arguments &gt;~/.config/zsh/completion/_garden
 </code></pre>
 <p>Use <code>garden completion --commands zsh</code> instead of <code>garden completion zsh</code>
 to include completions for custom commands.</p>
-<p><em>NOTE</em>: You will should regenerate the <code>_garden</code> zsh completion script
-whenever <code>garden</code> is upgraded to ensure that all of the options and commands have
-up to date completions.</p>
+<p>The <code>grep</code> filter is needed to workaround <a href="https://github.com/clap-rs/clap/issues/3022">clap #3022</a>.</p>
+<p><em>NOTE</em>: You should regenerate the <code>_garden</code> zsh completion script whenever <code>garden</code>
+is upgraded to ensure that all of the options and commands have up to date completions.</p>
 <h3 id="bash"><a class="header" href="#bash">Bash</a></h3>
 <p>Add the following snippet to your <code>~/.bashrc</code> to enable <code>bash</code> tab completions.</p>
 <pre><code class="language-bash">if test -n &quot;$PS1&quot; &amp;&amp; type garden &gt;/dev/null 2&gt;&amp;1
@@ -550,10 +551,15 @@ to include completions for custom commands.</p>
 <p>Tab completion can only be made to include a static set of user-defined commands.
 Custom commands cannot be defined dynamically, which means that the same completions
 will be used irrespective of your current directory.</p>
-<p>Improvements to the shell completions can be made once traction has been made on this
-upstream issue:</p>
+<p>Improvements to the shell completions can be made once traction has been made on the
+following upstream issues:</p>
 <ul>
-<li><a href="https://github.com/epage/clapng/issues/92">clapng #92</a> - Dynamic completion support</li>
+<li>
+<p><a href="https://github.com/clap-rs/clap/issues/3022">clap #3022</a> - zsh broken with two multi length arguments</p>
+</li>
+<li>
+<p><a href="https://github.com/epage/clapng/issues/92">clapng #92</a> - Dynamic completion support</p>
+</li>
 </ul>
 
                     </main>
