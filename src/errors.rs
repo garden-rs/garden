@@ -75,7 +75,7 @@ pub enum GardenError {
     #[error("unable to find worktree {worktree:?} for {tree:?}")]
     WorktreeNotFound { worktree: String, tree: String },
 
-    #[error("error creating worktree parent '{worktree:?}' for '{tree:?}'")]
+    #[error("error creating worktree parent {worktree:?} for {tree:?}")]
     WorktreeParentCreationError { worktree: String, tree: String },
 
     #[error("unable to plant {tree:?}: worktree parent {parent:?} has not been planted")]
