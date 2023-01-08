@@ -770,6 +770,11 @@ impl Configuration {
             name
         )))
     }
+
+    /// Find a tree by name and return a reference if it exists.
+    pub fn get_tree(&self, name: &str) -> Option<&Tree> {
+        self.trees.iter().find(|&tree| tree.get_name() == name)
+    }
 }
 
 #[derive(Clone, Debug, Default)]

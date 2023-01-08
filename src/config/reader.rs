@@ -63,14 +63,12 @@ fn parse_recursive(
         debug!("yaml: garden.shell = {}", config.shell);
     }
 
-    // built-in variables
-    if config_verbose > 1 {
-        debug!("yaml: variables");
-    }
-
     // GARDEN_ROOT and GARDEN_CONFIG_DIR are relative to the root configuration.
     // Referencing these variables from garden files included using garden.includes
     // resolves to the root config's location, not the included location.
+    if config_verbose > 1 {
+        debug!("yaml: built-in variables");
+    }
     if is_root_config {
         // Provide GARDEN_ROOT.
         config.variables.push(model::NamedVariable::new(
@@ -596,14 +594,27 @@ fn get_tree(
     trees: &YamlHash,
     variables: bool,
 ) -> model::Tree {
+    // The tree that will be built and returned.
     let mut tree = model::Tree::default();
+    // Holds a base tree specified using "extend: <tree>".
+    let mut base_tree_opt: Option<model::Tree> = None;
 
     // Allow extending an existing tree by specifying "extend".
     let mut extend = String::new();
     if get_str(&value["extend"], &mut extend) {
-        let tree_name = Yaml::String(extend);
+        let tree_name = Yaml::String(extend.clone());
         if let Some(tree_values) = trees.get(&tree_name) {
-            tree = get_tree(config, &tree_name, tree_values, trees, false);
+            let base_tree = get_tree(config, &tree_name, tree_values, trees, false);
+            tree.clone_from_tree(&base_tree, false);
+            base_tree_opt = Some(base_tree);
+        } else {
+            // Allow the referenced tree to be found from an earlier include.
+            if let Some(base) = config.get_tree(&extend) {
+                tree.clone_from_tree(base, false);
+                base_tree_opt = Some(base.clone());
+            }
+        }
+        if base_tree_opt.is_some() {
             tree.remotes.truncate(1); // Keep origin only
             tree.templates.truncate(0); // Parent templates have already been processed.
         }
@@ -695,8 +706,16 @@ fn get_tree(
 
     tree.update_flags();
 
-    // These follow first-found semantics; process templates in
-    // reverse order.
+    // Variables follow first-found semantics. This means that the variables vector
+    // needs to contain local variables provided by the tree *before* any variables
+    // provided by templates or "extend"-ed base trees.
+    //
+    // Process "extend" before templates since it has higher precedence.
+    if let Some(mut base_tree) = base_tree_opt {
+        tree.variables.append(&mut base_tree.variables);
+    }
+    // Process templates in reverse order so that variables get defined by the first template
+    // that defines them.
     for template_name in tree.templates.iter().rev() {
         if let Some(template) = config.templates.get(template_name) {
             tree.variables.append(&mut template.tree.variables.clone());

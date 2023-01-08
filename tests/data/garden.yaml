@@ -70,6 +70,8 @@ trees:
     templates: echo-template
   tree-echo-extended:
     templates: echo-template-extended
+  tree-echo-extended-tree:
+    extend: tree-echo-extended
 
 templates:
   echo-template-extended:

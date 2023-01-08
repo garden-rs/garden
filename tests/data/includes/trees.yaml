@@ -1,0 +1,14 @@
+---
+trees:
+  tree-echo-nested:
+    templates: echo-template
+    variables:
+      template-variable: nested
+      tree-variable: nested
+      tree-override: nested
+  tree-echo-extended-tree:
+    extend: tree-echo-nested
+    variables:
+      template-variable: extended-tree
+      tree-override: extended-tree
+...

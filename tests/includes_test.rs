@@ -19,8 +19,8 @@ fn read_includes() -> Result<()> {
     assert!(config.trees.len() >= 2);
     // trees[0] is included from trees.yaml.
     assert_eq!(config.trees[0].get_name(), "tree-zero");
-    // trees[1] is from the main config.
-    assert_eq!(config.trees[1].get_name(), "example/tree");
+    // trees[3] is from the main config.
+    assert_eq!(config.trees[3].get_name(), "example/tree");
 
     // Nested include files are relative to the file that included them.
     // If the nested include file is not found relative to the parent include file
@@ -67,6 +67,31 @@ fn template_includes() -> Result<()> {
     );
     assert_eq!(tree.commands[1].get_name(), "echo");
     assert_eq!(tree.commands[1].get(0).get_expr(), "echo extended");
+
+    // Test a tree that uses "templates" with a template from a nested include file.
+    let context = garden::query::find_tree(&app, config_id, "tree-echo-nested", None)?;
+    let tree = &config.trees[context.tree];
+    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
+    let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
+    assert_eq!(constant, "constant");
+    assert_eq!(result, "nested");
+    assert_eq!(tree.commands.len(), 1);
+    assert_eq!(tree.commands[0].get_name(), "echo");
+    assert_eq!(
+        tree.commands[0].get(0).get_expr(),
+        "echo Hello, ${TREE_NAME}"
+    );
+
+    // Test a tree that uses "extend" on a tree defined via an include file.
+    let context = garden::query::find_tree(&app, config_id, "tree-echo-extended-tree", None)?;
+    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
+    assert_eq!(result, "extended-tree");
+
+    let result = garden::eval::tree_value(config, "${tree-variable}", context.tree, None);
+    assert_eq!(result, "nested");
+
+    let result = garden::eval::tree_value(config, "${tree-override}", context.tree, None);
+    assert_eq!(result, "extended-tree");
 
     Ok(())
 }
