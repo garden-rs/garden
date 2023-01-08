@@ -17,6 +17,9 @@ pub enum GardenError {
     #[error("invalid configuration: empty document: {path:?}")]
     EmptyConfiguration { path: std::path::PathBuf },
 
+    #[error("tree query found no trees: '{0}'")]
+    EmptyTreeQueryResult(String),
+
     /// ExitStatus is used to exit without printing an error message.
     #[error("exit status {0}")]
     ExitStatus(i32),
@@ -110,6 +113,7 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::ConfigurationError(_) => EX_CONFIG,
             GardenError::CreateConfigurationError { .. } => EX_CANTCREAT,
             GardenError::EmptyConfiguration { .. } => EX_CONFIG,
+            GardenError::EmptyTreeQueryResult(_) => EX_DATAERR,
             GardenError::ExitStatus(status) => status, // Explicit exit code
             GardenError::FileExists(_) => EX_CANTCREAT,
             GardenError::FileNotFound => EX_IOERR,

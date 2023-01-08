@@ -21,8 +21,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
     let config = app.get_root_config_mut();
     let contexts = query::resolve_trees(config, &options.query);
     if contexts.is_empty() {
-        // TODO errors::GardenError::TreeQueryMatchedNoTrees { query: shell.query.into() }
-        error!("tree query matched zero trees: '{}'", options.query);
+        return Err(errors::GardenError::EmptyTreeQueryResult(options.query.clone()).into());
     }
 
     let mut context = contexts[0].clone();
