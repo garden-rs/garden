@@ -30,8 +30,18 @@ pub fn main(options: &MainOptions, completion_options: &CompletionOptions) -> Re
             cmd = cmd.subcommand(
                 Command::new(custom_cmd.get_name())
                     .about(format!("Custom {} command", custom_cmd.get_name()))
-                    .arg(Arg::new("keep_going").short('k').long("keep-going"))
-                    .arg(Arg::new("no_errexit").short('n').long("no-errexit"))
+                    .arg(
+                        Arg::new("keep_going")
+                            .help("Continue to the next tree when errors occur")
+                            .short('k')
+                            .long("keep-going"),
+                    )
+                    .arg(
+                        Arg::new("no_errexit")
+                            .help("Do not pass -e to the shell")
+                            .short('n')
+                            .long("no-errexit"),
+                    )
                     .arg(Arg::new("queries").action(ArgAction::Append))
                     .arg(Arg::new("arguments").last(true).action(ArgAction::Append)),
             );
