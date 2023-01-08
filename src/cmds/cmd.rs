@@ -31,6 +31,7 @@ pub struct CmdOptions {
     /// Tree query for the gardens, groups or trees to execute commands within
     query: String,
     /// Custom commands to run over the resolved trees
+    #[arg(required = true)]
     commands: Vec<String>,
     /// Arguments to forward to custom commands
     #[arg(last = true)]
