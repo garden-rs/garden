@@ -628,7 +628,7 @@ impl Configuration {
     /// Returns the first file found. The include file's directory is checked first.
     pub fn config_pathbuf_from_include(
         &self,
-        include_path: &std::path::PathBuf,
+        include_path: &std::path::Path,
         path: &str,
     ) -> Option<std::path::PathBuf> {
         let mut path_buf = std::path::PathBuf::from(path);
@@ -676,7 +676,7 @@ impl Configuration {
     /// Evaluate and resolve a pathbuf relative to the config directory for "includes".
     pub fn eval_config_pathbuf_from_include(
         &self,
-        include_path: Option<&std::path::PathBuf>,
+        include_path: Option<&std::path::Path>,
         path: &str,
     ) -> Option<std::path::PathBuf> {
         let value = eval::value(self, path);

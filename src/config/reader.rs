@@ -21,7 +21,7 @@ fn parse_recursive(
     string: &str,
     config_verbose: u8,
     config: &mut model::Configuration,
-    current_include: Option<&std::path::PathBuf>,
+    current_include: Option<&std::path::Path>,
     is_root_config: bool,
 ) -> Result<(), errors::GardenError> {
     let docs =
