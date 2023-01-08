@@ -947,8 +947,14 @@ into the current garden file.</p>
 variables:
   include_dir: ${GARDEN_ROOT}
 </code></pre>
-<p>Include files are treated like &quot;optional&quot; includes and are silently ignored when
-missing.</p>
+<p>Absolute paths in the <code>garden.includes</code> list are included as-is.
+Relative paths in the <code>garden.includes</code> list are resolved.</p>
+<p>Relative paths are first resolved relative to the file in which they are defined.
+This allows nested include files to use relative paths for their nested includes.</p>
+<p>If an include file is not found relative to the current garden file then a path relative
+to the root configuration directory will be checked for the existence of the file.</p>
+<p>Includes files are treated like &quot;optional&quot; includes -- include files that cannot be
+found are silenty ignored.</p>
 <p>Enable the <code>garden -d config ...</code> debug flag to display warnings about missing include
 files.</p>
 <h2 id="variables"><a class="header" href="#variables">Variables</a></h2>
@@ -1034,12 +1040,34 @@ over trees.</p>
 <p>Gardens can also include environment, gitconfig, and custom group-level
 commands in addition to the commands provided by each tree.</p>
 <h2 id="templates"><a class="header" href="#templates">Templates</a></h2>
-<p>Templates allow sharing of variables, gitconfig, and environments between
-trees. Adding an entry to the &quot;templates&quot; configuration block and they can
-then be referenced into trees using <code>templates: &lt;template-name&gt;</code>.</p>
+<p>Templates allow sharing of command, variable, gitconfig, and environment
+definitions across trees. Adding an entry to the <code>templates</code> configuration block
+makes a template available when defining trees.</p>
+<p>Specify <code>templates: &lt;template-name&gt;</code> to inherit the the specified template's
+settings when defining trees. The <code>templates</code> field also accepts a list of
+template names.</p>
 <p>Trees can also reuse another tree definition by specifying the &quot;extend&quot;
 keyword with the name of another tree.  Only the first remote is used when
 extending a tree.</p>
+<pre><code class="language-yaml">templates:
+  hello:
+    variables:
+      message: Hello ${TREE_NAME}.
+    commands:
+      echo: echo ${message}
+
+trees:
+  hello-tree:
+    templates: hello
+
+  hello-tree-extended:
+    extend: hello-tree
+    variables:
+      message: The time is now: $(date)
+</code></pre>
+<p>When a tree specifies multiple templates then all of the tempaltes are merged into
+the tree's definitions. If variables are multiply-defined across multiple templates
+then the variable's value from the last specified template will be used.</p>
 <h2 id="string-to-list-promotion"><a class="header" href="#string-to-list-promotion">String to List Promotion</a></h2>
 <p>Fields that expect Lists can also be specified using a String value.
 Strings will be promoted to a List containing a single String.
