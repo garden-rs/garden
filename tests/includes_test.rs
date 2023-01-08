@@ -22,5 +22,11 @@ fn read_includes() -> Result<()> {
     // trees[1] is from the main config.
     assert_eq!(config.trees[1].get_name(), "example/tree");
 
+    // Nested include files are relative to the file that included them.
+    // If the nested include file is not found relative to the parent include file
+    // then a file relative to the config directory can be used.
+    let actual = garden::eval::value(config, "${var_included}");
+    assert_eq!(actual, "relative to config");
+
     Ok(())
 }

@@ -14,13 +14,14 @@ pub fn parse(
     config_verbose: u8,
     config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-    parse_recursive(string, config_verbose, config, true)
+    parse_recursive(string, config_verbose, config, None, true)
 }
 
 fn parse_recursive(
     string: &str,
     config_verbose: u8,
     config: &mut model::Configuration,
+    current_include: Option<&std::path::PathBuf>,
     is_root_config: bool,
 ) -> Result<(), errors::GardenError> {
     let docs =
@@ -101,7 +102,9 @@ fn parse_recursive(
     let mut config_includes = Vec::new();
     if get_vec_variables(&doc["garden"]["includes"], &mut config_includes) {
         for garden_include in &config_includes {
-            let pathbuf = match config.eval_config_pathbuf(garden_include.get_expr()) {
+            let pathbuf = match config
+                .eval_config_pathbuf_from_include(current_include, garden_include.get_expr())
+            {
                 Some(pathbuf) => pathbuf,
                 None => continue,
             };
@@ -115,8 +118,9 @@ fn parse_recursive(
                 continue;
             }
             if pathbuf.exists() {
-                if let Ok(content) = std::fs::read_to_string(pathbuf) {
-                    parse_recursive(&content, config_verbose, config, false).unwrap_or(());
+                if let Ok(content) = std::fs::read_to_string(&pathbuf) {
+                    parse_recursive(&content, config_verbose, config, Some(&pathbuf), false)
+                        .unwrap_or(());
                 }
             }
         }

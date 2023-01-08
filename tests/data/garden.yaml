@@ -3,10 +3,12 @@ garden:
   includes:
     # Paths are implicitly relative to ${GARDEN_CONFIG_DIR}.
     - variables.yaml
-    # # Paths can use ${variables} defined in the current config file.
+    # Paths can use ${variables} defined in the current config file.
     - trees.yaml
-    # # Includes are recursive.
+    # Includes are recursive.
     - includes.yaml
+    # Includes files are found relative to the include file.
+    - includes/relative.yaml
 
 variables:
   current_config: main

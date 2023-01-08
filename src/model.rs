@@ -607,7 +607,7 @@ impl Configuration {
         self.tree_path(&value)
     }
 
-    /// Resolve a pathbuf relative to the config dir.
+    /// Resolve a pathbuf relative to the config directory.
     pub fn config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
         let mut path_buf = std::path::PathBuf::from(path);
         if path_buf.is_absolute() {
@@ -624,7 +624,35 @@ impl Configuration {
         }
     }
 
-    /// Resolve a path string relative to the config dir.
+    /// Resolve a pathbuf relative to specified include file or the config directory.
+    /// Returns the first file found. The include file's directory is checked first.
+    pub fn config_pathbuf_from_include(
+        &self,
+        include_path: &std::path::PathBuf,
+        path: &str,
+    ) -> Option<std::path::PathBuf> {
+        let mut path_buf = std::path::PathBuf::from(path);
+        if path_buf.is_absolute() {
+            // Absolute path, nothing to do
+            return Some(path_buf);
+        }
+
+        // First check if the path exists relative to the specified parent directory.
+        if let Some(dirname) = include_path.parent() {
+            // Make path relative to the include file.
+            path_buf = dirname.to_path_buf();
+            path_buf.push(path);
+
+            if path_buf.exists() {
+                return Some(path_buf);
+            }
+        }
+
+        // Make path relative to the configuration's dirname
+        self.config_pathbuf(path)
+    }
+
+    /// Resolve a path string relative to the config directory.
     pub fn config_path(&self, path: &str) -> String {
         if let Some(path_buf) = self.config_pathbuf(path) {
             path_buf.to_string_lossy().to_string()
@@ -633,16 +661,31 @@ impl Configuration {
         }
     }
 
-    /// Evaluate and resolve a path string and relative to the config dir.
+    /// Evaluate and resolve a path string and relative to the config directory.
     pub fn eval_config_path(&self, path: &str) -> String {
         let value = eval::value(self, path);
         self.config_path(&value)
     }
 
-    /// Evaluate and resolve a pathbuf relative to the config dir.
+    /// Evaluate and resolve a pathbuf relative to the config directory.
     pub fn eval_config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
         let value = eval::value(self, path);
         self.config_pathbuf(&value)
+    }
+
+    /// Evaluate and resolve a pathbuf relative to the config directory for "includes".
+    pub fn eval_config_pathbuf_from_include(
+        &self,
+        include_path: Option<&std::path::PathBuf>,
+        path: &str,
+    ) -> Option<std::path::PathBuf> {
+        let value = eval::value(self, path);
+
+        if let Some(include_path) = include_path {
+            self.config_pathbuf_from_include(include_path, &value)
+        } else {
+            self.config_pathbuf(&value)
+        }
     }
 
     /// Reset resolved variables

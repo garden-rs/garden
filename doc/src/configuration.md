@@ -77,8 +77,17 @@ variables:
   include_dir: ${GARDEN_ROOT}
 ```
 
-Include files are treated like "optional" includes and are silently ignored when
-missing.
+Absolute paths in the `garden.includes` list are included as-is.
+Relative paths in the `garden.includes` list are resolved.
+
+Relative paths are first resolved relative to the file in which they are defined.
+This allows nested include files to use relative paths for their nested includes.
+
+If an include file is not found relative to the current garden file then a path relative
+to the root configuration directory will be checked for the existence of the file.
+
+Includes files are treated like "optional" includes -- include files that cannot be
+found are silenty ignored.
 
 Enable the `garden -d config ...` debug flag to display warnings about missing include
 files.
