@@ -81,6 +81,16 @@ fn exec_expression() {
     assert_eq!(value, "cmd");
 }
 
+/// Ensure that shell $variables can be used.
+#[test]
+fn shell_variable_syntax() {
+    let config = common::garden_config();
+
+    // Simple exec expression
+    let value = garden::eval::value(&config, "$ value=$(echo test); echo $value");
+    assert_eq!(value, "test");
+}
+
 #[test]
 fn multi_variable_with_tree() {
     let config = common::garden_config();

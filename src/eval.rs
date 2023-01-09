@@ -179,14 +179,22 @@ fn home_dir() -> Option<std::path::PathBuf> {
     dirs::home_dir()
 }
 
-/// Resolve a variable in a garden/tree/global scope
+/// Resolve an expression in a garden/tree/global scope
 pub fn tree_value(
     config: &model::Configuration,
     expr: &str,
     tree_idx: model::TreeIndex,
     garden_idx: Option<model::GardenIndex>,
 ) -> String {
-    let expanded = shellexpand::full_with_context_no_errors(expr, home_dir, |x| {
+    let is_exec = syntax::is_exec(expr);
+    let escaped_value;
+    let escaped_expr = if is_exec {
+        escaped_value = syntax::escape_shell_variables(expr);
+        escaped_value.as_str()
+    } else {
+        expr
+    };
+    let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
         expand_tree_vars(config, tree_idx, garden_idx, x)
     })
     .to_string();
@@ -196,34 +204,75 @@ pub fn tree_value(
     // exec expression will implicitly depend on the entire environment,
     // and potentially many variables (including itself).  Exec expressions
     // always use the default environment.
-    exec_expression(&expanded)
+    if is_exec {
+        exec_expression(&expanded)
+    } else {
+        expanded
+    }
+}
+
+/// Resolve an expression in a garden/tree/global scope for execution by a shell.
+/// This is used to generate the commands used internally by garden.
+pub fn tree_value_for_shell(
+    config: &model::Configuration,
+    expr: &str,
+    tree_idx: model::TreeIndex,
+    garden_idx: Option<model::GardenIndex>,
+) -> String {
+    let is_exec = syntax::is_exec(expr);
+    let expanded = shellexpand::full_with_context_no_errors(
+        &syntax::escape_shell_variables(expr),
+        home_dir,
+        |x| expand_tree_vars(config, tree_idx, garden_idx, x),
+    )
+    .to_string();
+
+    // TODO exec_expression_with_path() to use the tree path.
+    // NOTE: an environment must not be calculated here otherwise any
+    // exec expression will implicitly depend on the entire environment,
+    // and potentially many variables (including itself).  Exec expressions
+    // always use the default environment.
+    if is_exec {
+        exec_expression(&expanded)
+    } else {
+        expanded
+    }
 }
 
 /// Resolve a variable in configuration/global scope
 pub fn value(config: &model::Configuration, expr: &str) -> String {
-    let expanded =
-        shellexpand::full_with_context_no_errors(expr, home_dir, |x| expand_vars(config, x))
-            .to_string();
+    let is_exec = syntax::is_exec(expr);
+    let escaped_value;
+    let escaped_expr = if is_exec {
+        escaped_value = syntax::escape_shell_variables(expr);
+        escaped_value.as_str()
+    } else {
+        expr
+    };
+    let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
+        expand_vars(config, x)
+    })
+    .to_string();
 
-    exec_expression(&expanded)
+    if is_exec {
+        exec_expression(&expanded)
+    } else {
+        expanded
+    }
 }
 
 /// Evaluate `$ <command>` command strings, AKA "exec expressions".
 /// The result of the expression is the stdout output from the command.
 pub fn exec_expression(string: &str) -> String {
-    if syntax::is_exec(string) {
-        let cmd = syntax::trim_exec(string);
-        let capture = subprocess::Exec::shell(cmd)
-            .stdout(subprocess::Redirection::Pipe)
-            .capture();
-        if let Ok(x) = capture {
-            return cmd::trim_stdout(&x);
-        }
-        // An error occurred running the command -- empty output by design
-        return String::new()
+    let cmd = syntax::trim_exec(string);
+    let capture = subprocess::Exec::shell(cmd)
+        .stdout(subprocess::Redirection::Pipe)
+        .capture();
+    if let Ok(x) = capture {
+        return cmd::trim_stdout(&x);
     }
-
-    string.to_string()
+    // An error occurred running the command -- empty output by design
+    String::new()
 }
 
 /// Evaluate a variable in the given context
@@ -241,6 +290,29 @@ pub fn multi_variable(
         }
 
         let value = tree_value(config, var.get_expr(), context.tree, context.garden);
+        result.push(value.clone());
+
+        var.set_value(value);
+    }
+
+    result
+}
+
+/// Evaluate a variable in the given context for execution in a shell
+pub fn multi_variable_for_shell(
+    config: &model::Configuration,
+    multi_var: &mut model::MultiVariable,
+    context: &model::TreeContext,
+) -> Vec<String> {
+    let mut result = Vec::new();
+
+    for var in multi_var.iter() {
+        if let Some(value) = var.get_value() {
+            result.push(value.to_string());
+            continue;
+        }
+
+        let value = tree_value_for_shell(config, var.get_expr(), context.tree, context.garden);
         result.push(value.clone());
 
         var.set_value(value);
@@ -425,7 +497,7 @@ pub fn command(
     }
 
     for var in vars.iter_mut() {
-        result.push(multi_variable(config, var, context));
+        result.push(multi_variable_for_shell(config, var, context));
     }
 
     result

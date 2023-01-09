@@ -109,3 +109,34 @@ pub fn graft_basename(string: &str) -> Option<String> {
 
     Some(result)
 }
+
+/// Escape $variable into $$variable for evaluation by shellexpand.
+pub fn escape_shell_variables(string: &str) -> String {
+    let mut result = String::new();
+
+    // Did we just see '$' ? If so, we might need to escape it.
+    let mut potential_variable = false;
+    for c in string.chars() {
+        if potential_variable {
+            if c.is_alphanumeric() || c == '_' {
+                result.push('$'); // Escape $variable -> $$variable.
+                result.push(c);
+            } else if c == '$' {
+                result.push('$'); // Escape $$ -> $$$$
+                result.push('$');
+                result.push('$');
+            } else {
+                result.push(c);
+            }
+            potential_variable = false;
+        } else {
+            // Push the value into the stream.
+            result.push(c);
+
+            // If the current value is '$' then the next loop may need to escape it.
+            potential_variable = c == '$';
+        }
+    }
+
+    result
+}

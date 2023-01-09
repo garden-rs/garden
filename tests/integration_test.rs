@@ -883,6 +883,26 @@ fn cmd_keep_going_and_no_errexit() {
     assert_eq!(output, "ok\nok\nok\nok");
 }
 
+/// Test the use of $shell variables in commands.
+/// $shell variables are not expanded by garden.
+/// ${garden} variables are expanded.
+#[test]
+fn cmd_shell_variables() {
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        ".",
+        "echo-variable",
+        "--",
+        "test",
+        "value",
+    ]);
+    // Repeated command names were used to operate on the tree twice.
+    assert_eq!(output, "garden test shell value expr");
+}
+
 /// "garden prune" prunes specific depths
 #[test]
 #[named]
