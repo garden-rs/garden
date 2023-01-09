@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, ValueHint};
 
 use super::super::cmd;
 use super::super::errors;
@@ -11,9 +11,10 @@ use super::super::query;
 #[command(author, about, long_about)]
 pub struct ExecOptions {
     /// Tree query for the gardens, groups or trees to run the command
+    #[arg(value_hint=ValueHint::Other)]
     query: String,
     /// Command to run in the resolved environments
-    #[arg(allow_hyphen_values = true, required = true)]
+    #[arg(allow_hyphen_values = true, trailing_var_arg = true, required = true, value_hint=ValueHint::CommandWithArguments)]
     command: Vec<String>,
 }
 

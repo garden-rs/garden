@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{value_parser, Arg, ArgAction, Command, CommandFactory, Parser};
+use clap::{value_parser, Arg, Command, CommandFactory, Parser};
 use clap_complete;
 use clap_complete::Shell;
 use std::io::Write;
@@ -42,8 +42,15 @@ pub fn main(options: &MainOptions, completion_options: &CompletionOptions) -> Re
                             .short('n')
                             .long("no-errexit"),
                     )
-                    .arg(Arg::new("queries").action(ArgAction::Append))
-                    .arg(Arg::new("arguments").last(true).action(ArgAction::Append)),
+                    .arg(
+                        Arg::new("queries")
+                            .help("Tree queries to find trees where commands will be run")
+                    )
+                    .arg(
+                        Arg::new("arguments")
+                            .help("Arguments to forward to custom commands")
+                            .last(true),
+                    ),
             );
         }
     }
