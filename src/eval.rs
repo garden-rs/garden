@@ -1,4 +1,3 @@
-use std::borrow::Cow;
 use std::collections::HashMap;
 
 use super::cmd;
@@ -12,10 +11,10 @@ fn expand_tree_vars(
     tree_idx: model::TreeIndex,
     garden_idx: Option<model::GardenIndex>,
     name: &str,
-) -> Result<Option<String>, String> {
+) -> Option<String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if syntax::is_digit(name) {
-        return Ok(Some(format!("${}", name)));
+        return Some(format!("${}", name));
     }
 
     // Special-case evaluation of ${graft::values}.
@@ -24,16 +23,21 @@ fn expand_tree_vars(
         // details by looking up the tree in the configuration.
         let (ok, graft_name, _remainder) = syntax::split_graft(name);
         if !ok {
-            return Err(format!("Invalid graft: {}", name));
+            // Invalid graft returns an empty value.
+            return Some(String::new());
         }
 
-        let graft = config
-            .get_graft(graft_name)
-            .map_err(|_err| format!("Invalid graft: {}", graft_name))?;
+        let graft = match config.get_graft(graft_name) {
+            Ok(graft) => graft,
+            Err(_) => return Some(String::new()),
+        };
 
         // TODO recurse on the remainder and evaluate it using the ConfigId
         // for the graft.
-        let _graft_id = graft.get_id().ok_or(format!("Invalid graft: {}", name))?;
+        let _graft_id = match graft.get_id().ok_or(format!("Invalid graft: {}", name)) {
+            Ok(graft_id) => graft_id,
+            Err(_) => return Some(String::new()),
+        };
     }
 
     let mut var_idx: usize = 0;
@@ -45,7 +49,7 @@ fn expand_tree_vars(
         for (idx, var) in config.gardens[garden].variables.iter().enumerate() {
             if var.get_name() == name {
                 if let Some(var_value) = var.get_value() {
-                    return Ok(Some(var_value.to_string()));
+                    return Some(var_value.to_string());
                 }
                 var_idx = idx;
                 found = true;
@@ -59,7 +63,7 @@ fn expand_tree_vars(
                 .to_string();
             let result = tree_value(config, &expr, tree_idx, garden_idx);
             config.gardens[garden].variables[var_idx].set_value(result.clone());
-            return Ok(Some(result));
+            return Some(result);
         }
     }
 
@@ -70,7 +74,7 @@ fn expand_tree_vars(
     for (idx, var) in config.trees[tree_idx].variables.iter().enumerate() {
         if var.get_name() == name {
             if let Some(var_value) = var.get_value() {
-                return Ok(Some(var_value.to_string()));
+                return Some(var_value.to_string());
             }
             found = true;
             var_idx = idx;
@@ -84,7 +88,7 @@ fn expand_tree_vars(
             .to_string();
         let result = tree_value(config, &expr, tree_idx, garden_idx);
         config.trees[tree_idx].variables[var_idx].set_value(result.to_string());
-        return Ok(Some(result));
+        return Some(result);
     }
 
     // Nothing was found.  Check for the variable in global/config scope.
@@ -95,7 +99,7 @@ fn expand_tree_vars(
         if var.get_name() == name {
             // Return the value immediately if it's already been evaluated.
             if let Some(var_value) = var.get_value() {
-                return Ok(Some(var_value.to_string()));
+                return Some(var_value.to_string());
             }
             found = true;
             var_idx = idx;
@@ -107,16 +111,16 @@ fn expand_tree_vars(
         let expr = config.variables[var_idx].get_expr().to_string();
         let result = tree_value(config, &expr, tree_idx, garden_idx);
         config.variables[var_idx].set_value(result.clone());
-        return Ok(Some(result));
+        return Some(result);
     }
 
     // If nothing was found then check for environment variables.
     if let Ok(env_value) = std::env::var(name) {
-        return Ok(Some(env_value));
+        return Some(env_value);
     }
 
     // Nothing was found -> empty value
-    Ok(Some("".to_string()))
+    Some(String::new())
 }
 
 /// Expand variables using a tree context.
@@ -129,10 +133,10 @@ fn _expand_tree_context_vars(
 }
 
 /// Expand variables at global scope only
-fn expand_vars(config: &model::Configuration, name: &str) -> Result<Option<String>, String> {
+fn expand_vars(config: &model::Configuration, name: &str) -> Option<String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if syntax::is_digit(name) {
-        return Ok(Some(format!("${}", name)));
+        return Some(format!("${}", name));
     }
 
     let mut var_idx: usize = 0;
@@ -141,7 +145,7 @@ fn expand_vars(config: &model::Configuration, name: &str) -> Result<Option<Strin
     for (idx, var) in config.variables.iter().enumerate() {
         if var.get_name() == name {
             if let Some(var_value) = var.get_value() {
-                return Ok(Some(var_value.to_string()));
+                return Some(var_value.to_string());
             }
             var_idx = idx;
             found = true;
@@ -154,16 +158,16 @@ fn expand_vars(config: &model::Configuration, name: &str) -> Result<Option<Strin
         let result = value(config, &expr);
         config.variables[var_idx].set_value(result.clone());
 
-        return Ok(Some(result));
+        return Some(result);
     }
 
     // If nothing was found then check for environment variables.
     if let Ok(env_value) = std::env::var(name) {
-        return Ok(Some(env_value));
+        return Some(env_value);
     }
 
     // Nothing was found -> empty value
-    Ok(Some("".into()))
+    Some(String::new())
 }
 
 /// Resolve ~ to the current user's home directory
@@ -182,10 +186,9 @@ pub fn tree_value(
     tree_idx: model::TreeIndex,
     garden_idx: Option<model::GardenIndex>,
 ) -> String {
-    let expanded = shellexpand::full_with_context(expr, home_dir, |x| {
+    let expanded = shellexpand::full_with_context_no_errors(expr, home_dir, |x| {
         expand_tree_vars(config, tree_idx, garden_idx, x)
     })
-    .unwrap_or_else(|_| Cow::from(expr))
     .to_string();
 
     // TODO exec_expression_with_path() to use the tree path.
@@ -198,9 +201,9 @@ pub fn tree_value(
 
 /// Resolve a variable in configuration/global scope
 pub fn value(config: &model::Configuration, expr: &str) -> String {
-    let expanded = shellexpand::full_with_context(expr, home_dir, |x| expand_vars(config, x))
-        .unwrap_or_else(|_| Cow::from(""))
-        .to_string();
+    let expanded =
+        shellexpand::full_with_context_no_errors(expr, home_dir, |x| expand_vars(config, x))
+            .to_string();
 
     exec_expression(&expanded)
 }
@@ -217,10 +220,10 @@ pub fn exec_expression(string: &str) -> String {
             return cmd::trim_stdout(&x);
         }
         // An error occurred running the command -- empty output by design
-        return "".into();
+        return String::new()
     }
 
-    string.into()
+    string.to_string()
 }
 
 /// Evaluate a variable in the given context

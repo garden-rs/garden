@@ -384,12 +384,16 @@ fn eval_graft_tree() -> Result<()> {
     );
     assert_eq!("main", actual);
 
+    // References to unknown grafts evaluate to an empty string.
+    let actual = garden::eval::tree_value(config, "${undefined::variable}", ctx.tree, ctx.garden);
+    assert_eq!("", actual);
+
     // Evaluate a grafted variable from the context of "example/tree" from
     // the main configuration.
     let actual = garden::eval::tree_value(config, "${graft::current_config}", ctx.tree, ctx.garden);
     // TODO: this should evaluate to "graft".
     //assert_eq!("graft", actual);
-    assert_eq!("${graft::current_config}", actual);
+    assert_eq!("", actual);
 
     Ok(())
 }
