@@ -901,6 +901,20 @@ fn cmd_shell_variables() {
     ]);
     // Repeated command names were used to operate on the tree twice.
     assert_eq!(output, "garden test shell value expr");
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        ".",
+        "echo-escaped",
+        "--",
+        "test",
+        "value",
+    ]);
+    // Repeated command names were used to operate on the tree twice.
+    assert_eq!(output, "test array value");
 }
 
 /// "garden prune" prunes specific depths

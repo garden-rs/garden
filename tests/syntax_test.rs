@@ -187,7 +187,7 @@ fn escape_shell_variables() {
     assert_eq!(value, "$ ");
 
     let value = syntax::escape_shell_variables("$$");
-    assert_eq!(value, "$$$$");
+    assert_eq!(value, "$$");
 
     let value = syntax::escape_shell_variables("$_");
     assert_eq!(value, "$$_");
@@ -202,17 +202,21 @@ fn escape_shell_variables() {
     assert_eq!(value, "$ echo");
 
     let value = syntax::escape_shell_variables("embedded $$ value");
-    assert_eq!(value, "embedded $$$$ value");
+    assert_eq!(value, "embedded $$ value");
 
     let value = syntax::escape_shell_variables("$variable");
     assert_eq!(value, "$$variable");
 
     let value = syntax::escape_shell_variables("$$variable");
-    assert_eq!(value, "$$$$variable");
+    assert_eq!(value, "$$variable");
 
     let value = syntax::escape_shell_variables("${braces}${ignored}");
     assert_eq!(value, "${braces}${ignored}");
 
     let value = syntax::escape_shell_variables("$a ${b} $c $");
     assert_eq!(value, "$$a ${b} $$c $");
+
+    // Escaped ${braced} value
+    let value = syntax::escape_shell_variables("echo $${value[@]:0:1}");
+    assert_eq!(value, "echo $${value[@]:0:1}");
 }

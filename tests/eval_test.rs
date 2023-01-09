@@ -89,6 +89,10 @@ fn shell_variable_syntax() {
     // Simple exec expression
     let value = garden::eval::value(&config, "$ value=$(echo test); echo $value");
     assert_eq!(value, "test");
+
+    // Escaped ${braced} value
+    let value = garden::eval::value(&config, "$ echo '$${value[@]:0:1}'");
+    assert_eq!(value, "${value[@]:0:1}");
 }
 
 #[test]

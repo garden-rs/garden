@@ -122,9 +122,7 @@ pub fn escape_shell_variables(string: &str) -> String {
                 result.push('$'); // Escape $variable -> $$variable.
                 result.push(c);
             } else if c == '$' {
-                result.push('$'); // Escape $$ -> $$$$
-                result.push('$');
-                result.push('$');
+                result.push('$'); // Escape $$ -> $
             } else {
                 result.push(c);
             }

@@ -381,6 +381,13 @@ using variables defined within shell command, such as `$shell_variable` above.
 If the `${shell_variable}` syntax were to be used in the `example-command` then an
 empty value would have been used instead of the output of `date +%s`.
 
+Sometimes it is necessary to actually use the `${...}` braced literal syntax
+in shell commands. The `$${...}` braced double-dollar syntax can be used to
+escape a braced value and disable evalution by `garden`.
+
+Double-`$` can generally be used to escape literal `$` values in commands, but
+escaping is handled automatically for regular `$shell` variables.
+
 ### Depth-first and Breadth-first Tree Traversal
 
 The following two invocations run commands in a different order:

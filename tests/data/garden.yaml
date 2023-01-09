@@ -51,6 +51,9 @@ trees:
         arg_value=$1
         shell_value=$(echo shell)
         echo ${garden_value} $arg_value $shell_value $2 ${exec_expr}
+      echo-escaped: |
+        values=(a array c)
+        echo $1 $${values[@]:1:1} $2
 
   example/shallow:
     path: example/tree/shallow
