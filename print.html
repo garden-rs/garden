@@ -646,7 +646,7 @@ user-defined Commands and Exec Expressions.</p>
 variables available during variable expansion.</p>
 <p>The distinction between the <code>${garden}</code> and <code>$shell</code> syntax is only relevant when
 using variables defined within shell command, such as <code>$shell_variable</code> above.</p>
-<p>If the <code>${shell_variable}</code> syntax were to be used in the <code>example-command</code> than an
+<p>If the <code>${shell_variable}</code> syntax were to be used in the <code>example-command</code> then an
 empty value would have been used instead of the output of <code>date +%s</code>.</p>
 <p>Sometimes it is necessary to actually use the <code>${...}</code> braced literal syntax
 in shell commands. The <code>$${...}</code> braced double-dollar syntax can be used to
@@ -1005,6 +1005,19 @@ following configuration can be used:</p>
 <pre><code class="language-yaml">garden:
   root: ~/src
 </code></pre>
+<h2 id="garden-shell-1"><a class="header" href="#garden-shell-1">Garden Shell</a></h2>
+<p>The shell used by <code>garden</code> when running Commands and evaluating Exec Expressions
+can be configured in the <code>garden.shell</code> field.</p>
+<pre><code class="language-yaml">garden:
+  shell: zsh
+</code></pre>
+<p>The <code>$PATH</code> environment variable is probed for available shells in the following order
+when <code>garden.shell</code> is omitted. The first one found is the one that's used.</p>
+<ul>
+<li><code>zsh</code></li>
+<li><code>bash</code></li>
+<li><code>sh</code></li>
+</ul>
 <h2 id="includes"><a class="header" href="#includes">Includes</a></h2>
 <p>Garden files can be split apart into several files for modularity and reuse.
 You can use the <code>garden.includes</code> list to specify other garden files to include
@@ -1506,6 +1519,8 @@ files are added to the current configuration.
 <p><a href="https://davvid.github.io/garden/commands.html#shell-syntax">Garden commands can now reference $shell variables</a>
 using the standard (brace-less) shell <code>$variable</code> syntax. The braced <code>${garden}</code>
 variable syntax remains reserved for resolving Garden Variables.
+Double-<code>$</code> braces (ex: <code>$${...}</code>) can be used to escape a <code>$${variable}</code> from
+evaluation so that a literal the <code>${variable}</code> value is used by the garden command.
 (<a href="https://github.com/davvid/garden/issues/11">#11</a>)
 (<a href="https://github.com/davvid/garden/pull/12">#12</a>)</p>
 </li>

@@ -193,6 +193,8 @@ files are added to the current configuration.
 <p><a href="https://davvid.github.io/garden/commands.html#shell-syntax">Garden commands can now reference $shell variables</a>
 using the standard (brace-less) shell <code>$variable</code> syntax. The braced <code>${garden}</code>
 variable syntax remains reserved for resolving Garden Variables.
+Double-<code>$</code> braces (ex: <code>$${...}</code>) can be used to escape a <code>$${variable}</code> from
+evaluation so that a literal the <code>${variable}</code> value is used by the garden command.
 (<a href="https://github.com/davvid/garden/issues/11">#11</a>)
 (<a href="https://github.com/davvid/garden/pull/12">#12</a>)</p>
 </li>
