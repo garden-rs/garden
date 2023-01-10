@@ -59,6 +59,24 @@ garden:
   root: ~/src
 ```
 
+## Garden Shell
+
+The shell used by `garden` when running Commands and evaluating Exec Expressions
+can be configured in the `garden.shell` field.
+
+```yaml
+garden:
+  shell: zsh
+```
+
+The `$PATH` environment variable is probed for available shells in the following order
+when `garden.shell` is omitted. The first one found is the one that's used.
+
+* `zsh`
+* `bash`
+* `sh`
+
+
 ## Includes
 
 Garden files can be split apart into several files for modularity and reuse.
