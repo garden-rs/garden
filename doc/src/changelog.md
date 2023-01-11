@@ -12,6 +12,14 @@
   files are added to the current configuration.
   ([#7](https://github.com/davvid/garden/pull/7))
 
+- [Garden commands can now reference $shell variables](https://davvid.github.io/garden/commands.html#shell-syntax)
+  using the standard (brace-less) shell `$variable` syntax. The braced `${garden}`
+  variable syntax remains reserved for resolving Garden Variables.
+  Double-`$` braces (ex: `$${...}`) can be used to escape a `$${variable}` from
+  evaluation so that a literal the `${variable}` value is used by the garden command.
+  ([#11](https://github.com/davvid/garden/issues/11))
+  ([#12](https://github.com/davvid/garden/pull/12))
+
 - A new `garden completion` subcommand was added for providing shell command-line
   completion using the [clap_complete](https://crates.io/crates/clap_complete) crate.
   ([#9](https://github.com/davvid/garden/pull/9))

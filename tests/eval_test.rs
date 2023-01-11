@@ -81,6 +81,20 @@ fn exec_expression() {
     assert_eq!(value, "cmd");
 }
 
+/// Ensure that shell $variables can be used.
+#[test]
+fn shell_variable_syntax() {
+    let config = common::garden_config();
+
+    // Simple exec expression
+    let value = garden::eval::value(&config, "$ value=$(echo test); echo $value");
+    assert_eq!(value, "test");
+
+    // Escaped ${braced} value
+    let value = garden::eval::value(&config, "$ echo '$${value[@]:0:1}'");
+    assert_eq!(value, "${value[@]:0:1}");
+}
+
 #[test]
 fn multi_variable_with_tree() {
     let config = common::garden_config();
@@ -384,12 +398,16 @@ fn eval_graft_tree() -> Result<()> {
     );
     assert_eq!("main", actual);
 
+    // References to unknown grafts evaluate to an empty string.
+    let actual = garden::eval::tree_value(config, "${undefined::variable}", ctx.tree, ctx.garden);
+    assert_eq!("", actual);
+
     // Evaluate a grafted variable from the context of "example/tree" from
     // the main configuration.
     let actual = garden::eval::tree_value(config, "${graft::current_config}", ctx.tree, ctx.garden);
     // TODO: this should evaluate to "graft".
     //assert_eq!("graft", actual);
-    assert_eq!("${graft::current_config}", actual);
+    assert_eq!("", actual);
 
     Ok(())
 }

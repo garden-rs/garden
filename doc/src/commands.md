@@ -254,10 +254,8 @@ garden cmd cola build test -- V=1
 Run one or more user-defined commands over the gardens, groups or trees
 that match the specified tree query.
 
-For example if you have a group called `treesitters` and two custom commands
-called `build` and `test`, then running `garden cmd treesitters build test`
-will run the custom `build` and `test` commands over all of the trees in
-`treesitters` group.
+The exapmle above runs the `build` and `test` commands in all of the trees
+that are part of the `cola` garden.
 
 ### Commands
 
@@ -265,8 +263,18 @@ will run the custom `build` and `test` commands over all of the trees in
 configured in the `commands` section for templates, trees, gardens,
 and the top-level scope.
 
-Custom commands can be defined at either the tree or garden level.
-Commands defined at the garden level extend commands defined on a tree.
+```bash
+# Example usage
+
+# Run the test" command in the cola and vx trees
+garden test cola vx
+
+# Use "--" to forward arguments to the custom commands
+garden test cola vx -- V=1
+```
+
+Custom commands can be defined at either the tree or garden scope.
+Commands defined at the garden scope extend commands defined on a tree.
 If both a tree and the garden containing that tree defines a command called
 `test` then `garden test` will first run the tree's `test` command followed
 by the garden's `test` command.
@@ -302,10 +310,83 @@ Additional arguments are available to command strings by using the traditional
 `"$@"` shell syntax.  When additional arguments are present `"$1"`, `"$2"`, and
 subsequent variables will be set according to each argument.
 
-```bash
-# Example usage
-garden test cola -- V=1
+```yaml
+# Commands can be defined in multiple ways.
+# Strings and lists of strings are both supported via "String to List Promotion".
+# The YAML reader accepts multi-line strings using the the "|" pipe syntax.
+
+commands:
+  one-liner: echo hello "$@"
+  multi-liner: |
+    if test "${debian}" = "yes"
+    then
+        apt install rust-all
+    else
+  multi-statement-and-multi-liner:
+    - echo a $1
+    - |
+      echo b $3
+      echo c $4
+
+variables:
+  name: value
+  debian: $ type apt-get >/dev/null && echo yes || echo no
+
+# Commands can also be defined at tree and garden scope
+
+trees:
+  our-tree:
+    commands:
+      tree-cmd: echo ${TREE_NAME}
+
+gardens:
+  all:
+    trees: *
+    commands:
+      print-pwd: pwd
 ```
+
+### Shell Syntax
+
+User-defined Commands and Exec Expressions are evaluated by the shell configured
+in the `garden.shell` configuration value.
+
+Garden and Shells share a key piece of common syntax: the interpolated braced
+`${variable}` syntax.
+
+Garden Variables that use the `${variable}` syntax are evaluated by
+`garden` first before the shell has evaluated them.
+
+This means that the shell syntax supported by Garden's Exec Expressions is
+a subset of the full syntax because shell-only variables such as `${OSTYPE}` cannot
+be accessed using the braced-variable syntax.
+
+```yaml
+commands:
+  example-command: |
+    shell_variable=$(date +%s)
+    echo hello $OSTYPE $shell_variable
+```
+
+The plain `$variable` syntax is reserved for use by the shell commands used in
+user-defined Commands and Exec Expressions.
+
+Environment Variables can be used in shell scriptlets through both the `$ENV` and
+`${ENV}` braced variable syntax. Garden makes `${PATH}` and all other environment
+variables available during variable expansion.
+
+The distinction between the `${garden}` and `$shell` syntax is only relevant when
+using variables defined within shell command, such as `$shell_variable` above.
+
+If the `${shell_variable}` syntax were to be used in the `example-command` then an
+empty value would have been used instead of the output of `date +%s`.
+
+Sometimes it is necessary to actually use the `${...}` braced literal syntax
+in shell commands. The `$${...}` braced double-dollar syntax can be used to
+escape a braced value and disable evalution by `garden`.
+
+Double-`$` can generally be used to escape literal `$` values in commands, but
+escaping is handled automatically for regular `$shell` variables.
 
 ### Depth-first and Breadth-first Tree Traversal
 

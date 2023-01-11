@@ -38,12 +38,22 @@ trees:
 
   current:
     path: .
+    variables:
+      exec_expr: $ value=$(echo expr); echo $value
+      garden_value: garden
     commands:
       echo-dir:
         - basename "$(pwd)"
       echo-args:
         - basename "$0"
         - echo arguments -- a b c -- "$@" -- x y z
+      echo-variable: |
+        arg_value=$1
+        shell_value=$(echo shell)
+        echo ${garden_value} $arg_value $shell_value $2 ${exec_expr}
+      echo-escaped: |
+        values=(a array c)
+        echo $1 $${values[@]:1:1} $2
 
   example/shallow:
     path: example/tree/shallow
