@@ -2,6 +2,8 @@
 
 ## v0.5.0
 
+*Released 2023-01-12*
+
 **Features**:
 
 - [Garden configuration files can now include other configuration files
@@ -43,6 +45,8 @@
 
 ## v0.4.1
 
+*Released 2022-12-26*
+
 **Features**:
 
 - The `garden cmd --no-errexit` option was extended to work with commands that are
@@ -50,6 +54,8 @@
   are now indistinguishable from commands specified using multi-line strings.
 
 ## v0.4.0
+
+*Released 2022-12-23*
 
 **Breaking Changes**:
 
@@ -77,12 +83,16 @@
 
 ## v0.3.0
 
+*Released 2022-08-20*
+
 **Features**:
 
 - `garden plant` learned to detect `git worktree` repositories.
   ([#1](https://github.com/davvid/garden/issues/1))
 
 ## v0.2.0
+
+*Released 2022-07-29*
 
 **Breaking Changes**:
 
@@ -96,6 +106,8 @@
 
 
 ## v0.1.0
+
+*Released 2022-06-13*
 
 **Features**:
 
