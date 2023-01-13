@@ -44,7 +44,7 @@ pub fn main(options: &MainOptions, completion_options: &CompletionOptions) -> Re
                     )
                     .arg(
                         Arg::new("queries")
-                            .help("Tree queries to find trees where commands will be run")
+                            .help("Tree queries to find trees where commands will be run"),
                     )
                     .arg(
                         Arg::new("arguments")
