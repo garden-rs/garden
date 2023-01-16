@@ -83,10 +83,10 @@ fn exec_expression() -> Result<()> {
     // Ensure that exec expressions are evaluated in the tree directory.
     let context = garden::query::tree_context(&config, "tmp", None)?;
     let value = garden::eval::tree_value(&config, "$ echo $PWD", context.tree, None);
-    assert_eq!(value, "/tmp");
+    assert!(value == "/tmp" || value == "/private/tmp");
 
     let value = garden::eval::tree_value(&config, "$ pwd", context.tree, None);
-    assert_eq!(value, "/tmp");
+    assert!(value == "/tmp" || value == "/private/tmp");
 
     Ok(())
 }
