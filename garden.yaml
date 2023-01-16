@@ -23,6 +23,7 @@ commands:
     garden doc
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
+  push: git push "$@"
   setup: $0 grow doc/book
   stage: git add -u "$@"
   stat: git status -s "$@"
