@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.5.1
+
+*Released 2023-01-15*
+
+**Fixes**
+
+- Exec expressions were previously run with the current directory set to the
+  directory from which garden was run. Exec expresssions are now run in the
+  tree's current directory.
+
 ## v0.5.0
 
 *Released 2023-01-12*
