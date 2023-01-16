@@ -213,17 +213,21 @@ impl Tree {
 
     /// Build a canonicalized pathbuf for the current tree.
     pub fn canonical_pathbuf(&self) -> Option<std::path::PathBuf> {
-        if !self.path_is_valid() {
-            return None;
-        }
-        if let Some(value) = self.path.get_value() {
-            let pathbuf = std::path::PathBuf::from(value);
+        if let Some(pathbuf) = self.pathbuf() {
             if let Ok(canon_path) = pathbuf.canonicalize() {
                 return Some(canon_path);
             }
         }
 
         None
+    }
+
+    /// Build a pathbuf for the current tree.
+    pub fn pathbuf(&self) -> Option<std::path::PathBuf> {
+        if !self.path_is_valid() {
+            return None;
+        }
+        self.path.get_value().map(std::path::PathBuf::from)
     }
 
     pub fn path_as_ref(&self) -> Result<&String, errors::GardenError> {
@@ -774,6 +778,14 @@ impl Configuration {
     /// Find a tree by name and return a reference if it exists.
     pub fn get_tree(&self, name: &str) -> Option<&Tree> {
         self.trees.iter().find(|&tree| tree.get_name() == name)
+    }
+
+    /// Return a pathbuf for the specified Tree index
+    pub fn get_tree_pathbuf(&self, tree_idx: TreeIndex) -> Option<std::path::PathBuf> {
+        self.trees
+            .get(tree_idx)
+            .map(|tree| tree.canonical_pathbuf())
+            .unwrap_or(None)
     }
 }
 

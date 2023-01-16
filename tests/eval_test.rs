@@ -64,7 +64,7 @@ fn garden_path() {
 }
 
 #[test]
-fn exec_expression() {
+fn exec_expression() -> Result<()> {
     let config = common::garden_config();
 
     // Simple exec expression
@@ -79,6 +79,16 @@ fn exec_expression() {
     // run through a shell to produce the final result.
     let value = garden::eval::value(&config, "${echo_cmd_exec}");
     assert_eq!(value, "cmd");
+
+    // Ensure that exec expressions are evaluated in the tree directory.
+    let context = garden::query::tree_context(&config, "tmp", None)?;
+    let value = garden::eval::tree_value(&config, "$ echo $PWD", context.tree, None);
+    assert_eq!(value, "/tmp");
+
+    let value = garden::eval::tree_value(&config, "$ pwd", context.tree, None);
+    assert_eq!(value, "/tmp");
+
+    Ok(())
 }
 
 /// Ensure that shell $variables can be used.

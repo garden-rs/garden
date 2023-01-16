@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use super::cmd;
 use super::model;
+use super::path;
 use super::query;
 use super::syntax;
 
@@ -205,7 +206,8 @@ pub fn tree_value(
     // and potentially many variables (including itself).  Exec expressions
     // always use the default environment.
     if is_exec {
-        exec_expression(&expanded)
+        let pathbuf = config.get_tree_pathbuf(tree_idx);
+        exec_expression(&expanded, pathbuf)
     } else {
         expanded
     }
@@ -227,13 +229,13 @@ pub fn tree_value_for_shell(
     )
     .to_string();
 
-    // TODO exec_expression_with_path() to use the tree path.
     // NOTE: an environment must not be calculated here otherwise any
     // exec expression will implicitly depend on the entire environment,
     // and potentially many variables (including itself).  Exec expressions
     // always use the default environment.
     if is_exec {
-        exec_expression(&expanded)
+        let pathbuf = config.get_tree_pathbuf(tree_idx);
+        exec_expression(&expanded, pathbuf)
     } else {
         expanded
     }
@@ -255,7 +257,7 @@ pub fn value(config: &model::Configuration, expr: &str) -> String {
     .to_string();
 
     if is_exec {
-        exec_expression(&expanded)
+        exec_expression(&expanded, None)
     } else {
         expanded
     }
@@ -263,11 +265,17 @@ pub fn value(config: &model::Configuration, expr: &str) -> String {
 
 /// Evaluate `$ <command>` command strings, AKA "exec expressions".
 /// The result of the expression is the stdout output from the command.
-pub fn exec_expression(string: &str) -> String {
+pub fn exec_expression(string: &str, pathbuf: Option<std::path::PathBuf>) -> String {
     let cmd = syntax::trim_exec(string);
-    let capture = subprocess::Exec::shell(cmd)
-        .stdout(subprocess::Redirection::Pipe)
-        .capture();
+    let mut proc = subprocess::Exec::shell(cmd).stdout(subprocess::Redirection::Pipe);
+    // Run the exec expression inside the tree's directory when specified.
+    if let Some(pathbuf) = pathbuf {
+        let current_dir = path::current_dir_string();
+        proc = proc.cwd(pathbuf.clone());
+        // Set $PWD to ensure that commands that are sensitive to it see the right value.
+        proc = proc.env("PWD", pathbuf.to_str().unwrap_or(&current_dir));
+    }
+    let capture = proc.capture();
     if let Ok(x) = capture {
         return cmd::trim_stdout(&x);
     }
