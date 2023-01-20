@@ -2,6 +2,8 @@
 
 ## v0.6.0
 
+*Released 2023-01-20*
+
 **Features**:
 
 - Both names and values in `gitconfig` can now use `${var}` expressions.
