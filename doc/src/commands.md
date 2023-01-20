@@ -639,4 +639,6 @@ following upstream issues:
 
 * [clap #3022](https://github.com/clap-rs/clap/issues/3022) - zsh broken with two multi length arguments
 
+* [clap #4612](https://github.com/clap-rs/clap/pull/4612) - candidate fix for the above issue
+
 * [clapng #92](https://github.com/epage/clapng/issues/92) - Dynamic completion support
