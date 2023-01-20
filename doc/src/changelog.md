@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.6.0
+
+**Features**:
+
+- Both names and values in `gitconfig` can now use `${var}` expressions.
+  Previously only values were evaluated. Config names are evaluated now as well.
+
+**Fixes**
+
+- The `zsh` workaround for `garden completion zsh` is no longer needed.
+  The [documentation for generating zsh completions](https://davvid.github.io/garden/commands.html#zsh)
+  has been updated.
+  ([#10](https://github.com/davvid/garden/issues/10))
+
 ## v0.5.1
 
 *Released 2023-01-15*
