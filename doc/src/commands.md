@@ -605,14 +605,11 @@ zsh shell completion script.
 
 ```bash
 mkdir -p ~/.config/zsh/completion
-garden completion zsh |
-grep -v \*::arguments >~/.config/zsh/completion/_garden
+garden completion zsh >~/.config/zsh/completion/_garden
 ```
 
 Use `garden completion --commands zsh` instead of `garden completion zsh`
 to include completions for custom commands.
-
-The `grep` filter is needed to workaround [clap #3022](https://github.com/clap-rs/clap/issues/3022).
 
 *NOTE*: You should regenerate the `_garden` zsh completion script whenever `garden`
 is upgraded to ensure that all of the options and commands have up to date completions.

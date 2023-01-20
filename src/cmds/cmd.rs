@@ -31,7 +31,9 @@ pub struct CmdOptions {
     /// Tree query for the gardens, groups or trees to execute commands within
     query: String,
     /// Custom commands to run over the resolved trees
-    #[arg(required = true)]
+    // NOTE: value_terminator may not be needed in future versions of clap_complete.
+    // https://github.com/clap-rs/clap/pull/4612
+    #[arg(required = true, value_terminator = "--")]
     commands: Vec<String>,
     /// Arguments to forward to custom commands
     #[arg(last = true)]
@@ -55,6 +57,9 @@ pub struct CustomOptions {
     #[arg(long, short)]
     no_errexit: bool,
     /// Tree queries for the Gardens/Groups/Trees to execute commands within
+    // NOTE: value_terminator may not be needed in future versions of clap_complete.
+    // https://github.com/clap-rs/clap/pull/4612
+    #[arg(value_terminator = "--")]
     queries: Vec<String>,
     /// Arguments to forward to custom commands
     #[arg(last = true)]
