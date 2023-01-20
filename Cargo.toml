@@ -26,8 +26,8 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 anyhow = "1.0"
 atty = "0.2"
-clap = { version = "4.0.32", features = ["derive", "string"] }
-clap_complete = "4.0.7"
+clap = { version = "4.1.1", features = ["derive", "string"] }
+clap_complete = "4.1.0"
 crossbeam = "0.8"
 dirs = "4.0"
 glob = "0.3"
