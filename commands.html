@@ -596,12 +596,10 @@ tab-completing for <code>garden</code>.</p>
 <p>Lastly, create the directory and generate the <code>~/.config/zsh/completion/_garden</code>
 zsh shell completion script.</p>
 <pre><code class="language-bash">mkdir -p ~/.config/zsh/completion
-garden completion zsh |
-grep -v \*::arguments &gt;~/.config/zsh/completion/_garden
+garden completion zsh &gt;~/.config/zsh/completion/_garden
 </code></pre>
 <p>Use <code>garden completion --commands zsh</code> instead of <code>garden completion zsh</code>
 to include completions for custom commands.</p>
-<p>The <code>grep</code> filter is needed to workaround <a href="https://github.com/clap-rs/clap/issues/3022">clap #3022</a>.</p>
 <p><em>NOTE</em>: You should regenerate the <code>_garden</code> zsh completion script whenever <code>garden</code>
 is upgraded to ensure that all of the options and commands have up to date completions.</p>
 <h3 id="bash"><a class="header" href="#bash">Bash</a></h3>
@@ -622,6 +620,9 @@ following upstream issues:</p>
 <ul>
 <li>
 <p><a href="https://github.com/clap-rs/clap/issues/3022">clap #3022</a> - zsh broken with two multi length arguments</p>
+</li>
+<li>
+<p><a href="https://github.com/clap-rs/clap/pull/4612">clap #4612</a> - candidate fix for the above issue</p>
 </li>
 <li>
 <p><a href="https://github.com/epage/clapng/issues/92">clapng #92</a> - Dynamic completion support</p>

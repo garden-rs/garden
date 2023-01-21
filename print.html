@@ -800,12 +800,10 @@ tab-completing for <code>garden</code>.</p>
 <p>Lastly, create the directory and generate the <code>~/.config/zsh/completion/_garden</code>
 zsh shell completion script.</p>
 <pre><code class="language-bash">mkdir -p ~/.config/zsh/completion
-garden completion zsh |
-grep -v \*::arguments &gt;~/.config/zsh/completion/_garden
+garden completion zsh &gt;~/.config/zsh/completion/_garden
 </code></pre>
 <p>Use <code>garden completion --commands zsh</code> instead of <code>garden completion zsh</code>
 to include completions for custom commands.</p>
-<p>The <code>grep</code> filter is needed to workaround <a href="https://github.com/clap-rs/clap/issues/3022">clap #3022</a>.</p>
 <p><em>NOTE</em>: You should regenerate the <code>_garden</code> zsh completion script whenever <code>garden</code>
 is upgraded to ensure that all of the options and commands have up to date completions.</p>
 <h3 id="bash"><a class="header" href="#bash">Bash</a></h3>
@@ -826,6 +824,9 @@ following upstream issues:</p>
 <ul>
 <li>
 <p><a href="https://github.com/clap-rs/clap/issues/3022">clap #3022</a> - zsh broken with two multi length arguments</p>
+</li>
+<li>
+<p><a href="https://github.com/clap-rs/clap/pull/4612">clap #4612</a> - candidate fix for the above issue</p>
 </li>
 <li>
 <p><a href="https://github.com/epage/clapng/issues/92">clapng #92</a> - Dynamic completion support</p>
@@ -1503,6 +1504,20 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
 <div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v060"><a class="header" href="#v060">v0.6.0</a></h2>
+<p><em>Released 2023-01-20</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>Both names and values in <code>gitconfig</code> can now use <code>${var}</code> expressions.
+Previously only values were evaluated. Config names are evaluated now as well.</li>
+</ul>
+<p><strong>Fixes</strong></p>
+<ul>
+<li>The <code>zsh</code> workaround for <code>garden completion zsh</code> is no longer needed.
+The <a href="https://davvid.github.io/garden/commands.html#zsh">documentation for generating zsh completions</a>
+has been updated.
+(<a href="https://github.com/davvid/garden/issues/10">#10</a>)</li>
+</ul>
 <h2 id="v051"><a class="header" href="#v051">v0.5.1</a></h2>
 <p><em>Released 2023-01-15</em></p>
 <p><strong>Fixes</strong></p>
