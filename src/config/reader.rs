@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
@@ -137,7 +137,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: commands");
     }
-    if !get_multivariables(&doc["commands"], &mut config.commands) && config_verbose > 1 {
+    if !get_multivariables_dedup(&doc["commands"], &mut config.commands) && config_verbose > 1 {
         debug!("yaml: no commands");
     }
 
@@ -389,6 +389,47 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
                 }
             }
         }
+
+        return true;
+    }
+
+    false
+}
+
+/// Read MultiVariable definitions and deduplicate the results.
+fn get_multivariables_dedup(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool {
+    if get_multivariables(yaml, vec) {
+        // Eliminate duplicates. We want to have last-one-wins semantics.
+        // A simple but slightly innefficient way to accmplish this is to sort the vector, reverse,
+        // use dedup_by_key() (which retains only the first match) and then reverse back.
+        //      vec.sort_by_key(|multi_var| multi_var.get_name().clone());
+        //      vec.reverse();
+        //      vec.dedup_by_key(|multi_var| multi_var.get_name().clone());
+        //      vec.reverse();
+        //
+        // A more efficient approach is to build a replacement vector and move it into place.
+        let mut deduplicated = Vec::new();
+        let mut duplicates = HashSet::new();
+        let mut i = vec.len();
+
+        while i > 0 {
+            i -= 1;
+            // Minimize memory movement by completely draining the vector. Calling remove(i) on
+            // each entry avoids the cost of potentially shifting everything multiple times when
+            // removing near the beginning of a large vector. We instead pay the cost of moving the
+            // memory twice -- once for the transfer from vec into deduplicated and once more for
+            // the final reverse().
+            let value = vec.remove(i);
+            if duplicates.insert(value.get_name().clone()) {
+                deduplicated.push(value);
+            }
+        }
+
+        if !deduplicated.is_empty() {
+            deduplicated.reverse();
+            *vec = deduplicated;
+        }
+
         return true;
     }
 

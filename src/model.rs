@@ -691,6 +691,7 @@ impl Configuration {
         } else {
             self.config_pathbuf(&value)
         }
+        .or_else(|| Some(std::path::PathBuf::from(&value)))
     }
 
     /// Reset resolved variables

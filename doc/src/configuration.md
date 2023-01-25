@@ -110,6 +110,11 @@ found are silenty ignored.
 Enable the `garden -d config ...` debug flag to display warnings about missing include
 files.
 
+The top-level `commands` block follows "last one wins" semantics. If the same command
+is defined in multiple include files then the last definition is the one that will
+be used. `commands` defined in the the root `garden.yaml` have the highest precedence
+and override commands defined via `garden.includes`.
+
 
 ## Variables
 
