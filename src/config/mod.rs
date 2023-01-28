@@ -80,7 +80,7 @@ pub fn xdg_dir() -> std::path::PathBuf {
 
 pub fn new(
     config: &Option<std::path::PathBuf>,
-    root: &str,
+    root: &Option<std::path::PathBuf>,
     config_verbose: u8,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
@@ -91,8 +91,8 @@ pub fn new(
     cfg.verbose = config_verbose;
 
     // Override the configured garden root
-    if !root.is_empty() {
-        cfg.root.set_expr(root.to_string());
+    if let Some(root_path) = root {
+        cfg.root.set_expr(root_path.to_string_lossy().to_string());
     }
 
     let mut basename: String = "garden.yaml".into();
@@ -153,7 +153,7 @@ pub fn new(
 /// Read configuration from a path.  Wraps new() to make the path required..
 pub fn from_path(
     path: std::path::PathBuf,
-    root: &str,
+    root: &Option<std::path::PathBuf>,
     config_verbose: u8,
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
@@ -165,7 +165,7 @@ pub fn from_path_string(
     path: &str,
     verbose: u8,
 ) -> Result<model::Configuration, errors::GardenError> {
-    from_path(std::path::PathBuf::from(path), "", verbose, None)
+    from_path(std::path::PathBuf::from(path), &None, verbose, None)
 }
 
 /// Build model::Configuration from cli::MainOptions
@@ -256,7 +256,12 @@ fn read_grafts_recursive(
                     config_path
                 )));
             }
-            details.push((idx, path, graft.root.to_string()));
+            let root = if graft.root.is_empty() {
+                None
+            } else {
+                Some(std::path::PathBuf::from(graft.root.clone()))
+            };
+            details.push((idx, path, root));
         }
     }
 

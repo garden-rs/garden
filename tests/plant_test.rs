@@ -37,7 +37,7 @@ fn plant_empty_repo() -> Result<()> {
     let path = Some(std::path::PathBuf::from(fixture.path("garden.yaml")));
 
     // Load the configuration and assert that the remotes are configured.
-    let cfg = garden::config::new(&path, "", 0, None)?;
+    let cfg = garden::config::new(&path, &None, 0, None)?;
     assert_eq!(1, cfg.trees.len());
     assert_eq!("repo1", cfg.trees[0].get_name());
     assert_eq!(2, cfg.trees[0].remotes.len());
@@ -60,7 +60,7 @@ fn plant_empty_repo() -> Result<()> {
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo2"])?;
 
     // Load the configuration and assert that the remotes are configured.
-    let cfg = garden::config::new(&path, "", 0, None)?;
+    let cfg = garden::config::new(&path, &None, 0, None)?;
     assert_eq!(2, cfg.trees.len()); // Now we have two trees.
     assert_eq!("repo2", cfg.trees[1].get_name());
     assert_eq!(2, cfg.trees[1].remotes.len());
@@ -86,7 +86,7 @@ fn plant_empty_repo() -> Result<()> {
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo1", "repo2"])?;
 
     // Load the configuration and assert that the remotes are configured.
-    let cfg = garden::config::new(&path, "", 0, None)?;
+    let cfg = garden::config::new(&path, &None, 0, None)?;
     assert_eq!(2, cfg.trees.len());
     assert_eq!("repo1", cfg.trees[0].get_name());
     assert_eq!(2, cfg.trees[0].remotes.len());
@@ -120,7 +120,7 @@ fn plant_bare_repo() -> Result<()> {
 
     // Load the configuration and assert that the remotes are configured.
     let path = Some(std::path::PathBuf::from(&garden_yaml));
-    let cfg = garden::config::new(&path, "", 0, None)?;
+    let cfg = garden::config::new(&path, &None, 0, None)?;
     assert_eq!(1, cfg.trees.len());
     assert_eq!("repos/example.git", cfg.trees[0].get_name());
 
@@ -161,7 +161,7 @@ fn plant_git_worktree() -> Result<()> {
     let garden_yaml = fixture.path("garden.yaml");
     let path = Some(std::path::PathBuf::from(&garden_yaml));
 
-    let cfg = garden::config::new(&path, &fixture.root(), 0, None)?;
+    let cfg = garden::config::new(&path, &Some(fixture.root_pathbuf()), 0, None)?;
     assert_eq!(2, cfg.trees.len());
     assert_eq!("parent", cfg.trees[0].get_name());
 

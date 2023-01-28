@@ -249,6 +249,11 @@ impl<'a> BareRepoFixture<'a> {
         format!("tests/tmp/{}", self.name)
     }
 
+    /// Return a pathbuf
+    pub fn root_pathbuf(&self) -> std::path::PathBuf {
+        std::path::PathBuf::from(self.root())
+    }
+
     /// Return a path relative to the temporary directory for the current test.
     pub fn path(&self, path: &str) -> String {
         let fixture_path = format!("{}/{}", self.root(), path);
