@@ -387,6 +387,10 @@ to the root configuration directory will be checked for the existence of the fil
 found are silenty ignored.</p>
 <p>Enable the <code>garden -d config ...</code> debug flag to display warnings about missing include
 files.</p>
+<p>The top-level <code>commands</code> block follows &quot;last one wins&quot; semantics. If the same command
+is defined in multiple include files then the last definition is the one that will
+be used. <code>commands</code> defined in the the root <code>garden.yaml</code> have the highest precedence
+and override commands defined via <code>garden.includes</code>.</p>
 <h2 id="variables"><a class="header" href="#variables">Variables</a></h2>
 <p>Garden configuration contains a &quot;variables&quot; block that allows defining
 variables that are can be referenced by other garden values.</p>

@@ -179,6 +179,29 @@
                         <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>There are multiple ways to install <code>garden</code>.</p>
 <p>These instructions assume that you have <code>cargo</code> installed for Rust development.</p>
+<p><a href="#install-using-homebrew">Skip ahead to the Homebrew section</a> if you're on macOS
+and prefer to install <code>garden</code> using Homebrew.</p>
+<p><a href="#install-on-netbsd">Skip ahead to the NetBSD section</a> if you're on NetBSD
+and prefer to install <code>garden</code> using <code>pkgin</code> or the pkgsrc/NetBSD sources.</p>
+<h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
+<p>If you already have <code>cargo</code> installed then you can skip this section.</p>
+<p>You may be able to install <code>cargo</code> on macOS and Linux using standard package
+managers, eg. <code>brew install rust</code> or <code>apt install rust-all</code>.</p>
+<p>Other platforms and older distributions can get a Rust development toolchain
+by going to <a href="https://rustup.rs">rustup.rs and following the installation instructions</a>.</p>
+<h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
+<p>This requires at least Rust 1.45 and Cargo to be installed. Once you have
+installed Rust, type the following in the terminal:</p>
+<pre><code>cargo install garden-tools
+</code></pre>
+<p>This will download and compile garden for you. The only thing left to do is
+to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</code>.</p>
+<h2 id="latest-using-cargo"><a class="header" href="#latest-using-cargo">Latest using Cargo</a></h2>
+<p>The version published to crates.io will sometimes be behind the source
+code repository. If you want to install the latest pre-release version then you can
+build the Git version of Garden yourself using <code>cargo</code>.</p>
+<pre><code>cargo install --git https://github.com/davvid/garden garden-tools
+</code></pre>
 <h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
 <p>You can install <code>garden</code> on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
 <h3 id="add-the-homebrew-garden-tap"><a class="header" href="#add-the-homebrew-garden-tap">Add the homebrew-garden tap</a></h3>
@@ -205,29 +228,21 @@ actually downgrade <code>garden</code> to the latest stable release.</p>
 <p>Installing <code>garden</code> with Homebrew may leave behind the Rust development tools.</p>
 <p>Use <code>brew remove rust</code> after <code>garden</code> is installed to save on disk space.</p>
 <p>Read on for how to build garden from source.</p>
-<h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
-<p>If you already have <code>cargo</code> installed then you can skip this section.</p>
-<p>You may be able to install <code>cargo</code> on macOS and Linux using standard package
-managers, eg. <code>brew install rust</code> or <code>apt install rust-all</code>.</p>
-<p>Other platforms and older distributions can get a Rust development toolchain
-by going to <a href="https://rustup.rs">rustup.rs and following the installation instructions</a>.</p>
-<h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
-<p>This requires at least Rust 1.45 and Cargo to be installed. Once you have
-installed Rust, type the following in the terminal:</p>
-<pre><code>cargo install garden-tools
+<h2 id="install-on-netbsd"><a class="header" href="#install-on-netbsd">Install on NetBSD</a></h2>
+<p>Garden has been packaged for
+<a href="http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html">pkgsrc/NetBSD</a>
+as described in <a href="https://github.com/davvid/garden/issues/13"> #13</a>.</p>
+<p>To install from the official repository, run:</p>
+<pre><code class="language-bash">pkgin install garden
 </code></pre>
-<p>This will download and compile garden for you. The only thing left to do is
-to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</code>.</p>
-<h2 id="latest-using-cargo"><a class="header" href="#latest-using-cargo">Latest using Cargo</a></h2>
-<p>The version published to crates.io will sometimes be behind the source
-code repository. If you want to install the latest pre-release version then you can
-build the Git version of Garden yourself using <code>cargo</code>.</p>
-<pre><code>cargo install --git https://github.com/davvid/garden garden-tools
+<p>If you prefer to build from the pkgsrc sources, run:</p>
+<pre><code class="language-bash">cd /usr/pkgsrc/devel/garden
+make install
 </code></pre>
 <h2 id="build-and-install-from-source-for-development"><a class="header" href="#build-and-install-from-source-for-development">Build and Install from Source for Development</a></h2>
 <p>If you would like to develop features and contribute to Garden then you will
 have to clone the repository on your local machine.</p>
-<pre><code>git clone https://github.com/davvid/garden.git
+<pre><code class="language-bash">git clone https://github.com/davvid/garden.git
 cd garden
 
 # Build ./target/debug/garden
