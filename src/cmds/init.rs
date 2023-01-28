@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, ValueHint};
 
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
@@ -19,10 +19,10 @@ pub struct InitOptions {
     #[arg(long)]
     pub global: bool,
     /// Set the garden root path
-    #[arg(long, default_value_t = String::from("${GARDEN_CONFIG_DIR}"))]
+    #[arg(long, default_value_t = String::from("${GARDEN_CONFIG_DIR}"), value_hint = ValueHint::DirPath)]
     pub root: String,
     /// Config filename to write
-    #[arg(default_value_t = String::from("garden.yaml"))]
+    #[arg(default_value_t = String::from("garden.yaml"), value_hint = ValueHint::FilePath)]
     pub filename: String,
 }
 
