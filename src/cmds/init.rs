@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, ValueHint};
 
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
@@ -19,16 +19,16 @@ pub struct InitOptions {
     #[arg(long)]
     pub global: bool,
     /// Set the garden root path
-    #[arg(long, default_value_t = String::from("${GARDEN_CONFIG_DIR}"))]
+    #[arg(long, default_value_t = String::from("${GARDEN_CONFIG_DIR}"), value_hint = ValueHint::DirPath)]
     pub root: String,
     /// Config filename to write
-    #[arg(default_value_t = String::from("garden.yaml"))]
-    pub filename: String,
+    #[arg(default_value = "garden.yaml", value_hint = ValueHint::FilePath)]
+    pub filename: std::path::PathBuf,
 }
 
 pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Result<()> {
     let mut dirname = path::current_dir();
-    let file_path = std::path::PathBuf::from(&init_options.filename);
+    let file_path = &init_options.filename;
     if file_path.is_absolute() {
         if init_options.global {
             return Err(errors::GardenError::Usage(
@@ -39,7 +39,6 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
 
         dirname = file_path
             .parent()
-            .as_ref()
             .ok_or_else(|| {
                 errors::GardenError::AssertionError(format!(
                     "unable to get parent(): {:?}",
@@ -48,17 +47,13 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
             })?
             .to_path_buf();
 
-        init_options.filename = file_path
-            .file_name()
-            .as_ref()
-            .ok_or_else(|| {
+        init_options.filename =
+            std::path::PathBuf::from(file_path.file_name().ok_or_else(|| {
                 errors::GardenError::AssertionError(format!(
                     "unable to get file path: {:?}",
                     file_path
                 ))
-            })?
-            .to_string_lossy()
-            .to_string();
+            })?);
     }
     if init_options.global {
         dirname = config::xdg_dir();
@@ -78,7 +73,6 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     // Create parent directories as needed
     let parent = config_path
         .parent()
-        .as_ref()
         .ok_or_else(|| {
             errors::GardenError::AssertionError(format!(
                 "unable to get parent(): {:?}",
@@ -98,12 +92,11 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     let exists = config_path.exists();
 
     // Read or create a new document
-    let mut doc;
-    if exists {
-        doc = config::reader::read_yaml(&config_path)?;
+    let mut doc = if exists {
+        config::reader::read_yaml(&config_path)?
     } else {
-        doc = config::reader::empty_doc();
-    }
+        config::reader::empty_doc()
+    };
 
     // Mutable scope
     {

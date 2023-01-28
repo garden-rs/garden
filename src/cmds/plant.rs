@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, ValueHint};
 use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
 
@@ -19,7 +19,7 @@ pub struct PlantOptions {
     #[arg(long, short)]
     output: Option<String>,
     /// Trees to plant
-    #[arg(required = true)]
+    #[arg(required = true, value_hint=ValueHint::DirPath)]
     paths: Vec<String>,
 }
 

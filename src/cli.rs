@@ -20,11 +20,11 @@ pub struct MainOptions {
     color: model::ColorMode,
 
     /// Set the Garden file to use
-    #[arg(long, short)]
+    #[arg(long, short, value_hint = ValueHint::FilePath)]
     pub config: Option<std::path::PathBuf>,
 
     /// Change directories before searching for Garden files
-    #[arg(long, short = 'C', value_hint = ValueHint::AnyPath)]
+    #[arg(long, short = 'C', value_hint = ValueHint::DirPath)]
     chdir: Option<std::path::PathBuf>,
 
     /// Increase verbosity for a debug category
@@ -35,9 +35,9 @@ pub struct MainOptions {
     #[arg(long, short = 'D')]
     pub define: Vec<String>,
 
-    /// Set the Garden tree root [default: ${GARDEN_ROOT}]
-    #[arg(long, short, default_value_t = String::new())]
-    pub root: String,
+    /// Set the Garden tree root
+    #[arg(long, short, value_hint = ValueHint::DirPath)]
+    pub root: Option<std::path::PathBuf>,
 
     /// Be quiet
     #[arg(short, long)]
@@ -68,9 +68,8 @@ impl MainOptions {
             }
         }
 
-        if !self.root.is_empty() {
-            let root_path = std::path::PathBuf::from(&self.root);
-            self.root = path::abspath(&root_path).to_string_lossy().to_string();
+        if let Some(root) = &self.root {
+            self.root = Some(path::abspath(root));
         }
 
         if let Some(chdir) = &self.chdir {
