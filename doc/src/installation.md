@@ -4,6 +4,48 @@ There are multiple ways to install `garden`.
 
 These instructions assume that you have `cargo` installed for Rust development.
 
+[Skip ahead to the Homebrew section](#install-using-homebrew) if you're on macOS
+and prefer to install `garden` using Homebrew.
+
+[Skip ahead to the NetBSD section](#install-on-netbsd) if you're on NetBSD
+and prefer to install `garden` using `pkgin` or the pkgsrc/NetBSD sources.
+
+
+## Rust and Cargo
+
+If you already have `cargo` installed then you can skip this section.
+
+You may be able to install `cargo` on macOS and Linux using standard package
+managers, eg. `brew install rust` or `apt install rust-all`.
+
+Other platforms and older distributions can get a Rust development toolchain
+by going to [rustup.rs and following the installation instructions](https://rustup.rs).
+
+
+## Crates.io
+
+This requires at least Rust 1.45 and Cargo to be installed. Once you have
+installed Rust, type the following in the terminal:
+
+```
+cargo install garden-tools
+```
+
+This will download and compile garden for you. The only thing left to do is
+to add the Cargo `$HOME/.cargo/bin` directory to your `$PATH`.
+
+
+## Latest using Cargo
+
+The version published to crates.io will sometimes be behind the source
+code repository. If you want to install the latest pre-release version then you can
+build the Git version of Garden yourself using `cargo`.
+
+```
+cargo install --git https://github.com/davvid/garden garden-tools
+```
+
+
 ## Install using Homebrew
 
 You can install `garden` on macOS using [Homebrew](https://brew.sh/).
@@ -49,44 +91,33 @@ Use `brew remove rust` after `garden` is installed to save on disk space.
 
 Read on for how to build garden from source.
 
-## Rust and Cargo
 
-If you already have `cargo` installed then you can skip this section.
+## Install on NetBSD
 
-You may be able to install `cargo` on macOS and Linux using standard package
-managers, eg. `brew install rust` or `apt install rust-all`.
+Garden has been packaged for
+[pkgsrc/NetBSD](http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html)
+as described in [ #13](https://github.com/davvid/garden/issues/13).
 
-Other platforms and older distributions can get a Rust development toolchain
-by going to [rustup.rs and following the installation instructions](https://rustup.rs).
+To install from the official repository, run:
 
-## Crates.io
-
-This requires at least Rust 1.45 and Cargo to be installed. Once you have
-installed Rust, type the following in the terminal:
-
-```
-cargo install garden-tools
+```bash
+pkgin install garden
 ```
 
-This will download and compile garden for you. The only thing left to do is
-to add the Cargo `$HOME/.cargo/bin` directory to your `$PATH`.
+If you prefer to build from the pkgsrc sources, run:
 
-## Latest using Cargo
-
-The version published to crates.io will sometimes be behind the source
-code repository. If you want to install the latest pre-release version then you can
-build the Git version of Garden yourself using `cargo`.
-
+```bash
+cd /usr/pkgsrc/devel/garden
+make install
 ```
-cargo install --git https://github.com/davvid/garden garden-tools
-```
+
 
 ## Build and Install from Source for Development
 
 If you would like to develop features and contribute to Garden then you will
 have to clone the repository on your local machine.
 
-```
+```bash
 git clone https://github.com/davvid/garden.git
 cd garden
 
@@ -109,6 +140,7 @@ Garden's custom worfkflow commands.
 * `garden install-doc` installs the documentation.
 
 See Garden's `garden.yaml` for more details.
+
 
 ## Windows
 

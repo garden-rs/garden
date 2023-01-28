@@ -11,6 +11,11 @@
   ([#14](https://github.com/davvid/garden/issues/14))
   ([#15](https://github.com/davvid/garden/pull/15))
 
+**Packaging**
+
+- [0323pin](https://github.com/0323) packaged `garden` for pkgsrc/NetBSD and
+  [merged the package into the main branch!](http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html)
+  ([#13](https://github.com/davvid/garden/issues/13))
 
 ## v0.6.0
 
