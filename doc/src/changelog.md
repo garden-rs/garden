@@ -11,6 +11,8 @@
   ([#14](https://github.com/davvid/garden/issues/14))
   ([#15](https://github.com/davvid/garden/pull/15))
 
+- Improved shell completions for `garden`, `garden init` and `garden plant`.
+
 **Packaging**
 
 - [0323pin](https://github.com/0323) packaged `garden` for pkgsrc/NetBSD and
