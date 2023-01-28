@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.7.0
+
+**Features**:
+
+- Commands defined in the top-level `garden.yaml` can now override commands defined
+  via `garden.includes`. Top-level commands now follow "last one wins" semantics --
+  if the same command is defined in multiple includes files then only the final
+  definition will be used.
+  ([#14](https://github.com/davvid/garden/issues/14))
+  ([#15](https://github.com/davvid/garden/pull/15))
+
+
 ## v0.6.0
 
 *Released 2023-01-20*

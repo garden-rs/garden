@@ -1,3 +1,5 @@
+pub mod common;
+
 use anyhow::Result;
 
 #[test]
@@ -92,6 +94,73 @@ fn template_includes() -> Result<()> {
 
     let result = garden::eval::tree_value(config, "${tree-override}", context.tree, None);
     assert_eq!(result, "extended-tree");
+
+    Ok(())
+}
+
+/// Ensure that commands are overridden when defined in multiple files.
+#[test]
+fn command_overrides() -> Result<()> {
+    let string = r#"
+    garden:
+      includes: tests/data/includes/commands.yaml
+    "#
+    .to_string();
+
+    // Base case: the "echo" command is read.
+    let config = common::from_string(&string);
+    assert_eq!(config.commands.len(), 2);
+    assert_eq!(config.commands[0].get_name(), "echo");
+    assert_eq!(config.commands[1].get_name(), "test");
+    assert_eq!(config.commands[0].get(0).get_expr(), "echo commands.yaml");
+
+    // If the same command is seen twice it is only defined once.
+    let string = r#"
+    garden:
+      includes:
+        - tests/data/includes/commands.yaml
+        - tests/data/includes/commands.yaml
+    "#
+    .to_string();
+    let config = common::from_string(&string);
+    assert_eq!(config.commands.len(), 2);
+
+    // If the same command is seen twice the last one wins.
+    let string = r#"
+    garden:
+      includes:
+        - tests/data/includes/commands.yaml
+        - tests/data/includes/commands-override.yaml
+    "#
+    .to_string();
+    let config = common::from_string(&string);
+    assert_eq!(config.commands.len(), 2);
+    assert_eq!(config.commands[0].get_name(), "echo");
+    assert_eq!(
+        config.commands[0].get(0).get_expr(),
+        "echo commands-override.yaml"
+    );
+    assert_eq!(config.commands[1].get_name(), "test");
+    assert_eq!(config.commands[1].get(0).get_expr(), "echo override test");
+
+    // If the same command is seen in the garden.yaml then it overrides includes.
+    let string = r#"
+    garden:
+      includes:
+        - tests/data/includes/commands.yaml
+        - tests/data/includes/commands-override.yaml
+    commands:
+      echo: echo top-level override
+    "#
+    .to_string();
+    let config = common::from_string(&string);
+    assert_eq!(config.commands.len(), 2);
+    assert_eq!(config.commands[0].get_name(), "test");
+    assert_eq!(config.commands[1].get_name(), "echo");
+    assert_eq!(
+        config.commands[1].get(0).get_expr(),
+        "echo top-level override"
+    );
 
     Ok(())
 }
