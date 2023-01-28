@@ -41,8 +41,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
             .parent()
             .ok_or_else(|| {
                 errors::GardenError::AssertionError(format!(
-                    "unable to get parent(): {:?}",
-                    file_path
+                    "unable to get parent(): {file_path:?}"
                 ))
             })?
             .to_path_buf();
@@ -50,8 +49,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
         init_options.filename =
             std::path::PathBuf::from(file_path.file_name().ok_or_else(|| {
                 errors::GardenError::AssertionError(format!(
-                    "unable to get file path: {:?}",
-                    file_path
+                    "unable to get file path: {file_path:?}"
                 ))
             })?);
     }
@@ -74,16 +72,13 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     let parent = config_path
         .parent()
         .ok_or_else(|| {
-            errors::GardenError::AssertionError(format!(
-                "unable to get parent(): {:?}",
-                config_path
-            ))
+            errors::GardenError::AssertionError(format!("unable to get parent(): {config_path:?}"))
         })?
         .to_path_buf();
 
     if !parent.exists() {
         if let Err(err) = std::fs::create_dir_all(&parent) {
-            let error_message = format!("unable to create {:?}: {}", parent, err);
+            let error_message = format!("unable to create {parent:?}: {err}");
             return Err(errors::GardenError::OSError(error_message).into());
         }
     }
@@ -121,12 +116,9 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
 
     if !options.quiet {
         if exists {
-            eprintln!("Reinitialized Garden configuration in {:?}", config_path);
+            eprintln!("Reinitialized Garden configuration in {config_path:?}");
         } else {
-            eprintln!(
-                "Initialized empty Garden configuration in {:?}",
-                config_path
-            );
+            eprintln!("Initialized empty Garden configuration in {config_path:?}");
         }
     }
 

@@ -74,16 +74,14 @@ fn plant_path(
     // Garden root path
     let root = config.root_path.canonicalize().map_err(|err| {
         errors::GardenError::ConfigurationError(format!(
-            "unable to canonicalize config root: {:?}",
-            err
+            "unable to canonicalize config root: {err:?}"
         ))
     })?;
 
     let pathbuf = std::path::PathBuf::from(raw_path);
     if !pathbuf.exists() {
         return Err(errors::GardenError::ConfigurationError(format!(
-            "invalid tree path: {}",
-            raw_path
+            "invalid tree path: {raw_path}"
         ))
         .into());
     }
@@ -114,8 +112,7 @@ fn plant_path(
     // Get a canonical tree path for comparison with the canonical root.
     let path = pathbuf.canonicalize().map_err(|err| {
         errors::GardenError::ConfigurationError(format!(
-            "unable to canonicalize {:?}: {:?}",
-            raw_path, err
+            "unable to canonicalize {raw_path:?}: {err:?}"
         ))
     })?;
 
@@ -137,7 +134,7 @@ fn plant_path(
     if let Some(tree_yaml) = trees.get(&key) {
         if let Some(tree_hash) = tree_yaml.as_hash() {
             if verbose > 0 {
-                eprintln!("{}: found existing tree", tree_name);
+                eprintln!("{tree_name}: found existing tree");
             }
             entry = tree_hash.clone();
         }
@@ -193,7 +190,7 @@ fn plant_path(
     let mut remotes: Vec<(String, String)> = Vec::new();
     {
         for remote in &remote_names {
-            let cmd = ["git", "config", &format!("remote.{}.url", remote)];
+            let cmd = ["git", "config", &format!("remote.{remote}.url")];
             let exec = cmd::exec_in_dir(&cmd, &path);
             if let Ok(x) = cmd::capture_stdout(exec) {
                 let output = cmd::trim_stdout(&x);
@@ -231,7 +228,7 @@ fn plant_path(
 
     let url_key = Yaml::String("url".into());
     if verbose > 0 && entry.contains_key(&url_key) {
-        eprintln!("{}: no url", tree_name);
+        eprintln!("{tree_name}: no url");
     }
 
     // Update the "url" field.

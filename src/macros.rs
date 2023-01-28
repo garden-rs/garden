@@ -3,7 +3,7 @@
 /// Parameters:
 /// - `args`: A `std::fmt::Arguments`
 pub fn error(args: std::fmt::Arguments) {
-    eprintln!("error: {}", args);
+    eprintln!("error: {args}");
 }
 
 /// Print a message to stderr with a "debug: " prefix
@@ -11,7 +11,7 @@ pub fn error(args: std::fmt::Arguments) {
 /// Parameters:
 /// - `args`: A `std::fmt::Arguments`
 pub fn debug(args: std::fmt::Arguments) {
-    eprintln!("debug: {}", args);
+    eprintln!("debug: {args}");
 }
 
 /// Print a message to stderr with an "debug : " prefix

@@ -191,7 +191,7 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
     match *doc {
         Yaml::String(ref s) => {
             print_indent(indent);
-            println!("{}\"{}\"", prefix, s);
+            println!("{prefix}\"{s}\"");
         }
         Yaml::Array(ref v) => {
             for x in v {
@@ -203,10 +203,10 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
                 print_indent(indent);
                 match k {
                     Yaml::String(ref x) => {
-                        println!("{}{}:", prefix, x);
+                        println!("{prefix}{x}:");
                     }
                     _ => {
-                        println!("{}{:?}:", prefix, k);
+                        println!("{prefix}{k:?}:");
                     }
                 }
                 dump_node(v, indent + 1, prefix);
@@ -214,7 +214,7 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
         }
         _ => {
             print_indent(indent);
-            println!("{:?}", doc);
+            println!("{doc:?}");
         }
     }
 }

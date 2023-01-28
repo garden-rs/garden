@@ -204,7 +204,7 @@ pub fn assert_path(path: &str) {
 
 /// Assert that the specified path is a Git worktree.
 pub fn assert_git_worktree(path: &str) {
-    assert_path(&format!("{}/.git", path));
+    assert_path(&format!("{path}/.git"));
 }
 
 /// Assert that the Git ref exists in the specified repository.
@@ -227,7 +227,7 @@ fn setup_tmp_bare_repo(name: &str, path: &str) {
 
 fn teardown_tmp_test_data(path: &str) {
     if let Err(err) = std::fs::remove_dir_all(path) {
-        panic!("unable to remove '{}': {}", path, err);
+        panic!("unable to remove '{path}': {err}");
     }
 }
 

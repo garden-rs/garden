@@ -74,11 +74,10 @@ fn grow_tree_from_context(
 
     let pathbuf = std::path::PathBuf::from(&path);
     let parent = pathbuf.parent().ok_or_else(|| {
-        errors::GardenError::AssertionError(format!("unable to get parent directory for {}", path))
+        errors::GardenError::AssertionError(format!("unable to get parent directory for {path}"))
     })?;
-    std::fs::create_dir_all(parent).map_err(|err| {
-        errors::GardenError::OSError(format!("unable to create {}: {}", path, err))
-    })?;
+    std::fs::create_dir_all(parent)
+        .map_err(|err| errors::GardenError::OSError(format!("unable to create {path}: {err}")))?;
 
     if pathbuf.exists() {
         return update_tree_from_context(
@@ -131,14 +130,14 @@ fn grow_tree_from_context(
         let branch = eval::tree_value(config, branch_var.get_expr(), ctx.tree, ctx.garden);
         let branch_opt;
         if !branch.is_empty() {
-            branch_opt = format!("--branch={}", branch);
+            branch_opt = format!("--branch={branch}");
             cmd.push(&branch_opt);
         }
         // "git clone --depth=N" creates shallow clones with truncated history.
         let clone_depth = config.trees[ctx.tree].clone_depth;
         let clone_depth_opt;
         if clone_depth > 0 {
-            clone_depth_opt = format!("--depth={}", clone_depth);
+            clone_depth_opt = format!("--depth={clone_depth}");
             cmd.push(&clone_depth_opt);
         }
         // "git clone --depth=N" clones a single branch by default.
@@ -244,7 +243,7 @@ fn update_tree_from_context(
         let url = eval::tree_value(config, v, ctx.tree, ctx.garden);
 
         let exec = if existing_remotes.contains(k) {
-            let remote_key = format!("remote.{}.url", k);
+            let remote_key = format!("remote.{k}.url");
             let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
             if verbose > 1 {
                 print_command_str(&command.join(" "));
@@ -340,7 +339,7 @@ fn grow_tree_from_context_as_worktree(
     if !branch.is_empty() {
         // TODO: Support tree.<tree>.branches.<branch-name>.upstream
         // to generalize the remote branch name instead of hard-coding "origin/".
-        remote_branch = format!("origin/{}", branch);
+        remote_branch = format!("origin/{branch}");
         cmd.push(&remote_branch);
     }
 
@@ -387,7 +386,7 @@ fn grow_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Resu
     let parent = path
         .parent()
         .as_ref()
-        .ok_or_else(|| errors::GardenError::AssertionError(format!("parent() failed: {:?}", path)))?
+        .ok_or_else(|| errors::GardenError::AssertionError(format!("parent() failed: {path:?}")))?
         .to_path_buf();
 
     // Is the link target a child of the link's parent directory?

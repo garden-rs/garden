@@ -144,7 +144,7 @@ fn format_error<I: CommandFactory>(err: clap::Error) -> clap::Error {
 pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>) -> Result<()> {
     // Set the command name to "garden <custom>".
     let name = &arguments[0];
-    let garden_custom = format!("garden {}", name);
+    let garden_custom = format!("garden {name}");
     let cli = CustomOptions::command().bin_name(garden_custom);
     let matches = cli.get_matches_from(arguments);
     let options = <CustomOptions as FromArgMatches>::from_arg_matches(&matches)

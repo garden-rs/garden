@@ -771,8 +771,7 @@ impl Configuration {
             }
         }
         Err(errors::GardenError::ConfigurationError(format!(
-            "{}: no such graft",
-            name
+            "{name}: no such graft"
         )))
     }
 

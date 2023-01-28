@@ -61,13 +61,13 @@ fn exit_status_from_error(err: anyhow::Error) -> i32 {
                 errors::GardenError::ExitStatus(status) => status,
                 // Other GardenError variants print a message before exiting.
                 _ => {
-                    eprintln!("error: {:#}", garden_err);
+                    eprintln!("error: {garden_err:#}");
                     garden_err.into()
                 }
             }
         }
         Err(other_err) => {
-            eprintln!("error: {:#}", other_err);
+            eprintln!("error: {other_err:#}");
             1
         }
     }

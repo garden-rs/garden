@@ -32,8 +32,7 @@ pub fn strip_prefix_into_string(
         path.strip_prefix(root)
             .map_err(|err| {
                 errors::GardenError::ConfigurationError(format!(
-                    "{:?} is not a child of {:?}: {:?}",
-                    path, root, err
+                    "{path:?} is not a child of {root:?}: {err:?}"
                 ))
             })?
             .to_string_lossy()

@@ -15,7 +15,7 @@ fn expand_tree_vars(
 ) -> Option<String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if syntax::is_digit(name) {
-        return Some(format!("${}", name));
+        return Some(format!("${name}"));
     }
 
     // Special-case evaluation of ${graft::values}.
@@ -35,7 +35,7 @@ fn expand_tree_vars(
 
         // TODO recurse on the remainder and evaluate it using the ConfigId
         // for the graft.
-        let _graft_id = match graft.get_id().ok_or(format!("Invalid graft: {}", name)) {
+        let _graft_id = match graft.get_id().ok_or(format!("Invalid graft: {name}")) {
             Ok(graft_id) => graft_id,
             Err(_) => return Some(String::new()),
         };
@@ -137,7 +137,7 @@ fn _expand_tree_context_vars(
 fn expand_vars(config: &model::Configuration, name: &str) -> Option<String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if syntax::is_digit(name) {
-        return Some(format!("${}", name));
+        return Some(format!("${name}"));
     }
 
     let mut var_idx: usize = 0;

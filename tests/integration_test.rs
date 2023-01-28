@@ -288,7 +288,7 @@ fn grow_symlinks() -> Result<()> {
 
     // tests/tmp/symlinks/link is a symlink pointing to example/tree/repo
     let link = fixture.pathbuf("link");
-    assert!(link.exists(), "{:?} must exist", link);
+    assert!(link.exists(), "{link:?} must exist");
     assert!(link.read_link().is_ok());
 
     let target = link.read_link().unwrap();
@@ -296,7 +296,7 @@ fn grow_symlinks() -> Result<()> {
 
     // tests/tmp/symlinks/example/link is a symlink pointing to tree/repo
     let link = fixture.pathbuf("example/link");
-    assert!(link.exists(), "{:?} does not exist", link);
+    assert!(link.exists(), "{link:?} does not exist");
     assert!(link.read_link().is_ok());
 
     let target = link.read_link().unwrap();
@@ -412,8 +412,7 @@ fn eval_garden_config_dir() -> Result<()> {
     ]);
     assert!(
         output.ends_with("/tests/data"),
-        "{} does not end with /tests/data",
-        output
+        "{output} does not end with /tests/data"
     );
 
     Ok(())
@@ -590,7 +589,7 @@ fn cmd_dash_dash_arguments() {
         "data\ngarden\n{}",
         "arguments -- a b c -- d e f -- g h i -- x y z"
     );
-    assert_eq!(output, format!("{}\n{}", msg, msg));
+    assert_eq!(output, format!("{msg}\n{msg}"));
 }
 
 /// Test dash-dash arguments in custom commands via "garden <custom> ..."
@@ -614,7 +613,7 @@ fn cmd_dash_dash_arguments_custom() {
     ]);
     // `. .` was used to operate on the tree twice.
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
-    assert_eq!(format!("{}\n{}", msg, msg), output);
+    assert_eq!(format!("{msg}\n{msg}"), output);
 }
 
 /// Test "." default for custom "garden <command>" with no arguments

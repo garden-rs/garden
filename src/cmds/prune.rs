@@ -304,7 +304,7 @@ fn prompt_for_deletion(pathbuf: &std::path::Path) -> PromptResponse {
         // # Delete the "xyz" repository?
         println!(
             "{}",
-            Color::yellow(format!("Delete the \"{}\" repository?", path_basename)),
+            Color::yellow(format!("Delete the \"{path_basename}\" repository?")),
         );
         // # "all" deletes "..." and all subsequent repositories.
         println!(

@@ -72,7 +72,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
         .map_err(|err| err.into())
     } else {
         Err(errors::GardenError::InvalidConfiguration {
-            msg: format!("unable to shlex::split '{}'", shell),
+            msg: format!("unable to shlex::split '{shell}'"),
         }
         .into())
     }
