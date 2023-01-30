@@ -2,6 +2,7 @@ use garden::cmd;
 use garden::config;
 use garden::errors;
 use garden::model;
+use garden::string;
 
 use anyhow::Result;
 use assert_cmd::prelude::CommandCargoExt;
@@ -26,7 +27,8 @@ pub fn from_string(string: &str) -> model::Configuration {
 }
 
 pub fn garden_config() -> garden::model::Configuration {
-    let string = r#"
+    let string = string!(
+        r#"
     garden:
         root: ${root}
 
@@ -131,8 +133,7 @@ pub fn garden_config() -> garden::model::Configuration {
         annex/wildcard-trees:
             trees: annex/*
     "#
-    .to_string();
-
+    );
     from_string(&string)
 }
 

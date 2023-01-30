@@ -8,6 +8,8 @@ pub mod common;
 use anyhow::Result;
 use function_name::named;
 
+use garden::string;
+
 #[test]
 #[named]
 fn tree_name_from_pathbuf() -> Result<()> {
@@ -27,10 +29,10 @@ fn tree_name_from_pathbuf() -> Result<()> {
     let cfg = garden::config::new(&path, &Some(fixture.root_pathbuf()), 0, None)?;
 
     let tree_name = garden::query::tree_name_from_path(&cfg, &fixture.worktree_pathbuf("dev"));
-    assert_eq!(tree_name, Some("dev".to_string()));
+    assert_eq!(tree_name, Some(string!("dev")));
 
     let tree_name = garden::query::tree_name_from_path(&cfg, &fixture.worktree_pathbuf("default"));
-    assert_eq!(tree_name, Some("default".to_string()));
+    assert_eq!(tree_name, Some(string!("default")));
 
     Ok(())
 }

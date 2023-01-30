@@ -1,13 +1,13 @@
+use super::cli;
+use super::errors;
+use super::eval;
+use super::syntax;
+
 use clap::ValueEnum;
 use indextree::{Arena, NodeId};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use which::which;
-
-use super::cli;
-use super::errors;
-use super::eval;
-use super::syntax;
 
 /// Tree index into config.trees
 pub type TreeIndex = usize;

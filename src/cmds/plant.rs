@@ -1,8 +1,3 @@
-use anyhow::Result;
-use clap::{Parser, ValueHint};
-use yaml_rust::yaml::Hash as YamlHash;
-use yaml_rust::yaml::Yaml;
-
 use super::super::cmd;
 use super::super::config;
 use super::super::errors;
@@ -10,6 +5,11 @@ use super::super::git;
 use super::super::model;
 use super::super::path;
 use super::super::query;
+
+use anyhow::Result;
+use clap::{Parser, ValueHint};
+use yaml_rust::yaml::Hash as YamlHash;
+use yaml_rust::yaml::Yaml;
 
 // Add pre-existing worktrees to a garden configuration file
 #[derive(Parser, Clone, Debug)]
@@ -207,10 +207,9 @@ fn plant_path(
         let remotes_hash: &mut YamlHash = match entry.get_mut(&remotes_key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
-                return Err(errors::GardenError::ConfigurationError(
-                    "trees: not a hash".to_string(),
-                )
-                .into());
+                return Err(
+                    errors::GardenError::ConfigurationError(string!("trees: not a hash")).into(),
+                );
             }
         };
 

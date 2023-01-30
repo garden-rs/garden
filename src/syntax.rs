@@ -81,11 +81,11 @@ pub fn trim_graft(string: &str) -> Option<String> {
 
     let result;
     if is_garden(string) {
-        result = ":".to_string() + after;
+        result = string!(":") + after;
     } else if is_group(string) {
-        result = "%".to_string() + after;
+        result = string!("%") + after;
     } else if is_tree(string) {
-        result = "@".to_string() + after;
+        result = string!("@") + after;
     } else {
         result = after.to_string();
     }

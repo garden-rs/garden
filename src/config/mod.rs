@@ -1,22 +1,22 @@
-use super::cli;
-use super::errors;
-use super::model;
-use super::model::ConfigId;
-use super::path;
-
 /// YAML reader
 pub mod reader;
 
 /// YAML writer
 pub mod writer;
 
-// Search for configuration in the following locations:
-//  .
-//  ./garden
-//  ./etc/garden
-//  ~/.config/garden
-//  ~/etc/garden
-//  /etc/garden
+use super::cli;
+use super::errors;
+use super::model;
+use super::model::ConfigId;
+use super::path;
+
+/// Search for configuration in the following locations:
+///  .
+///  ./garden
+///  ./etc/garden
+///  ~/.config/garden
+///  ~/etc/garden
+///  /etc/garden
 
 fn search_path() -> Vec<std::path::PathBuf> {
     // Result: Vec<PathBufs> in priority order

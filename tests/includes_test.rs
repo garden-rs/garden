@@ -2,6 +2,8 @@ pub mod common;
 
 use anyhow::Result;
 
+use garden::string;
+
 #[test]
 fn read_includes() -> Result<()> {
     let app = garden::build::context_from_path("tests/data/garden.yaml")?;
@@ -101,11 +103,12 @@ fn template_includes() -> Result<()> {
 /// Ensure that commands are overridden when defined in multiple files.
 #[test]
 fn command_overrides() -> Result<()> {
-    let string = r#"
+    let string = string!(
+        r#"
     garden:
       includes: tests/data/includes/commands.yaml
     "#
-    .to_string();
+    );
 
     // Base case: the "echo" command is read.
     let config = common::from_string(&string);
@@ -115,24 +118,26 @@ fn command_overrides() -> Result<()> {
     assert_eq!(config.commands[0].get(0).get_expr(), "echo commands.yaml");
 
     // If the same command is seen twice it is only defined once.
-    let string = r#"
+    let string = string!(
+        r#"
     garden:
       includes:
         - tests/data/includes/commands.yaml
         - tests/data/includes/commands.yaml
     "#
-    .to_string();
+    );
     let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
 
     // If the same command is seen twice the last one wins.
-    let string = r#"
+    let string = string!(
+        r#"
     garden:
       includes:
         - tests/data/includes/commands.yaml
         - tests/data/includes/commands-override.yaml
     "#
-    .to_string();
+    );
     let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
     assert_eq!(config.commands[0].get_name(), "echo");
@@ -144,7 +149,8 @@ fn command_overrides() -> Result<()> {
     assert_eq!(config.commands[1].get(0).get_expr(), "echo override test");
 
     // If the same command is seen in the garden.yaml then it overrides includes.
-    let string = r#"
+    let string = string!(
+        r#"
     garden:
       includes:
         - tests/data/includes/commands.yaml
@@ -152,7 +158,7 @@ fn command_overrides() -> Result<()> {
     commands:
       echo: echo top-level override
     "#
-    .to_string();
+    );
     let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
     assert_eq!(config.commands[0].get_name(), "test");

@@ -6,6 +6,8 @@ pub mod common;
 
 use anyhow::{Context, Result};
 
+use garden::string;
+
 #[test]
 fn resolve_trees_default_query_finds_garden() {
     let config = common::garden_config();
@@ -35,10 +37,10 @@ fn resolve_trees_group_query() {
     let result = garden::query::resolve_trees(&config, "%rev*");
     assert_eq!(2, result.len());
     assert_eq!(None, result[0].garden);
-    assert_eq!(Some("reverse".to_string()), result[0].group);
+    assert_eq!(Some(string!("reverse")), result[0].group);
     assert_eq!(1, result[0].tree);
     assert_eq!(None, result[1].garden);
-    assert_eq!(Some("reverse".to_string()), result[1].group);
+    assert_eq!(Some(string!("reverse")), result[1].group);
     assert_eq!(0, result[1].tree);
 }
 
@@ -50,11 +52,11 @@ fn resolve_trees_group_with_wildcards() {
     assert_eq!(2, result.len());
     // annex/data
     assert_eq!(None, result[0].garden);
-    assert_eq!(Some("annex".to_string()), result[0].group);
+    assert_eq!(Some(string!("annex")), result[0].group);
     assert_eq!(4, result[0].tree);
     // annex/local
     assert_eq!(None, result[1].garden);
-    assert_eq!(Some("annex".to_string()), result[1].group);
+    assert_eq!(Some(string!("annex")), result[1].group);
     assert_eq!(5, result[1].tree);
 }
 
@@ -82,10 +84,10 @@ fn trees_from_group() -> Result<()> {
     let result = garden::query::trees_from_group(&config, None, annex_grp);
     assert_eq!(2, result.len());
     assert_eq!(None, result[0].garden);
-    assert_eq!(Some("annex".to_string()), result[0].group);
+    assert_eq!(Some(string!("annex")), result[0].group);
     assert_eq!(4, result[0].tree); // annex/data
     assert_eq!(None, result[1].garden);
-    assert_eq!(Some("annex".to_string()), result[1].group);
+    assert_eq!(Some(string!("annex")), result[1].group);
     assert_eq!(5, result[1].tree); // annex/local
 
     Ok(())
@@ -104,11 +106,11 @@ fn trees_from_garden() {
     assert_eq!(2, result.len());
     // annex/data
     assert_eq!(Some(2), result[0].garden);
-    assert_eq!(Some("annex".to_string()), result[0].group);
+    assert_eq!(Some(string!("annex")), result[0].group);
     assert_eq!(4, result[0].tree);
     // annex/local
     assert_eq!(Some(2), result[1].garden);
-    assert_eq!(Some("annex".to_string()), result[1].group);
+    assert_eq!(Some(string!("annex")), result[1].group);
     assert_eq!(5, result[1].tree);
 
     // wildcard groups
@@ -119,11 +121,11 @@ fn trees_from_garden() {
     assert_eq!(2, result.len());
     // annex/data
     assert_eq!(Some(3), result[0].garden);
-    assert_eq!(Some("annex-1".to_string()), result[0].group);
+    assert_eq!(Some(string!("annex-1")), result[0].group);
     assert_eq!(4, result[0].tree);
     // annex/local
     assert_eq!(Some(3), result[1].garden);
-    assert_eq!(Some("annex-2".to_string()), result[1].group);
+    assert_eq!(Some(string!("annex-2")), result[1].group);
     assert_eq!(5, result[1].tree);
 
     // wildcard trees

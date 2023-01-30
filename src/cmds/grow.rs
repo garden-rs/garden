@@ -1,12 +1,12 @@
-use anyhow::Result;
-use clap::Parser;
-use std::collections::HashSet;
-
 use super::super::cmd;
 use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::query;
+
+use anyhow::Result;
+use clap::Parser;
+use std::collections::{HashMap, HashSet};
 
 /// Grow garden worktrees
 #[derive(Parser, Clone, Debug)]
@@ -214,7 +214,7 @@ fn update_tree_from_context(
     }
 
     // Loop over remotes, update them as needed
-    let mut config_remotes = std::collections::HashMap::new();
+    let mut config_remotes = HashMap::new();
     {
         // Immutable config scope
         for remote in &config.trees[ctx.tree].remotes {
@@ -226,7 +226,7 @@ fn update_tree_from_context(
     }
 
     // Gather existing remotes
-    let mut existing_remotes = std::collections::HashSet::new();
+    let mut existing_remotes = HashSet::new();
     {
         let command = ["git", "remote"];
         let exec = cmd::exec_in_dir(&command, path);

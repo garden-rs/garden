@@ -1,13 +1,13 @@
-use anyhow::Result;
-use clap;
-use clap::{CommandFactory, FromArgMatches, Parser};
-
 use super::super::cli;
 use super::super::cmd;
 use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::query;
+
+use anyhow::Result;
+use clap;
+use clap::{CommandFactory, FromArgMatches, Parser};
 
 /// Run one or more custom commands over a tree query
 #[derive(Parser, Clone, Debug)]

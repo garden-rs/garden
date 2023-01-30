@@ -14,6 +14,20 @@ pub fn debug(args: std::fmt::Arguments) {
     eprintln!("debug: {args}");
 }
 
+/// Convert a string literal into a String
+#[inline]
+pub fn string(value: &'static str) -> String {
+    value.to_string()
+}
+
+/// Convert a value into a string
+#[macro_export]
+macro_rules! string {
+    ( $value:expr ) => {
+        $crate::macros::string($value)
+    };
+}
+
 /// Print a message to stderr with an "debug : " prefix
 ///
 /// Parameters:

@@ -1,13 +1,15 @@
-use std::collections::{HashMap, HashSet};
-use yaml_rust::yaml::Hash as YamlHash;
-use yaml_rust::yaml::Yaml;
-use yaml_rust::YamlLoader;
-
 use super::super::errors;
 use super::super::eval;
 use super::super::model;
 use super::super::path;
 use super::super::syntax;
+
+use indexmap::{IndexMap, IndexSet};
+use yaml_rust::yaml::Hash as YamlHash;
+use yaml_rust::yaml::Yaml;
+use yaml_rust::YamlLoader;
+
+use std::collections::{HashMap, HashSet};
 
 // Apply YAML Configuration from a string.
 pub fn parse(
@@ -72,7 +74,7 @@ fn parse_recursive(
     if is_root_config {
         // Provide GARDEN_ROOT.
         config.variables.push(model::NamedVariable::new(
-            "GARDEN_ROOT".to_string(),
+            string!("GARDEN_ROOT"),
             config.root.get_expr().to_string(),
             None,
         ));
@@ -81,7 +83,7 @@ fn parse_recursive(
             // Calculate an absolute path for GARDEN_CONFIG_DIR.
             if let Ok(config_path) = config_path_raw.canonicalize() {
                 config.variables.push(model::NamedVariable::new(
-                    "GARDEN_CONFIG_DIR".to_string(),
+                    string!("GARDEN_CONFIG_DIR"),
                     config_path.to_string_lossy().to_string(),
                     None,
                 ));
@@ -351,8 +353,8 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
 
 fn bool_to_string(value: &bool) -> String {
     match *value {
-        true => "true".into(),
-        false => "false".into(),
+        true => string!("true"),
+        false => string!("false"),
     }
 }
 
@@ -480,7 +482,7 @@ fn get_template(
             template
                 .tree
                 .remotes
-                .push(model::NamedVariable::new("origin".to_string(), url, None));
+                .push(model::NamedVariable::new(string!("origin"), url, None));
             return template;
         }
         // If a <url> is configured then populate the "origin" remote.
@@ -489,7 +491,7 @@ fn get_template(
             template
                 .tree
                 .remotes
-                .push(model::NamedVariable::new("origin".to_string(), url, None));
+                .push(model::NamedVariable::new(string!("origin"), url, None));
         }
     }
 
@@ -606,21 +608,21 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     // Register the ${TREE_NAME} variable.
     tree.variables.insert(
         0,
-        model::NamedVariable::new("TREE_NAME".to_string(), tree.get_name().clone(), None),
+        model::NamedVariable::new(string!("TREE_NAME"), tree.get_name().clone(), None),
     );
 
     // Register the ${TREE_PATH} variable.
     tree.variables.insert(
         1,
         model::NamedVariable::new(
-            "TREE_PATH".to_string(),
+            string!("TREE_PATH"),
             tree.get_path().get_expr().clone(),
             None,
         ),
     );
 
     tree.remotes.push(model::NamedVariable::new(
-        "origin".to_string(),
+        string!("origin"),
         url.to_string(),
         None,
     ));
@@ -683,13 +685,13 @@ fn get_tree(
         // Register the ${TREE_NAME} variable.
         tree.variables.insert(
             0,
-            model::NamedVariable::new("TREE_NAME".to_string(), tree.get_name().clone(), None),
+            model::NamedVariable::new(string!("TREE_NAME"), tree.get_name().clone(), None),
         );
         // Register the ${TREE_PATH} variable.
         tree.variables.insert(
             1,
             model::NamedVariable::new(
-                "TREE_PATH".to_string(),
+                string!("TREE_PATH"),
                 tree.get_path().get_expr().clone(),
                 None,
             ),
@@ -700,7 +702,7 @@ fn get_tree(
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
             tree.remotes
-                .push(model::NamedVariable::new("origin".to_string(), url, None));
+                .push(model::NamedVariable::new(string!("origin"), url, None));
         }
     }
 
@@ -833,9 +835,9 @@ fn get_grafts(yaml: &Yaml, grafts: &mut Vec<model::Graft>) -> bool {
 }
 
 fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
-    let mut graft_name = "".to_string();
-    let mut config = "".to_string();
-    let mut root = "".to_string();
+    let mut graft_name = string!("");
+    let mut config = string!("");
+    let mut root = string!("");
 
     get_str(name, &mut graft_name);
 

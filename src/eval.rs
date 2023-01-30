@@ -1,10 +1,10 @@
-use std::collections::HashMap;
-
 use super::cmd;
 use super::model;
 use super::path;
 use super::query;
 use super::syntax;
+
+use std::collections::HashMap;
 
 /// Expand variables across all scopes (garden, tree, and global)
 fn expand_tree_vars(

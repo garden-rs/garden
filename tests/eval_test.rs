@@ -2,13 +2,15 @@ pub mod common;
 
 use anyhow::Result;
 
+use garden::string;
+
 #[test]
 fn garden_root() {
     // The test has garden.root = ${root}
     // with variables: src = src, and root = ~/${src}
     // This should expand to $HOME/src.
     let config = common::garden_config();
-    let expect_src_dir = "/home/test/src".to_string();
+    let expect_src_dir = string!("/home/test/src");
     assert_eq!("${root}", config.root.get_expr());
     assert_eq!(Some(&expect_src_dir), config.root.get_value());
     assert_eq!(expect_src_dir, config.root_path.to_string_lossy());
@@ -213,7 +215,7 @@ fn garden_environment() {
 fn group_environment() {
     let config = common::garden_config();
     // cola tree(1) + cola group(Some(0))
-    let context = garden::model::TreeContext::new(1, None, None, Some("cola".to_string()));
+    let context = garden::model::TreeContext::new(1, None, None, Some(string!("cola")));
     let values = garden::eval::environment(&config, &context);
     assert_eq!(values.len(), 5);
 

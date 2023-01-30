@@ -2,6 +2,8 @@ pub mod common;
 
 use anyhow::{Context, Result};
 
+use garden::string;
+
 /// Defaults
 #[test]
 fn config_default() {
@@ -14,12 +16,12 @@ fn config_default() {
 /// Core garden settings
 #[test]
 fn core() {
-    let string = r#"
+    let string = string!(
+        r#"
     garden:
         root: /usr
     "#
-    .to_string();
-
+    );
     let config = common::from_string(&string);
     assert_eq!(std::path::PathBuf::from("/usr"), config.root_path);
 }
@@ -27,15 +29,15 @@ fn core() {
 /// Variables
 #[test]
 fn variables() {
-    let string = r#"
+    let string = string!(
+        r#"
     garden:
         root: ~/src
     variables:
         foo: foo_value
         bar: ${foo}
     "#
-    .to_string();
-
+    );
     let config = common::from_string(&string);
     assert_eq!(3, config.variables.len());
 
@@ -58,15 +60,15 @@ fn variables() {
 /// Commands
 #[test]
 fn commands() {
-    let string = r#"
+    let string = string!(
+        r#"
     commands:
         test_cmd: echo cmd
         test_cmd_vec:
             - echo first
             - echo second
     "#
-    .to_string();
-
+    );
     let config = common::from_string(&string);
     assert_eq!(2, config.commands.len());
 
@@ -83,7 +85,8 @@ fn commands() {
 /// Templates
 #[test]
 fn templates() {
-    let string = r#"
+    let string = string!(
+        r#"
     templates:
         template1:
             variables:
@@ -103,8 +106,7 @@ fn templates() {
             variables:
                 foo: boo
     "#
-    .to_string();
-
+    );
     let config = common::from_string(&string);
     assert_eq!(3, config.templates.len());
 
@@ -172,7 +174,6 @@ fn groups() -> Result<()> {
 fn trees() {
     let config = common::garden_config();
     assert!(config.trees.len() >= 6);
-
     // git
     let tree0 = &config.trees[0];
     assert!(tree0.environment.is_empty());
@@ -309,7 +310,8 @@ fn gardens() {
 
 #[test]
 fn gardens_json() {
-    let string = r#"
+    let string = string!(
+        r#"
 {
     "gardens": {
         "cola": {
@@ -339,8 +341,7 @@ fn gardens_json() {
     }
 }
     "#
-    .to_string();
-
+    );
     let config = common::from_string(&string);
     test_gardens(&config);
 }
