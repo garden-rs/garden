@@ -14,6 +14,9 @@ pub mod cmd;
 /// Commands
 pub mod cmds;
 
+/// Collections
+pub mod collections;
+
 /// Configuration
 pub mod config;
 

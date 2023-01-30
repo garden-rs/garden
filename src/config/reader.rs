@@ -726,7 +726,7 @@ fn get_tree(
     }
 
     // Templates
-    get_vec_str(&value["templates"], &mut tree.templates);
+    get_indexset_str(&value["templates"], &mut tree.templates);
 
     // Process the base templates in the specified order before processing
     // the template itself.

@@ -1,4 +1,5 @@
 use super::cli;
+use super::collections::append;
 use super::errors;
 use super::eval;
 use super::syntax;
@@ -175,7 +176,7 @@ pub struct Tree {
     pub gitconfig: Vec<NamedVariable>,
     pub remotes: Vec<NamedVariable>,
     pub symlink: Variable,
-    pub templates: Vec<String>,
+    pub templates: IndexSet<String>,
     pub variables: Vec<NamedVariable>,
     pub branch: Variable,
     pub worktree: Variable,
@@ -321,7 +322,7 @@ impl Tree {
 
         if clone_variables {
             if !tree.templates.is_empty() {
-                self.templates.append(&mut tree.templates.clone());
+                append(&mut self.templates, &tree.templates);
             }
             if !tree.variables.is_empty() {
                 self.variables.append(&mut tree.variables.clone());

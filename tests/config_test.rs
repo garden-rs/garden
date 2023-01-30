@@ -193,7 +193,7 @@ fn trees() {
 
     assert_eq!("git", tree0.get_name());
     assert_eq!("git", tree0.get_path().get_expr()); // picks up default value
-    assert_eq!(vec!["makefile"], tree0.templates);
+    assert_eq!(indexset!{string!("makefile")}, tree0.templates);
 
     assert_eq!(1, tree0.remotes.len());
     assert_eq!("origin", tree0.remotes[0].get_name());
@@ -234,7 +234,7 @@ fn trees() {
 
     assert_eq!("cola", tree1.get_name());
     assert_eq!("git-cola", tree1.get_path().get_expr());
-    assert_eq!(vec!["makefile", "python"], tree1.templates);
+    assert_eq!(indexset!{string!("makefile"), string!("python")}, tree1.templates);
 
     assert_eq!(2, tree1.remotes.len());
     assert_eq!("origin", tree1.remotes[0].get_name());
