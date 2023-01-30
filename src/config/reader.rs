@@ -411,6 +411,7 @@ fn get_multivariables_dedup(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) ->
         let mut deduplicated = Vec::new();
         let mut duplicates = HashSet::new();
         let mut i = vec.len();
+        deduplicated.reserve(vec.len());
 
         while i > 0 {
             i -= 1;
