@@ -1,5 +1,5 @@
 use super::cli;
-use super::collections::append;
+use super::collections::{append_hashmap, append_indexset};
 use super::errors;
 use super::eval;
 use super::syntax;
@@ -82,6 +82,21 @@ impl Variable {
 
     pub fn reset(&self) {
         *self.value.borrow_mut() = None;
+    }
+}
+
+/// An ordered mapping of names to a vector of Variables.
+pub type MultiVariableIndexMap = IndexMap<String, Vec<Variable>>;
+
+/// An unordered mapping of names to a vector of Variables.
+pub type MultiVariableHashMap = HashMap<String, Vec<Variable>>;
+
+/// Reset the variables held inside a MultiVariableHashMap.
+fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
+    for variables in vec_variables.values() {
+        for variable in variables {
+            variable.reset();
+        }
     }
 }
 
@@ -171,7 +186,7 @@ impl MultiVariable {
 /// Trees represent a single worktree
 #[derive(Clone, Debug, Default)]
 pub struct Tree {
-    pub commands: Vec<MultiVariable>,
+    pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
     pub remotes: Vec<NamedVariable>,
@@ -268,15 +283,14 @@ impl Tree {
             env.reset();
         }
 
-        for cmd in &self.commands {
-            cmd.reset();
-        }
+        reset_hashmap_variables(&self.commands);
     }
 
     /// Copy the guts of another tree into the current tree.
     pub fn clone_from_tree(&mut self, tree: &Tree, clone_variables: bool) {
         // "commands" are concatenated across templates.
-        self.commands.append(&mut tree.commands.clone());
+        append_hashmap(&mut self.commands, &tree.commands);
+
         // "environment" follow last-set-wins semantics.
         self.environment.append(&mut tree.environment.clone());
         // "gitconfig" follows last-set-wins semantics.
@@ -322,7 +336,7 @@ impl Tree {
 
         if clone_variables {
             if !tree.templates.is_empty() {
-                append(&mut self.templates, &tree.templates);
+                append_indexset(&mut self.templates, &tree.templates);
             }
             if !tree.variables.is_empty() {
                 self.variables.append(&mut tree.variables.clone());
@@ -404,7 +418,7 @@ impl Template {
 // Gardens aggregate trees
 #[derive(Clone, Debug, Default)]
 pub struct Garden {
-    pub commands: Vec<MultiVariable>,
+    pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
     pub groups: IndexSet<String>,
@@ -445,7 +459,7 @@ fn get_default_shell() -> String {
 // Configuration represents an instantiated garden configuration
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
-    pub commands: Vec<MultiVariable>,
+    pub commands: MultiVariableHashMap,
     pub debug: HashMap<String, u8>,
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
@@ -700,9 +714,9 @@ impl Configuration {
         for env in &self.environment {
             env.reset();
         }
-        for cmd in &self.commands {
-            cmd.reset();
-        }
+
+        reset_hashmap_variables(&self.commands);
+
         for tree in &self.trees {
             tree.reset_variables();
         }

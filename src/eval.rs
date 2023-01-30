@@ -307,14 +307,14 @@ pub fn multi_variable(
 }
 
 /// Evaluate a variable in the given context for execution in a shell
-pub fn multi_variable_for_shell(
+pub fn variables_for_shell(
     config: &model::Configuration,
-    multi_var: &mut model::MultiVariable,
+    variables: &mut Vec<model::Variable>,
     context: &model::TreeContext,
 ) -> Vec<String> {
     let mut result = Vec::new();
 
-    for var in multi_var.iter() {
+    for var in variables {
         if let Some(value) = var.get_value() {
             result.push(value.to_string());
             continue;
@@ -470,7 +470,7 @@ pub fn command(
     context: &model::TreeContext,
     name: &str,
 ) -> Vec<Vec<String>> {
-    let mut vars = Vec::new();
+    let mut vec_variables = Vec::new();
     let mut result = Vec::new();
     let config = match context.config {
         Some(config_id) => app.get_config(config_id),
@@ -483,30 +483,30 @@ pub fn command(
     };
 
     // Global commands
-    for var in &config.commands {
-        if pattern.matches(var.get_name()) {
-            vars.push(var.clone());
+    for (var_name, var) in &config.commands {
+        if pattern.matches(var_name) {
+            vec_variables.push(var.clone());
         }
     }
 
     // Tree commands
-    for var in &config.trees[context.tree].commands {
-        if pattern.matches(var.get_name()) {
-            vars.push(var.clone());
+    for (var_name, var) in &config.trees[context.tree].commands {
+        if pattern.matches(var_name) {
+            vec_variables.push(var.clone());
         }
     }
 
     // Optional garden command scope
     if let Some(garden) = context.garden {
-        for var in &config.gardens[garden].commands {
-            if pattern.matches(var.get_name()) {
-                vars.push(var.clone());
+        for (var_name, var) in &config.gardens[garden].commands {
+            if pattern.matches(var_name) {
+                vec_variables.push(var.clone());
             }
         }
     }
 
-    for var in vars.iter_mut() {
-        result.push(multi_variable_for_shell(config, var, context));
+    for variables in vec_variables.iter_mut() {
+        result.push(variables_for_shell(config, variables, context));
     }
 
     result

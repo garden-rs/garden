@@ -9,7 +9,7 @@ use yaml_rust::yaml::Hash as YamlHash;
 use yaml_rust::yaml::Yaml;
 use yaml_rust::YamlLoader;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 // Apply YAML Configuration from a string.
 pub fn parse(
@@ -139,7 +139,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: commands");
     }
-    if !get_multivariables_dedup(&doc["commands"], &mut config.commands) && config_verbose > 1 {
+    if !get_multivariables_hashmap(&doc["commands"], &mut config.commands) && config_verbose > 1 {
         debug!("yaml: no commands");
     }
 
@@ -417,39 +417,41 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
     false
 }
 
-/// Read MultiVariable definitions and deduplicate the results.
-fn get_multivariables_dedup(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool {
-    if get_multivariables(yaml, vec) {
-        // Eliminate duplicates. We want to have last-one-wins semantics.
-        // A simple but slightly innefficient way to accmplish this is to sort the vector, reverse,
-        // use dedup_by_key() (which retains only the first match) and then reverse back.
-        //      vec.sort_by_key(|multi_var| multi_var.get_name().clone());
-        //      vec.reverse();
-        //      vec.dedup_by_key(|multi_var| multi_var.get_name().clone());
-        //      vec.reverse();
-        //
-        // A more efficient approach is to build a replacement vector and move it into place.
-        let mut deduplicated = Vec::new();
-        let mut duplicates = HashSet::new();
-        let mut i = vec.len();
-        deduplicated.reserve(vec.len());
-
-        while i > 0 {
-            i -= 1;
-            // Minimize memory movement by completely draining the vector. Calling remove(i) on
-            // each entry avoids the cost of potentially shifting everything multiple times when
-            // removing near the beginning of a large vector. We instead pay the cost of moving the
-            // memory twice -- once for the transfer from vec into deduplicated and once more for
-            // the final reverse().
-            let value = vec.remove(i);
-            if duplicates.insert(value.get_name().clone()) {
-                deduplicated.push(value);
+/// Read a mapping of String to Vec of Variables into a MultiVariableHashMap
+fn get_multivariables_hashmap(
+    yaml: &Yaml,
+    multivariables: &mut model::MultiVariableHashMap,
+) -> bool {
+    if let Yaml::Hash(ref hash) = yaml {
+        for (k, v) in hash {
+            let key = match k.as_str() {
+                Some(key_value) => key_value.to_string(),
+                None => continue,
+            };
+            match v {
+                Yaml::String(ref yaml_str) => {
+                    let variables = vec![model::Variable::new(yaml_str.to_string(), None)];
+                    multivariables.insert(key, variables);
+                }
+                Yaml::Array(ref yaml_array) => {
+                    let mut variables = Vec::new();
+                    for value in yaml_array {
+                        if let Yaml::String(ref yaml_str) = value {
+                            variables.push(model::Variable::new(yaml_str.clone(), None));
+                        }
+                    }
+                    multivariables.insert(key, variables);
+                }
+                Yaml::Integer(yaml_int) => {
+                    let value = yaml_int.to_string();
+                    let variables = vec![model::Variable::new(value.clone(), Some(value))];
+                    multivariables.insert(key, variables);
+                }
+                _ => {
+                    dump_node(v, 1, "");
+                    error!("invalid variables");
+                }
             }
-        }
-
-        if !deduplicated.is_empty() {
-            deduplicated.reverse();
-            *vec = deduplicated;
         }
 
         return true;
@@ -546,7 +548,7 @@ fn get_template(
     get_variables(&value["gitconfig"], &mut template.tree.gitconfig);
 
     get_multivariables(&value["environment"], &mut template.tree.environment);
-    get_multivariables(&value["commands"], &mut template.tree.commands);
+    get_multivariables_hashmap(&value["commands"], &mut template.tree.commands);
 
     get_variable(&value["branch"], &mut template.tree.branch);
     get_variable(&value["symlink"], &mut template.tree.symlink);
@@ -754,7 +756,7 @@ fn get_tree(
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
 
     get_multivariables(&value["environment"], &mut tree.environment);
-    get_multivariables(&value["commands"], &mut tree.commands);
+    get_multivariables_hashmap(&value["commands"], &mut tree.commands);
 
     get_variable(&value["branch"], &mut tree.branch);
     get_variable(&value["symlink"], &mut tree.symlink);
@@ -830,7 +832,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
             get_vec_str(&value["trees"], &mut garden.trees);
             get_variables(&value["variables"], &mut garden.variables);
             get_multivariables(&value["environment"], &mut garden.environment);
-            get_multivariables(&value["commands"], &mut garden.commands);
+            get_multivariables_hashmap(&value["commands"], &mut garden.commands);
             get_variables(&value["gitconfig"], &mut garden.gitconfig);
             gardens.push(garden);
         }

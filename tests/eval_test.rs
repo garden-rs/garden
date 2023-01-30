@@ -333,14 +333,11 @@ fn command_tree_scope() -> Result<()> {
     // tree-specific commands.
     {
         let values = garden::eval::command(&app, &context, "test");
-        assert_eq!(values.len(), 2);
+        assert_eq!(values.len(), 1);
 
-        assert_eq!(values[0].len(), 1);
-        assert_eq!(values[0][0], "make test");
-
-        assert_eq!(values[1].len(), 2);
-        assert_eq!(values[1][0], "git status --short");
-        assert_eq!(values[1][1], "make tox");
+        assert_eq!(values[0].len(), 2);
+        assert_eq!(values[0][0], "git status --short");
+        assert_eq!(values[0][1], "make tox");
     }
 
     Ok(())

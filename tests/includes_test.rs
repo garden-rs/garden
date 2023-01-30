@@ -1,6 +1,6 @@
 pub mod common;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 use garden::string;
 
@@ -48,12 +48,12 @@ fn template_includes() -> Result<()> {
     assert_eq!(result, "template");
     let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
     assert_eq!(constant, "constant");
-    assert_eq!(tree.commands.len(), 1);
-    assert_eq!(tree.commands[0].get_name(), "echo");
-    assert_eq!(
-        tree.commands[0].get(0).get_expr(),
-        "echo Hello, ${TREE_NAME}"
-    );
+    assert_eq!(1, tree.commands.len());
+    let echo_cmd_opt = tree.commands.get("echo");
+    assert!(echo_cmd_opt.is_some());
+    let echo_cmd = echo_cmd_opt.context("echo")?;
+    assert_eq!(1, echo_cmd.len());
+    assert_eq!(echo_cmd[0].get_expr(), "echo Hello, ${TREE_NAME}");
 
     // Test a template that uses "extend" on a template defined via an include file.
     // The "tree-echo-extended" uses "extend: tree-echo".
@@ -63,14 +63,14 @@ fn template_includes() -> Result<()> {
     let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
     assert_eq!(result, "extended");
     assert_eq!(constant, "constant");
-    assert_eq!(tree.commands.len(), 2);
-    assert_eq!(tree.commands[0].get_name(), "echo");
-    assert_eq!(
-        tree.commands[0].get(0).get_expr(),
-        "echo Hello, ${TREE_NAME}"
-    );
-    assert_eq!(tree.commands[1].get_name(), "echo");
-    assert_eq!(tree.commands[1].get(0).get_expr(), "echo extended");
+    assert_eq!(tree.commands.len(), 1);
+
+    let echo_cmd_opt = tree.commands.get("echo");
+    assert!(echo_cmd_opt.is_some());
+
+    let echo_cmd = echo_cmd_opt.context("echo")?;
+    assert_eq!(1, echo_cmd.len());
+    assert_eq!(echo_cmd[0].get_expr(), "echo extended");
 
     // Test a tree that uses "templates" with a template from a nested include file.
     let context = garden::query::find_tree(&app, config_id, "tree-echo-nested", None)?;
@@ -79,12 +79,13 @@ fn template_includes() -> Result<()> {
     let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
     assert_eq!(constant, "constant");
     assert_eq!(result, "nested");
-    assert_eq!(tree.commands.len(), 1);
-    assert_eq!(tree.commands[0].get_name(), "echo");
-    assert_eq!(
-        tree.commands[0].get(0).get_expr(),
-        "echo Hello, ${TREE_NAME}"
-    );
+
+    let echo_cmd_opt = tree.commands.get("echo");
+    assert!(echo_cmd_opt.is_some());
+
+    let echo_cmd = echo_cmd_opt.context("echo")?;
+    assert_eq!(1, echo_cmd.len());
+    assert_eq!(echo_cmd[0].get_expr(), "echo Hello, ${TREE_NAME}");
 
     // Test a tree that uses "extend" on a tree defined via an include file.
     let context = garden::query::find_tree(&app, config_id, "tree-echo-extended-tree", None)?;
@@ -113,9 +114,12 @@ fn command_overrides() -> Result<()> {
     // Base case: the "echo" command is read.
     let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
-    assert_eq!(config.commands[0].get_name(), "echo");
-    assert_eq!(config.commands[1].get_name(), "test");
-    assert_eq!(config.commands[0].get(0).get_expr(), "echo commands.yaml");
+    assert!(config.commands.get("echo").is_some());
+    assert!(config.commands.get("test").is_some());
+
+    let echo_cmd = config.commands.get("echo").context("echo")?;
+    assert_eq!(1, echo_cmd.len());
+    assert_eq!(echo_cmd[0].get_expr(), "echo commands.yaml");
 
     // If the same command is seen twice it is only defined once.
     let string = string!(
@@ -140,13 +144,16 @@ fn command_overrides() -> Result<()> {
     );
     let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
-    assert_eq!(config.commands[0].get_name(), "echo");
-    assert_eq!(
-        config.commands[0].get(0).get_expr(),
-        "echo commands-override.yaml"
-    );
-    assert_eq!(config.commands[1].get_name(), "test");
-    assert_eq!(config.commands[1].get(0).get_expr(), "echo override test");
+    assert!(config.commands.get("echo").is_some());
+    assert!(config.commands.get("test").is_some());
+
+    let echo_cmd = config.commands.get("echo").context("echo")?;
+    assert_eq!(1, echo_cmd.len());
+    assert_eq!(echo_cmd[0].get_expr(), "echo commands-override.yaml");
+
+    let test_cmd = config.commands.get("test").context("test")?;
+    assert_eq!(1, test_cmd.len());
+    assert_eq!(test_cmd[0].get_expr(), "echo override test");
 
     // If the same command is seen in the garden.yaml then it overrides includes.
     let string = string!(
@@ -161,12 +168,12 @@ fn command_overrides() -> Result<()> {
     );
     let config = common::from_string(&string);
     assert_eq!(config.commands.len(), 2);
-    assert_eq!(config.commands[0].get_name(), "test");
-    assert_eq!(config.commands[1].get_name(), "echo");
-    assert_eq!(
-        config.commands[1].get(0).get_expr(),
-        "echo top-level override"
-    );
+    assert!(config.commands.get("echo").is_some());
+    assert!(config.commands.get("test").is_some());
+
+    let echo_cmd = config.commands.get("echo").context("echo")?;
+    assert_eq!(1, echo_cmd.len());
+    assert_eq!(echo_cmd[0].get_expr(), "echo top-level override");
 
     Ok(())
 }

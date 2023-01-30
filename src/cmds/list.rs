@@ -17,8 +17,8 @@ pub fn main(app: &mut model::ApplicationContext, options: &ListOptions) -> Resul
 
     if options.commands {
         println!("commands:");
-        for cmd in &config.commands {
-            println!("- {}", cmd.get_name());
+        for cmd in config.commands.keys() {
+            println!("- {}", cmd);
         }
         return Ok(());
     }

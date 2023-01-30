@@ -60,7 +60,7 @@ fn variables() {
 
 /// Commands
 #[test]
-fn commands() {
+fn commands() -> Result<()> {
     let string = string!(
         r#"
     commands:
@@ -73,14 +73,35 @@ fn commands() {
     let config = common::from_string(&string);
     assert_eq!(2, config.commands.len());
 
-    assert_eq!("test_cmd", config.commands[0].get_name());
-    assert_eq!(1, config.commands[0].len());
-    assert_eq!("echo cmd", config.commands[0].get(0).get_expr());
+    assert!(config.commands.get("test_cmd").is_some());
+    assert_eq!(
+        1,
+        config
+            .commands
+            .get("test_cmd")
+            .context("test_cmd command")?
+            .len()
+    );
+    assert_eq!(
+        "echo cmd",
+        config
+            .commands
+            .get("test_cmd")
+            .context("test_cmd command")?
+            .get(0)
+            .context("test_cmd[0]")?
+            .get_expr()
+    );
 
-    assert_eq!("test_cmd_vec", config.commands[1].get_name());
-    assert_eq!(2, config.commands[1].len());
-    assert_eq!("echo first", config.commands[1].get(0).get_expr());
-    assert_eq!("echo second", config.commands[1].get(1).get_expr());
+    let test_cmd_vec_opt = config.commands.get("test_cmd_vec");
+    assert!(test_cmd_vec_opt.is_some());
+
+    let test_cmd_vec = test_cmd_vec_opt.context("test_cmd_vec")?;
+    assert_eq!(2, test_cmd_vec.len());
+    assert_eq!("echo first", test_cmd_vec[0].get_expr());
+    assert_eq!("echo second", test_cmd_vec[1].get_expr());
+
+    Ok(())
 }
 
 /// Templates
@@ -127,7 +148,7 @@ fn templates() {
 
     let template2 = config.templates.get("template2").unwrap();
     assert_eq!("template2", template2.get_name());
-    assert_eq!(indexset!{string!("template1")}, template2.extend);
+    assert_eq!(indexset! {string!("template1")}, template2.extend);
     assert_eq!(3, template2.tree.variables.len());
     assert_eq!("baz", template2.tree.variables[0].get_name());
     assert_eq!("zax", template2.tree.variables[0].get_expr());
@@ -138,7 +159,10 @@ fn templates() {
 
     let template3 = config.templates.get("template3").unwrap();
     assert_eq!("template3", template3.get_name());
-    assert_eq!(indexset!{string!("template1"), string!("template2")}, template3.extend);
+    assert_eq!(
+        indexset! {string!("template1"), string!("template2")},
+        template3.extend
+    );
     assert_eq!(5, template3.tree.variables.len());
     assert_eq!("foo", template3.tree.variables[0].get_name());
     assert_eq!("boo", template3.tree.variables[0].get_expr());
@@ -183,7 +207,7 @@ fn groups() -> Result<()> {
 
 /// Trees
 #[test]
-fn trees() {
+fn trees() -> Result<()> {
     let config = common::garden_config();
     assert!(config.trees.len() >= 6);
     // git
@@ -193,7 +217,7 @@ fn trees() {
 
     assert_eq!("git", tree0.get_name());
     assert_eq!("git", tree0.get_path().get_expr()); // picks up default value
-    assert_eq!(indexset!{string!("makefile")}, tree0.templates);
+    assert_eq!(indexset! {string!("makefile")}, tree0.templates);
 
     assert_eq!(1, tree0.remotes.len());
     assert_eq!("origin", tree0.remotes[0].get_name());
@@ -234,7 +258,10 @@ fn trees() {
 
     assert_eq!("cola", tree1.get_name());
     assert_eq!("git-cola", tree1.get_path().get_expr());
-    assert_eq!(indexset!{string!("makefile"), string!("python")}, tree1.templates);
+    assert_eq!(
+        indexset! {string!("makefile"), string!("python")},
+        tree1.templates
+    );
 
     assert_eq!(2, tree1.remotes.len());
     assert_eq!("origin", tree1.remotes[0].get_name());
@@ -266,19 +293,17 @@ fn trees() {
         tree1.environment[2].get(0).get_expr()
     );
 
-    assert_eq!(4, tree1.commands.len());
+    assert_eq!(3, tree1.commands.len());
     // From the tree
-    assert_eq!("build", tree1.commands[0].get_name());
-    assert_eq!("install", tree1.commands[1].get_name());
-    assert_eq!("test", tree1.commands[2].get_name());
-    assert_eq!("test", tree1.commands[3].get_name());
+    assert!(tree1.commands.get("build").is_some());
+    assert!(tree1.commands.get("install").is_some());
+    assert!(tree1.commands.get("test").is_some());
     // From the template
-    assert_eq!(1, tree1.commands[2].len());
-    assert_eq!("make test", tree1.commands[2].get(0).get_expr());
-    // From the tree
-    assert_eq!(2, tree1.commands[3].len());
-    assert_eq!("git status --short", tree1.commands[3].get(0).get_expr());
-    assert_eq!("make tox", tree1.commands[3].get(1).get_expr());
+    let test_cmd = tree1.commands.get("test").context("test")?;
+    assert_eq!(2, test_cmd.len());
+    // Commands from the tree override commands defined in the base template.
+    assert_eq!("git status --short", test_cmd[0].get_expr());
+    assert_eq!("make tox", test_cmd[1].get_expr());
 
     // annex/data
     let tree3 = &config.trees[4];
@@ -311,17 +336,19 @@ fn trees() {
         "git@example.com:git-annex/data.git",
         tree4.remotes[0].get_expr()
     );
+
+    Ok(())
 }
 
 /// Gardens
 #[test]
-fn gardens() {
+fn gardens() -> Result<()> {
     let config = common::garden_config();
-    test_gardens(&config);
+    test_gardens(&config)
 }
 
 #[test]
-fn gardens_json() {
+fn gardens_json() -> Result<()> {
     let string = string!(
         r#"
 {
@@ -355,10 +382,10 @@ fn gardens_json() {
     "#
     );
     let config = common::from_string(&string);
-    test_gardens(&config);
+    test_gardens(&config)
 }
 
-fn test_gardens(config: &garden::model::Configuration) {
+fn test_gardens(config: &garden::model::Configuration) -> Result<()> {
     assert!(config.gardens.len() >= 2);
 
     // "cola" garden
@@ -371,16 +398,13 @@ fn test_gardens(config: &garden::model::Configuration) {
     assert_eq!("cola", config.gardens[0].groups[0]);
 
     assert_eq!(1, config.gardens[0].commands.len());
-    assert_eq!("summary", config.gardens[0].commands[0].get_name());
-    assert_eq!(2, config.gardens[0].commands[0].len());
-    assert_eq!(
-        "git branch",
-        config.gardens[0].commands[0].get(0).get_expr()
-    );
-    assert_eq!(
-        "git status --short",
-        config.gardens[0].commands[0].get(1).get_expr()
-    );
+    let summary_cmd_opt = config.gardens[0].commands.get("summary");
+    assert!(summary_cmd_opt.is_some());
+
+    let summary_cmd = summary_cmd_opt.context("summary")?;
+    assert_eq!(2, summary_cmd.len());
+    assert_eq!("git branch", summary_cmd[0].get_expr());
+    assert_eq!("git status --short", summary_cmd[1].get_expr());
 
     assert_eq!(1, config.gardens[0].variables.len());
     assert_eq!("prefix", config.gardens[0].variables[0].get_name());
@@ -422,6 +446,8 @@ fn test_gardens(config: &garden::model::Configuration) {
         "author@example.com",
         config.gardens[1].gitconfig[1].get_expr()
     );
+
+    Ok(())
 }
 
 #[test]

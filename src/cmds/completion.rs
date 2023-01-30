@@ -26,10 +26,10 @@ pub fn main(options: &MainOptions, completion_options: &CompletionOptions) -> Re
     // Register custom commands with the completion system
     if completion_options.commands {
         let config = config::from_options(options)?;
-        for custom_cmd in config.commands {
+        for name in config.commands.keys() {
             cmd = cmd.subcommand(
-                Command::new(custom_cmd.get_name())
-                    .about(format!("Custom {} command", custom_cmd.get_name()))
+                Command::new(name)
+                    .about(format!("Custom {} command", name))
                     .arg(
                         Arg::new("keep_going")
                             .help("Continue to the next tree when errors occur")
