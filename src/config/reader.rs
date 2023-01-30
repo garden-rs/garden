@@ -253,25 +253,6 @@ fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
 }
 
 /// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
-fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
-    if let Yaml::String(yaml_string) = yaml {
-        vec.push(yaml_string.clone());
-        return true;
-    }
-
-    if let Yaml::Array(ref yaml_vec) = yaml {
-        for value in yaml_vec {
-            if let Yaml::String(ref value_str) = value {
-                vec.push(value_str.clone());
-            }
-        }
-        return true;
-    }
-
-    false
-}
-
-/// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
 fn get_indexset_str(yaml: &Yaml, values: &mut IndexSet<String>) -> bool {
     if let Yaml::String(yaml_string) = yaml {
         values.insert(yaml_string.clone());
@@ -829,7 +810,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
             let mut garden = model::Garden::default();
             get_str(name, garden.get_name_mut());
             get_indexset_str(&value["groups"], &mut garden.groups);
-            get_vec_str(&value["trees"], &mut garden.trees);
+            get_indexset_str(&value["trees"], &mut garden.trees);
             get_variables(&value["variables"], &mut garden.variables);
             get_multivariables(&value["environment"], &mut garden.environment);
             get_multivariables_hashmap(&value["commands"], &mut garden.commands);

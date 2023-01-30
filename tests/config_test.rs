@@ -436,7 +436,7 @@ fn test_gardens(config: &garden::model::Configuration) -> Result<()> {
     assert!(config.gardens[1].commands.is_empty());
 
     assert_eq!(indexset! {string!("cola")}, config.gardens[1].groups);
-    assert_eq!(vec!["gitk"], config.gardens[1].trees);
+    assert_eq!(indexset! {string!("gitk")}, config.gardens[1].trees);
 
     assert_eq!(config.gardens[1].gitconfig.len(), 2);
     assert_eq!("user.name", config.gardens[1].gitconfig[0].get_name());
