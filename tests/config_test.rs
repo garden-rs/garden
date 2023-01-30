@@ -127,7 +127,7 @@ fn templates() {
 
     let template2 = config.templates.get("template2").unwrap();
     assert_eq!("template2", template2.get_name());
-    assert_eq!(vec!["template1"], template2.extend);
+    assert_eq!(indexset!{string!("template1")}, template2.extend);
     assert_eq!(3, template2.tree.variables.len());
     assert_eq!("baz", template2.tree.variables[0].get_name());
     assert_eq!("zax", template2.tree.variables[0].get_expr());
@@ -138,7 +138,7 @@ fn templates() {
 
     let template3 = config.templates.get("template3").unwrap();
     assert_eq!("template3", template3.get_name());
-    assert_eq!(vec!["template1", "template2"], template3.extend);
+    assert_eq!(indexset!{string!("template1"), string!("template2")}, template3.extend);
     assert_eq!(5, template3.tree.variables.len());
     assert_eq!("foo", template3.tree.variables[0].get_name());
     assert_eq!("boo", template3.tree.variables[0].get_expr());

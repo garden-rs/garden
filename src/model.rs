@@ -375,7 +375,7 @@ impl Group {
 #[derive(Clone, Debug, Default)]
 pub struct Template {
     pub tree: Tree,
-    pub extend: Vec<String>,
+    pub extend: IndexSet<String>,
     name: String,
 }
 

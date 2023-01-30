@@ -518,7 +518,7 @@ fn get_template(
     // the template itself. Any "VAR=" variables will be overridden
     // by the tree entry itself, or the last template processed.
     // "environment" follow last-set-wins semantics.
-    get_vec_str(&value["extend"], &mut template.extend);
+    get_indexset_str(&value["extend"], &mut template.extend);
     for template_name in &template.extend {
         // First check if we have this template in the local YAML data.
         // We check here first so that parsing is not order-dependent.
