@@ -1,6 +1,7 @@
 pub mod common;
 
 use anyhow::{Context, Result};
+use indexmap::indexset;
 
 use garden::string;
 
@@ -158,13 +159,24 @@ fn groups() -> Result<()> {
             .get_name()
     );
     assert_eq!(
-        vec!["git", "cola", "python/qtpy"],
+        indexset! {
+            string!("git"),
+            string!("cola"),
+            string!("python/qtpy")
+        },
         config.groups["cola"].members
     );
 
     let test_group = config.groups.get("test").context("missing text group")?;
     assert_eq!("test", test_group.get_name());
-    assert_eq!(vec!["a", "b", "c"], test_group.members);
+    assert_eq!(
+        indexset! {
+            string!("a"),
+            string!("b"),
+            string!("c")
+        },
+        test_group.members
+    );
 
     Ok(())
 }

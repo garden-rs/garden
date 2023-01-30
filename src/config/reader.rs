@@ -271,6 +271,25 @@ fn get_vec_str(yaml: &Yaml, vec: &mut Vec<String>) -> bool {
     false
 }
 
+/// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
+fn get_indexset_str(yaml: &Yaml, values: &mut IndexSet<String>) -> bool {
+    if let Yaml::String(yaml_string) = yaml {
+        values.insert(yaml_string.clone());
+        return true;
+    }
+
+    if let Yaml::Array(ref yaml_vec) = yaml {
+        for value in yaml_vec {
+            if let Yaml::String(ref value_str) = value {
+                values.insert(value_str.clone());
+            }
+        }
+        return true;
+    }
+
+    false
+}
+
 /// Yaml::String or Yaml::Array<Yaml::String> -> Vec<Variable>
 fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
     if let Yaml::String(yaml_string) = yaml {
@@ -787,12 +806,12 @@ fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
 }
 
 /// Read group definitions
-fn get_groups(yaml: &Yaml, groups: &mut HashMap<String, model::Group>) -> bool {
+fn get_groups(yaml: &Yaml, groups: &mut IndexMap<String, model::Group>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut group = model::Group::default();
             get_str(name, group.get_name_mut());
-            get_vec_str(value, &mut group.members);
+            get_indexset_str(value, &mut group.members);
             groups.insert(group.get_name_owned(), group);
         }
         return true;

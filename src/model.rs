@@ -4,6 +4,7 @@ use super::eval;
 use super::syntax;
 
 use clap::ValueEnum;
+use indexmap::{IndexMap, IndexSet};
 use indextree::{Arena, NodeId};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -347,7 +348,7 @@ impl Tree {
 #[derive(Clone, Debug, Default)]
 pub struct Group {
     name: String,
-    pub members: Vec<String>,
+    pub members: IndexSet<String>,
 }
 
 impl_display!(Group);
@@ -448,7 +449,7 @@ pub struct Configuration {
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
     pub grafts: Vec<Graft>,
-    pub groups: HashMap<String, Group>,
+    pub groups: IndexMap<String, Group>,
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
     pub root: Variable,
