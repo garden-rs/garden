@@ -31,9 +31,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
     // This makes it convenient to have gardens and trees with the same name.
     for ctx in &contexts {
         if config.trees[ctx.tree].get_name() == &options.query {
-            context.tree = ctx.tree;
-            context.garden = ctx.garden;
-            context.group = ctx.group;
+            context = ctx.clone();
             break;
         }
     }
@@ -43,9 +41,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
         if let Some(ctx) = query::tree_from_name(config, tree, None, None) {
             for query_ctx in &contexts {
                 if ctx.tree == query_ctx.tree {
-                    context.tree = query_ctx.tree;
-                    context.garden = query_ctx.garden;
-                    context.group = query_ctx.group;
+                    context = query_ctx.clone();
                     found = true;
                     break;
                 }

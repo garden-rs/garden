@@ -347,7 +347,6 @@ impl Tree {
 #[derive(Clone, Debug, Default)]
 pub struct Group {
     name: String,
-    index: GroupIndex,
     pub members: Vec<String>,
 }
 
@@ -358,12 +357,13 @@ impl Group {
         &self.name
     }
 
-    pub fn get_name_mut(&mut self) -> &mut String {
-        &mut self.name
+    /// Return an owned copy of the name field.
+    pub fn get_name_owned(&self) -> String {
+        self.get_name().to_owned()
     }
 
-    pub fn get_index(&self) -> GardenIndex {
-        self.index
+    pub fn get_name_mut(&mut self) -> &mut String {
+        &mut self.name
     }
 }
 
@@ -448,7 +448,7 @@ pub struct Configuration {
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
     pub grafts: Vec<Graft>,
-    pub groups: Vec<Group>,
+    pub groups: HashMap<String, Group>,
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
     pub root: Variable,
@@ -537,10 +537,6 @@ impl Configuration {
     }
 
     fn update_indexes(&mut self) {
-        for (idx, group) in self.groups.iter_mut().enumerate() {
-            group.index = idx as GroupIndex;
-        }
-
         for (idx, garden) in self.gardens.iter_mut().enumerate() {
             garden.index = idx as GardenIndex;
         }
@@ -855,7 +851,7 @@ pub struct TreeContext {
     pub tree: TreeIndex,
     pub config: Option<ConfigId>,
     pub garden: Option<GardenIndex>,
-    pub group: Option<GroupIndex>,
+    pub group: Option<String>,
 }
 
 impl_display_brief!(TreeContext);
@@ -866,7 +862,7 @@ impl TreeContext {
         tree: TreeIndex,
         config: Option<ConfigId>,
         garden: Option<GardenIndex>,
-        group: Option<GroupIndex>,
+        group: Option<String>,
     ) -> Self {
         TreeContext {
             tree,

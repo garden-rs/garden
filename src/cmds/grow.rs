@@ -297,12 +297,10 @@ fn grow_tree_from_context_as_worktree(
     let worktree = eval::tree_value(config, tree.worktree.get_expr(), ctx.tree, ctx.garden);
     let branch = eval::tree_value(config, tree.branch.get_expr(), ctx.tree, ctx.garden);
 
-    let parent_ctx =
-        query::tree_from_name(config, &worktree, ctx.garden, ctx.group).ok_or_else(|| {
-            errors::GardenError::WorktreeNotFound {
-                tree: tree.get_name().to_string(),
-                worktree: worktree.clone(),
-            }
+    let parent_ctx = query::tree_from_name(config, &worktree, ctx.garden, ctx.group.as_ref())
+        .ok_or_else(|| errors::GardenError::WorktreeNotFound {
+            tree: tree.get_name().to_string(),
+            worktree: worktree.clone(),
         })?;
 
     exit_status =

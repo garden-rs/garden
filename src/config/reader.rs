@@ -784,13 +784,13 @@ fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
 }
 
 /// Read group definitions
-fn get_groups(yaml: &Yaml, groups: &mut Vec<model::Group>) -> bool {
+fn get_groups(yaml: &Yaml, groups: &mut HashMap<String, model::Group>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut group = model::Group::default();
             get_str(name, group.get_name_mut());
             get_vec_str(value, &mut group.members);
-            groups.push(group);
+            groups.insert(group.get_name_owned(), group);
         }
         return true;
     }

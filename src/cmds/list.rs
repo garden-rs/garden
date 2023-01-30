@@ -35,8 +35,8 @@ pub fn main(app: &mut model::ApplicationContext, options: &ListOptions) -> Resul
     if !config.groups.is_empty() {
         println!("groups:");
         print!("    ");
-        for group in &config.groups {
-            print!("{} ", group.get_name());
+        for name in config.groups.keys() {
+            print!("{} ", name);
         }
         println!();
     }

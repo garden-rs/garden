@@ -213,7 +213,7 @@ fn garden_environment() {
 fn group_environment() {
     let config = common::garden_config();
     // cola tree(1) + cola group(Some(0))
-    let context = garden::model::TreeContext::new(1, None, None, Some(0));
+    let context = garden::model::TreeContext::new(1, None, None, Some("cola".to_string()));
     let values = garden::eval::environment(&config, &context);
     assert_eq!(values.len(), 5);
 

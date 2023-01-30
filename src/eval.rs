@@ -351,15 +351,16 @@ pub fn environment(
             vars.push((context.clone(), var.clone()));
         }
         ready = true;
-    } else if let Some(idx) = context.group {
+    } else if let Some(name) = &context.group {
         // Evaluate group environments.
-        let group = &config.groups[idx];
-        for ctx in query::trees_from_group(config, None, group) {
-            for var in &config.trees[ctx.tree].environment {
-                vars.push((ctx.clone(), var.clone()));
+        if let Some(group) = config.groups.get(name) {
+            for ctx in query::trees_from_group(config, None, group) {
+                for var in &config.trees[ctx.tree].environment {
+                    vars.push((ctx.clone(), var.clone()));
+                }
             }
+            ready = true;
         }
-        ready = true;
     }
 
     // Evaluate a single tree environment when not handled above.

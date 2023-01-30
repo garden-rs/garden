@@ -26,9 +26,9 @@ pub fn resolve_trees(config: &model::Configuration, query: &str) -> Vec<model::T
     }
 
     if tree_query.include_groups {
-        for group in &config.groups {
+        for (name, group) in &config.groups {
             // Find the matching group
-            if !pattern.matches(group.get_name()) {
+            if !pattern.matches(name) {
                 continue;
             }
             // Matching group found, collect its trees
@@ -97,8 +97,8 @@ pub fn trees_from_garden(
             Err(_) => continue,
         };
         // Loop over configured groups to find the matching groups
-        for cfg_group in &config.groups {
-            if !pattern.matches(cfg_group.get_name()) {
+        for (name, cfg_group) in &config.groups {
+            if !pattern.matches(name) {
                 continue;
             }
             // Match found -- take all of the discovered trees.
@@ -137,7 +137,7 @@ pub fn trees_from_group(
             config,
             tree,
             garden,
-            Some(group.get_index()),
+            Some(group.get_name()),
         ));
     }
 
@@ -154,7 +154,7 @@ pub fn tree_from_name(
     config: &model::Configuration,
     tree: &str,
     garden_idx: Option<model::GardenIndex>,
-    group_idx: Option<model::GroupIndex>,
+    group: Option<&String>,
 ) -> Option<model::TreeContext> {
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
@@ -164,7 +164,7 @@ pub fn tree_from_name(
                 tree_idx,
                 config.get_id(),
                 garden_idx,
-                group_idx,
+                group.cloned(),
             ));
         }
     }
@@ -190,7 +190,7 @@ pub fn trees_from_pattern(
     config: &model::Configuration,
     tree: &str,
     garden_idx: Option<model::GardenIndex>,
-    group_idx: Option<model::GroupIndex>,
+    group: Option<&String>,
 ) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
     let pattern = match glob::Pattern::new(tree) {
@@ -206,7 +206,7 @@ pub fn trees_from_pattern(
                 tree_idx,
                 config.get_id(),
                 garden_idx,
-                group_idx,
+                group.cloned(),
             ));
         }
     }
@@ -396,7 +396,9 @@ pub fn shared_worktree_path(config: &model::Configuration, ctx: &model::TreeCont
     let tree = &config.trees[ctx.tree];
     if tree.is_worktree {
         let worktree = eval::tree_value(config, tree.worktree.get_expr(), ctx.tree, ctx.garden);
-        if let Some(parent_ctx) = query::tree_from_name(config, &worktree, ctx.garden, ctx.group) {
+        if let Some(parent_ctx) =
+            query::tree_from_name(config, &worktree, ctx.garden, ctx.group.as_ref())
+        {
             if let Ok(path) = config.trees[parent_ctx.tree].path_as_ref() {
                 return path.to_string();
             }

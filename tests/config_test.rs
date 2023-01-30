@@ -1,6 +1,6 @@
 pub mod common;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 /// Defaults
 #[test]
@@ -143,14 +143,28 @@ fn templates() {
 
 /// Groups
 #[test]
-fn groups() {
+fn groups() -> Result<()> {
     let config = common::garden_config();
     assert!(config.groups.len() >= 2);
-    assert_eq!("cola", config.groups[0].get_name());
-    assert_eq!(vec!["git", "cola", "python/qtpy"], config.groups[0].members);
+    assert!(config.groups.get("cola").is_some());
+    assert_eq!(
+        "cola",
+        config
+            .groups
+            .get("cola")
+            .context("missing cola group")?
+            .get_name()
+    );
+    assert_eq!(
+        vec!["git", "cola", "python/qtpy"],
+        config.groups["cola"].members
+    );
 
-    assert_eq!("test", config.groups[1].get_name());
-    assert_eq!(vec!["a", "b", "c"], config.groups[1].members);
+    let test_group = config.groups.get("test").context("missing text group")?;
+    assert_eq!("test", test_group.get_name());
+    assert_eq!(vec!["a", "b", "c"], test_group.members);
+
+    Ok(())
 }
 
 /// Trees
