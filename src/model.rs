@@ -406,7 +406,7 @@ pub struct Garden {
     pub commands: Vec<MultiVariable>,
     pub environment: Vec<MultiVariable>,
     pub gitconfig: Vec<NamedVariable>,
-    pub groups: Vec<String>,
+    pub groups: IndexSet<String>,
     pub trees: Vec<String>,
     pub variables: Vec<NamedVariable>,
     name: String,
