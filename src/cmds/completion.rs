@@ -29,7 +29,7 @@ pub fn main(options: &MainOptions, completion_options: &CompletionOptions) -> Re
         for name in config.commands.keys() {
             cmd = cmd.subcommand(
                 Command::new(name)
-                    .about(format!("Custom {} command", name))
+                    .about(format!("Custom {name} command"))
                     .arg(
                         Arg::new("keep_going")
                             .help("Continue to the next tree when errors occur")
