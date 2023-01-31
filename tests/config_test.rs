@@ -108,7 +108,7 @@ fn commands() -> Result<()> {
 
 /// Templates
 #[test]
-fn templates() {
+fn templates() -> Result<()> {
     let string = string!(
         r#"
     templates:
@@ -137,8 +137,10 @@ fn templates() {
     let template1 = config.templates.get("template1").unwrap();
     assert_eq!("template1", template1.get_name());
     assert_eq!(1, template1.tree.variables.len());
-    assert_eq!("foo", template1.tree.variables[0].get_name());
-    assert_eq!("bar", template1.tree.variables[0].get_expr());
+
+    let foo_var = template1.tree.variables.get("foo").context("foo")?;
+    assert_eq!("bar", foo_var.get_expr());
+
     assert_eq!(2, template1.tree.environment.len());
     assert_eq!("ENV=", template1.tree.environment[0].get_name());
     assert_eq!(1, template1.tree.environment[0].len());
@@ -152,12 +154,15 @@ fn templates() {
     assert_eq!("template2", template2.get_name());
     assert_eq!(indexset! {string!("template1")}, template2.extend);
     assert_eq!(3, template2.tree.variables.len());
-    assert_eq!("baz", template2.tree.variables[0].get_name());
-    assert_eq!("zax", template2.tree.variables[0].get_expr());
-    assert_eq!("zee", template2.tree.variables[1].get_name());
-    assert_eq!("${foo}", template2.tree.variables[1].get_expr());
-    assert_eq!("foo", template2.tree.variables[2].get_name());
-    assert_eq!("bar", template2.tree.variables[2].get_expr());
+
+    let baz_var = template2.tree.variables.get("baz").context("baz")?;
+    assert_eq!("zax", baz_var.get_expr());
+
+    let zee_var = template2.tree.variables.get("zee").context("zee")?;
+    assert_eq!("${foo}", zee_var.get_expr());
+
+    let foo_var = template2.tree.variables.get("foo").context("foo")?;
+    assert_eq!("bar", foo_var.get_expr());
 
     let template3 = config.templates.get("template3").unwrap();
     assert_eq!("template3", template3.get_name());
@@ -165,9 +170,12 @@ fn templates() {
         indexset! {string!("template1"), string!("template2")},
         template3.extend
     );
-    assert_eq!(5, template3.tree.variables.len());
-    assert_eq!("foo", template3.tree.variables[0].get_name());
-    assert_eq!("boo", template3.tree.variables[0].get_expr());
+    assert_eq!(3, template3.tree.variables.len());
+
+    let foo_var = template3.tree.variables.get("foo").context("foo")?;
+    assert_eq!("boo", foo_var.get_expr());
+
+    Ok(())
 }
 
 /// Groups
@@ -225,26 +233,23 @@ fn trees() -> Result<()> {
     assert_eq!("origin", tree0.remotes[0].get_name());
     assert_eq!("https://github.com/git/git", tree0.remotes[0].get_expr());
 
-    assert_eq!(4, tree0.variables.len());
+    assert_eq!(3, tree0.variables.len());
 
-    // TREE_NAME, highest precedence at position 0
-    assert_eq!("TREE_NAME", tree0.variables[0].get_name());
-    assert_eq!("git", tree0.variables[0].get_expr());
-    assert_eq!("git", tree0.variables[0].get_value().unwrap());
+    // TREE_NAME, highest precedence.
+    let tree_name_var = tree0.variables.get("TREE_NAME").context("TREE_NAME")?;
+    assert_eq!("git", tree_name_var.get_expr());
+    assert_eq!("git", tree_name_var.get_value().unwrap());
 
-    // TREE_PATH, highest precedence at position 0
-    assert_eq!("TREE_PATH", tree0.variables[1].get_name());
-    assert_eq!("/home/test/src/git", tree0.variables[1].get_expr());
-    assert_eq!(
-        "/home/test/src/git",
-        tree0.variables[1].get_value().unwrap()
-    );
+    // TREE_PATH, highest precedence.
+    let tree_path_var = tree0.variables.get("TREE_PATH").context("TREE_PATH")?;
+    assert_eq!("/home/test/src/git", tree_path_var.get_expr());
+    assert_eq!("/home/test/src/git", tree_path_var.get_value().unwrap());
 
-    assert_eq!("prefix", tree0.variables[2].get_name());
-    assert_eq!("~/.local", tree0.variables[2].get_expr());
+    let prefix_var = tree0.variables.get("prefix").context("prefix")?;
+    assert_eq!("~/.local", prefix_var.get_expr());
     // From the template, effectively "hidden"
-    assert_eq!("prefix", tree0.variables[3].get_name());
-    assert_eq!("${TREE_PATH}/local", tree0.variables[3].get_expr());
+    // assert_eq!("${TREE_PATH}/local", prefix_var.get_expr());
+
     // gitconfig
     assert_eq!(2, tree0.gitconfig.len());
     assert_eq!("user.name", tree0.gitconfig[0].get_name());
@@ -332,12 +337,14 @@ fn trees() -> Result<()> {
     assert_eq!("remote.origin.annex-ignore", tree4.gitconfig[0].get_name());
     assert_eq!("true", tree4.gitconfig[0].get_expr());
     // remotes
-    assert_eq!(1, tree4.remotes.len());
+    assert_eq!(2, tree4.remotes.len());
     assert_eq!("origin", tree4.remotes[0].get_name());
     assert_eq!(
         "git@example.com:git-annex/data.git",
         tree4.remotes[0].get_expr()
     );
+    assert_eq!("local", tree4.remotes[1].get_name());
+    assert_eq!("${GARDEN_ROOT}/annex/local", tree4.remotes[1].get_expr());
 
     Ok(())
 }

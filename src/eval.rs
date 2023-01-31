@@ -73,26 +73,13 @@ fn expand_tree_vars(
     }
 
     // Nothing was found -- check for the variable in tree scope.
-    found = false;
-    var_idx = 0;
-
-    for (idx, var) in config.trees[tree_idx].variables.iter().enumerate() {
-        if var.get_name() == name {
-            if let Some(var_value) = var.get_value() {
-                return Some(var_value.to_string());
-            }
-            found = true;
-            var_idx = idx;
-            break;
+    if let Some(var) = config.trees[tree_idx].variables.get(name) {
+        if let Some(var_value) = var.get_value() {
+            return Some(var_value.to_string());
         }
-    }
-
-    if found {
-        let expr = config.trees[tree_idx].variables[var_idx]
-            .get_expr()
-            .to_string();
-        let result = tree_value(config, &expr, tree_idx, garden_idx);
-        config.trees[tree_idx].variables[var_idx].set_value(result.to_string());
+        let expr = var.get_expr();
+        let result = tree_value(config, expr, tree_idx, garden_idx);
+        var.set_value(result.to_string());
         return Some(result);
     }
 

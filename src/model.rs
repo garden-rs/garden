@@ -195,7 +195,7 @@ pub struct Tree {
     pub remotes: Vec<NamedVariable>,
     pub symlink: Variable,
     pub templates: IndexSet<String>,
-    pub variables: Vec<NamedVariable>,
+    pub variables: VariableHashMap,
     pub branch: Variable,
     pub worktree: Variable,
     pub clone_depth: i64,
@@ -274,7 +274,7 @@ impl Tree {
         // self.path is a variable but it is not reset because
         // the tree path is evaluated once when the configuration
         // is first read, and never again.
-        for var in &self.variables {
+        for var in self.variables.values() {
             var.reset();
         }
 
@@ -290,7 +290,7 @@ impl Tree {
     }
 
     /// Copy the guts of another tree into the current tree.
-    pub fn clone_from_tree(&mut self, tree: &Tree, clone_variables: bool) {
+    pub fn clone_from_tree(&mut self, tree: &Tree) {
         // "commands" are concatenated across templates.
         append_hashmap(&mut self.commands, &tree.commands);
 
@@ -337,14 +337,8 @@ impl Tree {
             self.worktree = tree.worktree.clone();
         }
 
-        if clone_variables {
-            if !tree.templates.is_empty() {
-                append_indexset(&mut self.templates, &tree.templates);
-            }
-            if !tree.variables.is_empty() {
-                self.variables.append(&mut tree.variables.clone());
-            }
-        }
+        append_indexset(&mut self.templates, &tree.templates);
+        append_hashmap(&mut self.variables, &tree.variables);
 
         self.update_flags();
     }
@@ -409,12 +403,7 @@ impl Template {
 
     /// Apply this template onto the specified tree.
     pub fn apply(&self, tree: &mut Tree) {
-        tree.clone_from_tree(&self.tree, false);
-    }
-
-    /// Apply this template onto the specified tree.
-    pub fn apply_with_variables(&self, tree: &mut Tree) {
-        tree.clone_from_tree(&self.tree, true);
+        tree.clone_from_tree(&self.tree);
     }
 }
 
@@ -464,7 +453,7 @@ fn get_default_shell() -> String {
 pub struct Configuration {
     pub commands: MultiVariableHashMap,
     pub debug: HashMap<String, u8>,
-    pub environment: VariableHashMap,  // TODO
+    pub environment: VariableHashMap, // TODO
     pub gardens: Vec<Garden>,
     pub grafts: Vec<Graft>,
     pub groups: IndexMap<String, Group>,
@@ -535,21 +524,21 @@ impl Configuration {
 
         for tree in self.trees.iter_mut() {
             if tree.variables.len() >= 2 {
+                // Update TREE_NAME.
+                let tree_name = String::from(tree.get_name());
+                if let Some(var) = tree.variables.get_mut("TREE_NAME") {
+                    var.set_expr(tree_name.to_string());
+                    var.set_value(tree_name);
+                }
                 // Extract the tree's path.  Skip invalid/unset entries.
                 let tree_path = match tree.path_as_ref() {
                     Ok(path) => String::from(path),
                     Err(_) => continue,
                 };
-                // Update TREE_NAME at position 0.
-                let tree_name = String::from(tree.get_name());
-                if tree.variables[0].get_name() == "TREE_NAME" {
-                    tree.variables[0].set_expr(tree_name.clone());
-                    tree.variables[0].set_value(tree_name.clone());
-                }
-                // Update TREE_PATH at position 1.
-                if tree.variables[1].get_name() == "TREE_PATH" {
-                    tree.variables[1].set_expr(tree_path.clone());
-                    tree.variables[1].set_value(tree_path.clone());
+                // Update TREE_PATH.
+                if let Some(var) = tree.variables.get_mut("TREE_PATH") {
+                    var.set_expr(tree_path.to_string());
+                    var.set_value(tree_path);
                 }
             }
         }

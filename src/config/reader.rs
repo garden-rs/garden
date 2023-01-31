@@ -589,35 +589,6 @@ fn get_template(
 
     get_tree_fields(value, &mut template.tree);
 
-    // These follow first-found semantics; process the base templates in
-    // reverse order. We use apply(), which does not process variables.
-    // Variables are handled separately here.
-    for template_name in template.extend.iter().rev() {
-        // First try to read the template definition from the local YAML data.
-        if let Yaml::Hash(_) = templates[template_name.as_ref()] {
-            let base = get_template(
-                &Yaml::String(template_name.clone()),
-                &templates[template_name.as_ref()],
-                config_templates,
-                templates,
-            );
-
-            template
-                .tree
-                .variables
-                .append(&mut base.tree.variables.clone());
-        } else {
-            // If the template didn't exist in the local YAML then read it from the
-            // previously-parsed templates. This follows the same logic as above.
-            if let Some(base) = config_templates.get(template_name) {
-                template
-                    .tree
-                    .variables
-                    .append(&mut base.tree.variables.clone());
-            }
-        }
-    }
-
     template
 }
 
@@ -656,18 +627,14 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 
     // Register the ${TREE_NAME} variable.
     tree.variables.insert(
-        0,
-        model::NamedVariable::new(string!("TREE_NAME"), tree.get_name().clone(), None),
+        string!("TREE_NAME"),
+        model::Variable::new(tree.get_name().clone(), None),
     );
 
     // Register the ${TREE_PATH} variable.
     tree.variables.insert(
-        1,
-        model::NamedVariable::new(
-            string!("TREE_PATH"),
-            tree.get_path().get_expr().clone(),
-            None,
-        ),
+        string!("TREE_PATH"),
+        model::Variable::new(tree.get_path().get_expr().clone(), None),
     );
 
     tree.remotes.push(model::NamedVariable::new(
@@ -681,7 +648,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 
 /// Read fields common to trees and templates.
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
-    get_variables(&value["variables"], &mut tree.variables);
+    get_variables_hashmap(&value["variables"], &mut tree.variables);
     get_variables(&value["gitconfig"], &mut tree.gitconfig);
 
     get_multivariables(&value["environment"], &mut tree.environment);
@@ -711,27 +678,47 @@ fn get_tree(
 ) -> model::Tree {
     // The tree that will be built and returned.
     let mut tree = model::Tree::default();
-    // Holds a base tree specified using "extend: <tree>".
-    let mut base_tree_opt: Option<model::Tree> = None;
 
     // Allow extending an existing tree by specifying "extend".
     let mut extend = String::new();
     if get_str(&value["extend"], &mut extend) {
+        // Holds a base tree specified using "extend: <tree>".
         let tree_name = Yaml::String(extend.clone());
         if let Some(tree_values) = trees.get(&tree_name) {
             let base_tree = get_tree(config, &tree_name, tree_values, trees, false);
-            tree.clone_from_tree(&base_tree, false);
-            base_tree_opt = Some(base_tree);
+            tree.clone_from_tree(&base_tree);
         } else {
             // Allow the referenced tree to be found from an earlier include.
             if let Some(base) = config.get_tree(&extend) {
-                tree.clone_from_tree(base, false);
-                base_tree_opt = Some(base.clone());
+                tree.clone_from_tree(base);
             }
         }
-        if base_tree_opt.is_some() {
-            tree.remotes.truncate(1); // Keep origin only
-            tree.templates.truncate(0); // Parent templates have already been processed.
+        tree.templates.truncate(0); // Base templates were already processed.
+    }
+
+    // Load values from the parent tree when using "worktree: <parent>".
+    let mut parent_expr = String::new();
+    if get_str(&value["worktree"], &mut parent_expr) {
+        let parent_name = eval::value(config, &parent_expr);
+        if !parent_expr.is_empty() {
+            let tree_name = Yaml::String(parent_name);
+            if let Some(tree_values) = trees.get(&tree_name) {
+                let mut base = get_tree(config, &tree_name, tree_values, trees, true);
+                base.templates.truncate(0); // Base templates were already processed.
+                tree.clone_from_tree(&base);
+            }
+        }
+        tree.templates.truncate(0); // Base templates were already processed.
+    }
+
+    // Templates
+    // Process the base templates in the specified order before processing
+    // the template itself.
+    get_indexset_str(&value["templates"], &mut tree.templates);
+    for template_name in &tree.templates.clone() {
+        // Do we have a template by this name? If so, apply the template.
+        if let Some(template) = config.templates.get(template_name) {
+            template.apply(&mut tree);
         }
     }
 
@@ -755,20 +742,17 @@ fn get_tree(
     if variables {
         // Register the ${TREE_NAME} variable.
         tree.variables.insert(
-            0,
-            model::NamedVariable::new(string!("TREE_NAME"), tree.get_name().clone(), None),
+            string!("TREE_NAME"),
+            model::Variable::new(tree.get_name().clone(), None),
         );
         // Register the ${TREE_PATH} variable.
         tree.variables.insert(
-            1,
-            model::NamedVariable::new(
-                string!("TREE_PATH"),
-                tree.get_path().get_expr().clone(),
-                None,
-            ),
+            string!("TREE_PATH"),
+            model::Variable::new(tree.get_path().get_expr().clone(), None),
         );
     }
 
+    // Load the URL and store it in the "origin" remote.
     {
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
@@ -777,49 +761,7 @@ fn get_tree(
         }
     }
 
-    // Templates
-    // Process the base templates in the specified order before processing
-    // the template itself.
-    get_indexset_str(&value["templates"], &mut tree.templates);
-    for template_name in &tree.templates.clone() {
-        // Do we have a template by this name? If so, apply the template.
-        if let Some(template) = config.templates.get(template_name) {
-            template.apply(&mut tree);
-        }
-    }
-
-    // Load values from the parent tree when using "worktree: <parent>".
-    let mut parent_expr = String::new();
-    if get_str(&value["worktree"], &mut parent_expr) {
-        let parent_name = eval::value(config, &parent_expr);
-        if !parent_expr.is_empty() {
-            let tree_name = Yaml::String(parent_name);
-            if let Some(tree_values) = trees.get(&tree_name) {
-                let base = get_tree(config, &tree_name, tree_values, trees, true);
-                tree.clone_from_tree(&base, true);
-            }
-        }
-    }
-
     get_tree_fields(value, &mut tree);
-
-    // Variables follow first-found semantics. This means that the variables vector
-    // needs to contain local variables provided by the tree *before* any variables
-    // provided by templates or "extend"-ed base trees.
-    //
-    // Process "extend" before templates since it has higher precedence.
-    if let Some(mut base_tree) = base_tree_opt {
-        tree.variables.append(&mut base_tree.variables);
-    }
-    // Process templates in reverse order so that variables get defined by the last
-    // template that defines them. Variables are looked up in first-found order.
-    // Processing templates in reverse ensures that variables from templates specified
-    // later in the configuration list will have higher precedence in tree.variables.
-    for template_name in tree.templates.iter().rev() {
-        if let Some(template) = config.templates.get(template_name) {
-            tree.variables.append(&mut template.tree.variables.clone());
-        }
-    }
 
     tree
 }
