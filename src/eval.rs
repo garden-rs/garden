@@ -6,7 +6,11 @@ use super::syntax;
 
 use std::collections::HashMap;
 
-/// Expand variables across all scopes (garden, tree, and global)
+/// Expand variables across all scopes (garden, tree, and global).
+/// - `config`: reference to Configuration
+/// - `tree_idx`: index into the tree being evaluated
+/// - `garden_idx`: optional index into a garden
+/// - `name`: the name of the variable being expanded.
 fn expand_tree_vars(
     config: &model::Configuration,
     tree_idx: model::TreeIndex,
@@ -93,25 +97,10 @@ fn expand_tree_vars(
     }
 
     // Nothing was found.  Check for the variable in global/config scope.
-    found = false;
-    var_idx = 0;
-
-    for (idx, var) in config.variables.iter().enumerate() {
-        if var.get_name() == name {
-            // Return the value immediately if it's already been evaluated.
-            if let Some(var_value) = var.get_value() {
-                return Some(var_value.to_string());
-            }
-            found = true;
-            var_idx = idx;
-            break;
-        }
-    }
-
-    if found {
-        let expr = config.variables[var_idx].get_expr().to_string();
-        let result = tree_value(config, &expr, tree_idx, garden_idx);
-        config.variables[var_idx].set_value(result.clone());
+    if let Some(var) = config.variables.get(name) {
+        let expr = var.get_expr();
+        let result = tree_value(config, expr, tree_idx, garden_idx);
+        var.set_value(result.clone());
         return Some(result);
     }
 
@@ -140,24 +129,15 @@ fn expand_vars(config: &model::Configuration, name: &str) -> Option<String> {
         return Some(format!("${name}"));
     }
 
-    let mut var_idx: usize = 0;
-    let mut found = false;
-
-    for (idx, var) in config.variables.iter().enumerate() {
-        if var.get_name() == name {
-            if let Some(var_value) = var.get_value() {
-                return Some(var_value.to_string());
-            }
-            var_idx = idx;
-            found = true;
-            break;
+    // Check for the variable in global scope.
+    if let Some(var) = config.variables.get(name) {
+        if let Some(var_value) = var.get_value() {
+            return Some(var_value.to_string());
         }
-    }
 
-    if found {
-        let expr = config.variables[var_idx].get_expr().to_string();
-        let result = value(config, &expr);
-        config.variables[var_idx].set_value(result.clone());
+        let expr = var.get_expr();
+        let result = value(config, expr);
+        var.set_value(result.clone());
 
         return Some(result);
     }

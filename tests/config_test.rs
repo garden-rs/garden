@@ -29,7 +29,7 @@ fn core() {
 
 /// Variables
 #[test]
-fn variables() {
+fn variables() -> Result<()> {
     let string = string!(
         r#"
     garden:
@@ -42,20 +42,22 @@ fn variables() {
     let config = common::from_string(&string);
     assert_eq!(3, config.variables.len());
 
-    let mut i = 0;
-    assert_eq!("GARDEN_ROOT", config.variables[i].get_name());
-    assert_eq!("/home/test/src", config.variables[i].get_expr());
-    assert_eq!("/home/test/src", *config.variables[i].get_value().unwrap());
-    i += 1;
+    let root_var = config.variables.get("GARDEN_ROOT").context("GARDEN_ROOT")?;
+    assert_eq!("/home/test/src", root_var.get_expr());
+    assert_eq!(
+        Some("/home/test/src"),
+        root_var.get_value().map(|x| x.as_str())
+    );
 
-    assert_eq!("foo", config.variables[i].get_name());
-    assert_eq!("foo_value", config.variables[i].get_expr());
-    assert_eq!(None, config.variables[i].get_value());
-    i += 1;
+    let foo_var = config.variables.get("foo").context("foo")?;
+    assert_eq!("foo_value", foo_var.get_expr());
+    assert_eq!(None, foo_var.get_value());
 
-    assert_eq!("bar", config.variables[i].get_name());
-    assert_eq!("${foo}", config.variables[i].get_expr());
-    assert_eq!(None, config.variables[i].get_value());
+    let bar_var = config.variables.get("bar").context("bar")?;
+    assert_eq!("${foo}", bar_var.get_expr());
+    assert_eq!(None, bar_var.get_value());
+
+    Ok(())
 }
 
 /// Commands

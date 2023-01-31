@@ -195,17 +195,17 @@ pub fn from_options(
         let expr: String;
         let values: Vec<&str> = k_eq_v.splitn(2, '=').collect();
         if values.len() == 1 {
-            name = values[0].into();
-            expr = "".into();
+            name = values[0].to_string();
+            expr = string!("");
         } else if values.len() == 2 {
-            name = values[0].into();
-            expr = values[1].into();
+            name = values[0].to_string();
+            expr = values[1].to_string();
         } else {
             error!("unable to split '{}'", k_eq_v);
         }
         config
             .variables
-            .insert(0, model::NamedVariable::new(name, expr, None));
+            .insert(name, model::Variable::new(expr, None));
     }
 
     Ok(config)

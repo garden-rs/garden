@@ -100,6 +100,9 @@ fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
     }
 }
 
+/// An unordered mapping of name to Variable.
+pub type VariableHashMap = HashMap<String, Variable>;
+
 // Named variables with a single value
 #[derive(Clone, Debug)]
 pub struct NamedVariable {
@@ -473,7 +476,7 @@ pub struct Configuration {
     pub templates: HashMap<String, Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: Vec<Tree>,
-    pub variables: Vec<NamedVariable>,
+    pub variables: VariableHashMap,
     pub verbose: u8,
     id: Option<ConfigId>,
     parent_id: Option<ConfigId>,
@@ -522,11 +525,11 @@ impl Configuration {
     }
 
     fn reset_builtin_variables(&mut self) {
-        // Update GARDEN_ROOT at position 0.
-        if !self.variables.is_empty() && self.variables[0].get_name() == "GARDEN_ROOT" {
+        // Update GARDEN_ROOT.
+        if let Some(var) = self.variables.get_mut("GARDEN_ROOT") {
             if let Some(value) = self.root.get_value() {
-                self.variables[0].set_expr(value.into());
-                self.variables[0].set_value(value.into());
+                var.set_expr(value.into());
+                var.set_value(value.into());
             }
         }
 
@@ -708,7 +711,7 @@ impl Configuration {
 
     /// Reset resolved variables
     pub fn reset_variables(&mut self) {
-        for var in &self.variables {
+        for var in self.variables.values() {
             var.reset();
         }
         for env in &self.environment {

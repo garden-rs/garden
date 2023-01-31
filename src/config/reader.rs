@@ -73,26 +73,25 @@ fn parse_recursive(
     }
     if is_root_config {
         // Provide GARDEN_ROOT.
-        config.variables.push(model::NamedVariable::new(
+        config.variables.insert(
             string!("GARDEN_ROOT"),
-            config.root.get_expr().to_string(),
-            None,
-        ));
+            model::Variable::new(config.root.get_expr().to_string(), None),
+        );
 
         if let Some(config_path_raw) = config.dirname.as_ref() {
             // Calculate an absolute path for GARDEN_CONFIG_DIR.
             if let Ok(config_path) = config_path_raw.canonicalize() {
-                config.variables.push(model::NamedVariable::new(
+                config.variables.insert(
                     string!("GARDEN_CONFIG_DIR"),
-                    config_path.to_string_lossy().to_string(),
-                    None,
-                ));
+                    model::Variable::new(config_path.to_string_lossy().to_string(), None),
+                );
             }
         }
     }
 
-    // custom variables
-    if !get_variables(&doc["variables"], &mut config.variables) && config_verbose > 1 {
+    // Variables are read early to make them available to config.eval_config_pathbuf_from_include().
+    // Variables are reloaded after "includes" to give the current garden file the highest priority.
+    if !get_variables_hashmap(&doc["variables"], &mut config.variables) && config_verbose > 1 {
         debug!("yaml: no variables");
     }
 
@@ -124,6 +123,12 @@ fn parse_recursive(
                         .unwrap_or(());
                 }
             }
+        }
+
+        // Reload variables after processing includes. This gives the local garden file the highest priority
+        // when defining variables while also making variables available to the "includes" lines.
+        if !get_variables_hashmap(&doc["variables"], &mut config.variables) && config_verbose > 1 {
+            debug!("yaml: no reloaded variables");
         }
     }
 
@@ -338,6 +343,63 @@ fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
                         value.clone(),
                         Some(value.clone()), // Booleans are already resolved.
                     ));
+                }
+                _ => {
+                    dump_node(v, 1, "");
+                    error!("invalid variables");
+                }
+            }
+        }
+        return true;
+    }
+
+    false
+}
+
+/// Read variable definitions from a yaml::HashMap into a VariablesHashMap
+fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> bool {
+    if let Yaml::Hash(ref hash) = yaml {
+        for (k, v) in hash {
+            let key = match k.as_str() {
+                Some(key_value) => key_value.to_string(),
+                None => continue,
+            };
+            match v {
+                Yaml::String(ref yaml_str) => {
+                    hashmap.insert(key, model::Variable::new(yaml_str.clone(), None));
+                }
+                Yaml::Array(ref yaml_array) => {
+                    for value in yaml_array {
+                        if let Yaml::String(ref yaml_str) = value {
+                            hashmap.insert(
+                                key.to_owned(),
+                                model::Variable::new(
+                                    yaml_str.clone(),
+                                    None, // Defer resolution of string values.
+                                ),
+                            );
+                        }
+                    }
+                }
+                Yaml::Integer(yaml_int) => {
+                    let value = yaml_int.to_string();
+                    hashmap.insert(
+                        key,
+                        model::Variable::new(
+                            value.clone(),
+                            Some(value.clone()), // Integer values are already resolved.
+                        ),
+                    );
+                }
+                Yaml::Boolean(ref yaml_bool) => {
+                    let value = bool_to_string(yaml_bool);
+                    hashmap.insert(
+                        key,
+                        model::Variable::new(
+                            value.clone(),
+                            Some(value.clone()), // Booleans are already resolved.
+                        ),
+                    );
                 }
                 _ => {
                     dump_node(v, 1, "");
