@@ -464,7 +464,7 @@ fn get_default_shell() -> String {
 pub struct Configuration {
     pub commands: MultiVariableHashMap,
     pub debug: HashMap<String, u8>,
-    pub environment: Vec<MultiVariable>,
+    pub environment: VariableHashMap,  // TODO
     pub gardens: Vec<Garden>,
     pub grafts: Vec<Graft>,
     pub groups: IndexMap<String, Group>,
@@ -714,7 +714,7 @@ impl Configuration {
         for var in self.variables.values() {
             var.reset();
         }
-        for env in &self.environment {
+        for env in self.environment.values() {
             env.reset();
         }
 
