@@ -525,28 +525,13 @@ fn get_template(
         }
     }
 
-    get_variables(&value["variables"], &mut template.tree.variables);
-    get_variables(&value["gitconfig"], &mut template.tree.gitconfig);
-
-    get_multivariables(&value["environment"], &mut template.tree.environment);
-    get_multivariables_hashmap(&value["commands"], &mut template.tree.commands);
-
-    get_variable(&value["branch"], &mut template.tree.branch);
-    get_variable(&value["symlink"], &mut template.tree.symlink);
-    get_variable(&value["worktree"], &mut template.tree.worktree);
-
-    get_i64(&value["depth"], &mut template.tree.clone_depth);
-    get_bool(&value["bare"], &mut template.tree.is_bare_repository);
-    get_bool(&value["single-branch"], &mut template.tree.is_single_branch);
-
-    get_remotes(&value["remotes"], &mut template.tree.remotes);
-
-    template.tree.update_flags();
+    get_tree_fields(value, &mut template.tree);
 
     // These follow first-found semantics; process the base templates in
     // reverse order. We use apply(), which does not process variables.
     // Variables are handled separately here.
     for template_name in template.extend.iter().rev() {
+        // First try to read the template definition from the local YAML data.
         if let Yaml::Hash(_) = templates[template_name.as_ref()] {
             let base = get_template(
                 &Yaml::String(template_name.clone()),
@@ -632,6 +617,28 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     tree
 }
 
+/// Read fields common to trees and templates.
+fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
+    get_variables(&value["variables"], &mut tree.variables);
+    get_variables(&value["gitconfig"], &mut tree.gitconfig);
+
+    get_multivariables(&value["environment"], &mut tree.environment);
+    get_multivariables_hashmap(&value["commands"], &mut tree.commands);
+
+    get_variable(&value["branch"], &mut tree.branch);
+    get_variable(&value["symlink"], &mut tree.symlink);
+    get_variable(&value["worktree"], &mut tree.worktree);
+
+    get_i64(&value["depth"], &mut tree.clone_depth);
+    get_bool(&value["bare"], &mut tree.is_bare_repository);
+    get_bool(&value["single-branch"], &mut tree.is_single_branch);
+
+    // Remotes
+    get_remotes(&value["remotes"], &mut tree.remotes);
+
+    tree.update_flags();
+}
+
 /// Read a single tree definition
 fn get_tree(
     config: &mut model::Configuration,
@@ -709,10 +716,9 @@ fn get_tree(
     }
 
     // Templates
-    get_indexset_str(&value["templates"], &mut tree.templates);
-
     // Process the base templates in the specified order before processing
     // the template itself.
+    get_indexset_str(&value["templates"], &mut tree.templates);
     for template_name in &tree.templates.clone() {
         // Do we have a template by this name? If so, apply the template.
         if let Some(template) = config.templates.get(template_name) {
@@ -733,24 +739,7 @@ fn get_tree(
         }
     }
 
-    get_variables(&value["variables"], &mut tree.variables);
-    get_variables(&value["gitconfig"], &mut tree.gitconfig);
-
-    get_multivariables(&value["environment"], &mut tree.environment);
-    get_multivariables_hashmap(&value["commands"], &mut tree.commands);
-
-    get_variable(&value["branch"], &mut tree.branch);
-    get_variable(&value["symlink"], &mut tree.symlink);
-    get_variable(&value["worktree"], &mut tree.worktree);
-
-    get_i64(&value["depth"], &mut tree.clone_depth);
-    get_bool(&value["bare"], &mut tree.is_bare_repository);
-    get_bool(&value["single-branch"], &mut tree.is_single_branch);
-
-    // Remotes
-    get_remotes(&value["remotes"], &mut tree.remotes);
-
-    tree.update_flags();
+    get_tree_fields(value, &mut tree);
 
     // Variables follow first-found semantics. This means that the variables vector
     // needs to contain local variables provided by the tree *before* any variables
