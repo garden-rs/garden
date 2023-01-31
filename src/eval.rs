@@ -45,29 +45,16 @@ fn expand_tree_vars(
         };
     }
 
-    let mut var_idx: usize = 0;
-    let mut found = false;
-
     // First check for the variable at the garden scope.
     // Garden scope overrides tree and global scope.
     if let Some(garden) = garden_idx {
-        for (idx, var) in config.gardens[garden].variables.iter().enumerate() {
-            if var.get_name() == name {
-                if let Some(var_value) = var.get_value() {
-                    return Some(var_value.to_string());
-                }
-                var_idx = idx;
-                found = true;
-                break;
+        if let Some(var) = config.gardens[garden].variables.get(name) {
+            if let Some(var_value) = var.get_value() {
+                return Some(var_value.to_string());
             }
-        }
-
-        if found {
-            let expr = config.gardens[garden].variables[var_idx]
-                .get_expr()
-                .to_string();
-            let result = tree_value(config, &expr, tree_idx, garden_idx);
-            config.gardens[garden].variables[var_idx].set_value(result.clone());
+            let expr = var.get_expr();
+            let result = tree_value(config, expr, tree_idx, garden_idx);
+            var.set_value(result.clone());
             return Some(result);
         }
     }

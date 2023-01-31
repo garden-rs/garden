@@ -727,7 +727,7 @@ fn get_tree(
 
     // Tree path
     if !get_str(&value["path"], tree.get_path_mut().get_expr_mut()) {
-        // default to the name when "path" is unspecified
+        // Default to the name when "path" is unspecified.
         let tree_name = tree.get_name().to_string();
         tree.get_path_mut().set_expr(tree_name.to_string());
         tree.get_path().set_value(tree_name);
@@ -804,7 +804,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
             get_str(name, garden.get_name_mut());
             get_indexset_str(&value["groups"], &mut garden.groups);
             get_indexset_str(&value["trees"], &mut garden.trees);
-            get_variables(&value["variables"], &mut garden.variables);
+            get_variables_hashmap(&value["variables"], &mut garden.variables);
             get_multivariables(&value["environment"], &mut garden.environment);
             get_multivariables_hashmap(&value["commands"], &mut garden.commands);
             get_variables(&value["gitconfig"], &mut garden.gitconfig);

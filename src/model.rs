@@ -415,7 +415,7 @@ pub struct Garden {
     pub gitconfig: Vec<NamedVariable>,
     pub groups: IndexSet<String>,
     pub trees: IndexSet<String>,
-    pub variables: Vec<NamedVariable>,
+    pub variables: VariableHashMap,
     name: String,
     index: GardenIndex,
 }

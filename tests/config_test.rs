@@ -415,12 +415,11 @@ fn test_gardens(config: &garden::model::Configuration) -> Result<()> {
     assert_eq!("git branch", summary_cmd[0].get_expr());
     assert_eq!("git status --short", summary_cmd[1].get_expr());
 
-    assert_eq!(1, config.gardens[0].variables.len());
-    assert_eq!("prefix", config.gardens[0].variables[0].get_name());
-    assert_eq!(
-        "~/apps/git-cola/current",
-        config.gardens[0].variables[0].get_expr()
-    );
+    let prefix_var = config.gardens[0]
+        .variables
+        .get("prefix")
+        .context("prefix")?;
+    assert_eq!("~/apps/git-cola/current", prefix_var.get_expr());
 
     assert_eq!(2, config.gardens[0].environment.len());
     assert_eq!(
