@@ -6,7 +6,7 @@ use super::super::query;
 
 use anyhow::Result;
 use clap::Parser;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 /// Grow garden worktrees
 #[derive(Parser, Clone, Debug)]
@@ -88,81 +88,79 @@ fn grow_tree_from_context(
             quiet,
             verbose,
         );
-    } else {
-        if config.trees[ctx.tree].is_symlink {
-            let status = grow_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
-            if status != errors::EX_OK {
-                exit_status = status;
-            }
-            return Ok(exit_status);
-        }
+    }
 
-        if config.trees[ctx.tree].is_worktree {
-            return grow_tree_from_context_as_worktree(
-                config,
-                configured_worktrees,
-                ctx,
-                quiet,
-                verbose,
-            );
-        }
-
-        if config.trees[ctx.tree].remotes.is_empty() {
-            return Ok(exit_status);
-        }
-
-        // The first remote is "origin" by convention
-        let remote = config.trees[ctx.tree].remotes[0].clone();
-        let url = eval::tree_value(config, remote.get_expr(), ctx.tree, ctx.garden);
-
-        // git clone [options] <url> <path>
-        let mut cmd: Vec<&str> = ["git", "clone"].to_vec();
-
-        // [options]
-        //
-        // "git clone --bare" clones bare repositories.
-        if config.trees[ctx.tree].is_bare_repository {
-            cmd.push("--bare");
-        }
-
-        // "git clone --branch=name" clones the named branch.
-        let branch_var = config.trees[ctx.tree].branch.clone();
-        let branch = eval::tree_value(config, branch_var.get_expr(), ctx.tree, ctx.garden);
-        let branch_opt;
-        if !branch.is_empty() {
-            branch_opt = format!("--branch={branch}");
-            cmd.push(&branch_opt);
-        }
-        // "git clone --depth=N" creates shallow clones with truncated history.
-        let clone_depth = config.trees[ctx.tree].clone_depth;
-        let clone_depth_opt;
-        if clone_depth > 0 {
-            clone_depth_opt = format!("--depth={clone_depth}");
-            cmd.push(&clone_depth_opt);
-        }
-        // "git clone --depth=N" clones a single branch by default.
-        // We generally want all branches available in our clones so we default to
-        // "single-branch: false" so that "--no-single-branch" is used. This makes
-        // all branches available by default.
-        let is_single_branch = config.trees[ctx.tree].is_single_branch;
-        if is_single_branch {
-            cmd.push("--single-branch");
-        } else {
-            cmd.push("--no-single-branch");
-        }
-
-        // <url> <path>
-        cmd.push(&url);
-        cmd.push(&path);
-        if verbose > 1 {
-            print_quoted_command(&cmd);
-        }
-
-        let exec = cmd::exec_cmd(&cmd);
-        let status = cmd::status(exec.join());
-        if status != 0 {
+    if config.trees[ctx.tree].is_symlink {
+        let status = grow_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
+        if status != errors::EX_OK {
             exit_status = status;
         }
+        return Ok(exit_status);
+    }
+
+    if config.trees[ctx.tree].is_worktree {
+        return grow_tree_from_context_as_worktree(
+            config,
+            configured_worktrees,
+            ctx,
+            quiet,
+            verbose,
+        );
+    }
+
+    // The "origin" remote is cloned by convention. The "url" field maps to "origin".
+    let url = match config.trees[ctx.tree].remotes.get("origin") {
+        Some(remote) => eval::tree_value(config, remote.get_expr(), ctx.tree, ctx.garden),
+        None => return Ok(exit_status),
+    };
+
+    // git clone [options] <url> <path>
+    let mut cmd: Vec<&str> = ["git", "clone"].to_vec();
+
+    // [options]
+    //
+    // "git clone --bare" clones bare repositories.
+    if config.trees[ctx.tree].is_bare_repository {
+        cmd.push("--bare");
+    }
+
+    // "git clone --branch=name" clones the named branch.
+    let branch_var = config.trees[ctx.tree].branch.clone();
+    let branch = eval::tree_value(config, branch_var.get_expr(), ctx.tree, ctx.garden);
+    let branch_opt;
+    if !branch.is_empty() {
+        branch_opt = format!("--branch={branch}");
+        cmd.push(&branch_opt);
+    }
+    // "git clone --depth=N" creates shallow clones with truncated history.
+    let clone_depth = config.trees[ctx.tree].clone_depth;
+    let clone_depth_opt;
+    if clone_depth > 0 {
+        clone_depth_opt = format!("--depth={clone_depth}");
+        cmd.push(&clone_depth_opt);
+    }
+    // "git clone --depth=N" clones a single branch by default.
+    // We generally want all branches available in our clones so we default to
+    // "single-branch: false" so that "--no-single-branch" is used. This makes
+    // all branches available by default.
+    let is_single_branch = config.trees[ctx.tree].is_single_branch;
+    if is_single_branch {
+        cmd.push("--single-branch");
+    } else {
+        cmd.push("--no-single-branch");
+    }
+
+    // <url> <path>
+    cmd.push(&url);
+    cmd.push(&path);
+    if verbose > 1 {
+        print_quoted_command(&cmd);
+    }
+
+    let exec = cmd::exec_cmd(&cmd);
+    let status = cmd::status(exec.join());
+    if status != 0 {
+        exit_status = status;
     }
 
     let status =
@@ -213,18 +211,6 @@ fn update_tree_from_context(
         return Ok(exit_status);
     }
 
-    // Loop over remotes, update them as needed
-    let mut config_remotes = HashMap::new();
-    {
-        // Immutable config scope
-        for remote in &config.trees[ctx.tree].remotes {
-            config_remotes.insert(
-                String::from(remote.get_name()),
-                String::from(remote.get_expr()),
-            );
-        }
-    }
-
     // Gather existing remotes
     let mut existing_remotes = HashSet::new();
     {
@@ -238,19 +224,19 @@ fn update_tree_from_context(
         }
     }
 
-    // Add/update git remote configuration.
-    for (k, v) in &config_remotes {
-        let url = eval::tree_value(config, v, ctx.tree, ctx.garden);
+    // Loop over remotes and add/update the git remote configuration.
+    for (remote, var) in &config.trees[ctx.tree].remotes {
+        let url = eval::tree_value(config, var.get_expr(), ctx.tree, ctx.garden);
 
-        let exec = if existing_remotes.contains(k) {
-            let remote_key = format!("remote.{k}.url");
+        let exec = if existing_remotes.contains(remote) {
+            let remote_key = format!("remote.{remote}.url");
             let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
             cmd::exec_in_dir(&command, path)
         } else {
-            let command = ["git", "remote", "add", k.as_ref(), url.as_ref()];
+            let command = ["git", "remote", "add", remote.as_ref(), url.as_ref()];
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }

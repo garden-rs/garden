@@ -1,6 +1,6 @@
 pub mod common;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use function_name::named;
 
 /// `garden plant` adds an empty repository
@@ -41,10 +41,12 @@ fn plant_empty_repo() -> Result<()> {
     assert_eq!(1, cfg.trees.len());
     assert_eq!("repo1", cfg.trees[0].get_name());
     assert_eq!(2, cfg.trees[0].remotes.len());
-    assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
-    assert_eq!("repo-1-url", cfg.trees[0].remotes[0].get_expr());
-    assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
-    assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
+
+    let origin_var = cfg.trees[0].remotes.get("origin").context("origin")?;
+    assert_eq!("repo-1-url", origin_var.get_expr());
+
+    let remote1_var = cfg.trees[0].remotes.get("remote-1").context("remote-1")?;
+    assert_eq!("remote-1-url", remote1_var.get_expr());
 
     // repo2 has two remotes: "remote-1" and "remote-2".
     // git remote add remote-1 remote-1-url
@@ -64,10 +66,12 @@ fn plant_empty_repo() -> Result<()> {
     assert_eq!(2, cfg.trees.len()); // Now we have two trees.
     assert_eq!("repo2", cfg.trees[1].get_name());
     assert_eq!(2, cfg.trees[1].remotes.len());
-    assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
-    assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
-    assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
-    assert_eq!("remote-2-url", cfg.trees[1].remotes[1].get_expr());
+
+    let remote1_var = cfg.trees[1].remotes.get("remote-1").context("remote-1")?;
+    assert_eq!("remote-1-url", remote1_var.get_expr());
+
+    let remote2_var = cfg.trees[1].remotes.get("remote-2").context("remote-2")?;
+    assert_eq!("remote-2-url", remote2_var.get_expr());
 
     // Verify that "garden plant" will refresh the remote URLs
     // for existing entries.
@@ -90,18 +94,21 @@ fn plant_empty_repo() -> Result<()> {
     assert_eq!(2, cfg.trees.len());
     assert_eq!("repo1", cfg.trees[0].get_name());
     assert_eq!(2, cfg.trees[0].remotes.len());
-    assert_eq!("origin", cfg.trees[0].remotes[0].get_name());
-    assert_eq!("repo-1-new-url", cfg.trees[0].remotes[0].get_expr()); // New value.
-    assert_eq!("remote-1", cfg.trees[0].remotes[1].get_name());
-    assert_eq!("remote-1-url", cfg.trees[0].remotes[1].get_expr());
+
+    let origin_var = cfg.trees[0].remotes.get("origin").context("origin")?;
+    assert_eq!("repo-1-new-url", origin_var.get_expr()); // New value.
+
+    let remote1_var = cfg.trees[0].remotes.get("remote-1").context("remote-1")?;
+    assert_eq!("remote-1-url", remote1_var.get_expr());
 
     assert_eq!("repo2", cfg.trees[1].get_name());
     assert_eq!(2, cfg.trees[1].remotes.len());
-    assert_eq!("remote-1", cfg.trees[1].remotes[0].get_name());
-    assert_eq!("remote-1-url", cfg.trees[1].remotes[0].get_expr());
-    assert_eq!("remote-2", cfg.trees[1].remotes[1].get_name());
-    // New value.
-    assert_eq!("remote-2-new-url", cfg.trees[1].remotes[1].get_expr());
+
+    let remote1_var = cfg.trees[1].remotes.get("remote-1").context("remote-1")?;
+    assert_eq!("remote-1-url", remote1_var.get_expr());
+
+    let remote2_var = cfg.trees[1].remotes.get("remote-2").context("remote-2")?;
+    assert_eq!("remote-2-new-url", remote2_var.get_expr());
 
     Ok(())
 }

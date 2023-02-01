@@ -495,7 +495,7 @@ fn get_template(
             template
                 .tree
                 .remotes
-                .push(model::NamedVariable::new(string!("origin"), url, None));
+                .insert(string!("origin"), model::Variable::new(url, None));
             return template;
         }
         // If a <url> is configured then populate the "origin" remote.
@@ -504,7 +504,7 @@ fn get_template(
             template
                 .tree
                 .remotes
-                .push(model::NamedVariable::new(string!("origin"), url, None));
+                .insert(string!("origin"), model::Variable::new(url, None));
         }
     }
 
@@ -586,11 +586,10 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
         model::Variable::new(tree.get_path().get_expr().clone(), None),
     );
 
-    tree.remotes.push(model::NamedVariable::new(
+    tree.remotes.insert(
         string!("origin"),
-        url.to_string(),
-        None,
-    ));
+        model::Variable::new(url.to_string(), None),
+    );
 
     tree
 }
@@ -599,6 +598,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_variables_hashmap(&value["variables"], &mut tree.variables);
     get_variables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
+    get_str_variables_hashmap(&value["remotes"], &mut tree.remotes);
 
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables_hashmap(&value["commands"], &mut tree.commands);
@@ -610,9 +610,6 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_i64(&value["depth"], &mut tree.clone_depth);
     get_bool(&value["bare"], &mut tree.is_bare_repository);
     get_bool(&value["single-branch"], &mut tree.is_single_branch);
-
-    // Remotes
-    get_remotes(&value["remotes"], &mut tree.remotes);
 
     tree.update_flags();
 }
@@ -706,7 +703,7 @@ fn get_tree(
         let mut url = String::new();
         if get_str(&value["url"], &mut url) {
             tree.remotes
-                .push(model::NamedVariable::new(string!("origin"), url, None));
+                .insert(string!("origin"), model::Variable::new(url, None));
         }
     }
 
@@ -715,16 +712,15 @@ fn get_tree(
     tree
 }
 
-/// Read Git remote repository definitions
-fn get_remotes(yaml: &Yaml, remotes: &mut Vec<model::NamedVariable>) {
+/// Read simple string values into a garden::model::VariableHashMap.
+fn get_str_variables_hashmap(yaml: &Yaml, remotes: &mut model::VariableHashMap) {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
-                remotes.push(model::NamedVariable::new(
+                remotes.insert(
                     name_str.to_string(),
-                    value_str.to_string(),
-                    None,
-                ));
+                    model::Variable::new(value_str.to_string(), None),
+                );
             }
         }
     }

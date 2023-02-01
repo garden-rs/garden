@@ -85,9 +85,6 @@ impl Variable {
     }
 }
 
-/// An ordered mapping of names to a vector of Variables.
-pub type MultiVariableIndexMap = IndexMap<String, Vec<Variable>>;
-
 /// An unordered mapping of names to a vector of Variables.
 pub type MultiVariableHashMap = HashMap<String, Vec<Variable>>;
 
@@ -192,7 +189,7 @@ pub struct Tree {
     pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
     pub gitconfig: VariableHashMap,
-    pub remotes: Vec<NamedVariable>,
+    pub remotes: VariableHashMap,
     pub symlink: Variable,
     pub templates: IndexSet<String>,
     pub variables: VariableHashMap,
@@ -294,17 +291,11 @@ impl Tree {
         append_hashmap(&mut self.commands, &tree.commands);
         append_hashmap(&mut self.gitconfig, &tree.gitconfig);
         append_hashmap(&mut self.variables, &tree.variables);
+        append_hashmap(&mut self.remotes, &tree.remotes);
         append_indexset(&mut self.templates, &tree.templates);
 
         // "environment" follow last-set-wins semantics.
         self.environment.append(&mut tree.environment.clone());
-
-        // If multiple templates define "url" then the first one wins,
-        // but only if we don't have url defined in the current template.
-        // TODO use a hashmap for remotes.
-        if self.remotes.is_empty() {
-            self.remotes.append(&mut tree.remotes.clone());
-        }
 
         // The last value set is the one that wins.
         if tree.clone_depth > 0 {
