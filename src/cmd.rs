@@ -95,12 +95,12 @@ where
 }
 
 /// Return a `subprocess::Exec` that runs a command in the specified directory.
-pub fn exec_in_dir<P, S>(command: &[S], path: P) -> subprocess::Exec
+pub fn exec_in_dir<P, S>(command: &[S], path: &P) -> subprocess::Exec
 where
-    P: AsRef<std::path::Path>,
+    P: AsRef<std::path::Path> + std::convert::AsRef<std::ffi::OsStr> + ?Sized,
     S: AsRef<std::ffi::OsStr>,
 {
-    exec_cmd(command).cwd(path)
+    exec_cmd(command).cwd(path).env("PWD", path)
 }
 
 /// Run a command in the specified tree context.
@@ -125,7 +125,7 @@ where
     // Immutable scope over tree
     {
         let tree = &config.trees[context.tree];
-        path = tree.path_as_ref()?.clone();
+        path = tree.path_as_ref()?;
 
         // Sparse gardens/missing trees are ok -> skip these entries.
         if !model::print_tree(tree, verbose, quiet) {
