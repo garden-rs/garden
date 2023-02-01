@@ -264,14 +264,12 @@ fn update_tree_from_context(
     }
 
     // Set gitconfig settings
-    let mut gitconfig = Vec::new();
-    for cfg in &config.trees[ctx.tree].gitconfig {
-        gitconfig.push(cfg.clone());
-    }
-
-    for var in &gitconfig {
-        let name = eval::tree_value(config, var.get_name(), ctx.tree, ctx.garden);
-        let value = eval::tree_value(config, var.get_expr(), ctx.tree, ctx.garden);
+    for (var_name, var) in &config.trees[ctx.tree].gitconfig {
+        let name = eval::tree_value(config, var_name, ctx.tree, ctx.garden);
+        let value = match var.get_value() {
+            Some(precomputed_value) => precomputed_value.to_string(),
+            None => eval::tree_value(config, var.get_expr(), ctx.tree, ctx.garden),
+        };
         let command = ["git", "config", name.as_ref(), value.as_ref()];
         let exec = cmd::exec_in_dir(&command, path);
         let status = cmd::status(exec.join());

@@ -305,57 +305,6 @@ fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
     result
 }
 
-/// Read NamedVariable definitions (variables)
-fn get_variables(yaml: &Yaml, vec: &mut Vec<model::NamedVariable>) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
-        for (k, v) in hash {
-            let key = match k.as_str() {
-                Some(key_value) => key_value.to_string(),
-                None => continue,
-            };
-            match v {
-                Yaml::String(ref yaml_str) => {
-                    vec.push(model::NamedVariable::new(key, yaml_str.clone(), None));
-                }
-                Yaml::Array(ref yaml_array) => {
-                    for value in yaml_array {
-                        if let Yaml::String(ref yaml_str) = value {
-                            vec.push(model::NamedVariable::new(
-                                key.to_string(),
-                                yaml_str.clone(),
-                                None, // Defer resolution of string values.
-                            ));
-                        }
-                    }
-                }
-                Yaml::Integer(yaml_int) => {
-                    let value = yaml_int.to_string();
-                    vec.push(model::NamedVariable::new(
-                        key,
-                        value.clone(),
-                        Some(value.clone()), // Integer values are already resolved.
-                    ));
-                }
-                Yaml::Boolean(ref yaml_bool) => {
-                    let value = bool_to_string(yaml_bool);
-                    vec.push(model::NamedVariable::new(
-                        key,
-                        value.clone(),
-                        Some(value.clone()), // Booleans are already resolved.
-                    ));
-                }
-                _ => {
-                    dump_node(v, 1, "");
-                    error!("invalid variables");
-                }
-            }
-        }
-        return true;
-    }
-
-    false
-}
-
 /// Read variable definitions from a yaml::HashMap into a VariablesHashMap
 fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
@@ -649,7 +598,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 /// Read fields common to trees and templates.
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_variables_hashmap(&value["variables"], &mut tree.variables);
-    get_variables(&value["gitconfig"], &mut tree.gitconfig);
+    get_variables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
 
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables_hashmap(&value["commands"], &mut tree.commands);
@@ -807,7 +756,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
             get_variables_hashmap(&value["variables"], &mut garden.variables);
             get_multivariables(&value["environment"], &mut garden.environment);
             get_multivariables_hashmap(&value["commands"], &mut garden.commands);
-            get_variables(&value["gitconfig"], &mut garden.gitconfig);
+            get_variables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
             gardens.push(garden);
         }
         return true;

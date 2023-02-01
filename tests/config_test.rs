@@ -252,12 +252,12 @@ fn trees() -> Result<()> {
 
     // gitconfig
     assert_eq!(2, tree0.gitconfig.len());
-    assert_eq!("user.name", tree0.gitconfig[0].get_name());
-    assert_eq!("A U Thor", tree0.gitconfig[0].get_expr());
-    assert_eq!(None, tree0.gitconfig[0].get_value());
-    assert_eq!("user.email", tree0.gitconfig[1].get_name());
-    assert_eq!("author@example.com", tree0.gitconfig[1].get_expr());
-    assert_eq!(None, tree0.gitconfig[1].get_value());
+    let user_name_var = tree0.gitconfig.get("user.name").context("user.name")?;
+    assert_eq!("A U Thor", user_name_var.get_expr());
+    assert_eq!(None, user_name_var.get_value());
+    let user_email_var = tree0.gitconfig.get("user.email").context("user.email")?;
+    assert_eq!("author@example.com", user_email_var.get_expr());
+    assert_eq!(None, user_email_var.get_value());
 
     // cola
     let tree1 = &config.trees[1];
@@ -317,8 +317,11 @@ fn trees() -> Result<()> {
     assert_eq!("annex/data", tree3.get_name());
     // gitconfig
     assert_eq!(1, tree3.gitconfig.len());
-    assert_eq!("remote.origin.annex-ignore", tree3.gitconfig[0].get_name());
-    assert_eq!("true", tree3.gitconfig[0].get_expr());
+    let annex_ignore_var = tree3
+        .gitconfig
+        .get("remote.origin.annex-ignore")
+        .context("annex-ignore")?;
+    assert_eq!("true", annex_ignore_var.get_expr());
     // remotes
     assert_eq!(2, tree3.remotes.len());
     assert_eq!("origin", tree3.remotes[0].get_name());
@@ -334,8 +337,11 @@ fn trees() -> Result<()> {
     assert_eq!("annex/local", tree4.get_name());
     // gitconfig
     assert_eq!(1, tree4.gitconfig.len());
-    assert_eq!("remote.origin.annex-ignore", tree4.gitconfig[0].get_name());
-    assert_eq!("true", tree4.gitconfig[0].get_expr());
+    let annex_ignore_var = tree4
+        .gitconfig
+        .get("remote.origin.annex-ignore")
+        .context("annex-ignore")?;
+    assert_eq!("true", annex_ignore_var.get_expr());
     // remotes
     assert_eq!(2, tree4.remotes.len());
     assert_eq!("origin", tree4.remotes[0].get_name());
@@ -447,13 +453,17 @@ fn test_gardens(config: &garden::model::Configuration) -> Result<()> {
     assert_eq!(indexset! {string!("gitk")}, config.gardens[1].trees);
 
     assert_eq!(config.gardens[1].gitconfig.len(), 2);
-    assert_eq!("user.name", config.gardens[1].gitconfig[0].get_name());
-    assert_eq!("A U Thor", config.gardens[1].gitconfig[0].get_expr());
-    assert_eq!("user.email", config.gardens[1].gitconfig[1].get_name());
-    assert_eq!(
-        "author@example.com",
-        config.gardens[1].gitconfig[1].get_expr()
-    );
+    let user_name_var = config.gardens[1]
+        .gitconfig
+        .get("user.name")
+        .context("user.name")?;
+    assert_eq!("A U Thor", user_name_var.get_expr());
+
+    let user_email_var = config.gardens[1]
+        .gitconfig
+        .get("user.email")
+        .context("user.email")?;
+    assert_eq!("author@example.com", user_email_var.get_expr());
 
     Ok(())
 }

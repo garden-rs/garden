@@ -191,7 +191,7 @@ impl MultiVariable {
 pub struct Tree {
     pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
-    pub gitconfig: Vec<NamedVariable>,
+    pub gitconfig: VariableHashMap,
     pub remotes: Vec<NamedVariable>,
     pub symlink: Variable,
     pub templates: IndexSet<String>,
@@ -278,7 +278,7 @@ impl Tree {
             var.reset();
         }
 
-        for cfg in &self.gitconfig {
+        for cfg in self.gitconfig.values() {
             cfg.reset();
         }
 
@@ -291,16 +291,17 @@ impl Tree {
 
     /// Copy the guts of another tree into the current tree.
     pub fn clone_from_tree(&mut self, tree: &Tree) {
-        // "commands" are concatenated across templates.
         append_hashmap(&mut self.commands, &tree.commands);
+        append_hashmap(&mut self.gitconfig, &tree.gitconfig);
+        append_hashmap(&mut self.variables, &tree.variables);
+        append_indexset(&mut self.templates, &tree.templates);
 
         // "environment" follow last-set-wins semantics.
         self.environment.append(&mut tree.environment.clone());
-        // "gitconfig" follows last-set-wins semantics.
-        self.gitconfig.append(&mut tree.gitconfig.clone());
 
         // If multiple templates define "url" then the first one wins,
         // but only if we don't have url defined in the current template.
+        // TODO use a hashmap for remotes.
         if self.remotes.is_empty() {
             self.remotes.append(&mut tree.remotes.clone());
         }
@@ -336,9 +337,6 @@ impl Tree {
         if !tree.worktree.is_empty() {
             self.worktree = tree.worktree.clone();
         }
-
-        append_indexset(&mut self.templates, &tree.templates);
-        append_hashmap(&mut self.variables, &tree.variables);
 
         self.update_flags();
     }
@@ -412,7 +410,7 @@ impl Template {
 pub struct Garden {
     pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
-    pub gitconfig: Vec<NamedVariable>,
+    pub gitconfig: VariableHashMap,
     pub groups: IndexSet<String>,
     pub trees: IndexSet<String>,
     pub variables: VariableHashMap,
