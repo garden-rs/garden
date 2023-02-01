@@ -153,9 +153,17 @@ fn garden_environment() {
     // cola tree(1) and cola garden(Some(0))
     let context = garden::model::TreeContext::new(1, None, Some(0), None);
     let values = garden::eval::environment(&config, &context);
-    assert_eq!(values.len(), 7);
+    assert_eq!(values.len(), 9);
 
     let mut idx = 0;
+    assert_eq!(values[idx].0, "EXAMPLE_VALUE"); // ${TREE_PATH} for cola
+    assert_eq!(values[idx].1, "/home/test/src");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH"); // ${TREE_PATH} for cola
+    assert_eq!(values[idx].1, "/home/test/bin:/usr/bin:/bin");
+
+    idx += 1;
     assert_eq!(values[idx].0, "PYTHONPATH"); // ${TREE_PATH} for cola
     assert_eq!(values[idx].1, "/home/test/src/git-cola");
 
@@ -163,7 +171,7 @@ fn garden_environment() {
     assert_eq!(values[idx].0, "PATH"); // cola ${TREE_PATH}/bin
     assert_eq!(
         values[idx].1,
-        "/home/test/apps/git-cola/current/bin:/usr/bin:/bin"
+        "/home/test/apps/git-cola/current/bin:/home/test/bin:/usr/bin:/bin"
     );
 
     idx += 1;
@@ -171,8 +179,8 @@ fn garden_environment() {
     assert_eq!(
         values[idx].1,
         format!(
-            "{}:{}:/usr/bin:/bin",
-            "/home/test/src/git-cola/bin", "/home/test/apps/git-cola/current/bin"
+            "{}:{}:{}:/usr/bin:/bin",
+            "/home/test/src/git-cola/bin", "/home/test/apps/git-cola/current/bin", "/home/test/bin"
         )
     );
 
@@ -200,9 +208,10 @@ fn garden_environment() {
     assert_eq!(
         values[idx].1,
         format!(
-            "{}:{}:/usr/bin:/bin:{}",
+            "{}:{}:{}:/usr/bin:/bin:{}",
             "/home/test/src/git-cola/bin",
             "/home/test/apps/git-cola/current/bin",
+            "/home/test/bin",
             "/home/test/apps/git-cola/current/bin"
         )
     );
@@ -217,10 +226,18 @@ fn group_environment() {
     // cola tree(1) + cola group(Some(0))
     let context = garden::model::TreeContext::new(1, None, None, Some(string!("cola")));
     let values = garden::eval::environment(&config, &context);
-    assert_eq!(values.len(), 5);
+    assert_eq!(values.len(), 7);
+
+    let mut idx = 0;
+    assert_eq!(values[idx].0, "EXAMPLE_VALUE");
+    assert_eq!(values[idx].1, "/home/test/src");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH");
+    assert_eq!(values[idx].1, "/home/test/bin:/usr/bin:/bin");
 
     // ${TREE_PATH} for cola
-    let mut idx = 0;
+    idx += 1;
     assert_eq!(values[idx].0, "PYTHONPATH");
     assert_eq!(values[idx].1, "/home/test/src/git-cola");
 
@@ -229,7 +246,7 @@ fn group_environment() {
     assert_eq!(values[idx].0, "PATH");
     assert_eq!(
         values[idx].1,
-        format!("{}:/usr/bin:/bin", "/home/test/src/git-cola/local/bin")
+        "/home/test/src/git-cola/local/bin:/home/test/bin:/usr/bin:/bin"
     );
 
     // cola tree ${TREE_PATH}/bin
@@ -237,10 +254,7 @@ fn group_environment() {
     assert_eq!(values[idx].0, "PATH");
     assert_eq!(
         values[idx].1,
-        format!(
-            "{}:{}:/usr/bin:/bin",
-            "/home/test/src/git-cola/bin", "/home/test/src/git-cola/local/bin"
-        )
+        "/home/test/src/git-cola/bin:/home/test/src/git-cola/local/bin:/home/test/bin:/usr/bin:/bin"
     );
 
     // cola tree ${GARDEN_ROOT}/python/send2trash
@@ -273,9 +287,17 @@ fn environment_empty_value() {
     let config = common::garden_config();
     let context = garden::query::tree_from_name(&config, "tmp", None, None).unwrap();
     let values = garden::eval::environment(&config, &context);
-    assert_eq!(values.len(), 3);
+    assert_eq!(values.len(), 5);
 
     let mut idx = 0;
+    assert_eq!(values[idx].0, "EXAMPLE_VALUE");
+    assert_eq!(values[idx].1, "/home/test/src");
+
+    idx += 1;
+    assert_eq!(values[idx].0, "PATH");
+    assert_eq!(values[idx].1, "/home/test/bin:/usr/bin:/bin");
+
+    idx += 1;
     assert_eq!(values[idx].0, "EMPTY"); // prepend "a", must not have a ":"
     assert_eq!(values[idx].1, "a");
 

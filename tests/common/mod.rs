@@ -40,6 +40,10 @@ pub fn garden_config() -> garden::model::Configuration {
         src: src
         root: ~/${src}
 
+    environment:
+        EXAMPLE_VALUE=: ${GARDEN_ROOT}
+        PATH: /home/test/bin
+
     templates:
         makefile:
             variables:

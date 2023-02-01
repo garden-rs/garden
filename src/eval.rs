@@ -290,8 +290,13 @@ pub fn environment(
 ) -> Vec<(String, String)> {
     let mut result = Vec::new();
     let mut vars = Vec::new();
-    let mut ready = false;
 
+    // Evaluate environment variables defined at global scope.
+    for var in &config.environment {
+        vars.push((context.clone(), var.clone()));
+    }
+
+    let mut ready = false;
     if let Some(idx) = context.garden {
         // Evaluate garden environments.
         let garden = &config.gardens[idx];

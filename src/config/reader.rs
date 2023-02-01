@@ -140,6 +140,8 @@ fn parse_recursive(
         debug!("yaml: no grafts");
     }
 
+    get_multivariables(&doc["environment"], &mut config.environment);
+
     // commands
     if config_verbose > 1 {
         debug!("yaml: commands");
@@ -385,7 +387,7 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
                 Yaml::Array(ref yaml_array) => {
                     let mut variables = Vec::new();
                     for value in yaml_array {
-                        if let Yaml::String(ref yaml_str) = value {
+                        if let Yaml::String(yaml_str) = value {
                             variables.push(model::Variable::new(yaml_str.clone(), None));
                         }
                     }
@@ -398,7 +400,7 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
                 }
                 _ => {
                     dump_node(v, 1, "");
-                    error!("invalid variables");
+                    error!("invalid configuration");
                 }
             }
         }
