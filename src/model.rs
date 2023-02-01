@@ -444,7 +444,7 @@ pub struct Configuration {
     pub debug: HashMap<String, u8>,
     pub environment: Vec<MultiVariable>,
     pub gardens: Vec<Garden>,
-    pub grafts: Vec<Graft>,
+    pub grafts: IndexMap<String, Graft>,
     pub groups: IndexMap<String, Group>,
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
@@ -747,25 +747,15 @@ impl Configuration {
     /// Return true if the configuration contains the named graft.
     pub fn contains_graft(&self, name: &str) -> bool {
         let graft_name = syntax::trim(name);
-        for graft in &self.grafts {
-            if graft.get_name() == graft_name {
-                return true;
-            }
-        }
-        false
+        self.grafts.contains_key(graft_name)
     }
 
     /// Return a graft by name.
     pub fn get_graft(&self, name: &str) -> Result<&Graft, errors::GardenError> {
         let graft_name = syntax::trim(name);
-        for graft in &self.grafts {
-            if graft.get_name() == graft_name {
-                return Ok(graft);
-            }
-        }
-        Err(errors::GardenError::ConfigurationError(format!(
-            "{name}: no such graft"
-        )))
+        self.grafts.get(graft_name).ok_or_else(|| {
+            errors::GardenError::ConfigurationError(format!("{name}: no such graft"))
+        })
     }
 
     /// Find a tree by name and return a reference if it exists.

@@ -764,11 +764,11 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
 }
 
 /// Read a grafts: block into a Vec<Graft>.
-fn get_grafts(yaml: &Yaml, grafts: &mut Vec<model::Graft>) -> bool {
+fn get_grafts(yaml: &Yaml, grafts: &mut IndexMap<String, model::Graft>) -> bool {
     if let Yaml::Hash(ref yaml_hash) = yaml {
         for (name, value) in yaml_hash {
             let graft = get_graft(name, value);
-            grafts.push(graft);
+            grafts.insert(graft.get_name().to_string(), graft);
         }
         true
     } else {

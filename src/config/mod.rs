@@ -245,7 +245,7 @@ fn read_grafts_recursive(
     // Immutable scope for traversing the configuration.
     {
         let config = app.get_config(id); // Immutable borrow.
-        for (idx, graft) in config.grafts.iter().enumerate() {
+        for (graft_name, graft) in &config.grafts {
             let path_str = config.eval_config_path(&graft.config);
             let path = std::path::PathBuf::from(&path_str);
             if !path.exists() {
@@ -261,19 +261,22 @@ fn read_grafts_recursive(
             } else {
                 Some(std::path::PathBuf::from(graft.root.clone()))
             };
-            details.push((idx, path, root));
+
+            details.push((graft_name.clone(), path, root));
         }
     }
 
     // Read child grafts recursively after the immutable scope has ended.
     let config_verbose = app.options.debug_level("config");
-    for (idx, path, root) in details {
+    for (graft_name, path, root) in details {
         // Read the Configuration referenced by the graft.
         let graft_config = from_path(path, &root, config_verbose, Some(id))?;
         // The app Arena takes ownershp of the Configuration.
         let graft_id = app.add_graft(id, graft_config);
         // Record the config ID in the graft structure.
-        app.get_config_mut(id).grafts[idx].set_id(graft_id);
+        if let Some(graft) = app.get_config_mut(id).grafts.get_mut(&graft_name) {
+            graft.set_id(graft_id);
+        }
         // Read child grafts recursively.
         read_grafts_recursive(app, graft_id)?;
     }
