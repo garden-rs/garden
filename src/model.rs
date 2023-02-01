@@ -14,11 +14,14 @@ use which::which;
 /// Tree index into config.trees
 pub type TreeIndex = usize;
 
-/// Group index into config.groups
-pub type GroupIndex = usize;
+/// GroupName keys into config.groups
+pub type GroupName = String;
 
-/// Garden index into config.gardens
-pub type GardenIndex = usize;
+/// GardenName keys into config.gardens
+pub type GardenName = String;
+
+/// GraftName keys into config.grafts
+pub type GraftName = String;
 
 /// Configuration Node IDs
 pub type ConfigId = NodeId;
@@ -405,23 +408,18 @@ pub struct Garden {
     pub groups: IndexSet<String>,
     pub trees: IndexSet<String>,
     pub variables: VariableHashMap,
-    name: String,
-    index: GardenIndex,
+    name: GardenName,
 }
 
 impl_display!(Garden);
 
 impl Garden {
-    pub fn get_name(&self) -> &String {
+    pub fn get_name(&self) -> &GardenName {
         &self.name
     }
 
     pub fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
-    }
-
-    pub fn get_index(&self) -> GardenIndex {
-        self.index
     }
 }
 
@@ -443,9 +441,9 @@ pub struct Configuration {
     pub commands: MultiVariableHashMap,
     pub debug: HashMap<String, u8>,
     pub environment: Vec<MultiVariable>,
-    pub gardens: Vec<Garden>,
-    pub grafts: IndexMap<String, Graft>,
-    pub groups: IndexMap<String, Group>,
+    pub gardens: IndexMap<GardenName, Garden>,
+    pub grafts: IndexMap<GraftName, Graft>,
+    pub groups: IndexMap<GroupName, Group>,
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
     pub root: Variable,
@@ -487,9 +485,6 @@ impl Configuration {
         // Resolve tree paths
         self.update_tree_paths();
 
-        // Assign garden.index to each garden
-        self.update_indexes();
-
         // Reset variables
         self.reset();
     }
@@ -530,12 +525,6 @@ impl Configuration {
                     var.set_value(tree_path);
                 }
             }
-        }
-    }
-
-    fn update_indexes(&mut self) {
-        for (idx, garden) in self.gardens.iter_mut().enumerate() {
-            garden.index = idx as GardenIndex;
         }
     }
 
@@ -810,8 +799,8 @@ impl Graft {
 pub struct EvalContext {
     pub config: ConfigId,
     pub tree: Option<TreeIndex>,
-    pub garden: Option<GardenIndex>,
-    pub group: Option<GroupIndex>,
+    pub garden: Option<GardenName>,
+    pub group: Option<GroupName>,
 }
 
 impl_display_brief!(EvalContext);
@@ -821,8 +810,8 @@ impl EvalContext {
     pub fn new(
         config: ConfigId,
         tree: Option<TreeIndex>,
-        garden: Option<GardenIndex>,
-        group: Option<GroupIndex>,
+        garden: Option<GardenName>,
+        group: Option<GroupName>,
     ) -> Self {
         EvalContext {
             config,
@@ -837,7 +826,7 @@ impl EvalContext {
 pub struct TreeContext {
     pub tree: TreeIndex,
     pub config: Option<ConfigId>,
-    pub garden: Option<GardenIndex>,
+    pub garden: Option<GardenName>,
     pub group: Option<String>,
 }
 
@@ -848,7 +837,7 @@ impl TreeContext {
     pub fn new(
         tree: TreeIndex,
         config: Option<ConfigId>,
-        garden: Option<GardenIndex>,
+        garden: Option<GardenName>,
         group: Option<String>,
     ) -> Self {
         TreeContext {

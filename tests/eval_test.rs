@@ -136,7 +136,7 @@ fn multi_variable_with_garden() {
     let mut var = config.trees[1].environment[1].clone();
     assert_eq!("PATH", var.get_name());
 
-    let context = garden::model::TreeContext::new(1, None, Some(0), None);
+    let context = garden::model::TreeContext::new(1, None, Some(string!("cola")), None);
     let values = garden::eval::multi_variable(&config, &mut var, &context);
     assert_eq!(
         values,
@@ -151,7 +151,7 @@ fn multi_variable_with_garden() {
 fn garden_environment() {
     let config = common::garden_config();
     // cola tree(1) and cola garden(Some(0))
-    let context = garden::model::TreeContext::new(1, None, Some(0), None);
+    let context = garden::model::TreeContext::new(1, None, Some(string!("cola")), None);
     let values = garden::eval::environment(&config, &context);
     assert_eq!(values.len(), 9);
 
@@ -318,7 +318,7 @@ fn command_garden_scope() -> Result<()> {
     let config = common::garden_config();
     let options = garden::cli::MainOptions::new();
     let app = garden::build::context_from_config(config, &options)?;
-    let context = garden::model::TreeContext::new(1, None, Some(0), None);
+    let context = garden::model::TreeContext::new(1, None, Some(string!("cola")), None);
 
     // Garden scope
     let values = garden::eval::command(&app, &context, "build");
@@ -407,11 +407,12 @@ fn eval_graft_tree() -> Result<()> {
 
     // Evaluate the value for ${current_config} using the inner grafted config.
     let config = app.get_config(ctx.config.unwrap());
-    let path = garden::eval::tree_value(config, "${TREE_PATH}", ctx.tree, ctx.garden);
+    let path = garden::eval::tree_value(config, "${TREE_PATH}", ctx.tree, ctx.garden.as_ref());
     assert!(path.ends_with("/graft"));
 
     // Evaluate a local variable that is overridden in the graft.
-    let actual = garden::eval::tree_value(config, "${current_config}", ctx.tree, ctx.garden);
+    let actual =
+        garden::eval::tree_value(config, "${current_config}", ctx.tree, ctx.garden.as_ref());
     assert_eq!("graft", actual);
 
     // Get a TreeContext for "example/tree".
@@ -425,17 +426,27 @@ fn eval_graft_tree() -> Result<()> {
         example_config,
         "${current_config}",
         example_ctx.tree,
-        example_ctx.garden,
+        example_ctx.garden.as_ref(),
     );
     assert_eq!("main", actual);
 
     // References to unknown grafts evaluate to an empty string.
-    let actual = garden::eval::tree_value(config, "${undefined::variable}", ctx.tree, ctx.garden);
+    let actual = garden::eval::tree_value(
+        config,
+        "${undefined::variable}",
+        ctx.tree,
+        ctx.garden.as_ref(),
+    );
     assert_eq!("", actual);
 
     // Evaluate a grafted variable from the context of "example/tree" from
     // the main configuration.
-    let actual = garden::eval::tree_value(config, "${graft::current_config}", ctx.tree, ctx.garden);
+    let actual = garden::eval::tree_value(
+        config,
+        "${graft::current_config}",
+        ctx.tree,
+        ctx.garden.as_ref(),
+    );
     // TODO: this should evaluate to "graft".
     //assert_eq!("graft", actual);
     assert_eq!("", actual);

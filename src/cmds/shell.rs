@@ -59,7 +59,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
 
     // Evaluate garden.shell
     let shell_expr = config.shell.clone();
-    let shell = eval::tree_value(config, &shell_expr, context.tree, context.garden);
+    let shell = eval::tree_value(config, &shell_expr, context.tree, context.garden.as_ref());
 
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(

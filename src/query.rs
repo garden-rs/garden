@@ -72,8 +72,8 @@ pub fn garden_trees(
 ) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
 
-    for garden in &config.gardens {
-        if !pattern.matches(garden.get_name()) {
+    for (name, garden) in &config.gardens {
+        if !pattern.matches(name) {
             continue;
         }
         result.append(&mut trees_from_garden(config, garden));
@@ -104,7 +104,7 @@ pub fn trees_from_garden(
             // Match found -- take all of the discovered trees.
             result.append(&mut trees_from_group(
                 config,
-                Some(garden.get_index()),
+                Some(garden.get_name()),
                 cfg_group,
             ));
         }
@@ -115,7 +115,7 @@ pub fn trees_from_garden(
         result.append(&mut trees_from_pattern(
             config,
             tree,
-            Some(garden.get_index()),
+            Some(garden.get_name()),
             None,
         ));
     }
@@ -126,7 +126,7 @@ pub fn trees_from_garden(
 /// Return the tree contexts for a garden
 pub fn trees_from_group(
     config: &model::Configuration,
-    garden: Option<model::GardenIndex>,
+    garden: Option<&model::GardenName>,
     group: &model::Group,
 ) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
@@ -148,13 +148,13 @@ pub fn trees_from_group(
 /// Parameters:
 /// - config: `&garden::model::Configuration`
 /// - tree: Tree name `&str`
-/// - garden_idx: `Option<garden::model::GardenIndex>`
+/// - garden_idx: `Option<garden::model::GardenName>`
 
 pub fn tree_from_name(
     config: &model::Configuration,
     tree: &str,
-    garden_idx: Option<model::GardenIndex>,
-    group: Option<&String>,
+    garden_name: Option<&model::GardenName>,
+    group: Option<&model::GardenName>,
 ) -> Option<model::TreeContext> {
     // Collect tree indexes for the configured trees
     for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
@@ -163,7 +163,7 @@ pub fn tree_from_name(
             return Some(model::TreeContext::new(
                 tree_idx,
                 config.get_id(),
-                garden_idx,
+                garden_name.cloned(),
                 group.cloned(),
             ));
         }
@@ -184,13 +184,13 @@ pub fn tree_from_name(
 /// Parameters:
 /// - config: `&garden::model::Configuration`
 /// - tree: Tree name pattern `&str`
-/// - garden_idx: `Option<garden::model::GardenIndex>`
+/// - garden_name: `Option<garden::model::GardenName>`
 
 pub fn trees_from_pattern(
     config: &model::Configuration,
     tree: &str,
-    garden_idx: Option<model::GardenIndex>,
-    group: Option<&String>,
+    garden_name: Option<&model::GardenName>,
+    group: Option<&model::GroupName>,
 ) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
     let pattern = match glob::Pattern::new(tree) {
@@ -205,7 +205,7 @@ pub fn trees_from_pattern(
             result.push(model::TreeContext::new(
                 tree_idx,
                 config.get_id(),
-                garden_idx,
+                garden_name.cloned(),
                 group.cloned(),
             ));
         }
@@ -350,7 +350,7 @@ pub fn tree_context(
         let mut found = false;
         for current_ctx in &contexts {
             if current_ctx.tree == ctx.tree {
-                ctx.garden = current_ctx.garden;
+                ctx.garden = current_ctx.garden.clone();
                 found = true;
                 break;
             }
@@ -395,9 +395,14 @@ pub fn find_tree(
 pub fn shared_worktree_path(config: &model::Configuration, ctx: &model::TreeContext) -> String {
     let tree = &config.trees[ctx.tree];
     if tree.is_worktree {
-        let worktree = eval::tree_value(config, tree.worktree.get_expr(), ctx.tree, ctx.garden);
+        let worktree = eval::tree_value(
+            config,
+            tree.worktree.get_expr(),
+            ctx.tree,
+            ctx.garden.as_ref(),
+        );
         if let Some(parent_ctx) =
-            query::tree_from_name(config, &worktree, ctx.garden, ctx.group.as_ref())
+            query::tree_from_name(config, &worktree, ctx.garden.as_ref(), ctx.group.as_ref())
         {
             if let Ok(path) = config.trees[parent_ctx.tree].path_as_ref() {
                 return path.to_string();

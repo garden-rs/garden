@@ -9,12 +9,12 @@ use std::collections::HashMap;
 /// Expand variables across all scopes (garden, tree, and global).
 /// - `config`: reference to Configuration
 /// - `tree_idx`: index into the tree being evaluated
-/// - `garden_idx`: optional index into a garden
+/// - `garden_name`: optional garden name being evaluated.
 /// - `name`: the name of the variable being expanded.
 fn expand_tree_vars(
     config: &model::Configuration,
     tree_idx: model::TreeIndex,
-    garden_idx: Option<model::GardenIndex>,
+    garden_name: Option<&model::GardenName>,
     name: &str,
 ) -> Option<String> {
     // Special case $0, $1, .. $N so they can be used in commands.
@@ -47,13 +47,17 @@ fn expand_tree_vars(
 
     // First check for the variable at the garden scope.
     // Garden scope overrides tree and global scope.
-    if let Some(garden) = garden_idx {
-        if let Some(var) = config.gardens[garden].variables.get(name) {
+    if let Some(garden_name) = garden_name {
+        if let Some(var) = &config
+            .gardens
+            .get(garden_name)
+            .and_then(|garden| garden.variables.get(name))
+        {
             if let Some(var_value) = var.get_value() {
                 return Some(var_value.to_string());
             }
             let expr = var.get_expr();
-            let result = tree_value(config, expr, tree_idx, garden_idx);
+            let result = tree_value(config, expr, tree_idx, Some(garden_name));
             var.set_value(result.clone());
             return Some(result);
         }
@@ -65,7 +69,7 @@ fn expand_tree_vars(
             return Some(var_value.to_string());
         }
         let expr = var.get_expr();
-        let result = tree_value(config, expr, tree_idx, garden_idx);
+        let result = tree_value(config, expr, tree_idx, garden_name);
         var.set_value(result.to_string());
         return Some(result);
     }
@@ -73,7 +77,7 @@ fn expand_tree_vars(
     // Nothing was found.  Check for the variable in global/config scope.
     if let Some(var) = config.variables.get(name) {
         let expr = var.get_expr();
-        let result = tree_value(config, expr, tree_idx, garden_idx);
+        let result = tree_value(config, expr, tree_idx, garden_name);
         var.set_value(result.clone());
         return Some(result);
     }
@@ -139,7 +143,7 @@ pub fn tree_value(
     config: &model::Configuration,
     expr: &str,
     tree_idx: model::TreeIndex,
-    garden_idx: Option<model::GardenIndex>,
+    garden_name: Option<&model::GardenName>,
 ) -> String {
     let is_exec = syntax::is_exec(expr);
     let escaped_value;
@@ -150,7 +154,7 @@ pub fn tree_value(
         expr
     };
     let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
-        expand_tree_vars(config, tree_idx, garden_idx, x)
+        expand_tree_vars(config, tree_idx, garden_name, x)
     })
     .to_string();
 
@@ -173,13 +177,13 @@ pub fn tree_value_for_shell(
     config: &model::Configuration,
     expr: &str,
     tree_idx: model::TreeIndex,
-    garden_idx: Option<model::GardenIndex>,
+    garden_name: Option<&model::GardenName>,
 ) -> String {
     let is_exec = syntax::is_exec(expr);
     let expanded = shellexpand::full_with_context_no_errors(
         &syntax::escape_shell_variables(expr),
         home_dir,
-        |x| expand_tree_vars(config, tree_idx, garden_idx, x),
+        |x| expand_tree_vars(config, tree_idx, garden_name, x),
     )
     .to_string();
 
@@ -251,7 +255,12 @@ pub fn multi_variable(
             continue;
         }
 
-        let value = tree_value(config, var.get_expr(), context.tree, context.garden);
+        let value = tree_value(
+            config,
+            var.get_expr(),
+            context.tree,
+            context.garden.as_ref(),
+        );
         result.push(value.clone());
 
         var.set_value(value);
@@ -274,7 +283,12 @@ pub fn variables_for_shell(
             continue;
         }
 
-        let value = tree_value_for_shell(config, var.get_expr(), context.tree, context.garden);
+        let value = tree_value_for_shell(
+            config,
+            var.get_expr(),
+            context.tree,
+            context.garden.as_ref(),
+        );
         result.push(value.clone());
 
         var.set_value(value);
@@ -297,19 +311,20 @@ pub fn environment(
     }
 
     let mut ready = false;
-    if let Some(idx) = context.garden {
+    if let Some(garden_name) = context.garden.as_ref() {
         // Evaluate garden environments.
-        let garden = &config.gardens[idx];
-        for ctx in query::trees_from_garden(config, garden) {
-            for var in &config.trees[ctx.tree].environment {
-                vars.push((ctx.clone(), var.clone()));
+        if let Some(garden) = &config.gardens.get(garden_name) {
+            for ctx in query::trees_from_garden(config, garden) {
+                for var in &config.trees[ctx.tree].environment {
+                    vars.push((ctx.clone(), var.clone()));
+                }
             }
-        }
 
-        for var in &garden.environment {
-            vars.push((context.clone(), var.clone()));
+            for var in &garden.environment {
+                vars.push((context.clone(), var.clone()));
+            }
+            ready = true;
         }
-        ready = true;
     } else if let Some(name) = &context.group {
         // Evaluate group environments.
         if let Some(group) = config.groups.get(name) {
@@ -332,7 +347,7 @@ pub fn environment(
     let mut var_values = Vec::new();
     for (ctx, var) in vars.iter_mut() {
         var_values.push((
-            tree_value(config, var.get_name(), ctx.tree, ctx.garden),
+            tree_value(config, var.get_name(), ctx.tree, ctx.garden.as_ref()),
             multi_variable(config, var, ctx),
         ));
     }
@@ -456,10 +471,12 @@ pub fn command(
     }
 
     // Optional garden command scope
-    if let Some(garden) = context.garden {
-        for (var_name, var) in &config.gardens[garden].commands {
-            if pattern.matches(var_name) {
-                vec_variables.push(var.clone());
+    if let Some(garden_name) = &context.garden {
+        if let Some(garden) = &config.gardens.get(garden_name) {
+            for (var_name, var) in &garden.commands {
+                if pattern.matches(var_name) {
+                    vec_variables.push(var.clone());
+                }
             }
         }
     }

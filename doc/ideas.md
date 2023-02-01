@@ -64,7 +64,7 @@ find a graft that matches the name.  If the graft with by the name of
 "the-graft" exists then the child configuration is looked up for "the-graft"
 and the query is resolved in the context of that configuration.
 
-GardenIndex and GroupIndex values are relative to their local configuration.
+GardenName and GroupName values are relative to their local configuration.
 The corresponding configuration must be used when resolving these values
 to actual Gardens and Groups.
 

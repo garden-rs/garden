@@ -26,7 +26,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ListOptions) -> Resul
     if !config.gardens.is_empty() {
         println!("gardens:");
         print!("    ");
-        for garden in &config.gardens {
+        for garden in config.gardens.values() {
             print!("{} ", garden.get_name());
         }
         println!();

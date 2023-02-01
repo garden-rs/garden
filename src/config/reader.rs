@@ -729,7 +729,7 @@ fn get_str_variables_hashmap(yaml: &Yaml, remotes: &mut model::VariableHashMap) 
 }
 
 /// Read group definitions
-fn get_groups(yaml: &Yaml, groups: &mut IndexMap<String, model::Group>) -> bool {
+fn get_groups(yaml: &Yaml, groups: &mut IndexMap<model::GroupName, model::Group>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut group = model::Group::default();
@@ -744,7 +744,7 @@ fn get_groups(yaml: &Yaml, groups: &mut IndexMap<String, model::Group>) -> bool 
 }
 
 /// Read garden definitions
-fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
+fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             let mut garden = model::Garden::default();
@@ -755,7 +755,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
             get_multivariables(&value["environment"], &mut garden.environment);
             get_multivariables_hashmap(&value["commands"], &mut garden.commands);
             get_variables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
-            gardens.push(garden);
+            gardens.insert(garden.get_name().to_string(), garden);
         }
         return true;
     }
@@ -764,7 +764,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut Vec<model::Garden>) -> bool {
 }
 
 /// Read a grafts: block into a Vec<Graft>.
-fn get_grafts(yaml: &Yaml, grafts: &mut IndexMap<String, model::Graft>) -> bool {
+fn get_grafts(yaml: &Yaml, grafts: &mut IndexMap<model::GardenName, model::Graft>) -> bool {
     if let Yaml::Hash(ref yaml_hash) = yaml {
         for (name, value) in yaml_hash {
             let graft = get_graft(name, value);

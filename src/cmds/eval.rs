@@ -34,7 +34,7 @@ pub fn main(app: &mut model::ApplicationContext, eval: &EvalOptions) -> Result<(
         Some(tree) => {
             // Evaluate and print the garden expression.
             let ctx = query::tree_context(config, tree, garden_opt)?;
-            let value = eval::tree_value(config, &eval.expr, ctx.tree, ctx.garden);
+            let value = eval::tree_value(config, &eval.expr, ctx.tree, ctx.garden.as_ref());
             println!("{value}");
         }
     }
