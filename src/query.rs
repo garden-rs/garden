@@ -152,28 +152,24 @@ pub fn trees_from_group(
 
 pub fn tree_from_name(
     config: &model::Configuration,
-    tree: &str,
+    tree_name: &str,
     garden_name: Option<&model::GardenName>,
     group: Option<&model::GardenName>,
 ) -> Option<model::TreeContext> {
     // Collect tree indexes for the configured trees
-    for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
-        if cfg_tree.get_name() == tree {
-            // Tree found
-            return Some(model::TreeContext::new(
-                tree_idx,
-                config.get_id(),
-                garden_name.cloned(),
-                group.cloned(),
-            ));
-        }
+    if let Some(tree) = config.trees.get(tree_name) {
+        return Some(model::TreeContext::new(
+            tree.get_name(),
+            config.get_id(),
+            garden_name.cloned(),
+            group.cloned(),
+        ));
     }
 
     // Try to find the specified name on the filesystem if no tree was found
     // that matched the specified name.  Matching trees are found by matching
     // tree paths against the specified name.
-
-    if let Some(ctx) = tree_from_path(config, tree) {
+    if let Some(ctx) = tree_from_path(config, tree_name) {
         return Some(ctx);
     }
 
@@ -199,11 +195,11 @@ pub fn trees_from_pattern(
     };
 
     // Collect tree indexes for the configured trees
-    for (tree_idx, cfg_tree) in config.trees.iter().enumerate() {
-        if pattern.matches(cfg_tree.get_name()) {
+    for (tree_name, cfg_tree) in &config.trees {
+        if pattern.matches(tree_name) {
             // Tree found
             result.push(model::TreeContext::new(
-                tree_idx,
+                cfg_tree.get_name(),
                 config.get_id(),
                 garden_name.cloned(),
                 group.cloned(),
@@ -238,7 +234,7 @@ pub fn tree_from_pathbuf(
         Err(_) => return None,
     };
 
-    for (idx, tree) in config.trees.iter().enumerate() {
+    for (name, tree) in &config.trees {
         let tree_path = match tree.path_as_ref() {
             Ok(value) => value,
             Err(_) => continue,
@@ -249,12 +245,7 @@ pub fn tree_from_pathbuf(
             Err(_) => continue,
         };
         if pathbuf == tree_canon {
-            return Some(model::TreeContext::new(
-                idx as model::TreeIndex,
-                config.get_id(),
-                None,
-                None,
-            ));
+            return Some(model::TreeContext::new(name, config.get_id(), None, None));
         }
     }
 
@@ -277,7 +268,7 @@ pub fn tree_name_from_abspath(
     path: &std::path::Path,
 ) -> Option<String> {
     // Do we already have a tree with this tree path?
-    for tree in &config.trees {
+    for tree in config.trees.values() {
         // Skip entries that do not exist on disk.
         if !tree.path_is_valid() {
             continue;
@@ -303,10 +294,10 @@ pub fn tree_name_from_abspath(
 
 fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
-    for (tree_idx, tree) in config.trees.iter().enumerate() {
-        if pattern.matches(tree.get_name()) {
+    for (tree_name, tree) in &config.trees {
+        if pattern.matches(tree_name) {
             result.push(model::TreeContext::new(
-                tree_idx,
+                tree.get_name(),
                 config.get_id(),
                 None,
                 None,
@@ -325,7 +316,7 @@ pub fn tree_context(
     tree: &str,
     garden: Option<&str>,
 ) -> Result<model::TreeContext, errors::GardenError> {
-    let mut ctx = model::TreeContext::new(0, config.get_id(), None, None);
+    let mut ctx = model::TreeContext::new("", config.get_id(), None, None);
     // TODO: grafted trees
     if let Some(context) = tree_from_name(config, tree, None, None) {
         ctx.tree = context.tree;
@@ -393,18 +384,25 @@ pub fn find_tree(
 
 /// Return a path that that is either the tree's path or the tree's shared worktree path.
 pub fn shared_worktree_path(config: &model::Configuration, ctx: &model::TreeContext) -> String {
-    let tree = &config.trees[ctx.tree];
+    let tree = match config.trees.get(&ctx.tree) {
+        Some(tree) => tree,
+        None => return String::new(),
+    };
     if tree.is_worktree {
         let worktree = eval::tree_value(
             config,
             tree.worktree.get_expr(),
-            ctx.tree,
+            &ctx.tree,
             ctx.garden.as_ref(),
         );
         if let Some(parent_ctx) =
             query::tree_from_name(config, &worktree, ctx.garden.as_ref(), ctx.group.as_ref())
         {
-            if let Ok(path) = config.trees[parent_ctx.tree].path_as_ref() {
+            if let Some(path) = config
+                .trees
+                .get(&parent_ctx.tree)
+                .and_then(|tree| tree.path_as_ref().ok())
+            {
                 return path.to_string();
             }
         }

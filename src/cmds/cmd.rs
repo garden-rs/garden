@@ -205,14 +205,17 @@ pub fn run_cmd_breadth_first(
         for context in contexts {
             // Skip symlink trees.
             let config = app.get_root_config();
-            if config.trees[context.tree].is_symlink {
+            let tree = match config.trees.get(&context.tree) {
+                Some(tree) => tree,
+                None => continue,
+            };
+            if tree.is_symlink {
                 continue;
             }
             // Evaluate the tree environment
             let env = eval::environment(app.get_root_config(), context);
 
             // Run each command in the tree's context
-            let tree = &config.trees[context.tree];
             let path = tree.path_as_ref()?.to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !model::print_tree(tree, verbose, quiet) {
@@ -263,14 +266,17 @@ pub fn run_cmd_depth_first(
     for context in contexts {
         // Skip symlink trees.
         let config = app.get_root_config();
-        if config.trees[context.tree].is_symlink {
+        let tree = match config.trees.get(&context.tree) {
+            Some(tree) => tree,
+            None => continue,
+        };
+        if tree.is_symlink {
             continue;
         }
         // Evaluate the tree environment
         let env = eval::environment(app.get_root_config(), context);
 
         // Run each command in the tree's context
-        let tree = &config.trees[context.tree];
         let path = tree.path_as_ref()?.to_string();
 
         // Sparse gardens/missing trees are ok -> skip these entries.

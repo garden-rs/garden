@@ -11,8 +11,8 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use which::which;
 
-/// Tree index into config.trees
-pub type TreeIndex = usize;
+/// TreeName keys into config.trees
+pub type TreeName = String;
 
 /// GroupName keys into config.groups
 pub type GroupName = String;
@@ -451,7 +451,7 @@ pub struct Configuration {
     pub shell: String,
     pub templates: HashMap<String, Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
-    pub trees: Vec<Tree>,
+    pub trees: IndexMap<TreeName, Tree>,
     pub variables: VariableHashMap,
     pub verbose: u8,
     id: Option<ConfigId>,
@@ -506,24 +506,22 @@ impl Configuration {
             }
         }
 
-        for tree in self.trees.iter_mut() {
-            if tree.variables.len() >= 2 {
-                // Update TREE_NAME.
-                let tree_name = String::from(tree.get_name());
-                if let Some(var) = tree.variables.get_mut("TREE_NAME") {
-                    var.set_expr(tree_name.to_string());
-                    var.set_value(tree_name);
-                }
-                // Extract the tree's path.  Skip invalid/unset entries.
-                let tree_path = match tree.path_as_ref() {
-                    Ok(path) => String::from(path),
-                    Err(_) => continue,
-                };
-                // Update TREE_PATH.
-                if let Some(var) = tree.variables.get_mut("TREE_PATH") {
-                    var.set_expr(tree_path.to_string());
-                    var.set_value(tree_path);
-                }
+        for tree in self.trees.values_mut() {
+            // Update TREE_NAME.
+            let tree_name = String::from(tree.get_name());
+            if let Some(var) = tree.variables.get_mut("TREE_NAME") {
+                var.set_expr(tree_name.to_string());
+                var.set_value(tree_name);
+            }
+            // Extract the tree's path.  Skip invalid/unset entries.
+            let tree_path = match tree.path_as_ref() {
+                Ok(path) => String::from(path),
+                Err(_) => continue,
+            };
+            // Update TREE_PATH.
+            if let Some(var) = tree.variables.get_mut("TREE_PATH") {
+                var.set_expr(tree_path.to_string());
+                var.set_value(tree_path);
             }
         }
     }
@@ -535,23 +533,28 @@ impl Configuration {
         // Gather path and symlink expressions.
         let mut path_values = Vec::new();
         let mut symlink_values = Vec::new();
-        for (idx, tree) in self.trees.iter().enumerate() {
-            path_values.push(tree.path.expr.clone());
+
+        for (name, tree) in &self.trees {
+            path_values.push((name.clone(), tree.path.get_expr().clone()));
             if tree.is_symlink {
-                symlink_values.push((idx, tree.symlink.expr.clone()));
+                symlink_values.push((name.clone(), tree.symlink.get_expr().clone()));
             }
         }
 
         // Evaluate the "path" expression.
-        for (idx, value) in path_values.iter().enumerate() {
+        for (name, value) in &path_values {
             let result = self.eval_tree_path(value);
-            self.trees[idx].path.set_value(result);
+            if let Some(tree) = self.trees.get_mut(name) {
+                tree.path.set_value(result);
+            }
         }
 
         // Evaluate the "symlink" expression.
-        for (idx, value) in &symlink_values {
+        for (name, value) in &symlink_values {
             let result = self.eval_tree_path(value);
-            self.trees[*idx].symlink.set_value(result);
+            if let Some(tree) = self.trees.get_mut(name) {
+                tree.symlink.set_value(result);
+            }
         }
     }
 
@@ -687,7 +690,7 @@ impl Configuration {
 
         reset_hashmap_variables(&self.commands);
 
-        for tree in &self.trees {
+        for tree in self.trees.values() {
             tree.reset_variables();
         }
     }
@@ -749,13 +752,12 @@ impl Configuration {
 
     /// Find a tree by name and return a reference if it exists.
     pub fn get_tree(&self, name: &str) -> Option<&Tree> {
-        self.trees.iter().find(|&tree| tree.get_name() == name)
+        self.trees.get(name)
     }
 
     /// Return a pathbuf for the specified Tree index
-    pub fn get_tree_pathbuf(&self, tree_idx: TreeIndex) -> Option<std::path::PathBuf> {
-        self.trees
-            .get(tree_idx)
+    pub fn get_tree_pathbuf(&self, tree_name: &str) -> Option<std::path::PathBuf> {
+        self.get_tree(tree_name)
             .map(|tree| tree.canonical_pathbuf())
             .unwrap_or(None)
     }
@@ -798,7 +800,7 @@ impl Graft {
 #[derive(Clone, Debug)]
 pub struct EvalContext {
     pub config: ConfigId,
-    pub tree: Option<TreeIndex>,
+    pub tree: Option<TreeName>,
     pub garden: Option<GardenName>,
     pub group: Option<GroupName>,
 }
@@ -809,7 +811,7 @@ impl EvalContext {
     /// Construct a new EvalContext.
     pub fn new(
         config: ConfigId,
-        tree: Option<TreeIndex>,
+        tree: Option<TreeName>,
         garden: Option<GardenName>,
         group: Option<GroupName>,
     ) -> Self {
@@ -824,7 +826,7 @@ impl EvalContext {
 
 #[derive(Clone, Debug)]
 pub struct TreeContext {
-    pub tree: TreeIndex,
+    pub tree: TreeName,
     pub config: Option<ConfigId>,
     pub garden: Option<GardenName>,
     pub group: Option<String>,
@@ -835,13 +837,13 @@ impl_display_brief!(TreeContext);
 impl TreeContext {
     /// Construct a new TreeContext.
     pub fn new(
-        tree: TreeIndex,
+        tree: &str,
         config: Option<ConfigId>,
         garden: Option<GardenName>,
         group: Option<String>,
     ) -> Self {
         TreeContext {
-            tree,
+            tree: TreeName::from(tree),
             config,
             garden,
             group,

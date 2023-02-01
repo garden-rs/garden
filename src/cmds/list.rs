@@ -26,8 +26,8 @@ pub fn main(app: &mut model::ApplicationContext, options: &ListOptions) -> Resul
     if !config.gardens.is_empty() {
         println!("gardens:");
         print!("    ");
-        for garden in config.gardens.values() {
-            print!("{} ", garden.get_name());
+        for garden in config.gardens.keys() {
+            print!("{garden} ");
         }
         println!();
     }
@@ -44,8 +44,8 @@ pub fn main(app: &mut model::ApplicationContext, options: &ListOptions) -> Resul
     if !config.trees.is_empty() {
         println!("trees:");
         print!("    ");
-        for tree in &config.trees {
-            print!("{} ", tree.get_name());
+        for name in config.trees.keys() {
+            print!("{name} ");
         }
         println!();
     }

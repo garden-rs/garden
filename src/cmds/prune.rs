@@ -510,7 +510,7 @@ pub fn prune(
     // tree paths so that we can skip them while traversing.
     let mut configured_tree_paths = HashSet::new();
     {
-        for tree in &config.trees {
+        for tree in config.trees.values() {
             if let Some(pathbuf) = tree.canonical_pathbuf() {
                 configured_tree_paths.insert(pathbuf);
             }

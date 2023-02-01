@@ -68,9 +68,13 @@ fn grow_tree_from_context(
     verbose: u8,
 ) -> Result<i32> {
     let mut exit_status = errors::EX_OK;
+    let tree = match config.trees.get(&ctx.tree) {
+        Some(tree) => tree,
+        None => return Ok(exit_status),
+    };
 
-    let path = config.trees[ctx.tree].path_as_ref()?.clone();
-    model::print_tree_details(&config.trees[ctx.tree], verbose, quiet);
+    let path = tree.path_as_ref()?.clone();
+    model::print_tree_details(tree, verbose, quiet);
 
     let pathbuf = std::path::PathBuf::from(&path);
     let parent = pathbuf.parent().ok_or_else(|| {
@@ -90,7 +94,7 @@ fn grow_tree_from_context(
         );
     }
 
-    if config.trees[ctx.tree].is_symlink {
+    if tree.is_symlink {
         let status = grow_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
         if status != errors::EX_OK {
             exit_status = status;
@@ -98,7 +102,7 @@ fn grow_tree_from_context(
         return Ok(exit_status);
     }
 
-    if config.trees[ctx.tree].is_worktree {
+    if tree.is_worktree {
         return grow_tree_from_context_as_worktree(
             config,
             configured_worktrees,
@@ -109,8 +113,8 @@ fn grow_tree_from_context(
     }
 
     // The "origin" remote is cloned by convention. The "url" field maps to "origin".
-    let url = match config.trees[ctx.tree].remotes.get("origin") {
-        Some(remote) => eval::tree_value(config, remote.get_expr(), ctx.tree, ctx.garden.as_ref()),
+    let url = match tree.remotes.get("origin") {
+        Some(remote) => eval::tree_value(config, remote.get_expr(), &ctx.tree, ctx.garden.as_ref()),
         None => return Ok(exit_status),
     };
 
@@ -120,20 +124,25 @@ fn grow_tree_from_context(
     // [options]
     //
     // "git clone --bare" clones bare repositories.
-    if config.trees[ctx.tree].is_bare_repository {
+    if tree.is_bare_repository {
         cmd.push("--bare");
     }
 
     // "git clone --branch=name" clones the named branch.
-    let branch_var = config.trees[ctx.tree].branch.clone();
-    let branch = eval::tree_value(config, branch_var.get_expr(), ctx.tree, ctx.garden.as_ref());
+    let branch_var = tree.branch.clone();
+    let branch = eval::tree_value(
+        config,
+        branch_var.get_expr(),
+        &ctx.tree,
+        ctx.garden.as_ref(),
+    );
     let branch_opt;
     if !branch.is_empty() {
         branch_opt = format!("--branch={branch}");
         cmd.push(&branch_opt);
     }
     // "git clone --depth=N" creates shallow clones with truncated history.
-    let clone_depth = config.trees[ctx.tree].clone_depth;
+    let clone_depth = tree.clone_depth;
     let clone_depth_opt;
     if clone_depth > 0 {
         clone_depth_opt = format!("--depth={clone_depth}");
@@ -143,7 +152,7 @@ fn grow_tree_from_context(
     // We generally want all branches available in our clones so we default to
     // "single-branch: false" so that "--no-single-branch" is used. This makes
     // all branches available by default.
-    let is_single_branch = config.trees[ctx.tree].is_single_branch;
+    let is_single_branch = tree.is_single_branch;
     if is_single_branch {
         cmd.push("--single-branch");
     } else {
@@ -197,9 +206,13 @@ fn update_tree_from_context(
     verbose: u8,
 ) -> Result<i32> {
     let mut exit_status = errors::EX_OK;
+    let tree = match config.trees.get(&ctx.tree) {
+        Some(tree) => tree,
+        None => return Ok(exit_status),
+    };
 
     // Existing symlinks require no further processing.
-    if config.trees[ctx.tree].is_symlink {
+    if tree.is_symlink {
         return Ok(exit_status);
     }
 
@@ -225,8 +238,8 @@ fn update_tree_from_context(
     }
 
     // Loop over remotes and add/update the git remote configuration.
-    for (remote, var) in &config.trees[ctx.tree].remotes {
-        let url = eval::tree_value(config, var.get_expr(), ctx.tree, ctx.garden.as_ref());
+    for (remote, var) in &tree.remotes {
+        let url = eval::tree_value(config, var.get_expr(), &ctx.tree, ctx.garden.as_ref());
 
         let exec = if existing_remotes.contains(remote) {
             let remote_key = format!("remote.{remote}.url");
@@ -250,11 +263,11 @@ fn update_tree_from_context(
     }
 
     // Set gitconfig settings
-    for (var_name, var) in &config.trees[ctx.tree].gitconfig {
-        let name = eval::tree_value(config, var_name, ctx.tree, ctx.garden.as_ref());
+    for (var_name, var) in &tree.gitconfig {
+        let name = eval::tree_value(config, var_name, &ctx.tree, ctx.garden.as_ref());
         let value = match var.get_value() {
             Some(precomputed_value) => precomputed_value.to_string(),
-            None => eval::tree_value(config, var.get_expr(), ctx.tree, ctx.garden.as_ref()),
+            None => eval::tree_value(config, var.get_expr(), &ctx.tree, ctx.garden.as_ref()),
         };
         let command = ["git", "config", name.as_ref(), value.as_ref()];
         let exec = cmd::exec_in_dir(&command, path);
@@ -276,18 +289,21 @@ fn grow_tree_from_context_as_worktree(
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let mut exit_status;
-    let tree = &config.trees[ctx.tree];
+    let mut exit_status = errors::EX_OK;
+    let tree = match config.trees.get(&ctx.tree) {
+        Some(tree) => tree,
+        None => return Ok(exit_status),
+    };
     let worktree = eval::tree_value(
         config,
         tree.worktree.get_expr(),
-        ctx.tree,
+        &ctx.tree,
         ctx.garden.as_ref(),
     );
     let branch = eval::tree_value(
         config,
         tree.branch.get_expr(),
-        ctx.tree,
+        &ctx.tree,
         ctx.garden.as_ref(),
     );
 
@@ -309,7 +325,17 @@ fn grow_tree_from_context_as_worktree(
     }
 
     let tree_path = tree.path_as_ref()?;
-    let parent_path = config.trees[parent_ctx.tree].path_as_ref()?;
+    let parent_tree = match config.trees.get(&parent_ctx.tree) {
+        Some(parent_tree) => parent_tree,
+        None => {
+            return Err(errors::GardenError::WorktreeNotFound {
+                tree: tree.get_name().to_string(),
+                worktree,
+            }
+            .into())
+        }
+    };
+    let parent_path = parent_tree.path_as_ref()?;
 
     let mut cmd: Vec<&str> = ["git", "worktree", "add"].to_vec();
     if !branch.is_empty() {
@@ -355,7 +381,10 @@ fn grow_tree_from_context_as_worktree(
 
 /// Initialize a tree symlink entry.
 fn grow_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {
-    let tree = &config.trees[ctx.tree];
+    let tree = match config.trees.get(&ctx.tree) {
+        Some(tree) => tree,
+        None => return Ok(errors::EX_OK),
+    };
     // Invalid usage: non-symlink
     if !tree.is_symlink || tree.path_as_ref()?.is_empty() || tree.symlink_as_ref()?.is_empty() {
         return Err(errors::GardenError::ConfigurationError(format!(

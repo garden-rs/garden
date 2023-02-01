@@ -64,8 +64,12 @@ pub fn exec(
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in &contexts {
+        let tree = match config.trees.get(&context.tree) {
+            Some(tree) => tree,
+            None => continue,
+        };
         // Skip symlink trees.
-        if config.trees[context.tree].is_symlink {
+        if tree.is_symlink {
             continue;
         }
         // Run the command in the current context.

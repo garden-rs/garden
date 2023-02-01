@@ -43,10 +43,10 @@ fn template_includes() -> Result<()> {
     let context = garden::query::find_tree(&app, config_id, "tree-echo", None)?;
     let config = app.get_root_config();
 
-    let tree = &config.trees[context.tree];
-    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
+    let tree = config.trees.get(&context.tree).context("tree-echo")?;
+    let result = garden::eval::tree_value(config, "${template-variable}", &context.tree, None);
     assert_eq!(result, "template");
-    let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
+    let constant = garden::eval::tree_value(config, "${template-constant}", &context.tree, None);
     assert_eq!(constant, "constant");
     assert_eq!(1, tree.commands.len());
     let echo_cmd_opt = tree.commands.get("echo");
@@ -58,9 +58,12 @@ fn template_includes() -> Result<()> {
     // Test a template that uses "extend" on a template defined via an include file.
     // The "tree-echo-extended" uses "extend: tree-echo".
     let context = garden::query::find_tree(&app, config_id, "tree-echo-extended", None)?;
-    let tree = &config.trees[context.tree];
-    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
-    let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
+    let tree = config
+        .trees
+        .get(&context.tree)
+        .context("tree-echo-extended")?;
+    let result = garden::eval::tree_value(config, "${template-variable}", &context.tree, None);
+    let constant = garden::eval::tree_value(config, "${template-constant}", &context.tree, None);
     assert_eq!(result, "extended");
     assert_eq!(constant, "constant");
     assert_eq!(tree.commands.len(), 1);
@@ -74,9 +77,12 @@ fn template_includes() -> Result<()> {
 
     // Test a tree that uses "templates" with a template from a nested include file.
     let context = garden::query::find_tree(&app, config_id, "tree-echo-nested", None)?;
-    let tree = &config.trees[context.tree];
-    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
-    let constant = garden::eval::tree_value(config, "${template-constant}", context.tree, None);
+    let tree = &config
+        .trees
+        .get(&context.tree)
+        .context("tree-echo-nested")?;
+    let result = garden::eval::tree_value(config, "${template-variable}", &context.tree, None);
+    let constant = garden::eval::tree_value(config, "${template-constant}", &context.tree, None);
     assert_eq!(constant, "constant");
     assert_eq!(result, "nested");
 
@@ -88,14 +94,14 @@ fn template_includes() -> Result<()> {
     assert_eq!(echo_cmd[0].get_expr(), "echo Hello, ${TREE_NAME}");
 
     // Test a tree that uses "extend" on a tree defined via an include file.
-    let context = garden::query::find_tree(&app, config_id, "tree-echo-extended-tree", None)?;
-    let result = garden::eval::tree_value(config, "${template-variable}", context.tree, None);
+    let context = garden::query::find_tree(&app, config_id, "tree-echo-extended-tree-inner", None)?;
+    let result = garden::eval::tree_value(config, "${template-variable}", &context.tree, None);
     assert_eq!(result, "extended-tree");
 
-    let result = garden::eval::tree_value(config, "${tree-variable}", context.tree, None);
+    let result = garden::eval::tree_value(config, "${tree-variable}", &context.tree, None);
     assert_eq!(result, "nested");
 
-    let result = garden::eval::tree_value(config, "${tree-override}", context.tree, None);
+    let result = garden::eval::tree_value(config, "${tree-override}", &context.tree, None);
     assert_eq!(result, "extended-tree");
 
     Ok(())

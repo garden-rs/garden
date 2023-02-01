@@ -6,7 +6,7 @@ trees:
       template-variable: nested
       tree-variable: nested
       tree-override: nested
-  tree-echo-extended-tree:
+  tree-echo-extended-tree-inner:
     extend: tree-echo-nested
     variables:
       template-variable: extended-tree

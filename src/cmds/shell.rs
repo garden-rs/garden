@@ -30,7 +30,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
     // query that was used to find it then chdir into that tree.
     // This makes it convenient to have gardens and trees with the same name.
     for ctx in &contexts {
-        if config.trees[ctx.tree].get_name() == &options.query {
+        if ctx.tree == options.query {
             context = ctx.clone();
             break;
         }
@@ -59,7 +59,7 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
 
     // Evaluate garden.shell
     let shell_expr = config.shell.clone();
-    let shell = eval::tree_value(config, &shell_expr, context.tree, context.garden.as_ref());
+    let shell = eval::tree_value(config, &shell_expr, &context.tree, context.garden.as_ref());
 
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(

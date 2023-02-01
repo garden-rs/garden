@@ -33,7 +33,10 @@ pub fn inspect(config: &mut model::Configuration, verbose: u8, queries: &[String
         let contexts = query::resolve_trees(config, query);
         // Loop over each context and inspect the tree.
         for context in &contexts {
-            let tree = &config.trees[context.tree];
+            let tree = match config.trees.get(&context.tree) {
+                Some(tree) => tree,
+                None => continue,
+            };
             let path = tree.path_as_ref()?;
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !std::path::PathBuf::from(&path).exists() {

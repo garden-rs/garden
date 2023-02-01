@@ -313,10 +313,12 @@ fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> b
         for (k, v) in hash {
             let key = match k.as_str() {
                 Some(key_value) => key_value.to_string(),
-                None => continue,
+                None => {
+                    continue;
+                }
             };
             match v {
-                Yaml::String(ref yaml_str) => {
+                Yaml::String(yaml_str) => {
                     hashmap.insert(key, model::Variable::new(yaml_str.clone(), None));
                 }
                 Yaml::Array(ref yaml_array) => {
@@ -536,6 +538,8 @@ fn get_template(
                 base.apply(&mut template.tree);
             }
         }
+        // The base templates were already processed.
+        template.tree.templates.truncate(0);
     }
 
     get_tree_fields(value, &mut template.tree);
@@ -548,10 +552,11 @@ fn get_trees(config: &mut model::Configuration, yaml: &Yaml) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if let Yaml::String(ref url) = value {
-                config.trees.push(get_tree_from_url(name, url));
+                let tree = get_tree_from_url(name, url);
+                config.trees.insert(tree.get_name().to_string(), tree);
             } else {
                 let tree = get_tree(config, name, value, hash, true);
-                config.trees.push(tree);
+                config.trees.insert(tree.get_name().to_string(), tree);
             }
         }
         return true;
@@ -597,6 +602,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 }
 
 /// Read fields common to trees and templates.
+#[inline]
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_variables_hashmap(&value["variables"], &mut tree.variables);
     get_variables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
@@ -651,8 +657,7 @@ fn get_tree(
         if !parent_expr.is_empty() {
             let tree_name = Yaml::String(parent_name);
             if let Some(tree_values) = trees.get(&tree_name) {
-                let mut base = get_tree(config, &tree_name, tree_values, trees, true);
-                base.templates.truncate(0); // Base templates were already processed.
+                let base = get_tree(config, &tree_name, tree_values, trees, true);
                 tree.clone_from_tree(&base);
             }
         }
@@ -751,10 +756,10 @@ fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bo
             get_str(name, garden.get_name_mut());
             get_indexset_str(&value["groups"], &mut garden.groups);
             get_indexset_str(&value["trees"], &mut garden.trees);
+            get_variables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
             get_variables_hashmap(&value["variables"], &mut garden.variables);
             get_multivariables(&value["environment"], &mut garden.environment);
             get_multivariables_hashmap(&value["commands"], &mut garden.commands);
-            get_variables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
             gardens.insert(garden.get_name().to_string(), garden);
         }
         return true;

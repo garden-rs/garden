@@ -122,15 +122,15 @@ where
     S: AsRef<std::ffi::OsStr>,
 {
     let path;
-    // Immutable scope over tree
-    {
-        let tree = &config.trees[context.tree];
+    if let Some(tree) = config.trees.get(&context.tree) {
         path = tree.path_as_ref()?;
 
         // Sparse gardens/missing trees are ok -> skip these entries.
         if !model::print_tree(tree, verbose, quiet) {
             return Ok(());
         }
+    } else {
+        return Ok(());
     }
     // Evaluate the tree environment and run the command.
     let env = eval::environment(config, context);

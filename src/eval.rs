@@ -13,7 +13,7 @@ use std::collections::HashMap;
 /// - `name`: the name of the variable being expanded.
 fn expand_tree_vars(
     config: &model::Configuration,
-    tree_idx: model::TreeIndex,
+    tree_name: &str,
     garden_name: Option<&model::GardenName>,
     name: &str,
 ) -> Option<String> {
@@ -48,7 +48,7 @@ fn expand_tree_vars(
     // First check for the variable at the garden scope.
     // Garden scope overrides tree and global scope.
     if let Some(garden_name) = garden_name {
-        if let Some(var) = &config
+        if let Some(var) = config
             .gardens
             .get(garden_name)
             .and_then(|garden| garden.variables.get(name))
@@ -57,19 +57,23 @@ fn expand_tree_vars(
                 return Some(var_value.to_string());
             }
             let expr = var.get_expr();
-            let result = tree_value(config, expr, tree_idx, Some(garden_name));
+            let result = tree_value(config, expr, tree_name, Some(garden_name));
             var.set_value(result.clone());
             return Some(result);
         }
     }
 
     // Nothing was found -- check for the variable in tree scope.
-    if let Some(var) = config.trees[tree_idx].variables.get(name) {
+    if let Some(var) = config
+        .trees
+        .get(tree_name)
+        .and_then(|tree| tree.variables.get(name))
+    {
         if let Some(var_value) = var.get_value() {
             return Some(var_value.to_string());
         }
         let expr = var.get_expr();
-        let result = tree_value(config, expr, tree_idx, garden_name);
+        let result = tree_value(config, expr, tree_name, garden_name);
         var.set_value(result.to_string());
         return Some(result);
     }
@@ -77,7 +81,7 @@ fn expand_tree_vars(
     // Nothing was found.  Check for the variable in global/config scope.
     if let Some(var) = config.variables.get(name) {
         let expr = var.get_expr();
-        let result = tree_value(config, expr, tree_idx, garden_name);
+        let result = tree_value(config, expr, tree_name, garden_name);
         var.set_value(result.clone());
         return Some(result);
     }
@@ -142,7 +146,7 @@ fn home_dir() -> Option<std::path::PathBuf> {
 pub fn tree_value(
     config: &model::Configuration,
     expr: &str,
-    tree_idx: model::TreeIndex,
+    tree_name: &str,
     garden_name: Option<&model::GardenName>,
 ) -> String {
     let is_exec = syntax::is_exec(expr);
@@ -154,7 +158,7 @@ pub fn tree_value(
         expr
     };
     let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
-        expand_tree_vars(config, tree_idx, garden_name, x)
+        expand_tree_vars(config, tree_name, garden_name, x)
     })
     .to_string();
 
@@ -164,7 +168,7 @@ pub fn tree_value(
     // and potentially many variables (including itself).  Exec expressions
     // always use the default environment.
     if is_exec {
-        let pathbuf = config.get_tree_pathbuf(tree_idx);
+        let pathbuf = config.get_tree_pathbuf(tree_name);
         exec_expression(&expanded, pathbuf)
     } else {
         expanded
@@ -176,14 +180,14 @@ pub fn tree_value(
 pub fn tree_value_for_shell(
     config: &model::Configuration,
     expr: &str,
-    tree_idx: model::TreeIndex,
+    tree_name: &model::TreeName,
     garden_name: Option<&model::GardenName>,
 ) -> String {
     let is_exec = syntax::is_exec(expr);
     let expanded = shellexpand::full_with_context_no_errors(
         &syntax::escape_shell_variables(expr),
         home_dir,
-        |x| expand_tree_vars(config, tree_idx, garden_name, x),
+        |x| expand_tree_vars(config, tree_name, garden_name, x),
     )
     .to_string();
 
@@ -192,7 +196,7 @@ pub fn tree_value_for_shell(
     // and potentially many variables (including itself).  Exec expressions
     // always use the default environment.
     if is_exec {
-        let pathbuf = config.get_tree_pathbuf(tree_idx);
+        let pathbuf = config.get_tree_pathbuf(tree_name);
         exec_expression(&expanded, pathbuf)
     } else {
         expanded
@@ -258,7 +262,7 @@ pub fn multi_variable(
         let value = tree_value(
             config,
             var.get_expr(),
-            context.tree,
+            &context.tree,
             context.garden.as_ref(),
         );
         result.push(value.clone());
@@ -286,7 +290,7 @@ pub fn variables_for_shell(
         let value = tree_value_for_shell(
             config,
             var.get_expr(),
-            context.tree,
+            &context.tree,
             context.garden.as_ref(),
         );
         result.push(value.clone());
@@ -315,8 +319,10 @@ pub fn environment(
         // Evaluate garden environments.
         if let Some(garden) = &config.gardens.get(garden_name) {
             for ctx in query::trees_from_garden(config, garden) {
-                for var in &config.trees[ctx.tree].environment {
-                    vars.push((ctx.clone(), var.clone()));
+                if let Some(tree) = config.trees.get(&ctx.tree) {
+                    for var in &tree.environment {
+                        vars.push((ctx.clone(), var.clone()));
+                    }
                 }
             }
 
@@ -329,8 +335,10 @@ pub fn environment(
         // Evaluate group environments.
         if let Some(group) = config.groups.get(name) {
             for ctx in query::trees_from_group(config, None, group) {
-                for var in &config.trees[ctx.tree].environment {
-                    vars.push((ctx.clone(), var.clone()));
+                if let Some(tree) = config.trees.get(&ctx.tree) {
+                    for var in &tree.environment {
+                        vars.push((ctx.clone(), var.clone()));
+                    }
                 }
             }
             ready = true;
@@ -339,15 +347,17 @@ pub fn environment(
 
     // Evaluate a single tree environment when not handled above.
     if !ready {
-        for var in &config.trees[context.tree].environment {
-            vars.push((context.clone(), var.clone()));
+        if let Some(tree) = config.trees.get(&context.tree) {
+            for var in &tree.environment {
+                vars.push((context.clone(), var.clone()));
+            }
         }
     }
 
     let mut var_values = Vec::new();
     for (ctx, var) in vars.iter_mut() {
         var_values.push((
-            tree_value(config, var.get_name(), ctx.tree, ctx.garden.as_ref()),
+            tree_value(config, var.get_name(), &ctx.tree, ctx.garden.as_ref()),
             multi_variable(config, var, ctx),
         ));
     }
@@ -464,9 +474,11 @@ pub fn command(
     }
 
     // Tree commands
-    for (var_name, var) in &config.trees[context.tree].commands {
-        if pattern.matches(var_name) {
-            vec_variables.push(var.clone());
+    if let Some(tree) = config.trees.get(&context.tree) {
+        for (var_name, var) in &tree.commands {
+            if pattern.matches(var_name) {
+                vec_variables.push(var.clone());
+            }
         }
     }
 
