@@ -5,11 +5,17 @@
 **Features**:
 
 - Trees, Groups, Gardens and Commands defined in the top-level `garden.yaml` can now
-  override commands defined via `garden.includes`. Configuration entities now follow
+  override entries defined via `garden.includes`. Configuration entities now follow
   "last one wins" semantics -- if the same entity is defined in multiple includes files
   then only the final definition will be used.
   ([#14](https://github.com/davvid/garden/issues/14))
   ([#15](https://github.com/davvid/garden/pull/15))
+
+- [Trees now sparsely override existing entries](https://davvid.github.io/garden/configuration.html#l#the-last-one-wins-rule).
+  This behavior allows a tree definition to replace just the `url` field, or to replace
+  individual tree commands while retaining the rest. Use `replace: true` in a Tree
+  definition in order to completely replace the existing entry instead of sparsely
+  overridding it.
 
 - Improved shell completions for `garden`, `garden init` and `garden plant`.
 
