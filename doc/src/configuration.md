@@ -161,7 +161,8 @@ trees:
 ```
 
 In the example above, the `example` tree completely replaces the
-same tree from the included `trees.yaml`
+same tree from the included `trees.yaml`. None of the commands, variables or other
+settings from the replaced tree are retained.
 
 
 ## Variables
