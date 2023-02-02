@@ -130,7 +130,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(config, "${extended-variable}", &context.tree, None);
     assert_eq!(result, "extended-tree");
 
-    // "replacement-tree" is not sparsely uoverriden -- it is replaced. The variables should
+    // "replacement-tree" is not sparsely overriden -- it is replaced. The variables should
     // evaluate to an empty string because the replacement tree does not define the variable.
     let context = garden::query::find_tree(&app, config_id, "replacement-tree", None)?;
     let result = garden::eval::tree_value(config, "${tree-variable}", &context.tree, None);
