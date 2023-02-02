@@ -1058,10 +1058,45 @@ to the root configuration directory will be checked for the existence of the fil
 found are silenty ignored.</p>
 <p>Enable the <code>garden -d config ...</code> debug flag to display warnings about missing include
 files.</p>
-<p>The top-level <code>commands</code> block follows &quot;last one wins&quot; semantics. If the same command
-is defined in multiple include files then the last definition is the one that will
-be used. <code>commands</code> defined in the the root <code>garden.yaml</code> have the highest precedence
-and override commands defined via <code>garden.includes</code>.</p>
+<h3 id="the-last-one-wins-rule"><a class="header" href="#the-last-one-wins-rule">The &quot;Last One Wins&quot; Rule</a></h3>
+<p>Entities in garden files such as <code>trees</code>, <code>gardens</code>, <code>groups</code>, <code>commands</code> and
+<code>variables</code> can be sparsely defined across multiple files by using <code>includes</code>.</p>
+<p>When the same entry is found in multiple included files then the only last definition
+will be used. This is referred to as the &quot;Last One Wins&quot; rule.</p>
+<p>Entities defined in the the root <code>garden.yaml</code> have the highest precedence and override
+entries provided via <code>garden.includes</code>.</p>
+<p><code>variables</code>, <code>commands</code>, <code>groups</code> and <code>gardens</code> are completely replaced when multiple
+definitions are found.</p>
+<p><code>trees</code> are sparsely overridden. If an override definition in the top-level
+<code>garden.yaml</code> replaces just the <code>url</code> field, for example, then all of the <code>commands</code>,
+<code>variables</code> and <code>environment</code> values from the earlier definition are retained
+and only the <code>url</code> for the <code>origin</code> remote is replaced.</p>
+<p>If a tree needs to completely override a base definition then a tree can use
+<code>replace: true</code> to indicate that the tree definition is replacement for the
+earlier tree definition.</p>
+<pre><code class="language-yaml"># garden.yaml
+---
+garden:
+  includes: trees.yaml
+
+trees:
+  example:
+    replace: true
+    url: https://custom.example.com/custom/tree
+...
+</code></pre>
+<p>The <code>garden.yaml</code> above includes <code>trees.yaml</code>. The <code>example</code> tree is originally
+defined here, but it is completely replaced by the same entry above.</p>
+<pre><code class="language-yaml"># trees.yaml
+---
+trees:
+  example: https://example.com/original/tree
+  commands:
+    echo: Hello, ${TREE_NAME}
+...
+</code></pre>
+<p>In the example above, the <code>example</code> tree completely replaces the
+same tree from the included <code>trees.yaml</code></p>
 <h2 id="variables"><a class="header" href="#variables">Variables</a></h2>
 <p>Garden configuration contains a &quot;variables&quot; block that allows defining
 variables that are can be referenced by other garden values.</p>
@@ -1527,12 +1562,19 @@ and Git Cola ready to go for development.</p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
-<p>Commands defined in the top-level <code>garden.yaml</code> can now override commands defined
-via <code>garden.includes</code>. Top-level commands now follow &quot;last one wins&quot; semantics --
-if the same command is defined in multiple includes files then only the final
-definition will be used.
+<p>Trees, Groups, Gardens and Commands defined in the top-level <code>garden.yaml</code> can now
+override entries defined via <code>garden.includes</code>. Configuration entities now follow
+&quot;last one wins&quot; semantics -- if the same entity is defined in multiple includes files
+then only the final definition will be used.
 (<a href="https://github.com/davvid/garden/issues/14">#14</a>)
 (<a href="https://github.com/davvid/garden/pull/15">#15</a>)</p>
+</li>
+<li>
+<p><a href="https://davvid.github.io/garden/configuration.html#l#the-last-one-wins-rule">Trees now sparsely override existing entries</a>.
+This behavior allows a tree definition to replace just the <code>url</code> field, or to replace
+individual tree commands while retaining the rest. Use <code>replace: true</code> in a Tree
+definition in order to completely replace the existing entry instead of sparsely
+overridding it.</p>
 </li>
 <li>
 <p>Improved shell completions for <code>garden</code>, <code>garden init</code> and <code>garden plant</code>.</p>
