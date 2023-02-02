@@ -19,12 +19,19 @@ fn read_includes() -> Result<()> {
     let actual = garden::eval::value(config, "${var_2}");
     assert_eq!(actual, "two");
 
-    // Trees are provided by included configs.
-    assert!(config.trees.len() >= 2);
-    // trees[0] is included from trees.yaml.
-    assert_eq!(config.trees[0].get_name(), "tree-zero");
-    // trees[3] is from the main config.
-    assert_eq!(config.trees[3].get_name(), "example/tree");
+    assert!(config.trees.contains_key("tree-zero")); // includes/trees.yaml
+    assert!(config.trees.contains_key("tree-echo-nested")); // includes/trees.yaml
+    assert!(config.trees.contains_key("tree-echo-extended-tree-inner")); // includes/trees.yaml
+    assert!(config.trees.contains_key("tree-echo-extended-tree")); // garden.yaml overrides includes/trees.yaml
+    assert!(config.trees.contains_key("example/tree")); // garden.yaml
+    assert!(config.trees.contains_key("example/link")); // garden.yaml
+    assert!(config.trees.contains_key("link")); // garden.yaml
+    assert!(config.trees.contains_key("current")); // garden.yaml
+    assert!(config.trees.contains_key("example/shallow")); // garden.yaml
+    assert!(config.trees.contains_key("example/single-branch")); // garden.yaml
+    assert!(config.trees.contains_key("tree1")); // garden.yaml
+    assert!(config.trees.contains_key("tree2")); // garden.yaml
+    assert!(config.trees.contains_key("tree-echo-extended")); // garden.yaml
 
     // Nested include files are relative to the file that included them.
     // If the nested include file is not found relative to the parent include file

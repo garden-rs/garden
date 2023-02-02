@@ -78,8 +78,10 @@ trees:
   # Trees can use templates defined via includes.
   tree-echo:
     templates: echo-template
+
   tree-echo-extended:
     templates: echo-template-extended
+
   tree-echo-extended-tree:
     extend: tree-echo-extended
 
