@@ -111,6 +111,47 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(config, "${tree-override}", &context.tree, None);
     assert_eq!(result, "extended-tree");
 
+    // Test a tree that uses "extend" on a tree defined via an include file.
+    // This tree is overridden by the top-level garden.yaml.
+    let context = garden::query::find_tree(&app, config_id, "tree-echo-extended-tree", None)?;
+    let result = garden::eval::tree_value(config, "${template-variable}", &context.tree, None);
+    assert_eq!(result, "top-level");
+
+    let result = garden::eval::tree_value(config, "${tree-override}", &context.tree, None);
+    assert_eq!(result, "top-level");
+
+    // "tree-variable" is provided by "tree-echo-nested" via "extend" and is not overriden.
+    let result = garden::eval::tree_value(config, "${tree-variable}", &context.tree, None);
+    assert_eq!(result, "nested");
+
+    // "extended-variable" is provided by the inner-most "tree-echo-extended-tree".
+    // "tree-echo-extended" is sparsely overridden by the top-level garden.yaml.
+    // "extended-variable" is not overridden so the inner-most value is retained.
+    let result = garden::eval::tree_value(config, "${extended-variable}", &context.tree, None);
+    assert_eq!(result, "extended-tree");
+
+    // "replacement-tree" is not sparsely uoverriden -- it is replaced. The variables should
+    // evaluate to an empty string because the replacement tree does not define the variable.
+    let context = garden::query::find_tree(&app, config_id, "replacement-tree", None)?;
+    let result = garden::eval::tree_value(config, "${tree-variable}", &context.tree, None);
+    assert_eq!(result, "");
+
+    let replacement_tree = config
+        .trees
+        .get(&context.tree)
+        .context("replacement-tree")?;
+    // The replacement tree provides no commands.
+    assert!(!replacement_tree.commands.contains_key("tree-command"));
+    // The replacement tree replaces the URL for the origin remote.
+    assert_eq!(
+        "https://example.com/replacement/tree",
+        replacement_tree
+            .remotes
+            .get("origin")
+            .context("origin")?
+            .get_expr()
+    );
+
     Ok(())
 }
 

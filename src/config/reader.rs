@@ -552,11 +552,32 @@ fn get_trees(config: &mut model::Configuration, yaml: &Yaml) -> bool {
     if let Yaml::Hash(ref hash) = yaml {
         for (name, value) in hash {
             if let Yaml::String(ref url) = value {
+                // If the tree already exists then update it, otherwise create a new entry.
                 let tree = get_tree_from_url(name, url);
-                config.trees.insert(tree.get_name().to_string(), tree);
+                if let Some(current_tree) = config.trees.get_mut(tree.get_name()) {
+                    current_tree.clone_from_tree(&tree);
+                } else {
+                    config.trees.insert(tree.get_name().to_string(), tree);
+                }
             } else {
                 let tree = get_tree(config, name, value, hash, true);
-                config.trees.insert(tree.get_name().to_string(), tree);
+
+                // Should we replace the current entry or sparsely override it?
+                // We sparsely override by default.
+                let replace = match value["replace"] {
+                    Yaml::Boolean(value) => value,
+                    _ => false,
+                };
+
+                let current_tree_opt = config.trees.get_mut(tree.get_name());
+                match current_tree_opt {
+                    Some(current_tree) if !replace => {
+                        current_tree.clone_from_tree(&tree);
+                    }
+                    _ => {
+                        config.trees.insert(tree.get_name().to_string(), tree);
+                    }
+                }
             }
         }
         return true;

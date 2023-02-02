@@ -110,10 +110,58 @@ found are silenty ignored.
 Enable the `garden -d config ...` debug flag to display warnings about missing include
 files.
 
-The top-level `commands` block follows "last one wins" semantics. If the same command
-is defined in multiple include files then the last definition is the one that will
-be used. `commands` defined in the the root `garden.yaml` have the highest precedence
-and override commands defined via `garden.includes`.
+
+### The "Last One Wins" Rule
+
+Entities in garden files such as `trees`, `gardens`, `groups`, `commands` and
+`variables` can be sparsely defined across multiple files by using `includes`.
+
+When the same entry is found in multiple included files then the only last definition
+will be used. This is referred to as the "Last One Wins" rule.
+
+Entities defined in the the root `garden.yaml` have the highest precedence and override
+entries provided via `garden.includes`.
+
+`variables`, `commands`, `groups` and `gardens` are completely replaced when multiple
+definitions are found.
+
+`trees` are sparsely overridden. If an override definition in the top-level
+`garden.yaml` replaces just the `url` field, for example, then all of the `commands`,
+`variables` and `environment` values from the earlier definition are retained
+and only the `url` for the `origin` remote is replaced.
+
+If a tree needs to completely override a base definition then a tree can use
+`replace: true` to indicate that the tree definition is replacement for the
+earlier tree definition.
+
+```yaml
+# garden.yaml
+---
+garden:
+  includes: trees.yaml
+
+trees:
+  example:
+    replace: true
+    url: https://custom.example.com/custom/tree
+...
+```
+
+The `garden.yaml` above includes `trees.yaml`. The `example` tree is originally
+defined here, but it is completely replaced by the same entry above.
+
+```yaml
+# trees.yaml
+---
+trees:
+  example: https://example.com/original/tree
+  commands:
+    echo: Hello, ${TREE_NAME}
+...
+```
+
+In the example above, the `example` tree completely replaces the
+same tree from the included `trees.yaml`
 
 
 ## Variables

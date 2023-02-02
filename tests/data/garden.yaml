@@ -84,6 +84,13 @@ trees:
 
   tree-echo-extended-tree:
     extend: tree-echo-extended
+    variables:
+      template-variable: top-level
+      tree-override: top-level
+
+  replacement-tree:
+    url: https://example.com/replacement/tree
+    replace: true
 
 templates:
   echo-template-extended:
