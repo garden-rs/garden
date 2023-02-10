@@ -196,22 +196,22 @@ fn print_indent(indent: usize) {
     }
 }
 
-fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
-    match *doc {
-        Yaml::String(ref s) => {
+fn dump_node(yaml: &Yaml, indent: usize, prefix: &str) {
+    match yaml {
+        Yaml::String(value) => {
             print_indent(indent);
-            println!("{prefix}\"{s}\"");
+            println!("{prefix}\"{value}\"");
         }
-        Yaml::Array(ref v) => {
-            for x in v {
+        Yaml::Array(value) => {
+            for x in value {
                 dump_node(x, indent + 1, "- ");
             }
         }
-        Yaml::Hash(ref hash) => {
+        Yaml::Hash(hash) => {
             for (k, v) in hash {
                 print_indent(indent);
                 match k {
-                    Yaml::String(ref x) => {
+                    Yaml::String(x) => {
                         println!("{prefix}{x}:");
                     }
                     _ => {
@@ -223,151 +223,155 @@ fn dump_node(doc: &Yaml, indent: usize, prefix: &str) {
         }
         _ => {
             print_indent(indent);
-            println!("{doc:?}");
+            println!("{yaml:?}");
         }
     }
 }
 
 /// Yaml -> String
 fn get_str(yaml: &Yaml, string: &mut String) -> bool {
-    let mut result = false;
-    if let Yaml::String(yaml_string) = yaml {
-        *string = yaml_string.clone();
-        result = true;
+    match yaml {
+        Yaml::String(yaml_string) => {
+            *string = yaml_string.clone();
+            !string.is_empty()
+        }
+        _ => false,
     }
-
-    !string.is_empty() && result
 }
 
 /// Yaml -> i64
 fn get_i64(yaml: &Yaml, value: &mut i64) -> bool {
-    let mut result = false;
-    if let Yaml::Integer(yaml_integer) = *yaml {
-        *value = yaml_integer;
-        result = true;
+    match yaml {
+        Yaml::Integer(yaml_integer) => {
+            *value = *yaml_integer;
+            true
+        }
+        _ => false,
     }
-    result
 }
 
 /// Yaml -> bool
 fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
-    let mut result = false;
-    if let Yaml::Boolean(yaml_bool) = *yaml {
-        *value = yaml_bool;
-        result = true;
+    match yaml {
+        Yaml::Boolean(yaml_bool) => {
+            *value = *yaml_bool;
+            true
+        }
+        _ => false,
     }
-    result
 }
 
 /// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
 fn get_indexset_str(yaml: &Yaml, values: &mut IndexSet<String>) -> bool {
-    if let Yaml::String(yaml_string) = yaml {
-        values.insert(yaml_string.clone());
-        return true;
-    }
-
-    if let Yaml::Array(ref yaml_vec) = yaml {
-        for value in yaml_vec {
-            if let Yaml::String(ref value_str) = value {
-                values.insert(value_str.clone());
-            }
+    match yaml {
+        Yaml::String(yaml_string) => {
+            values.insert(yaml_string.clone());
+            true
         }
-        return true;
+        Yaml::Array(yaml_vec) => {
+            for value in yaml_vec {
+                if let Yaml::String(value_str) = value {
+                    values.insert(value_str.clone());
+                }
+            }
+            true
+        }
+        _ => false,
     }
-
-    false
 }
 
 /// Yaml::String or Yaml::Array<Yaml::String> -> Vec<Variable>
 fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
-    if let Yaml::String(yaml_string) = yaml {
-        vec.push(model::Variable::new(yaml_string.clone(), None));
-        return true;
-    }
-
-    if let Yaml::Array(ref yaml_vec) = yaml {
-        for value in yaml_vec {
-            if let Yaml::String(ref value_str) = value {
-                vec.push(model::Variable::new(value_str.clone(), None));
-            }
+    match yaml {
+        Yaml::String(yaml_string) => {
+            vec.push(model::Variable::new(yaml_string.clone(), None));
+            true
         }
-        return true;
+        Yaml::Array(yaml_vec) => {
+            for value in yaml_vec {
+                if let Yaml::String(value_str) = value {
+                    vec.push(model::Variable::new(value_str.clone(), None));
+                }
+            }
+            true
+        }
+        _ => false,
     }
-
-    false
 }
 
 // Yaml::String -> Variable
 fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
-    let mut result = false;
-    if let Yaml::String(yaml_string) = yaml {
-        value.set_expr(yaml_string.to_string());
-        result = true;
+    match yaml {
+        Yaml::String(yaml_string) => {
+            value.set_expr(yaml_string.to_string());
+            true
+        }
+        _ => false,
     }
-    result
 }
 
 /// Read variable definitions from a yaml::HashMap into a VariablesHashMap
 fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
-        for (k, v) in hash {
-            let key = match k.as_str() {
-                Some(key_value) => key_value.to_string(),
-                None => {
-                    continue;
-                }
-            };
-            match v {
-                Yaml::String(yaml_str) => {
-                    hashmap.insert(key, model::Variable::new(yaml_str.clone(), None));
-                }
-                Yaml::Array(ref yaml_array) => {
-                    for value in yaml_array {
-                        if let Yaml::String(ref yaml_str) = value {
-                            hashmap.insert(
-                                key.to_owned(),
-                                model::Variable::new(
-                                    yaml_str.clone(),
-                                    None, // Defer resolution of string values.
-                                ),
-                            );
+    match yaml {
+        Yaml::Hash(hash) => {
+            for (k, v) in hash {
+                let key = match k.as_str() {
+                    Some(key_value) => key_value.to_string(),
+                    None => {
+                        continue;
+                    }
+                };
+                match v {
+                    Yaml::String(yaml_str) => {
+                        hashmap.insert(key, model::Variable::new(yaml_str.clone(), None));
+                    }
+                    Yaml::Array(yaml_array) => {
+                        for value in yaml_array {
+                            if let Yaml::String(yaml_str) = value {
+                                hashmap.insert(
+                                    key.to_owned(),
+                                    model::Variable::new(
+                                        yaml_str.clone(),
+                                        None, // Defer resolution of string values.
+                                    ),
+                                );
+                            }
                         }
                     }
-                }
-                Yaml::Integer(yaml_int) => {
-                    let value = yaml_int.to_string();
-                    hashmap.insert(
-                        key,
-                        model::Variable::new(
-                            value.clone(),
-                            Some(value.clone()), // Integer values are already resolved.
-                        ),
-                    );
-                }
-                Yaml::Boolean(ref yaml_bool) => {
-                    let value = bool_to_string(yaml_bool);
-                    hashmap.insert(
-                        key,
-                        model::Variable::new(
-                            value.clone(),
-                            Some(value.clone()), // Booleans are already resolved.
-                        ),
-                    );
-                }
-                _ => {
-                    dump_node(v, 1, "");
-                    error!("invalid variables");
+                    Yaml::Integer(yaml_int) => {
+                        let value = yaml_int.to_string();
+                        hashmap.insert(
+                            key,
+                            model::Variable::new(
+                                value.clone(),
+                                Some(value.clone()), // Integer values are already resolved.
+                            ),
+                        );
+                    }
+                    Yaml::Boolean(yaml_bool) => {
+                        let value = bool_to_string(*yaml_bool);
+                        hashmap.insert(
+                            key,
+                            model::Variable::new(
+                                value.clone(),
+                                Some(value.clone()), // Booleans are already resolved.
+                            ),
+                        );
+                    }
+                    _ => {
+                        dump_node(v, 1, "");
+                        error!("invalid variables");
+                    }
                 }
             }
+            true
         }
-        return true;
+        _ => false,
     }
-
-    false
 }
 
-fn bool_to_string(value: &bool) -> String {
-    match *value {
+fn bool_to_string(value: bool) -> String {
+    match value {
         true => string!("true"),
         false => string!("false"),
     }
@@ -375,18 +379,18 @@ fn bool_to_string(value: &bool) -> String {
 
 /// Read MultiVariable definitions (commands, environment)
 fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
+    if let Yaml::Hash(hash) = yaml {
         for (k, v) in hash {
             let key = match k.as_str() {
                 Some(key_value) => key_value.to_string(),
                 None => continue,
             };
             match v {
-                Yaml::String(ref yaml_str) => {
+                Yaml::String(yaml_str) => {
                     let variables = vec![model::Variable::new(yaml_str.to_string(), None)];
                     vec.push(model::MultiVariable::new(key, variables));
                 }
-                Yaml::Array(ref yaml_array) => {
+                Yaml::Array(yaml_array) => {
                     let mut variables = Vec::new();
                     for value in yaml_array {
                         if let Yaml::String(yaml_str) = value {
@@ -418,42 +422,43 @@ fn get_multivariables_hashmap(
     yaml: &Yaml,
     multivariables: &mut model::MultiVariableHashMap,
 ) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
-        for (k, v) in hash {
-            let key = match k.as_str() {
-                Some(key_value) => key_value.to_string(),
-                None => continue,
-            };
-            match v {
-                Yaml::String(ref yaml_str) => {
-                    let variables = vec![model::Variable::new(yaml_str.to_string(), None)];
-                    multivariables.insert(key, variables);
-                }
-                Yaml::Array(ref yaml_array) => {
-                    let mut variables = Vec::new();
-                    for value in yaml_array {
-                        if let Yaml::String(ref yaml_str) = value {
-                            variables.push(model::Variable::new(yaml_str.clone(), None));
-                        }
+    match yaml {
+        Yaml::Hash(hash) => {
+            for (k, v) in hash {
+                let key = match k.as_str() {
+                    Some(key_value) => key_value.to_string(),
+                    None => continue,
+                };
+                match v {
+                    Yaml::String(yaml_str) => {
+                        let variables = vec![model::Variable::new(yaml_str.to_string(), None)];
+                        multivariables.insert(key, variables);
                     }
-                    multivariables.insert(key, variables);
-                }
-                Yaml::Integer(yaml_int) => {
-                    let value = yaml_int.to_string();
-                    let variables = vec![model::Variable::new(value.clone(), Some(value))];
-                    multivariables.insert(key, variables);
-                }
-                _ => {
-                    dump_node(v, 1, "");
-                    error!("invalid variables");
+                    Yaml::Array(yaml_array) => {
+                        let mut variables = Vec::new();
+                        for value in yaml_array {
+                            if let Yaml::String(yaml_str) = value {
+                                variables.push(model::Variable::new(yaml_str.clone(), None));
+                            }
+                        }
+                        multivariables.insert(key, variables);
+                    }
+                    Yaml::Integer(yaml_int) => {
+                        let value = yaml_int.to_string();
+                        let variables = vec![model::Variable::new(value.clone(), Some(value))];
+                        multivariables.insert(key, variables);
+                    }
+                    _ => {
+                        dump_node(v, 1, "");
+                        error!("invalid variables");
+                    }
                 }
             }
+
+            true
         }
-
-        return true;
+        _ => false,
     }
-
-    false
 }
 
 /// Read template definitions
@@ -462,21 +467,22 @@ fn get_templates(
     config_templates: &HashMap<String, model::Template>,
     templates: &mut HashMap<String, model::Template>,
 ) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
-        for (name, value) in hash {
-            let template_name = match &name.as_str() {
-                Some(template_name) => template_name.to_string(),
-                None => continue,
-            };
-            templates.insert(
-                template_name,
-                get_template(name, value, config_templates, yaml),
-            );
+    match yaml {
+        Yaml::Hash(hash) => {
+            for (name, value) in hash {
+                let template_name = match &name.as_str() {
+                    Some(template_name) => template_name.to_string(),
+                    None => continue,
+                };
+                templates.insert(
+                    template_name,
+                    get_template(name, value, config_templates, yaml),
+                );
+            }
+            true
         }
-        return true;
+        _ => false,
     }
-
-    false
 }
 
 /// Read a single template definition
@@ -549,41 +555,42 @@ fn get_template(
 
 /// Read tree definitions
 fn get_trees(config: &mut model::Configuration, yaml: &Yaml) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
-        for (name, value) in hash {
-            if let Yaml::String(ref url) = value {
-                // If the tree already exists then update it, otherwise create a new entry.
-                let tree = get_tree_from_url(name, url);
-                if let Some(current_tree) = config.trees.get_mut(tree.get_name()) {
-                    current_tree.clone_from_tree(&tree);
-                } else {
-                    config.trees.insert(tree.get_name().to_string(), tree);
-                }
-            } else {
-                let tree = get_tree(config, name, value, hash, true);
-
-                // Should we replace the current entry or sparsely override it?
-                // We sparsely override by default.
-                let replace = match value["replace"] {
-                    Yaml::Boolean(value) => value,
-                    _ => false,
-                };
-
-                let current_tree_opt = config.trees.get_mut(tree.get_name());
-                match current_tree_opt {
-                    Some(current_tree) if !replace => {
+    match yaml {
+        Yaml::Hash(hash) => {
+            for (name, value) in hash {
+                if let Yaml::String(url) = value {
+                    // If the tree already exists then update it, otherwise create a new entry.
+                    let tree = get_tree_from_url(name, url);
+                    if let Some(current_tree) = config.trees.get_mut(tree.get_name()) {
                         current_tree.clone_from_tree(&tree);
-                    }
-                    _ => {
+                    } else {
                         config.trees.insert(tree.get_name().to_string(), tree);
+                    }
+                } else {
+                    let tree = get_tree(config, name, value, hash, true);
+
+                    // Should we replace the current entry or sparsely override it?
+                    // We sparsely override by default.
+                    let replace = match value["replace"] {
+                        Yaml::Boolean(value) => value,
+                        _ => false,
+                    };
+
+                    let current_tree_opt = config.trees.get_mut(tree.get_name());
+                    match current_tree_opt {
+                        Some(current_tree) if !replace => {
+                            current_tree.clone_from_tree(&tree);
+                        }
+                        _ => {
+                            config.trees.insert(tree.get_name().to_string(), tree);
+                        }
                     }
                 }
             }
+            true
         }
-        return true;
+        _ => false,
     }
-
-    false
 }
 
 /// Return a tree from a simple "tree: <url>" entry
@@ -742,7 +749,7 @@ fn get_tree(
 
 /// Read simple string values into a garden::model::VariableHashMap.
 fn get_str_variables_hashmap(yaml: &Yaml, remotes: &mut model::VariableHashMap) {
-    if let Yaml::Hash(ref hash) = yaml {
+    if let Yaml::Hash(hash) = yaml {
         for (name, value) in hash {
             if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
                 remotes.insert(
@@ -756,49 +763,52 @@ fn get_str_variables_hashmap(yaml: &Yaml, remotes: &mut model::VariableHashMap) 
 
 /// Read group definitions
 fn get_groups(yaml: &Yaml, groups: &mut IndexMap<model::GroupName, model::Group>) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
-        for (name, value) in hash {
-            let mut group = model::Group::default();
-            get_str(name, group.get_name_mut());
-            get_indexset_str(value, &mut group.members);
-            groups.insert(group.get_name_owned(), group);
+    match yaml {
+        Yaml::Hash(hash) => {
+            for (name, value) in hash {
+                let mut group = model::Group::default();
+                get_str(name, group.get_name_mut());
+                get_indexset_str(value, &mut group.members);
+                groups.insert(group.get_name_owned(), group);
+            }
+            true
         }
-        return true;
+        _ => false,
     }
-
-    false
 }
 
 /// Read garden definitions
 fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bool {
-    if let Yaml::Hash(ref hash) = yaml {
-        for (name, value) in hash {
-            let mut garden = model::Garden::default();
-            get_str(name, garden.get_name_mut());
-            get_indexset_str(&value["groups"], &mut garden.groups);
-            get_indexset_str(&value["trees"], &mut garden.trees);
-            get_variables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
-            get_variables_hashmap(&value["variables"], &mut garden.variables);
-            get_multivariables(&value["environment"], &mut garden.environment);
-            get_multivariables_hashmap(&value["commands"], &mut garden.commands);
-            gardens.insert(garden.get_name().to_string(), garden);
+    match yaml {
+        Yaml::Hash(hash) => {
+            for (name, value) in hash {
+                let mut garden = model::Garden::default();
+                get_str(name, garden.get_name_mut());
+                get_indexset_str(&value["groups"], &mut garden.groups);
+                get_indexset_str(&value["trees"], &mut garden.trees);
+                get_variables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
+                get_variables_hashmap(&value["variables"], &mut garden.variables);
+                get_multivariables(&value["environment"], &mut garden.environment);
+                get_multivariables_hashmap(&value["commands"], &mut garden.commands);
+                gardens.insert(garden.get_name().to_string(), garden);
+            }
+            true
         }
-        return true;
+        _ => false,
     }
-
-    false
 }
 
 /// Read a grafts: block into a Vec<Graft>.
 fn get_grafts(yaml: &Yaml, grafts: &mut IndexMap<model::GardenName, model::Graft>) -> bool {
-    if let Yaml::Hash(ref yaml_hash) = yaml {
-        for (name, value) in yaml_hash {
-            let graft = get_graft(name, value);
-            grafts.insert(graft.get_name().to_string(), graft);
+    match yaml {
+        Yaml::Hash(yaml_hash) => {
+            for (name, value) in yaml_hash {
+                let graft = get_graft(name, value);
+                grafts.insert(graft.get_name().to_string(), graft);
+            }
+            true
         }
-        true
-    } else {
-        false
+        _ => false,
     }
 }
 
@@ -811,7 +821,7 @@ fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
 
     if !get_str(graft, &mut config) {
         // The root was not specified.
-        if let Yaml::Hash(ref _hash) = graft {
+        if let Yaml::Hash(_hash) = graft {
             // A config expression and root might be specified.
             get_str(&graft["config"], &mut config);
             get_str(&graft["root"], &mut root);
@@ -853,7 +863,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     // Garden core
     let mut good = doc["garden"].as_hash().is_some();
     if !good {
-        if let Yaml::Hash(ref mut doc_hash) = doc {
+        if let Yaml::Hash(doc_hash) = doc {
             let key = Yaml::String("garden".into());
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
         } else {
@@ -866,7 +876,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     // Trees
     good = doc["trees"].as_hash().is_some();
     if !good {
-        if let Yaml::Hash(ref mut doc_hash) = doc {
+        if let Yaml::Hash(doc_hash) = doc {
             let key = Yaml::String("trees".into());
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
@@ -880,7 +890,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     // Groups
     good = doc["groups"].as_hash().is_some();
     if !good {
-        if let Yaml::Hash(ref mut doc_hash) = doc {
+        if let Yaml::Hash(doc_hash) = doc {
             let key = Yaml::String("groups".into());
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
@@ -894,7 +904,7 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
     // Gardens
     good = doc["gardens"].as_hash().is_some();
     if !good {
-        if let Yaml::Hash(ref mut doc_hash) = doc {
+        if let Yaml::Hash(doc_hash) = doc {
             let key = Yaml::String("gardens".into());
             doc_hash.remove(&key);
             doc_hash.insert(key, Yaml::Hash(YamlHash::new()));
