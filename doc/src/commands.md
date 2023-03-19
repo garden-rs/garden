@@ -592,9 +592,9 @@ Add the following snippet to your `~/.zshrc` to enable completions and
 configure `~/.config/zsh/completion` for providing completion scripts.
 
 ```bash
+fpath=(~/.config/zsh/completion $fpath)
 autoload -U +X compinit
 compinit -i
-fpath=(~/.config/zsh/completion $fpath)
 ```
 
 These settings make `zsh` look for a script called `_garden` in the directory when
