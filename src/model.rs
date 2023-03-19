@@ -908,9 +908,10 @@ impl TreeQuery {
     }
 }
 
-#[derive(ValueEnum, Clone, Debug, PartialEq, Eq)]
+#[derive(ValueEnum, Clone, Debug, Default, PartialEq, Eq)]
 pub enum ColorMode {
     /// Enable color when a tty is detected
+    #[default]
     Auto,
     /// Disable color
     Off,
@@ -945,12 +946,6 @@ impl ColorMode {
         if *self == ColorMode::Off {
             yansi::Paint::disable();
         }
-    }
-}
-
-impl std::default::Default for ColorMode {
-    fn default() -> Self {
-        ColorMode::Auto
     }
 }
 
