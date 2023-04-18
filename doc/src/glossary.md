@@ -5,7 +5,7 @@
 * ***tree*** -- a Git worktree. A single repository clone.
 
 * ***group*** -- a named collection of trees. The "group" block in the
-  configuration file defines tree groups that are available for for use by
+  configuration file defines tree groups that are available for use by
   commands and gardens.
 
 * ***garden*** -- a composite of trees and groups for defining project-level
