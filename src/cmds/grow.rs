@@ -1,3 +1,4 @@
+/// Grow garden worktrees
 use super::super::cmd;
 use super::super::errors;
 use super::super::eval;
@@ -8,7 +9,7 @@ use anyhow::Result;
 use clap::Parser;
 use std::collections::HashSet;
 
-/// Grow garden worktrees
+/// Options for the "garden grow" command
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct GrowOptions {

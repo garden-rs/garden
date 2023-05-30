@@ -7,7 +7,7 @@ use garden::cmds;
 use garden::config;
 use garden::errors;
 
-/// Main entry point
+/// Main entry point for the "garden" command.
 fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
@@ -23,6 +23,7 @@ fn cmd_main() -> Result<()> {
     let mut options = cli::MainOptions::parse();
     options.update();
 
+    // Handle the "completion" and "init" commands before building the context.
     match options.command.clone() {
         cli::Command::Completion(completion) => {
             return cmds::completion::main(&options, &completion);

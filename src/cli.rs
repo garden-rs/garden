@@ -79,7 +79,7 @@ impl MainOptions {
         }
     }
 
-    /// Return the debug level for the
+    /// Return the debug level for the given name.
     pub fn debug_level(&self, name: &str) -> u8 {
         debug_level(&self.debug, name)
     }
