@@ -2,6 +2,7 @@
 use super::super::cmd;
 use super::super::errors;
 use super::super::eval;
+use super::super::git;
 use super::super::model;
 use super::super::query;
 
@@ -84,12 +85,22 @@ fn grow_tree_from_context(
     std::fs::create_dir_all(parent)
         .map_err(|err| errors::GardenError::OSError(format!("unable to create {path}: {err}")))?;
 
+    // "git clone --branch=name" clones the named branch.
+    let branch_var = tree.branch.clone();
+    let branch = eval::tree_value(
+        config,
+        branch_var.get_expr(),
+        &ctx.tree,
+        ctx.garden.as_ref(),
+    );
+
     if pathbuf.exists() {
         return update_tree_from_context(
             config,
             configured_worktrees,
             ctx,
             &pathbuf,
+            None,
             quiet,
             verbose,
         );
@@ -130,15 +141,8 @@ fn grow_tree_from_context(
     }
 
     // "git clone --branch=name" clones the named branch.
-    let branch_var = tree.branch.clone();
-    let branch = eval::tree_value(
-        config,
-        branch_var.get_expr(),
-        &ctx.tree,
-        ctx.garden.as_ref(),
-    );
     let branch_opt;
-    if !branch.is_empty() {
+    if !branch.is_empty() && !tree.branches.contains_key(&branch) {
         branch_opt = format!("--branch={branch}");
         cmd.push(&branch_opt);
     }
@@ -173,8 +177,15 @@ fn grow_tree_from_context(
         exit_status = status;
     }
 
-    let status =
-        update_tree_from_context(config, configured_worktrees, ctx, &pathbuf, quiet, verbose)?;
+    let status = update_tree_from_context(
+        config,
+        configured_worktrees,
+        ctx,
+        &pathbuf,
+        Some(&branch),
+        quiet,
+        verbose,
+    )?;
     if status != errors::EX_OK {
         exit_status = status;
     }
@@ -203,6 +214,7 @@ fn update_tree_from_context(
     configured_worktrees: &mut HashSet<String>,
     ctx: &model::TreeContext,
     path: &std::path::Path,
+    branch: Option<&str>,
     _quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
@@ -275,6 +287,38 @@ fn update_tree_from_context(
         let status = cmd::status(exec.join());
         if status != errors::EX_OK {
             exit_status = status;
+        }
+    }
+
+    // Create configured tracking branches.
+    if !tree.branches.is_empty() {
+        // Gather existing branches.
+        let branches = git::branches(path);
+        // Create all configured tracking branches.
+        for (branch, expr) in &tree.branches {
+            if !branches.contains(branch) {
+                let remote_branch = eval::value(config, expr.get_expr());
+                if !remote_branch.is_empty() {
+                    let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
+                    let exec = cmd::exec_in_dir(&command, path);
+                    let status = cmd::status(exec.join());
+                    if status != errors::EX_OK {
+                        exit_status = status;
+                    }
+                }
+            }
+        }
+    }
+
+    // Checkout the configured branch if we are creating the repository initially.
+    if let Some(branch) = branch {
+        if tree.branches.contains_key(branch) {
+            let command = ["git", "checkout", branch];
+            let exec = cmd::exec_in_dir(&command, path);
+            let status = cmd::status(exec.join());
+            if status != errors::EX_OK {
+                exit_status = status;
+            }
         }
     }
 
@@ -357,10 +401,16 @@ fn grow_tree_from_context_as_worktree(
 
     let remote_branch;
     if !branch.is_empty() {
-        // TODO: Support tree.<tree>.branches.<branch-name>.upstream
-        // to generalize the remote branch name instead of hard-coding "origin/".
-        remote_branch = format!("origin/{branch}");
-        cmd.push(&remote_branch);
+        // Read the upstream branch from tree.<tree>.branches.<branch> when configured.
+        // Defaults to "origin/<branch>" when not configured.
+        if let Some(expr) = tree.branches.get(&branch) {
+            remote_branch = eval::value(config, expr.get_expr());
+        } else {
+            remote_branch = format!("origin/{branch}");
+        }
+        if !remote_branch.is_empty() {
+            cmd.push(&remote_branch);
+        }
     }
 
     if verbose > 1 {

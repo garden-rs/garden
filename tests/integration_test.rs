@@ -341,6 +341,58 @@ fn grow_gitconfig() -> Result<()> {
     Ok(())
 }
 
+/// `garden grow` sets up remote tracking branches configured in trees.<tree>.branches.<name>.
+#[test]
+#[named]
+fn grow_branches_for_clone() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+
+    // garden grow default dev
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/branches.yaml",
+        "grow",
+        "local",
+    ])?;
+
+    let local_repo = fixture.path("local");
+
+    // The "local" branch must be checked out.
+    let cmd = ["git", "symbolic-ref", "HEAD"];
+    let output = assert_cmd_capture(&cmd, &local_repo);
+    assert_eq!("refs/heads/local", output);
+
+    // Ensure that both "local" and "dev" branches are created.
+    let cmd_dev = ["git", "rev-parse", "local"];
+    let cmd_local = ["git", "rev-parse", "dev"];
+    let output_local = assert_cmd_capture(&cmd_local, &local_repo);
+    let output_dev = assert_cmd_capture(&cmd_dev, &local_repo);
+    assert_eq!(output_dev, output_local);
+
+    // The upstream branches must be configured.
+    let cmd = ["git", "config", "branch.dev.remote"];
+    let output = assert_cmd_capture(&cmd, &local_repo);
+    assert_eq!("origin", output);
+
+    let cmd = ["git", "config", "branch.local.remote"];
+    let output = assert_cmd_capture(&cmd, &local_repo);
+    assert_eq!("origin", output);
+
+    let cmd = ["git", "config", "branch.dev.merge"];
+    let output = assert_cmd_capture(&cmd, &local_repo);
+    assert_eq!("refs/heads/dev", output);
+
+    let cmd = ["git", "config", "branch.local.merge"];
+    let output = assert_cmd_capture(&cmd, &local_repo);
+    assert_eq!("refs/heads/default", output);
+
+    Ok(())
+}
+
 /// This creates a worktree
 #[test]
 #[named]

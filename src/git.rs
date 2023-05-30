@@ -63,3 +63,27 @@ pub fn worktree_details(pathbuf: &std::path::Path) -> Result<GitTreeDetails, err
         tree_type: GitTreeType::Worktree(parent_path),
     })
 }
+
+/// Return the current branch names for the specified repository path.
+pub fn branches(path: &std::path::Path) -> Vec<String> {
+    let mut branches: Vec<String> = Vec::new();
+    let cmd = [
+        "git",
+        "for-each-ref",
+        "--format=%(refname:short)",
+        "refs/heads",
+    ];
+    let exec = cmd::exec_in_dir(&cmd, &path);
+    if let Ok(x) = cmd::capture_stdout(exec) {
+        let output = cmd::trim_stdout(&x);
+        branches.push(
+            output
+                .lines()
+                .filter(|x| !x.is_empty())
+                .map(|x| x.to_string())
+                .collect(),
+        );
+    }
+
+    branches
+}

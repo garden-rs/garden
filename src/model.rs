@@ -197,6 +197,7 @@ pub struct Tree {
     pub templates: IndexSet<String>,
     pub variables: VariableHashMap,
     pub branch: Variable,
+    pub branches: VariableHashMap,
     pub worktree: Variable,
     pub clone_depth: i64,
     pub is_single_branch: bool,

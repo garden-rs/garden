@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8.0
+
+**Features**:
+
+- `garden grow` learned to configure [upstream branches](https://davvid.github.io/garden/commands.html#l#upstream-branches).
+
 ## v0.7.0
 
 **Features**:

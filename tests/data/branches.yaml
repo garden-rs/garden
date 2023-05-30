@@ -14,3 +14,10 @@ trees:
   dev:
     templates: shared-url
     branch: ${dev_branch}
+
+  local:
+    templates: shared-url
+    branch: local
+    branches:
+      dev: origin/dev
+      local: origin/default

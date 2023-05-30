@@ -640,6 +640,7 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_multivariables_hashmap(&value["commands"], &mut tree.commands);
 
     get_variable(&value["branch"], &mut tree.branch);
+    get_variables_hashmap(&value["branches"], &mut tree.branches);
     get_variable(&value["symlink"], &mut tree.symlink);
     get_variable(&value["worktree"], &mut tree.worktree);
 

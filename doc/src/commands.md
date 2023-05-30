@@ -214,6 +214,24 @@ This example uses `example/main` tree for the shared storage and two additional 
 `example/dev` uses the `dev` branch and `example/v2` uses the `v2` branch.
 
 
+### Upstream Branches
+
+Remote tracking branches can be configured by defining a `branches` block that maps
+local branch names (the `key`) to a remote branch name expression (the `value`).
+
+```yaml
+trees:
+  example/branches:
+    branch: local
+    branches:
+      local: origin/dev
+      dev: origin/dev
+```
+
+The above configuration creates local branches called `local` and `dev` and checks out
+the `local` branch when `garden grow example/branches` is run.
+
+
 ### Bare Repositories
 
 To clone bare repositories use `bare: true` in the tree configuration.
