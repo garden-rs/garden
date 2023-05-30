@@ -292,6 +292,18 @@ worktrees.</p>
 </code></pre>
 <p>This example uses <code>example/main</code> tree for the shared storage and two additional worktrees.
 <code>example/dev</code> uses the <code>dev</code> branch and <code>example/v2</code> uses the <code>v2</code> branch.</p>
+<h3 id="upstream-branches"><a class="header" href="#upstream-branches">Upstream Branches</a></h3>
+<p>Remote tracking branches can be configured by defining a <code>branches</code> block that maps
+local branch names (the <code>key</code>) to a remote branch name expression (the <code>value</code>).</p>
+<pre><code class="language-yaml">trees:
+  example/branches:
+    branch: local
+    branches:
+      local: origin/dev
+      dev: origin/dev
+</code></pre>
+<p>The above configuration creates local branches called <code>local</code> and <code>dev</code> and checks out
+the <code>local</code> branch when <code>garden grow example/branches</code> is run.</p>
 <h3 id="bare-repositories"><a class="header" href="#bare-repositories">Bare Repositories</a></h3>
 <p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
 <pre><code class="language-yaml">trees:

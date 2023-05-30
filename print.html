@@ -168,7 +168,7 @@ in seperate Git repositories.</p>
 </li>
 <li>
 <p><em><strong>group</strong></em> -- a named collection of trees. The &quot;group&quot; block in the
-configuration file defines tree groups that are available for for use by
+configuration file defines tree groups that are available for use by
 commands and gardens.</p>
 </li>
 <li>
@@ -511,6 +511,18 @@ worktrees.</p>
 </code></pre>
 <p>This example uses <code>example/main</code> tree for the shared storage and two additional worktrees.
 <code>example/dev</code> uses the <code>dev</code> branch and <code>example/v2</code> uses the <code>v2</code> branch.</p>
+<h3 id="upstream-branches"><a class="header" href="#upstream-branches">Upstream Branches</a></h3>
+<p>Remote tracking branches can be configured by defining a <code>branches</code> block that maps
+local branch names (the <code>key</code>) to a remote branch name expression (the <code>value</code>).</p>
+<pre><code class="language-yaml">trees:
+  example/branches:
+    branch: local
+    branches:
+      local: origin/dev
+      dev: origin/dev
+</code></pre>
+<p>The above configuration creates local branches called <code>local</code> and <code>dev</code> and checks out
+the <code>local</code> branch when <code>garden grow example/branches</code> is run.</p>
 <h3 id="bare-repositories"><a class="header" href="#bare-repositories">Bare Repositories</a></h3>
 <p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
 <pre><code class="language-yaml">trees:
@@ -1532,6 +1544,11 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v080"><a class="header" href="#v080">v0.8.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden grow</code> learned to configure <a href="https://davvid.github.io/garden/commands.html#l#upstream-branches">upstream branches</a>.</li>
+</ul>
 <h2 id="v070"><a class="header" href="#v070">v0.7.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
