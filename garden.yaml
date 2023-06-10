@@ -1,5 +1,9 @@
 # usage:
-# garden <cmd> [<tree>] [-- [<args>]]
+#   garden <cmd> [-- [<args>]]
+# examples:
+#   garden build -- --offline
+#   garden -D prefix=/usr/local install
+#   garden -D prefix=/usr/local install-doc
 commands:
   bench: cargo bench "$@"
   build: cargo build "$@"
@@ -12,15 +16,19 @@ commands:
   diff: git diff "$@"
   diffs: git diff --staged "$@"
   doc: |
-    cargo doc --no-deps --package ${cargo_package}
+    cargo doc --no-deps --package ${cargo_package} "$@"
     cd doc
     mdbook build --dest-dir book.new
     rsync -r --delete --exclude=.git book.new/ book/
     rm -rf book.new
   fix: cargo clippy --all --fix "$@" -- -D warnings
   fmt: cargo fmt "$@"
+  install: |
+    cargo build --release "$@"
+    install -m 775 -d "${DESTDIR}${bindir}"
+    install -m 755 target/release/garden "${DESTDIR}${bindir}"
   install-doc: |
-    garden doc
+    garden doc "$@"
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
   push: git push "$@"
@@ -31,13 +39,14 @@ commands:
   test: cargo test "$@"
   update: cargo update "$@"
 
-# Variables can be defined externally. eg.:
+# Variables can be set externally. eg.:
 #   garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc
 variables:
   cargo_package: garden-tools
   DESTDIR: ""
-  docdir: ${prefix}/share/doc/garden
   prefix: ~/.cargo
+  bindir: ${prefix}/bin
+  docdir: ${prefix}/share/doc/garden
 
 groups:
   garden: garden
