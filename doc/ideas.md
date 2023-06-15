@@ -51,7 +51,7 @@ recorded into the parent Configuration's graft entry.
 
 When an `Option<NodeId>` is present in the tree context then the value must
 be evaluated using the Configuration corresponding to the NodeId.
-The NodeId looks up the Configurtion for that context.
+The NodeId looks up the Configuration for that context.
 
 
 - Strategy for evaluating values

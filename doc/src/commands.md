@@ -131,7 +131,7 @@ trees:
     url: url
 ```
 
-`graden grow example` clones the repository using `git clone --branch=dev`.
+`garden grow example` clones the repository using `git clone --branch=dev`.
 The `branch` setting is a tree variable and supports `${variable}` expressions.
 
 
@@ -560,7 +560,7 @@ as the garden file.
 
 Specifying a maximum depth will not remove repositories deeper than the specified
 depth. For example, `--max-depth 0` will not remove repositories in subdirectories
-below the directory containing the graden file.
+below the directory containing the garden file.
 
 ## Enable scripted usage by answering "yes" to all prompts
 
