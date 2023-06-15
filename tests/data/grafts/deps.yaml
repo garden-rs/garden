@@ -4,4 +4,4 @@ trees:
 
 variables:
   current_config: deps
-  deps_graft_value: test-graph-value
+  deps_graft_value: deps-graft-value

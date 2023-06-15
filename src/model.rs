@@ -455,8 +455,8 @@ pub struct Configuration {
     pub trees: IndexMap<TreeName, Tree>,
     pub variables: VariableHashMap,
     pub verbose: u8,
+    pub parent_id: Option<ConfigId>,
     id: Option<ConfigId>,
-    parent_id: Option<ConfigId>,
 }
 
 impl_display!(Configuration);
@@ -749,6 +749,28 @@ impl Configuration {
         self.grafts.get(graft_name).ok_or_else(|| {
             errors::GardenError::ConfigurationError(format!("{name}: no such graft"))
         })
+    }
+
+    /// Parse a "graft::value" string and return the ConfigId for the graft and the
+    /// remaining unparsed "value".
+    pub fn get_graft_id<'a>(
+        &self,
+        value: &'a str,
+    ) -> Result<(ConfigId, &'a str), errors::GardenError> {
+        let (ok, graft_name, remainder) = syntax::split_graft(value);
+        if !ok {
+            return Err(errors::GardenError::ConfigurationError(format!(
+                "{value}: invalid graft expression"
+            )));
+        }
+        let graft = self.get_graft(graft_name)?;
+        let graft_id = graft
+            .get_id()
+            .ok_or(errors::GardenError::ConfigurationError(format!(
+                "{graft_name}: no such graft"
+            )))?;
+
+        Ok((graft_id, remainder))
     }
 
     /// Find a tree by name and return a reference if it exists.

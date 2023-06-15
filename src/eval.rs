@@ -26,21 +26,8 @@ fn expand_tree_vars(
     if syntax::is_graft(name) {
         // TODO: make the error messages more precise by including the tree
         // details by looking up the tree in the configuration.
-        let (ok, graft_name, _remainder) = syntax::split_graft(name);
-        if !ok {
-            // Invalid graft returns an empty value.
-            return Some(String::new());
-        }
-
-        let graft = match config.get_graft(graft_name) {
-            Ok(graft) => graft,
-            Err(_) => return Some(String::new()),
-        };
-
-        // TODO recurse on the remainder and evaluate it using the ConfigId
-        // for the graft.
-        let _graft_id = match graft.get_id().ok_or(format!("Invalid graft: {name}")) {
-            Ok(graft_id) => graft_id,
+        let (_graft_id, _remainder) = match config.get_graft_id(name) {
+            Ok((graft_id, remainder)) => (graft_id, remainder),
             Err(_) => return Some(String::new()),
         };
     }
@@ -105,13 +92,25 @@ fn _expand_tree_context_vars(
 }
 
 /// Expand variables at global scope only
-fn expand_vars(config: &model::Configuration, name: &str) -> Option<String> {
+fn expand_vars(
+    app_context: Option<&model::ApplicationContext>,
+    config: &model::Configuration,
+    name: &str,
+) -> Option<String> {
     // Special case $0, $1, .. $N so they can be used in commands.
     if syntax::is_digit(name) {
         return Some(format!("${name}"));
     }
 
-    // Check for the variable in global scope.
+    if syntax::is_graft(name) {
+        let (graft_id, remainder) = match config.get_graft_id(name) {
+            Ok((graft_id, remainder)) => (graft_id, remainder),
+            Err(_) => return Some(String::new()),
+        };
+        return expand_graft_vars(app_context, config, graft_id, remainder);
+    }
+
+    // Check for the variable in the current configuration's global scope.
     if let Some(var) = config.variables.get(name) {
         if let Some(var_value) = var.get_value() {
             return Some(var_value.to_string());
@@ -124,6 +123,14 @@ fn expand_vars(config: &model::Configuration, name: &str) -> Option<String> {
         return Some(result);
     }
 
+    // Walk up the parent hierarchy to resolve variables defined by graft parents.
+    if let Some(app_context) = app_context {
+        if let Some(parent_id) = config.parent_id {
+            let parent_config = app_context.get_config(parent_id);
+            return expand_vars(Some(app_context), parent_config, name);
+        }
+    }
+
     // If nothing was found then check for environment variables.
     if let Ok(env_value) = std::env::var(name) {
         return Some(env_value);
@@ -131,6 +138,34 @@ fn expand_vars(config: &model::Configuration, name: &str) -> Option<String> {
 
     // Nothing was found -> empty value
     Some(String::new())
+}
+
+/// Expand graft variables of the form "graft::name".
+fn expand_graft_vars(
+    app_context: Option<&model::ApplicationContext>,
+    config: &model::Configuration,
+    graft_id: model::ConfigId,
+    name: &str,
+) -> Option<String> {
+    if syntax::is_graft(name) {
+        if let Some(app_context) = app_context {
+            let (graft_id, remainder) = match app_context.get_config(graft_id).get_graft_id(name) {
+                Ok((graft_id, remainder)) => (graft_id, remainder),
+                Err(_) => return Some(String::new()),
+            };
+            return expand_graft_vars(
+                Some(app_context),
+                app_context.get_config(graft_id),
+                graft_id,
+                remainder,
+            );
+        }
+    }
+
+    match app_context {
+        Some(app_context) => expand_vars(Some(app_context), app_context.get_config(graft_id), name),
+        None => expand_vars(None, config, name),
+    }
 }
 
 /// Resolve ~ to the current user's home directory
@@ -214,7 +249,33 @@ pub fn value(config: &model::Configuration, expr: &str) -> String {
         expr
     };
     let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
-        expand_vars(config, x)
+        expand_vars(None, config, x)
+    })
+    .to_string();
+
+    if is_exec {
+        exec_expression(&expanded, None)
+    } else {
+        expanded
+    }
+}
+
+/// Resolve a variable in configuration/global scope
+pub fn get_value(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    expr: &str,
+) -> String {
+    let is_exec = syntax::is_exec(expr);
+    let escaped_value;
+    let escaped_expr = if is_exec {
+        escaped_value = syntax::escape_shell_variables(expr);
+        escaped_value.as_str()
+    } else {
+        expr
+    };
+    let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
+        expand_vars(Some(app_context), config, x)
     })
     .to_string();
 

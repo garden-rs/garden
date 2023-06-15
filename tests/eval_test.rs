@@ -453,3 +453,25 @@ fn eval_graft_tree() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn eval_graft_variables() -> Result<()> {
+    let app_context = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let config = app_context.get_root_config();
+
+    // Evaluate graft variables one level deep.
+    let actual = garden::eval::get_value(&app_context, config, "${graft::current_config}");
+    assert_eq!("graft", actual);
+
+    let actual = garden::eval::get_value(&app_context, config, "${graft::variable}");
+    assert_eq!("graft value", actual);
+
+    // Evaluate graft variables two levels deep.
+    let actual = garden::eval::get_value(&app_context, config, "${graft::deps::current_config}");
+    assert_eq!("deps", actual);
+
+    let actual = garden::eval::get_value(&app_context, config, "${graft::deps::deps_graft_value}");
+    assert_eq!("deps-graft-value", actual);
+
+    Ok(())
+}
