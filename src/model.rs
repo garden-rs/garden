@@ -3,6 +3,7 @@ use super::collections::{append_hashmap, append_indexset};
 use super::config;
 use super::errors;
 use super::eval;
+use super::path;
 use super::syntax;
 
 use clap::ValueEnum;
@@ -489,6 +490,118 @@ impl Configuration {
 
         // Reset variables
         self.reset();
+    }
+
+    pub fn update(
+        &mut self,
+        config: &Option<std::path::PathBuf>,
+        root: &Option<std::path::PathBuf>,
+        config_verbose: u8,
+        parent: Option<ConfigId>,
+    ) -> Result<(), errors::GardenError> {
+        if let Some(parent_id) = parent {
+            self.set_parent(parent_id);
+        }
+        self.verbose = config_verbose;
+
+        // Override the configured garden root
+        if let Some(root_path) = root {
+            self.root.set_expr(root_path.to_string_lossy().to_string());
+        }
+
+        let mut basename: String = "garden.yaml".into();
+
+        // Find garden.yaml in the search path
+        let mut found = false;
+        if let Some(config_path) = config {
+            if config_path.is_file() || config_path.is_absolute() {
+                // If an absolute path was specified, or if the file exists,
+                // short-circuit the search; the config file might be missing but
+                // we shouldn't silently use a different config file.
+                self.set_path(config_path.to_path_buf());
+                found = true;
+            } else {
+                // The specified path is a basename or relative path to be found
+                // in the config search path.
+                basename = config_path.to_string_lossy().into();
+            }
+        }
+
+        if !found {
+            for entry in config::search_path() {
+                let mut candidate = entry.to_path_buf();
+                candidate.push(basename.clone());
+                if candidate.exists() {
+                    self.set_path(candidate);
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if config_verbose > 0 {
+            debug!(
+                "config: path: {:?}, root: {:?}, found: {}",
+                self.path, self.root, found
+            );
+        }
+
+        if found {
+            // Read file contents.
+            let config_path = self.get_path()?;
+            if let Ok(config_string) = std::fs::read_to_string(config_path) {
+                config::parse(&config_string, config_verbose, self)?;
+            } else {
+                // Return a default Configuration If we are unable to read the file.
+                return Ok(());
+            }
+        }
+
+        // Default to the current directory when garden.root is unspecified
+        if self.root.get_expr().is_empty() {
+            self.root.set_expr(path::current_dir_string());
+        }
+
+        Ok(())
+    }
+
+    /// Apply MainOptions to a Configuration.
+    pub fn update_options(
+        &mut self,
+        options: &cli::MainOptions,
+    ) -> Result<(), errors::GardenError> {
+        let config_verbose = options.debug_level("config");
+        if self.path.is_none() {
+            error!("unable to find a configuration file -- use --config <path>");
+        }
+        if config_verbose > 1 {
+            eprintln!("config: {:?}", self.get_path()?);
+        }
+        if config_verbose > 2 {
+            debug!("{}", self);
+        }
+
+        for key in &options.debug {
+            let current = *self.debug.get(key).unwrap_or(&0);
+            self.debug.insert(key.into(), current + 1);
+        }
+
+        for k_eq_v in &options.define {
+            let name: String;
+            let expr: String;
+            let values: Vec<&str> = k_eq_v.splitn(2, '=').collect();
+            if values.len() == 1 {
+                name = values[0].to_string();
+                expr = string!("");
+            } else if values.len() == 2 {
+                name = values[0].to_string();
+                expr = values[1].to_string();
+            } else {
+                error!("unable to split '{}'", k_eq_v);
+            }
+            self.variables.insert(name, Variable::new(expr, None));
+        }
+
+        Ok(())
     }
 
     pub fn reset(&mut self) {
@@ -1071,67 +1184,9 @@ pub struct ApplicationContext {
 impl_display!(ApplicationContext);
 
 impl ApplicationContext {
-    pub fn new(
-        config: Configuration,
-        options: cli::MainOptions,
-    ) -> Result<Self, errors::GardenError> {
+    /// Construct an empty ApplicationContext. Initialization must be performed post-construction.
+    pub fn new(options: cli::MainOptions) -> Self {
         let mut arena = Arena::new();
-        let root_id = arena.new_node(config);
-
-        let mut app_context = ApplicationContext {
-            arena,
-            root_id,
-            options,
-        };
-        // Record the ID in the configuration.
-        app_context.get_root_config_mut().set_id(root_id);
-        config::read_grafts(&mut app_context)?;
-
-        Ok(app_context)
-    }
-
-    /// initialize an ApplicationContext and Configuration from cli::MainOptions.
-    pub fn from_options(options: &cli::MainOptions) -> Result<Self, errors::GardenError> {
-        let mut arena = Arena::new();
-        let config = config::from_options(options)?;
-        let root_id = arena.new_node(config);
-
-        let mut app_context = ApplicationContext {
-            arena,
-            root_id,
-            options: options.clone(),
-        };
-        app_context.get_config_mut(root_id).set_id(root_id);
-
-        config::read_grafts(&mut app_context)?;
-
-        Ok(app_context)
-    }
-
-    /// Construct an ApplicationContext from a path using default MainOptions.
-    pub fn from_path_string(path: &str) -> Result<Self, errors::GardenError> {
-        let mut arena = Arena::new();
-        let options = cli::MainOptions::new();
-
-        let config = config::from_path_string(path, options.verbose)?;
-        let root_id = arena.new_node(config);
-
-        let mut app_context = ApplicationContext {
-            arena,
-            root_id,
-            options,
-        };
-        // Record the ID in the configuration.
-        app_context.get_root_config_mut().set_id(root_id);
-        config::read_grafts(&mut app_context)?;
-
-        Ok(app_context)
-    }
-
-    /// Construct an ApplicationContext from a string using default MainOptions.
-    pub fn from_string(string: &str) -> Result<Self, errors::GardenError> {
-        let mut arena = Arena::new();
-        let options = cli::MainOptions::new();
         let config = Configuration::new();
         let root_id = arena.new_node(config);
 
@@ -1141,7 +1196,46 @@ impl ApplicationContext {
             options,
         };
         // Record the ID in the configuration.
-        app_context.get_root_config_mut().set_id(root_id);
+        let config = app_context.get_root_config_mut();
+        config.set_id(root_id);
+
+        app_context
+    }
+
+    /// Initialize an ApplicationContext and Configuration from cli::MainOptions.
+    pub fn from_options(options: &cli::MainOptions) -> Result<Self, errors::GardenError> {
+        let mut app_context = Self::new(options.clone());
+
+        let config_verbose = options.debug_level("config");
+        let config = app_context.get_root_config_mut();
+        config.update(&options.config, &options.root, config_verbose, None)?;
+        config.update_options(options)?;
+
+        config::read_grafts(&mut app_context)?;
+
+        Ok(app_context)
+    }
+
+    /// Construct an ApplicationContext from a path using default MainOptions.
+    pub fn from_path_string(path: &str) -> Result<Self, errors::GardenError> {
+        let options = cli::MainOptions::new();
+        let mut app_context = Self::new(options.clone());
+
+        let pathbuf = std::path::PathBuf::from(path);
+        app_context
+            .get_root_config_mut()
+            .update(&Some(pathbuf), &None, options.verbose, None)?;
+
+        // Record the ID in the configuration.
+        config::read_grafts(&mut app_context)?;
+
+        Ok(app_context)
+    }
+
+    /// Construct an ApplicationContext from a string using default MainOptions.
+    pub fn from_string(string: &str) -> Result<Self, errors::GardenError> {
+        let options = cli::MainOptions::new();
+        let mut app_context = Self::new(options);
 
         config::parse(string, 0, app_context.get_root_config_mut())?;
         config::read_grafts(&mut app_context)?;

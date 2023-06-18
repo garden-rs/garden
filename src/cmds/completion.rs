@@ -5,7 +5,7 @@ use clap_complete::Shell;
 use std::io::Write;
 
 use super::super::cli::MainOptions;
-use super::super::config;
+use super::super::model;
 
 /// Generate shell completions
 #[derive(Parser, Clone, Debug)]
@@ -25,7 +25,8 @@ pub fn main(options: &MainOptions, completion_options: &CompletionOptions) -> Re
 
     // Register custom commands with the completion system
     if completion_options.commands {
-        let config = config::from_options(options)?;
+        let app_context = model::ApplicationContext::from_options(options)?;
+        let config = app_context.get_root_config();
         for name in config.commands.keys() {
             cmd = cmd.subcommand(
                 Command::new(name)

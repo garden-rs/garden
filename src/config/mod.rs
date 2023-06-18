@@ -4,7 +4,6 @@ pub mod reader;
 /// YAML writer
 pub mod writer;
 
-use super::cli;
 use super::errors;
 use super::model;
 use super::model::ConfigId;
@@ -18,7 +17,7 @@ use super::path;
 ///  ~/etc/garden
 ///  /etc/garden
 
-fn search_path() -> Vec<std::path::PathBuf> {
+pub fn search_path() -> Vec<std::path::PathBuf> {
     // Result: Vec<PathBufs> in priority order
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
 
@@ -85,67 +84,8 @@ pub fn new(
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
     let mut cfg = model::Configuration::new();
-    if let Some(parent_id) = parent {
-        cfg.set_parent(parent_id);
-    }
-    cfg.verbose = config_verbose;
 
-    // Override the configured garden root
-    if let Some(root_path) = root {
-        cfg.root.set_expr(root_path.to_string_lossy().to_string());
-    }
-
-    let mut basename: String = "garden.yaml".into();
-
-    // Find garden.yaml in the search path
-    let mut found = false;
-    if let Some(config_path) = config {
-        if config_path.is_file() || config_path.is_absolute() {
-            // If an absolute path was specified, or if the file exists,
-            // short-circuit the search; the config file might be missing but
-            // we shouldn't silently use a different config file.
-            cfg.set_path(config_path.to_path_buf());
-            found = true;
-        } else {
-            // The specified path is a basename or relative path to be found
-            // in the config search path.
-            basename = config_path.to_string_lossy().into();
-        }
-    }
-
-    if !found {
-        for entry in search_path() {
-            let mut candidate = entry.to_path_buf();
-            candidate.push(basename.clone());
-            if candidate.exists() {
-                cfg.set_path(candidate);
-                found = true;
-                break;
-            }
-        }
-    }
-    if config_verbose > 0 {
-        debug!(
-            "config: path: {:?}, root: {:?}, found: {}",
-            cfg.path, cfg.root, found
-        );
-    }
-
-    if found {
-        // Read file contents.
-        let config_path = cfg.get_path()?;
-        if let Ok(config_string) = std::fs::read_to_string(config_path) {
-            parse(&config_string, config_verbose, &mut cfg)?;
-        } else {
-            // Return a default Configuration If we are unable to read the file.
-            return Ok(cfg);
-        }
-    }
-
-    // Default to the current directory when garden.root is unspecified
-    if cfg.root.get_expr().is_empty() {
-        cfg.root.set_expr(path::current_dir_string());
-    }
+    cfg.update(config, root, config_verbose, parent)?;
 
     Ok(cfg)
 }
@@ -158,57 +98,6 @@ pub fn from_path(
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
     new(&Some(path), root, config_verbose, parent)
-}
-
-/// Read configuration from a path string.  Wraps from_path() to simplify usage.
-pub fn from_path_string(
-    path: &str,
-    verbose: u8,
-) -> Result<model::Configuration, errors::GardenError> {
-    from_path(std::path::PathBuf::from(path), &None, verbose, None)
-}
-
-/// Build model::Configuration from cli::MainOptions
-pub fn from_options(
-    options: &cli::MainOptions,
-) -> Result<model::Configuration, errors::GardenError> {
-    let config_verbose = options.debug_level("config");
-    let mut config = new(&options.config, &options.root, config_verbose, None)?;
-
-    if config.path.is_none() {
-        error!("unable to find a configuration file -- use --config <path>");
-    }
-    if config_verbose > 1 {
-        eprintln!("config: {:?}", config.get_path()?);
-    }
-    if config_verbose > 2 {
-        debug!("{}", config);
-    }
-
-    for key in &options.debug {
-        let current = *config.debug.get(key).unwrap_or(&0);
-        config.debug.insert(key.into(), current + 1);
-    }
-
-    for k_eq_v in &options.define {
-        let name: String;
-        let expr: String;
-        let values: Vec<&str> = k_eq_v.splitn(2, '=').collect();
-        if values.len() == 1 {
-            name = values[0].to_string();
-            expr = string!("");
-        } else if values.len() == 2 {
-            name = values[0].to_string();
-            expr = values[1].to_string();
-        } else {
-            error!("unable to split '{}'", k_eq_v);
-        }
-        config
-            .variables
-            .insert(name, model::Variable::new(expr, None));
-    }
-
-    Ok(config)
 }
 
 /// Parse and apply configuration from a YAML/JSON string

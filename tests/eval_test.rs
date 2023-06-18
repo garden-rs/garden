@@ -491,7 +491,8 @@ fn eval_graft_tree() -> Result<()> {
 
 #[test]
 fn eval_graft_variables() -> Result<()> {
-    let app_context = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
+    let app_context =
+        garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let config = app_context.get_root_config();
 
     // Evaluate graft variables one level deep.
