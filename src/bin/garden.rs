@@ -1,11 +1,10 @@
 use anyhow::Result;
 use clap::Parser;
 
-use garden::build;
 use garden::cli;
 use garden::cmds;
-use garden::config;
 use garden::errors;
+use garden::model;
 
 /// Main entry point for the "garden" command.
 fn main() -> Result<()> {
@@ -34,10 +33,8 @@ fn cmd_main() -> Result<()> {
         _ => (), // Handled below
     }
 
-    let config = config::from_options(&options)?;
-    let mut app = build::context_from_config(config, &options)?;
-
-    match options.command.clone() {
+    let mut app = model::ApplicationContext::from_options(&options)?;
+    match options.command {
         cli::Command::Cmd(cmd) => cmds::cmd::main_cmd(&mut app, &cmd),
         cli::Command::Completion(_) => Ok(()), // Handled above
         cli::Command::Custom(args) => cmds::cmd::main_custom(&mut app, &args),

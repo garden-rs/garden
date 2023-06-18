@@ -24,8 +24,6 @@ fn expand_tree_vars(
 
     // Special-case evaluation of ${graft::values}.
     if syntax::is_graft(name) {
-        // TODO: make the error messages more precise by including the tree
-        // details by looking up the tree in the configuration.
         let (_graft_id, _remainder) = match config.get_graft_id(name) {
             Ok((graft_id, remainder)) => (graft_id, remainder),
             Err(_) => return Some(String::new()),
