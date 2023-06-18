@@ -5,28 +5,35 @@ use anyhow::Result;
 use garden::string;
 
 #[test]
-fn garden_root() {
+fn garden_root() -> Result<()> {
     // The test has garden.root = ${root}
     // with variables: src = src, and root = ~/${src}
     // This should expand to $HOME/src.
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let expect_src_dir = string!("/home/test/src");
     assert_eq!("${root}", config.root.get_expr());
     assert_eq!(Some(&expect_src_dir), config.root.get_value());
     assert_eq!(expect_src_dir, config.root_path.to_string_lossy());
+
+    Ok(())
 }
 
 #[test]
-fn tree_variable() {
-    let config = common::garden_config();
+fn tree_variable() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let tree_name = garden::model::TreeName::from("git");
     let result = garden::eval::tree_value(&config, "${prefix}", &tree_name, None);
     assert_eq!(result, "/home/test/.local");
+
+    Ok(())
 }
 
 #[test]
-fn config_variable() {
-    let config = common::garden_config();
+fn config_variable() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let tree_name = garden::model::TreeName::from("git");
 
     let test = garden::eval::tree_value(&config, "${test}", &tree_name, None);
@@ -34,40 +41,52 @@ fn config_variable() {
 
     let local = garden::eval::tree_value(&config, "${local}", &tree_name, None);
     assert_eq!("TEST/local", local);
+
+    Ok(())
 }
 
 /// ${TREE_NAME} should be set to the current tree's name
 #[test]
-fn tree_name() {
-    let config = common::garden_config();
+fn tree_name() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let tree_name = garden::model::TreeName::from("git");
     let expect = "git";
     let actual = garden::eval::tree_value(&config, "${TREE_NAME}", &tree_name, None);
     assert_eq!(expect, actual);
+
+    Ok(())
 }
 
 /// ${TREE_PATH} should be set to the current tree's path
 #[test]
-fn tree_path() {
-    let config = common::garden_config();
+fn tree_path() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let tree_name = garden::model::TreeName::from("git");
     let expect = "/home/test/src/git";
     let actual = garden::eval::tree_value(&config, "${TREE_PATH}", &tree_name, None);
     assert_eq!(expect, actual);
+
+    Ok(())
 }
 
 /// ${GARDEN_ROOT} should be set to the garden.root configuration
 #[test]
-fn garden_path() {
-    let config = common::garden_config();
+fn garden_path() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let expect = "/home/test/src";
     let actual = garden::eval::value(&config, "${GARDEN_ROOT}");
     assert_eq!(expect, actual);
+
+    Ok(())
 }
 
 #[test]
 fn exec_expression() -> Result<()> {
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
 
     // Simple exec expression
     let value = garden::eval::value(&config, "$ echo test");
@@ -95,8 +114,9 @@ fn exec_expression() -> Result<()> {
 
 /// Ensure that shell $variables can be used.
 #[test]
-fn shell_variable_syntax() {
-    let config = common::garden_config();
+fn shell_variable_syntax() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
 
     // Simple exec expression
     let value = garden::eval::value(&config, "$ value=$(echo test); echo $value");
@@ -105,11 +125,14 @@ fn shell_variable_syntax() {
     // Escaped ${braced} value
     let value = garden::eval::value(&config, "$ echo '$${value[@]:0:1}'");
     assert_eq!(value, "${value[@]:0:1}");
+
+    Ok(())
 }
 
 #[test]
-fn multi_variable_with_tree() {
-    let config = common::garden_config();
+fn multi_variable_with_tree() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.trees.len() > 1);
     assert!(config.trees[1].environment.len() > 1);
 
@@ -125,11 +148,14 @@ fn multi_variable_with_tree() {
             "/home/test/src/git-cola/bin",
         ]
     );
+
+    Ok(())
 }
 
 #[test]
-fn multi_variable_with_garden() {
-    let config = common::garden_config();
+fn multi_variable_with_garden() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.trees.len() > 1);
     assert!(config.trees[1].environment.len() > 1);
 
@@ -145,11 +171,14 @@ fn multi_variable_with_garden() {
             "/home/test/src/git-cola/bin",
         ]
     );
+
+    Ok(())
 }
 
 #[test]
-fn garden_environment() {
-    let config = common::garden_config();
+fn garden_environment() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     // cola tree(1) and cola garden(Some(0))
     let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None);
     let values = garden::eval::environment(&config, &context);
@@ -218,11 +247,14 @@ fn garden_environment() {
 
     idx += 1;
     assert_eq!(values.len(), idx);
+
+    Ok(())
 }
 
 #[test]
-fn group_environment() {
-    let config = common::garden_config();
+fn group_environment() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     // cola tree(1) + cola group(Some(0))
     let context = garden::model::TreeContext::new("cola", None, None, Some(string!("cola")));
     let values = garden::eval::environment(&config, &context);
@@ -280,11 +312,14 @@ fn group_environment() {
 
     idx += 1;
     assert_eq!(values.len(), idx);
+
+    Ok(())
 }
 
 #[test]
-fn environment_empty_value() {
-    let config = common::garden_config();
+fn environment_empty_value() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let context = garden::query::tree_from_name(&config, "tmp", None, None).unwrap();
     let values = garden::eval::environment(&config, &context);
     assert_eq!(values.len(), 5);
@@ -311,17 +346,17 @@ fn environment_empty_value() {
 
     idx += 1;
     assert_eq!(values.len(), idx);
+
+    Ok(())
 }
 
 #[test]
 fn command_garden_scope() -> Result<()> {
-    let config = common::garden_config();
-    let options = garden::cli::MainOptions::new();
-    let app = garden::build::context_from_config(config, &options)?;
+    let app_context = common::garden_context()?;
     let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None);
 
     // Garden scope
-    let values = garden::eval::command(&app, &context, "build");
+    let values = garden::eval::command(&app_context, &context, "build");
     assert_eq!(values.len(), 1);
 
     let cmd_vec = &values[0];
@@ -335,15 +370,12 @@ fn command_garden_scope() -> Result<()> {
 
 #[test]
 fn command_tree_scope() -> Result<()> {
-    let options = garden::cli::MainOptions::new();
-    let config = common::garden_config();
-    let app = garden::build::context_from_config(config, &options)?;
-
+    let app_context = common::garden_context()?;
     let context = garden::model::TreeContext::new("cola", None, None, None);
 
     // The ${prefix} variable should expand to the tree-local value.
     {
-        let values = garden::eval::command(&app, &context, "build");
+        let values = garden::eval::command(&app_context, &context, "build");
         assert_eq!(values.len(), 1);
         assert_eq!(values[0].len(), 1);
 
@@ -354,7 +386,7 @@ fn command_tree_scope() -> Result<()> {
     // Commands should include the template commands followed by the
     // tree-specific commands.
     {
-        let values = garden::eval::command(&app, &context, "test");
+        let values = garden::eval::command(&app_context, &context, "test");
         assert_eq!(values.len(), 1);
 
         assert_eq!(values[0].len(), 2);
@@ -366,8 +398,9 @@ fn command_tree_scope() -> Result<()> {
 }
 
 #[test]
-fn environment_variables() {
-    let config = common::garden_config();
+fn environment_variables() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     // Environment variables in tree scope
     std::env::set_var("GARDEN_TEST_VALUE", "test");
 
@@ -376,12 +409,14 @@ fn environment_variables() {
 
     let value = garden::eval::tree_value(&config, "${GARDEN_TEST_VALUE}", "git", None);
     assert_eq!(value, "test");
+
+    Ok(())
 }
 
 #[test]
 fn find_tree_in_graft() -> Result<()> {
     // See the "config.rs" tests for config-level validations.
-    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
     let id = app.get_root_id();
     let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
     assert_eq!("graft", ctx.tree);
@@ -395,7 +430,7 @@ fn find_tree_in_graft() -> Result<()> {
 
 #[test]
 fn eval_graft_tree() -> Result<()> {
-    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
     let id = app.get_root_id();
 
     // Get a tree context for "graft::graft" from the outer-most config.
@@ -456,7 +491,7 @@ fn eval_graft_tree() -> Result<()> {
 
 #[test]
 fn eval_graft_variables() -> Result<()> {
-    let app_context = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let app_context = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
     let config = app_context.get_root_config();
 
     // Evaluate graft variables one level deep.

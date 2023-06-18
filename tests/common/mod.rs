@@ -1,5 +1,4 @@
 use garden::cmd;
-use garden::config;
 use garden::errors;
 use garden::model;
 use garden::string;
@@ -17,16 +16,15 @@ fn initialize_environment() {
     std::env::remove_var("PYTHONPATH");
 }
 
-pub fn from_string(string: &str) -> model::Configuration {
+pub fn garden_context_from_string(
+    string: &str,
+) -> Result<garden::model::ApplicationContext, errors::GardenError> {
     initialize_environment();
 
-    let mut config = model::Configuration::new();
-    config::parse(string, 0, &mut config).unwrap_or(());
-
-    config
+    model::ApplicationContext::from_string(string)
 }
 
-pub fn garden_config() -> garden::model::Configuration {
+pub fn garden_context() -> Result<garden::model::ApplicationContext, errors::GardenError> {
     let string = string!(
         r#"
     garden:
@@ -138,7 +136,8 @@ pub fn garden_config() -> garden::model::Configuration {
             trees: annex/*
     "#
     );
-    from_string(&string)
+
+    garden_context_from_string(&string)
 }
 
 /// Execute the "garden" command with the specified arguments.

@@ -6,7 +6,7 @@ use garden::string;
 
 #[test]
 fn read_includes() -> Result<()> {
-    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
     let config = app.get_root_config();
 
     // var_0 is from the included variables.yaml..
@@ -45,7 +45,7 @@ fn read_includes() -> Result<()> {
 /// Ensure that templates can be included.
 #[test]
 fn template_includes() -> Result<()> {
-    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
     let config_id = app.get_root_id();
     let context = garden::query::find_tree(&app, config_id, "tree-echo", None)?;
     let config = app.get_root_config();
@@ -166,7 +166,8 @@ fn command_overrides() -> Result<()> {
     );
 
     // Base case: the "echo" command is read.
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(config.commands.len(), 2);
     assert!(config.commands.get("echo").is_some());
     assert!(config.commands.get("test").is_some());
@@ -184,7 +185,8 @@ fn command_overrides() -> Result<()> {
         - tests/data/includes/commands.yaml
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(config.commands.len(), 2);
 
     // If the same command is seen twice the last one wins.
@@ -196,7 +198,8 @@ fn command_overrides() -> Result<()> {
         - tests/data/includes/commands-override.yaml
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(config.commands.len(), 2);
     assert!(config.commands.get("echo").is_some());
     assert!(config.commands.get("test").is_some());
@@ -220,7 +223,8 @@ fn command_overrides() -> Result<()> {
       echo: echo top-level override
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(config.commands.len(), 2);
     assert!(config.commands.get("echo").is_some());
     assert!(config.commands.get("test").is_some());

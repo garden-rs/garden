@@ -2,9 +2,6 @@
 #[macro_use]
 pub mod macros;
 
-/// Builders
-pub mod build;
-
 /// Command-line interface.
 pub mod cli;
 

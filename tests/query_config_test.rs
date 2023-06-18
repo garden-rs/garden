@@ -1,7 +1,7 @@
 /// Integration tests for the garden::query module.
 ///
 /// These tests use the BareRepoFixture module and cannot be used used alongside tests
-/// that call common::garden_config(), which calls common::initialize_environment(),
+/// that call common::garden_context(), which calls common::initialize_environment(),
 /// because those functions modify $PATH, which breaks Command::cargo_bin("garden").
 pub mod common;
 

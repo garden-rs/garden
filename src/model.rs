@@ -1123,6 +1123,27 @@ impl ApplicationContext {
         Ok(app_context)
     }
 
+    /// Construct an ApplicationContext from a string using default MainOptions.
+    pub fn from_string(string: &str) -> Result<Self, errors::GardenError> {
+        let mut arena = Arena::new();
+        let options = cli::MainOptions::new();
+        let config = Configuration::new();
+        let root_id = arena.new_node(config);
+
+        let mut app_context = ApplicationContext {
+            arena,
+            root_id: Some(root_id),
+            options,
+        };
+        // Record the ID in the configuration.
+        app_context.get_root_config_mut().set_id(root_id);
+
+        config::parse(string, 0, app_context.get_root_config_mut())?;
+        config::read_grafts(&mut app_context)?;
+
+        Ok(app_context)
+    }
+
     pub fn set_root_config(&mut self, config: Configuration) {
         let root_id = self.arena.new_node(config);
         self.get_config_mut(root_id).set_id(root_id);

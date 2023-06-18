@@ -16,15 +16,18 @@ fn config_default() {
 
 /// Core garden settings
 #[test]
-fn core() {
+fn core() -> Result<()> {
     let string = string!(
         r#"
     garden:
         root: /usr
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(std::path::PathBuf::from("/usr"), config.root_path);
+
+    Ok(())
 }
 
 /// Variables
@@ -39,7 +42,8 @@ fn variables() -> Result<()> {
         bar: ${foo}
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(3, config.variables.len());
 
     let root_var = config.variables.get("GARDEN_ROOT").context("GARDEN_ROOT")?;
@@ -72,7 +76,8 @@ fn commands() -> Result<()> {
             - echo second
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(2, config.commands.len());
 
     assert!(config.commands.get("test_cmd").is_some());
@@ -131,7 +136,8 @@ fn templates() -> Result<()> {
                 foo: boo
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     assert_eq!(3, config.templates.len());
 
     let template1 = config.templates.get("template1").unwrap();
@@ -181,7 +187,8 @@ fn templates() -> Result<()> {
 /// Groups
 #[test]
 fn groups() -> Result<()> {
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.groups.len() >= 2);
     assert!(config.groups.get("cola").is_some());
     assert_eq!(
@@ -218,7 +225,8 @@ fn groups() -> Result<()> {
 /// Trees
 #[test]
 fn trees() -> Result<()> {
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.trees.len() >= 6);
     // git
     let tree0 = &config.trees[0];
@@ -352,7 +360,8 @@ fn trees() -> Result<()> {
 /// Gardens
 #[test]
 fn gardens() -> Result<()> {
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     test_gardens(&config)
 }
 
@@ -390,7 +399,8 @@ fn gardens_json() -> Result<()> {
 }
     "#
     );
-    let config = common::from_string(&string);
+    let app_context = common::garden_context_from_string(&string)?;
+    let config = app_context.get_root_config();
     test_gardens(&config)
 }
 
@@ -463,8 +473,9 @@ fn test_gardens(config: &garden::model::Configuration) -> Result<()> {
 }
 
 #[test]
-fn tree_path() {
-    let config = common::garden_config();
+fn tree_path() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.trees.len() >= 4);
 
     assert_eq!(
@@ -480,11 +491,14 @@ fn tree_path() {
         "/home/test/src/python/qtpy",
         *config.trees[2].path_as_ref().unwrap()
     );
+
+    Ok(())
 }
 
 #[test]
 fn test_template_url() -> Result<()> {
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.trees.len() > 3);
     // The "tmp" tree uses the "local" template which defines a URL.
     let tree = &config.trees[3];
@@ -498,7 +512,7 @@ fn test_template_url() -> Result<()> {
 
 #[test]
 fn read_grafts() -> Result<()> {
-    let app = garden::build::context_from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
     let config = app.get_root_config();
     assert_eq!(2, config.grafts.len());
 

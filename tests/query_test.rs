@@ -9,8 +9,9 @@ use anyhow::{Context, Result};
 use garden::string;
 
 #[test]
-fn resolve_trees_default_query_finds_garden() {
-    let config = common::garden_config();
+fn resolve_trees_default_query_finds_garden() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let result = garden::query::resolve_trees(&config, "cola");
     assert_eq!(3, result.len());
     assert_eq!(Some(string!("cola")), result[0].garden);
@@ -19,21 +20,27 @@ fn resolve_trees_default_query_finds_garden() {
     assert_eq!("cola", result[1].tree);
     assert_eq!(Some(string!("cola")), result[2].garden);
     assert_eq!("python/qtpy", result[2].tree);
+
+    Ok(())
 }
 
 #[test]
-fn resolve_trees_tree_query_wildcard() {
-    let config = common::garden_config();
+fn resolve_trees_tree_query_wildcard() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let result = garden::query::resolve_trees(&config, "@c*");
     assert_eq!(1, result.len());
     assert_eq!(None, result[0].garden);
     assert_eq!(None, result[0].group);
     assert_eq!("cola", result[0].tree);
+
+    Ok(())
 }
 
 #[test]
-fn resolve_trees_group_query() {
-    let config = common::garden_config();
+fn resolve_trees_group_query() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let result = garden::query::resolve_trees(&config, "%rev*");
     assert_eq!(2, result.len());
     assert_eq!(None, result[0].garden);
@@ -42,11 +49,14 @@ fn resolve_trees_group_query() {
     assert_eq!(None, result[1].garden);
     assert_eq!(Some(string!("reverse")), result[1].group);
     assert_eq!("git", result[1].tree);
+
+    Ok(())
 }
 
 #[test]
-fn resolve_trees_group_with_wildcards() {
-    let config = common::garden_config();
+fn resolve_trees_group_with_wildcards() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     // annex group
     let result = garden::query::resolve_trees(&config, "%annex");
     assert_eq!(2, result.len());
@@ -58,11 +68,14 @@ fn resolve_trees_group_with_wildcards() {
     assert_eq!(None, result[1].garden);
     assert_eq!(Some(string!("annex")), result[1].group);
     assert_eq!("annex/local", result[1].tree);
+
+    Ok(())
 }
 
 #[test]
-fn trees_from_pattern() {
-    let config = common::garden_config();
+fn trees_from_pattern() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     let result = garden::query::trees_from_pattern(&config, "annex/*", None, None);
     assert_eq!(2, result.len());
     assert_eq!(None, result[0].garden);
@@ -71,11 +84,14 @@ fn trees_from_pattern() {
     assert_eq!(None, result[1].garden);
     assert_eq!(None, result[1].group);
     assert_eq!("annex/local", result[1].tree); // annex/local
+
+    Ok(())
 }
 
 #[test]
 fn trees_from_group() -> Result<()> {
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.groups.len() > 3);
 
     let annex_grp = config.groups.get("annex").context("Missing annex group")?;
@@ -95,7 +111,8 @@ fn trees_from_group() -> Result<()> {
 
 #[test]
 fn trees_from_garden() -> Result<()> {
-    let config = common::garden_config();
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
     assert!(config.gardens.len() > 3);
 
     // regular group, group uses wildcards
@@ -149,8 +166,9 @@ fn trees_from_garden() -> Result<()> {
 }
 
 #[test]
-fn tree_query() {
-    let config = common::garden_config();
+fn tree_query() -> Result<()> {
+    let app_context = common::garden_context()?;
+    let config = app_context.get_root_config();
 
     // Success: "cola" is in the "git" garden.
     let tree_context_result = garden::query::tree_context(&config, "cola", Some("git"));
@@ -177,4 +195,6 @@ fn tree_query() {
     // "unknown-tree" is not a real tree.
     let tree_context_result = garden::query::tree_context(&config, "unknown-tree", None);
     assert!(tree_context_result.is_err());
+
+    Ok(())
 }
