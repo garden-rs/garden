@@ -34,10 +34,10 @@ fn plant_empty_repo() -> Result<()> {
     // garden plant repo1
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo1"])?;
 
-    let path = Some(std::path::PathBuf::from(fixture.path("garden.yaml")));
-
     // Load the configuration and assert that the remotes are configured.
-    let cfg = garden::config::new(&path, &None, 0, None)?;
+    let pathbuf = fixture.pathbuf("garden.yaml");
+    let app_context = garden::model::ApplicationContext::from_path(pathbuf.clone())?;
+    let cfg = app_context.get_root_config();
     assert_eq!(1, cfg.trees.len());
     assert_eq!("repo1", cfg.trees[0].get_name());
     assert_eq!(2, cfg.trees[0].remotes.len());
@@ -62,7 +62,8 @@ fn plant_empty_repo() -> Result<()> {
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo2"])?;
 
     // Load the configuration and assert that the remotes are configured.
-    let cfg = garden::config::new(&path, &None, 0, None)?;
+    let app_context = garden::model::ApplicationContext::from_path(pathbuf.clone())?;
+    let cfg = app_context.get_root_config();
     assert_eq!(2, cfg.trees.len()); // Now we have two trees.
     assert_eq!("repo2", cfg.trees[1].get_name());
     assert_eq!(2, cfg.trees[1].remotes.len());
@@ -90,7 +91,8 @@ fn plant_empty_repo() -> Result<()> {
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo1", "repo2"])?;
 
     // Load the configuration and assert that the remotes are configured.
-    let cfg = garden::config::new(&path, &None, 0, None)?;
+    let app_context = garden::model::ApplicationContext::from_path(pathbuf.clone())?;
+    let cfg = app_context.get_root_config();
     assert_eq!(2, cfg.trees.len());
     assert_eq!("repo1", cfg.trees[0].get_name());
     assert_eq!(2, cfg.trees[0].remotes.len());
@@ -120,14 +122,14 @@ fn plant_bare_repo() -> Result<()> {
     let fixture = common::BareRepoFixture::new(function_name!());
     // Create an empty garden.yaml using "garden init".
     common::exec_garden(&["--chdir", &fixture.root(), "init"])?;
-    let garden_yaml = fixture.path("garden.yaml");
 
     // garden plant repo.git
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repos/example.git"])?;
 
     // Load the configuration and assert that the remotes are configured.
-    let path = Some(std::path::PathBuf::from(&garden_yaml));
-    let cfg = garden::config::new(&path, &None, 0, None)?;
+    let pathbuf = fixture.pathbuf("garden.yaml");
+    let app_context = garden::model::ApplicationContext::from_path(pathbuf.clone())?;
+    let cfg = app_context.get_root_config();
     assert_eq!(1, cfg.trees.len());
     assert_eq!("repos/example.git", cfg.trees[0].get_name());
 
@@ -165,10 +167,12 @@ fn plant_git_worktree() -> Result<()> {
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "parent"])?;
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "child"])?;
 
-    let garden_yaml = fixture.path("garden.yaml");
-    let path = Some(std::path::PathBuf::from(&garden_yaml));
-
-    let cfg = garden::config::new(&path, &Some(fixture.root_pathbuf()), 0, None)?;
+    let pathbuf = fixture.pathbuf("garden.yaml");
+    let app_context = garden::model::ApplicationContext::from_path_and_root(
+        pathbuf,
+        &Some(fixture.root_pathbuf()),
+    )?;
+    let cfg = app_context.get_root_config();
     assert_eq!(2, cfg.trees.len());
     assert_eq!("parent", cfg.trees[0].get_name());
 

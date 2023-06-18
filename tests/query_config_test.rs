@@ -25,8 +25,12 @@ fn tree_name_from_pathbuf() -> Result<()> {
     ])?;
     // Growing "dev" should have also grown the "default" parent worktree.
     // Load the configuration and lookup the trees from the path.
-    let path = Some(std::path::PathBuf::from("tests/data/worktree.yaml"));
-    let cfg = garden::config::new(&path, &Some(fixture.root_pathbuf()), 0, None)?;
+    let pathbuf = std::path::PathBuf::from("tests/data/worktree.yaml");
+    let app_context = garden::model::ApplicationContext::from_path_and_root(
+        pathbuf,
+        &Some(fixture.root_pathbuf()),
+    )?;
+    let cfg = app_context.get_root_config();
 
     let tree_name = garden::query::tree_name_from_path(&cfg, &fixture.worktree_pathbuf("dev"));
     assert_eq!(tree_name, Some(string!("dev")));

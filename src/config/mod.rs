@@ -77,28 +77,6 @@ pub fn xdg_dir() -> std::path::PathBuf {
     home_config_dir
 }
 
-pub fn new(
-    config: &Option<std::path::PathBuf>,
-    root: &Option<std::path::PathBuf>,
-    config_verbose: u8,
-    parent: Option<ConfigId>,
-) -> Result<model::Configuration, errors::GardenError> {
-    let mut cfg = model::Configuration::new();
-    cfg.update(config, root, config_verbose, parent)?;
-
-    Ok(cfg)
-}
-
-/// Read configuration from a path.  Wraps new() to make the path required..
-pub fn from_path(
-    path: std::path::PathBuf,
-    root: &Option<std::path::PathBuf>,
-    config_verbose: u8,
-    parent: Option<ConfigId>,
-) -> Result<model::Configuration, errors::GardenError> {
-    new(&Some(path), root, config_verbose, parent)
-}
-
 /// Parse and apply configuration from a YAML/JSON string
 pub fn parse(
     config_string: &str,

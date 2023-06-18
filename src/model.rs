@@ -1220,20 +1220,33 @@ impl ApplicationContext {
         Ok(app_context)
     }
 
-    /// Construct an ApplicationContext from a path using default MainOptions.
-    pub fn from_path_string(path: &str) -> Result<Self, errors::GardenError> {
+    /// Construct an ApplicationContext from a path and root using default MainOptions.
+    pub fn from_path_and_root(
+        pathbuf: std::path::PathBuf,
+        root: &Option<std::path::PathBuf>,
+    ) -> Result<Self, errors::GardenError> {
         let options = cli::MainOptions::new();
         let mut app_context = Self::new(options.clone());
+        let config_verbose = options.debug_level("config");
 
-        let pathbuf = std::path::PathBuf::from(path);
         app_context
             .get_root_config_mut()
-            .update(&Some(pathbuf), &None, options.verbose, None)?;
+            .update(&Some(pathbuf), root, config_verbose, None)?;
 
         // Record the ID in the configuration.
         config::read_grafts(&mut app_context)?;
 
         Ok(app_context)
+    }
+
+    /// Construct an ApplicationContext from a path using default MainOptions.
+    pub fn from_path(pathbuf: std::path::PathBuf) -> Result<Self, errors::GardenError> {
+        Self::from_path_and_root(pathbuf, &None)
+    }
+
+    /// Construct an ApplicationContext from a path using default MainOptions.
+    pub fn from_path_string(path: &str) -> Result<Self, errors::GardenError> {
+        Self::from_path(std::path::PathBuf::from(path))
     }
 
     /// Construct an ApplicationContext from a string using default MainOptions.
