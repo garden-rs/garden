@@ -1065,7 +1065,7 @@ pub fn print_tree_details(tree: &Tree, verbose: u8, quiet: bool) {
 pub struct ApplicationContext {
     pub options: cli::MainOptions,
     arena: Arena<Configuration>,
-    root_id: Option<ConfigId>,
+    root_id: ConfigId,
 }
 
 impl_display!(ApplicationContext);
@@ -1080,7 +1080,7 @@ impl ApplicationContext {
 
         let mut app_context = ApplicationContext {
             arena,
-            root_id: Some(root_id),
+            root_id,
             options,
         };
         // Record the ID in the configuration.
@@ -1092,13 +1092,17 @@ impl ApplicationContext {
 
     /// initialize an ApplicationContext and Configuration from cli::MainOptions.
     pub fn from_options(options: &cli::MainOptions) -> Result<Self, errors::GardenError> {
+        let mut arena = Arena::new();
+        let config = config::from_options(options)?;
+        let root_id = arena.new_node(config);
+
         let mut app_context = ApplicationContext {
-            arena: Arena::new(),
-            root_id: None,
+            arena,
+            root_id,
             options: options.clone(),
         };
-        let config = config::from_options(options)?;
-        app_context.set_root_config(config);
+        app_context.get_config_mut(root_id).set_id(root_id);
+
         config::read_grafts(&mut app_context)?;
 
         Ok(app_context)
@@ -1106,14 +1110,15 @@ impl ApplicationContext {
 
     /// Construct an ApplicationContext from a path using default MainOptions.
     pub fn from_path(path: &str) -> Result<Self, errors::GardenError> {
-        let options = cli::MainOptions::new();
         let mut arena = Arena::new();
+        let options = cli::MainOptions::new();
+
         let config = config::from_path_string(path, options.verbose)?;
         let root_id = arena.new_node(config);
 
         let mut app_context = ApplicationContext {
             arena,
-            root_id: Some(root_id),
+            root_id,
             options,
         };
         // Record the ID in the configuration.
@@ -1132,7 +1137,7 @@ impl ApplicationContext {
 
         let mut app_context = ApplicationContext {
             arena,
-            root_id: Some(root_id),
+            root_id,
             options,
         };
         // Record the ID in the configuration.
@@ -1144,12 +1149,6 @@ impl ApplicationContext {
         Ok(app_context)
     }
 
-    pub fn set_root_config(&mut self, config: Configuration) {
-        let root_id = self.arena.new_node(config);
-        self.get_config_mut(root_id).set_id(root_id);
-        self.root_id = Some(root_id);
-    }
-
     pub fn get_config(&self, id: ConfigId) -> &Configuration {
         self.arena.get(id).unwrap().get()
     }
@@ -1159,7 +1158,7 @@ impl ApplicationContext {
     }
 
     pub fn get_root_id(&self) -> ConfigId {
-        self.root_id.unwrap()
+        self.root_id
     }
 
     pub fn get_root_config(&self) -> &Configuration {
