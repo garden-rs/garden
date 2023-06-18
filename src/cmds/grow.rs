@@ -26,9 +26,8 @@ pub fn main(app: &mut model::ApplicationContext, options: &GrowOptions) -> Resul
 
     let mut exit_status = errors::EX_OK;
     let mut configured_worktrees: HashSet<String> = HashSet::new();
-    let config = app.get_root_config_mut();
     for query in &options.queries {
-        let status = grow(config, &mut configured_worktrees, quiet, verbose, query)?;
+        let status = grow(app, &mut configured_worktrees, quiet, verbose, query)?;
         if status != errors::EX_OK {
             exit_status = status;
         }
@@ -40,17 +39,19 @@ pub fn main(app: &mut model::ApplicationContext, options: &GrowOptions) -> Resul
 
 /// Create/update trees in the evaluated tree query.
 pub fn grow(
-    config: &mut model::Configuration,
+    app_context: &model::ApplicationContext,
     configured_worktrees: &mut HashSet<String>,
     quiet: bool,
     verbose: u8,
     query: &str,
 ) -> Result<i32> {
+    let config = app_context.get_root_config();
     let contexts = query::resolve_trees(config, query);
     let mut exit_status = errors::EX_OK;
 
     for ctx in &contexts {
-        let status = grow_tree_from_context(config, configured_worktrees, ctx, quiet, verbose)?;
+        let status =
+            grow_tree_from_context(app_context, configured_worktrees, ctx, quiet, verbose)?;
         if status != errors::EX_OK {
             // Return the last non-zero exit status.
             exit_status = status;
@@ -63,12 +64,13 @@ pub fn grow(
 /// Grow the tree specified by the context into existence.
 /// Trees without remotes are silently ignored.
 fn grow_tree_from_context(
-    config: &model::Configuration,
+    app_context: &model::ApplicationContext,
     configured_worktrees: &mut HashSet<String>,
     ctx: &model::TreeContext,
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
+    let config = app_context.get_root_config();
     let mut exit_status = errors::EX_OK;
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
@@ -96,7 +98,7 @@ fn grow_tree_from_context(
 
     if pathbuf.exists() {
         return update_tree_from_context(
-            config,
+            app_context,
             configured_worktrees,
             ctx,
             &pathbuf,
@@ -107,7 +109,7 @@ fn grow_tree_from_context(
     }
 
     if tree.is_symlink {
-        let status = grow_symlink(config, ctx).unwrap_or(errors::EX_IOERR);
+        let status = grow_symlink(app_context, ctx).unwrap_or(errors::EX_IOERR);
         if status != errors::EX_OK {
             exit_status = status;
         }
@@ -116,7 +118,7 @@ fn grow_tree_from_context(
 
     if tree.is_worktree {
         return grow_tree_from_context_as_worktree(
-            config,
+            app_context,
             configured_worktrees,
             ctx,
             quiet,
@@ -178,7 +180,7 @@ fn grow_tree_from_context(
     }
 
     let status = update_tree_from_context(
-        config,
+        app_context,
         configured_worktrees,
         ctx,
         &pathbuf,
@@ -210,7 +212,7 @@ fn print_command_str(cmd: &str) {
 
 /// Add remotes that do not already exist and synchronize .git/config values.
 fn update_tree_from_context(
-    config: &model::Configuration,
+    app_context: &model::ApplicationContext,
     configured_worktrees: &mut HashSet<String>,
     ctx: &model::TreeContext,
     path: &std::path::Path,
@@ -218,6 +220,7 @@ fn update_tree_from_context(
     _quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
+    let config = app_context.get_root_config();
     let mut exit_status = errors::EX_OK;
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
@@ -297,7 +300,7 @@ fn update_tree_from_context(
         // Create all configured tracking branches.
         for (branch, expr) in &tree.branches {
             if !branches.contains(branch) {
-                let remote_branch = eval::value(config, expr.get_expr());
+                let remote_branch = eval::get_value(app_context, config, expr.get_expr());
                 if !remote_branch.is_empty() {
                     let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
                     let exec = cmd::exec_in_dir(&command, path);
@@ -328,12 +331,13 @@ fn update_tree_from_context(
 /// Use "git worktree" to create a worktree.
 /// Grow the parent worktree first and then create our worktree.
 fn grow_tree_from_context_as_worktree(
-    config: &model::Configuration,
+    app_context: &model::ApplicationContext,
     configured_worktrees: &mut HashSet<String>,
     ctx: &model::TreeContext,
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
+    let config = app_context.get_root_config();
     let mut exit_status = errors::EX_OK;
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
@@ -352,15 +356,24 @@ fn grow_tree_from_context_as_worktree(
         ctx.garden.as_ref(),
     );
 
-    let parent_ctx =
-        query::tree_from_name(config, &worktree, ctx.garden.as_ref(), ctx.group.as_ref())
-            .ok_or_else(|| errors::GardenError::WorktreeNotFound {
-                tree: tree.get_name().to_string(),
-                worktree: worktree.clone(),
-            })?;
+    let parent_ctx = query::tree_from_name(
+        config,
+        &worktree,
+        ctx.garden.as_ref(),
+        ctx.group.as_ref(),
+    )
+    .ok_or_else(|| errors::GardenError::WorktreeNotFound {
+        tree: tree.get_name().to_string(),
+        worktree: worktree.clone(),
+    })?;
 
-    exit_status =
-        grow_tree_from_context(config, configured_worktrees, &parent_ctx, quiet, verbose)?;
+    exit_status = grow_tree_from_context(
+        app_context,
+        configured_worktrees,
+        &parent_ctx,
+        quiet,
+        verbose,
+    )?;
     if exit_status != 0 {
         return Err(errors::GardenError::WorktreeParentCreationError {
             tree: tree.get_name().into(),
@@ -404,7 +417,7 @@ fn grow_tree_from_context_as_worktree(
         // Read the upstream branch from tree.<tree>.branches.<branch> when configured.
         // Defaults to "origin/<branch>" when not configured.
         if let Some(expr) = tree.branches.get(&branch) {
-            remote_branch = eval::value(config, expr.get_expr());
+            remote_branch = eval::get_value(app_context, config, expr.get_expr());
         } else {
             remote_branch = format!("origin/{branch}");
         }
@@ -431,7 +444,8 @@ fn grow_tree_from_context_as_worktree(
 }
 
 /// Initialize a tree symlink entry.
-fn grow_symlink(config: &model::Configuration, ctx: &model::TreeContext) -> Result<i32> {
+fn grow_symlink(app_context: &model::ApplicationContext, ctx: &model::TreeContext) -> Result<i32> {
+    let config = app_context.get_root_config();
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
         None => return Ok(errors::EX_OK),
