@@ -6,7 +6,7 @@ use garden::string;
 
 #[test]
 fn read_includes() -> Result<()> {
-    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let config = app.get_root_config();
 
     // var_0 is from the included variables.yaml..
@@ -45,7 +45,7 @@ fn read_includes() -> Result<()> {
 /// Ensure that templates can be included.
 #[test]
 fn template_includes() -> Result<()> {
-    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let config_id = app.get_root_id();
     let context = garden::query::find_tree(&app, config_id, "tree-echo", None)?;
     let config = app.get_root_config();

@@ -1109,7 +1109,7 @@ impl ApplicationContext {
     }
 
     /// Construct an ApplicationContext from a path using default MainOptions.
-    pub fn from_path(path: &str) -> Result<Self, errors::GardenError> {
+    pub fn from_path_string(path: &str) -> Result<Self, errors::GardenError> {
         let mut arena = Arena::new();
         let options = cli::MainOptions::new();
 

@@ -416,7 +416,7 @@ fn environment_variables() -> Result<()> {
 #[test]
 fn find_tree_in_graft() -> Result<()> {
     // See the "config.rs" tests for config-level validations.
-    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let id = app.get_root_id();
     let ctx = garden::query::find_tree(&app, id, "graft::graft", None)?;
     assert_eq!("graft", ctx.tree);
@@ -430,7 +430,7 @@ fn find_tree_in_graft() -> Result<()> {
 
 #[test]
 fn eval_graft_tree() -> Result<()> {
-    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let id = app.get_root_id();
 
     // Get a tree context for "graft::graft" from the outer-most config.
@@ -491,7 +491,7 @@ fn eval_graft_tree() -> Result<()> {
 
 #[test]
 fn eval_graft_variables() -> Result<()> {
-    let app_context = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
+    let app_context = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let config = app_context.get_root_config();
 
     // Evaluate graft variables one level deep.

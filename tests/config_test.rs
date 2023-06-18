@@ -512,7 +512,7 @@ fn test_template_url() -> Result<()> {
 
 #[test]
 fn read_grafts() -> Result<()> {
-    let app = garden::model::ApplicationContext::from_path("tests/data/garden.yaml")?;
+    let app = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let config = app.get_root_config();
     assert_eq!(2, config.grafts.len());
 
