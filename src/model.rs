@@ -714,16 +714,16 @@ impl Configuration {
 
     /// Resolve a pathbuf relative to the config directory.
     pub fn config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
-        let mut path_buf = std::path::PathBuf::from(path);
+        let path_buf = std::path::PathBuf::from(path);
         if path_buf.is_absolute() {
             // Absolute path, nothing to do
             Some(path_buf)
         } else if let Some(dirname) = self.dirname.as_ref() {
-            // Make path relative to the configuration's dirname
-            path_buf = dirname.to_path_buf();
-            path_buf.push(path);
+            // Anchor relative paths to the configuration's dirname.
+            let mut abs_path_buf = dirname.to_path_buf();
+            abs_path_buf.push(path_buf);
 
-            Some(path_buf)
+            Some(abs_path_buf)
         } else {
             None
         }
@@ -767,14 +767,18 @@ impl Configuration {
     }
 
     /// Evaluate and resolve a path string and relative to the config directory.
-    pub fn eval_config_path(&self, path: &str) -> String {
-        let value = eval::value(self, path);
+    pub fn eval_config_path(&self, app_context: &ApplicationContext, path: &str) -> String {
+        let value = eval::get_value(app_context, self, path);
         self.config_path(&value)
     }
 
     /// Evaluate and resolve a pathbuf relative to the config directory.
-    pub fn eval_config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
-        let value = eval::value(self, path);
+    pub fn eval_config_pathbuf(
+        &self,
+        app_context: &ApplicationContext,
+        path: &str,
+    ) -> Option<std::path::PathBuf> {
+        let value = eval::get_value(app_context, self, path);
         self.config_pathbuf(&value)
     }
 
@@ -1271,6 +1275,31 @@ impl ApplicationContext {
         self.get_config_mut(graft_id).set_id(graft_id);
 
         graft_id
+    }
+
+    /// Attach a graft to the configuration specified by ConfigId.
+    pub fn add_graft_config(
+        &mut self,
+        config_id: ConfigId,
+        graft_name: &str,
+        path: &std::path::Path,
+        root: &Option<std::path::PathBuf>,
+    ) -> Result<(), errors::GardenError> {
+        let path = path.to_path_buf();
+        let config_verbose = self.options.debug_level("config");
+        let mut graft_config = Configuration::new();
+        graft_config.update(&Some(path), root, config_verbose, Some(config_id))?;
+
+        // The app Arena takes ownershp of the Configuration.
+        let graft_id = self.add_graft(config_id, graft_config);
+        // Record the graft's config ID in the graft.
+        if let Some(graft_config) = self.get_config_mut(config_id).grafts.get_mut(graft_name) {
+            graft_config.set_id(graft_id);
+        }
+        // Read child grafts recursively.
+        config::read_grafts_recursive(self, graft_id)?;
+
+        Ok(())
     }
 }
 

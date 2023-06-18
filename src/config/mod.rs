@@ -84,7 +84,6 @@ pub fn new(
     parent: Option<ConfigId>,
 ) -> Result<model::Configuration, errors::GardenError> {
     let mut cfg = model::Configuration::new();
-
     cfg.update(config, root, config_verbose, parent)?;
 
     Ok(cfg)
@@ -120,7 +119,7 @@ pub fn read_grafts(app: &mut model::ApplicationContext) -> Result<(), errors::Ga
 }
 
 /// Read grafts into the specified configuration
-fn read_grafts_recursive(
+pub fn read_grafts_recursive(
     app: &mut model::ApplicationContext,
     id: ConfigId,
 ) -> Result<(), errors::GardenError> {
@@ -135,7 +134,7 @@ fn read_grafts_recursive(
     {
         let config = app.get_config(id); // Immutable borrow.
         for (graft_name, graft) in &config.grafts {
-            let path_str = config.eval_config_path(&graft.config);
+            let path_str = config.eval_config_path(app, &graft.config);
             let path = std::path::PathBuf::from(&path_str);
             if !path.exists() {
                 let config_path = config.get_path()?;
@@ -156,18 +155,8 @@ fn read_grafts_recursive(
     }
 
     // Read child grafts recursively after the immutable scope has ended.
-    let config_verbose = app.options.debug_level("config");
     for (graft_name, path, root) in details {
-        // Read the Configuration referenced by the graft.
-        let graft_config = from_path(path, &root, config_verbose, Some(id))?;
-        // The app Arena takes ownershp of the Configuration.
-        let graft_id = app.add_graft(id, graft_config);
-        // Record the config ID in the graft structure.
-        if let Some(graft) = app.get_config_mut(id).grafts.get_mut(&graft_name) {
-            graft.set_id(graft_id);
-        }
-        // Read child grafts recursively.
-        read_grafts_recursive(app, graft_id)?;
+        app.add_graft_config(id, &graft_name, &path, &root)?;
     }
 
     Ok(())
