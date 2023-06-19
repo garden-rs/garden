@@ -173,29 +173,33 @@ pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>)
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn cmd(app: &mut model::ApplicationContext, query: &str, params: &CmdParams) -> Result<i32> {
+pub fn cmd(
+    app_context: &mut model::ApplicationContext,
+    query: &str,
+    params: &CmdParams,
+) -> Result<i32> {
     // Mutable scope for app.get_root_config_mut()
-    let config = app.get_root_config_mut();
+    let config = app_context.get_root_config_mut();
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(config, query);
 
     if params.breadth_first {
-        run_cmd_breadth_first(app, &contexts, params)
+        run_cmd_breadth_first(app_context, &contexts, params)
     } else {
-        run_cmd_depth_first(app, &contexts, params)
+        run_cmd_depth_first(app_context, &contexts, params)
     }
 }
 
 pub fn run_cmd_breadth_first(
-    app: &mut model::ApplicationContext,
+    app_context: &mut model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
-    let quiet = app.options.quiet;
-    let verbose = app.options.verbose;
+    let quiet = app_context.options.quiet;
+    let verbose = app_context.options.verbose;
     let shell = {
-        let config = app.get_root_config();
+        let config = app_context.get_root_config();
         config.shell.to_string()
     };
     // Loop over each command, evaluate the tree environment,
@@ -204,7 +208,7 @@ pub fn run_cmd_breadth_first(
         // One invocation runs multiple commands
         for context in contexts {
             // Skip symlink trees.
-            let config = app.get_root_config();
+            let config = app_context.get_root_config();
             let tree = match config.trees.get(&context.tree) {
                 Some(tree) => tree,
                 None => continue,
@@ -213,7 +217,7 @@ pub fn run_cmd_breadth_first(
                 continue;
             }
             // Evaluate the tree environment
-            let env = eval::environment(app.get_root_config(), context);
+            let env = eval::environment(app_context, config, context);
 
             // Run each command in the tree's context
             let path = tree.path_as_ref()?.to_string();
@@ -226,11 +230,11 @@ pub fn run_cmd_breadth_first(
             // When the scope is tree, only the tree's commands
             // are included.  When the scope includes a gardens,
             // its matching commands are appended to the end.
-            let cmd_seq_vec = eval::command(app, context, name);
-            app.get_root_config_mut().reset();
+            let cmd_seq_vec = eval::command(app_context, context, name);
+            app_context.get_root_config_mut().reset();
 
             if let Err(cmd_status) = run_cmd_vec(
-                &app.options,
+                &app_context.options,
                 &path,
                 &shell,
                 &env,
@@ -251,21 +255,21 @@ pub fn run_cmd_breadth_first(
 }
 
 pub fn run_cmd_depth_first(
-    app: &mut model::ApplicationContext,
+    app_context: &mut model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
-    let quiet = app.options.quiet;
-    let verbose = app.options.verbose;
+    let quiet = app_context.options.quiet;
+    let verbose = app_context.options.verbose;
     let shell = {
-        let config = app.get_root_config();
+        let config = app_context.get_root_config();
         config.shell.to_string()
     };
     // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
         // Skip symlink trees.
-        let config = app.get_root_config();
+        let config = app_context.get_root_config();
         let tree = match config.trees.get(&context.tree) {
             Some(tree) => tree,
             None => continue,
@@ -274,7 +278,7 @@ pub fn run_cmd_depth_first(
             continue;
         }
         // Evaluate the tree environment
-        let env = eval::environment(app.get_root_config(), context);
+        let env = eval::environment(app_context, config, context);
 
         // Run each command in the tree's context
         let path = tree.path_as_ref()?.to_string();
@@ -290,11 +294,11 @@ pub fn run_cmd_depth_first(
             // When the scope is tree, only the tree's commands
             // are included.  When the scope includes a gardens,
             // its matching commands are appended to the end.
-            let cmd_seq_vec = eval::command(app, context, name);
-            app.get_root_config_mut().reset();
+            let cmd_seq_vec = eval::command(app_context, context, name);
+            app_context.get_root_config_mut().reset();
 
             if let Err(cmd_status) = run_cmd_vec(
-                &app.options,
+                &app_context.options,
                 &path,
                 &shell,
                 &env,

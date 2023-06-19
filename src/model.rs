@@ -474,10 +474,10 @@ impl Configuration {
         }
     }
 
-    pub fn initialize(&mut self) {
+    pub fn initialize(&mut self, app_context: &ApplicationContext) {
         // Evaluate garden.root
         let expr = String::from(self.root.get_expr());
-        let value = eval::value(self, &expr);
+        let value = eval::value(app_context, self, &expr);
         // Store the resolved, canonicalized garden.root
         self.root_path = std::path::PathBuf::from(&value);
         if let Ok(root_path_canon) = self.root_path.canonicalize() {
@@ -486,7 +486,7 @@ impl Configuration {
         self.root.set_value(value);
 
         // Resolve tree paths
-        self.update_tree_paths();
+        self.update_tree_paths(app_context);
 
         // Reset variables
         self.reset();
@@ -494,6 +494,7 @@ impl Configuration {
 
     pub fn update(
         &mut self,
+        app_context: &ApplicationContext,
         config: &Option<std::path::PathBuf>,
         root: &Option<std::path::PathBuf>,
         config_verbose: u8,
@@ -549,7 +550,7 @@ impl Configuration {
             // Read file contents.
             let config_path = self.get_path()?;
             if let Ok(config_string) = std::fs::read_to_string(config_path) {
-                config::parse(&config_string, config_verbose, self)?;
+                config::parse(app_context, &config_string, config_verbose, self)?;
             } else {
                 // Return a default Configuration If we are unable to read the file.
                 return Ok(());
@@ -644,7 +645,7 @@ impl Configuration {
     // Calculate the "path" field for each tree.
     // If specified as a relative path, it will be relative to garden.root.
     // If specified as an asbolute path, it will be left as-is.
-    fn update_tree_paths(&mut self) {
+    fn update_tree_paths(&mut self, app_context: &ApplicationContext) {
         // Gather path and symlink expressions.
         let mut path_values = Vec::new();
         let mut symlink_values = Vec::new();
@@ -658,7 +659,7 @@ impl Configuration {
 
         // Evaluate the "path" expression.
         for (name, value) in &path_values {
-            let result = self.eval_tree_path(value);
+            let result = self.eval_tree_path(app_context, value);
             if let Some(tree) = self.trees.get_mut(name) {
                 tree.path.set_value(result);
             }
@@ -666,7 +667,7 @@ impl Configuration {
 
         // Evaluate the "symlink" expression.
         for (name, value) in &symlink_values {
-            let result = self.eval_tree_path(value);
+            let result = self.eval_tree_path(app_context, value);
             if let Some(tree) = self.trees.get_mut(name) {
                 tree.symlink.set_value(result);
             }
@@ -707,8 +708,8 @@ impl Configuration {
     }
 
     /// Evaluate and return a path string relative to the garden root.
-    pub fn eval_tree_path(&mut self, path: &str) -> String {
-        let value = eval::value(self, path);
+    pub fn eval_tree_path(&mut self, app_context: &ApplicationContext, path: &str) -> String {
+        let value = eval::value(app_context, self, path);
         self.tree_path(&value)
     }
 
@@ -768,7 +769,7 @@ impl Configuration {
 
     /// Evaluate and resolve a path string and relative to the config directory.
     pub fn eval_config_path(&self, app_context: &ApplicationContext, path: &str) -> String {
-        let value = eval::get_value(app_context, self, path);
+        let value = eval::value(app_context, self, path);
         self.config_path(&value)
     }
 
@@ -778,17 +779,18 @@ impl Configuration {
         app_context: &ApplicationContext,
         path: &str,
     ) -> Option<std::path::PathBuf> {
-        let value = eval::get_value(app_context, self, path);
+        let value = eval::value(app_context, self, path);
         self.config_pathbuf(&value)
     }
 
     /// Evaluate and resolve a pathbuf relative to the config directory for "includes".
     pub fn eval_config_pathbuf_from_include(
         &self,
+        app_context: &ApplicationContext,
         include_path: Option<&std::path::Path>,
         path: &str,
     ) -> Option<std::path::PathBuf> {
-        let value = eval::value(self, path);
+        let value = eval::value(app_context, self, path);
 
         if let Some(include_path) = include_path {
             self.config_pathbuf_from_include(include_path, &value)
@@ -1181,7 +1183,7 @@ pub fn print_tree_details(tree: &Tree, verbose: u8, quiet: bool) {
 #[derive(Clone, Debug)]
 pub struct ApplicationContext {
     pub options: cli::MainOptions,
-    arena: Arena<Configuration>,
+    arena: RefCell<Arena<Configuration>>,
     root_id: ConfigId,
 }
 
@@ -1194,8 +1196,8 @@ impl ApplicationContext {
         let config = Configuration::new();
         let root_id = arena.new_node(config);
 
-        let mut app_context = ApplicationContext {
-            arena,
+        let app_context = ApplicationContext {
+            arena: RefCell::new(arena),
             root_id,
             options,
         };
@@ -1208,14 +1210,19 @@ impl ApplicationContext {
 
     /// Initialize an ApplicationContext and Configuration from cli::MainOptions.
     pub fn from_options(options: &cli::MainOptions) -> Result<Self, errors::GardenError> {
-        let mut app_context = Self::new(options.clone());
-
+        let app_context = Self::new(options.clone());
         let config_verbose = options.debug_level("config");
-        let config = app_context.get_root_config_mut();
-        config.update(&options.config, &options.root, config_verbose, None)?;
-        config.update_options(options)?;
+        app_context.get_root_config_mut().update(
+            &app_context,
+            &options.config,
+            &options.root,
+            config_verbose,
+            None,
+        )?;
 
-        config::read_grafts(&mut app_context)?;
+        app_context.get_root_config_mut().update_options(options)?;
+
+        config::read_grafts(&app_context)?;
 
         Ok(app_context)
     }
@@ -1226,15 +1233,17 @@ impl ApplicationContext {
         root: &Option<std::path::PathBuf>,
     ) -> Result<Self, errors::GardenError> {
         let options = cli::MainOptions::new();
-        let mut app_context = Self::new(options.clone());
+        let app_context = Self::new(options.clone());
         let config_verbose = options.debug_level("config");
-
-        app_context
-            .get_root_config_mut()
-            .update(&Some(pathbuf), root, config_verbose, None)?;
-
+        app_context.get_root_config_mut().update(
+            &app_context,
+            &Some(pathbuf),
+            root,
+            config_verbose,
+            None,
+        )?;
         // Record the ID in the configuration.
-        config::read_grafts(&mut app_context)?;
+        config::read_grafts(&app_context)?;
 
         Ok(app_context)
     }
@@ -1252,20 +1261,21 @@ impl ApplicationContext {
     /// Construct an ApplicationContext from a string using default MainOptions.
     pub fn from_string(string: &str) -> Result<Self, errors::GardenError> {
         let options = cli::MainOptions::new();
-        let mut app_context = Self::new(options);
+        let app_context = Self::new(options);
 
-        config::parse(string, 0, app_context.get_root_config_mut())?;
-        config::read_grafts(&mut app_context)?;
+        config::parse(&app_context, string, 0, app_context.get_root_config_mut())?;
+        config::read_grafts(&app_context)?;
 
         Ok(app_context)
     }
 
     pub fn get_config(&self, id: ConfigId) -> &Configuration {
-        self.arena.get(id).unwrap().get()
+        unsafe { (*self.arena.as_ptr()).get(id).unwrap().get() }
     }
 
-    pub fn get_config_mut(&mut self, id: ConfigId) -> &mut Configuration {
-        self.arena.get_mut(id).unwrap().get_mut()
+    #[allow(clippy::mut_from_ref)]
+    pub fn get_config_mut(&self, id: ConfigId) -> &mut Configuration {
+        unsafe { (*self.arena.as_ptr()).get_mut(id).unwrap().get_mut() }
     }
 
     pub fn get_root_id(&self) -> ConfigId {
@@ -1276,14 +1286,14 @@ impl ApplicationContext {
         self.get_config(self.get_root_id())
     }
 
-    pub fn get_root_config_mut(&mut self) -> &mut Configuration {
+    pub fn get_root_config_mut(&self) -> &mut Configuration {
         self.get_config_mut(self.get_root_id())
     }
 
     /// Add a child Configuration graft onto the parent ConfigId.
-    pub fn add_graft(&mut self, parent: ConfigId, config: Configuration) -> ConfigId {
-        let graft_id = self.arena.new_node(config); // Take ownership of config.
-        parent.append(graft_id, &mut self.arena);
+    pub fn add_graft(&self, parent: ConfigId, config: Configuration) -> ConfigId {
+        let graft_id = self.arena.borrow_mut().new_node(config); // Take ownership of config.
+        parent.append(graft_id, &mut self.arena.borrow_mut());
 
         self.get_config_mut(graft_id).set_id(graft_id);
 
@@ -1292,7 +1302,7 @@ impl ApplicationContext {
 
     /// Attach a graft to the configuration specified by ConfigId.
     pub fn add_graft_config(
-        &mut self,
+        &self,
         config_id: ConfigId,
         graft_name: &str,
         path: &std::path::Path,
@@ -1301,7 +1311,7 @@ impl ApplicationContext {
         let path = path.to_path_buf();
         let config_verbose = self.options.debug_level("config");
         let mut graft_config = Configuration::new();
-        graft_config.update(&Some(path), root, config_verbose, Some(config_id))?;
+        graft_config.update(self, &Some(path), root, config_verbose, Some(config_id))?;
 
         // The app Arena takes ownershp of the Configuration.
         let graft_id = self.add_graft(config_id, graft_config);

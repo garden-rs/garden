@@ -17,8 +17,8 @@ pub struct ShellOptions {
     tree: Option<String>,
 }
 
-pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Result<()> {
-    let config = app.get_root_config_mut();
+pub fn main(app_context: &mut model::ApplicationContext, options: &ShellOptions) -> Result<()> {
+    let config = app_context.get_root_config_mut();
     let contexts = query::resolve_trees(config, &options.query);
     if contexts.is_empty() {
         return Err(errors::GardenError::EmptyTreeQueryResult(options.query.clone()).into());
@@ -59,11 +59,22 @@ pub fn main(app: &mut model::ApplicationContext, options: &ShellOptions) -> Resu
 
     // Evaluate garden.shell
     let shell_expr = config.shell.clone();
-    let shell = eval::tree_value(config, &shell_expr, &context.tree, context.garden.as_ref());
+    let shell = eval::tree_value(
+        app_context,
+        config,
+        &shell_expr,
+        &context.tree,
+        context.garden.as_ref(),
+    );
 
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(
-            config, &context, /*quiet*/ true, /*verbose*/ 0, &value,
+            app_context,
+            config,
+            &context,
+            /*quiet*/ true,
+            /*verbose*/ 0,
+            &value,
         )
         .map_err(|err| err.into())
     } else {

@@ -13,14 +13,16 @@ use std::collections::HashMap;
 
 // Apply YAML Configuration from a string.
 pub fn parse(
+    app_context: &model::ApplicationContext,
     string: &str,
     config_verbose: u8,
     config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-    parse_recursive(string, config_verbose, config, None, true)
+    parse_recursive(app_context, string, config_verbose, config, None, true)
 }
 
 fn parse_recursive(
+    app_context: &model::ApplicationContext,
     string: &str,
     config_verbose: u8,
     config: &mut model::Configuration,
@@ -102,9 +104,11 @@ fn parse_recursive(
     let mut config_includes = Vec::new();
     if get_vec_variables(&doc["garden"]["includes"], &mut config_includes) {
         for garden_include in &config_includes {
-            let pathbuf = match config
-                .eval_config_pathbuf_from_include(current_include, garden_include.get_expr())
-            {
+            let pathbuf = match config.eval_config_pathbuf_from_include(
+                app_context,
+                current_include,
+                garden_include.get_expr(),
+            ) {
                 Some(pathbuf) => pathbuf,
                 None => continue,
             };
@@ -119,8 +123,15 @@ fn parse_recursive(
             }
             if pathbuf.exists() {
                 if let Ok(content) = std::fs::read_to_string(&pathbuf) {
-                    parse_recursive(&content, config_verbose, config, Some(&pathbuf), false)
-                        .unwrap_or(());
+                    parse_recursive(
+                        app_context,
+                        &content,
+                        config_verbose,
+                        config,
+                        Some(&pathbuf),
+                        false,
+                    )
+                    .unwrap_or(());
                 }
             }
         }
@@ -167,7 +178,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: trees");
     }
-    if !get_trees(config, &doc["trees"]) && config_verbose > 1 {
+    if !get_trees(app_context, config, &doc["trees"]) && config_verbose > 1 {
         debug!("yaml: no trees");
     }
 
@@ -554,7 +565,11 @@ fn get_template(
 }
 
 /// Read tree definitions
-fn get_trees(config: &mut model::Configuration, yaml: &Yaml) -> bool {
+fn get_trees(
+    app_context: &model::ApplicationContext,
+    config: &mut model::Configuration,
+    yaml: &Yaml,
+) -> bool {
     match yaml {
         Yaml::Hash(hash) => {
             for (name, value) in hash {
@@ -567,7 +582,7 @@ fn get_trees(config: &mut model::Configuration, yaml: &Yaml) -> bool {
                         config.trees.insert(tree.get_name().to_string(), tree);
                     }
                 } else {
-                    let tree = get_tree(config, name, value, hash, true);
+                    let tree = get_tree(app_context, config, name, value, hash, true);
 
                     // Should we replace the current entry or sparsely override it?
                     // We sparsely override by default.
@@ -653,6 +668,7 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
 
 /// Read a single tree definition
 fn get_tree(
+    app_context: &model::ApplicationContext,
     config: &mut model::Configuration,
     name: &Yaml,
     value: &Yaml,
@@ -668,7 +684,7 @@ fn get_tree(
         // Holds a base tree specified using "extend: <tree>".
         let tree_name = Yaml::String(extend.clone());
         if let Some(tree_values) = trees.get(&tree_name) {
-            let base_tree = get_tree(config, &tree_name, tree_values, trees, false);
+            let base_tree = get_tree(app_context, config, &tree_name, tree_values, trees, false);
             tree.clone_from_tree(&base_tree);
         } else {
             // Allow the referenced tree to be found from an earlier include.
@@ -682,11 +698,11 @@ fn get_tree(
     // Load values from the parent tree when using "worktree: <parent>".
     let mut parent_expr = String::new();
     if get_str(&value["worktree"], &mut parent_expr) {
-        let parent_name = eval::value(config, &parent_expr);
+        let parent_name = eval::value(app_context, config, &parent_expr);
         if !parent_expr.is_empty() {
             let tree_name = Yaml::String(parent_name);
             if let Some(tree_values) = trees.get(&tree_name) {
-                let base = get_tree(config, &tree_name, tree_values, trees, true);
+                let base = get_tree(app_context, config, &tree_name, tree_values, trees, true);
                 tree.clone_from_tree(&base);
             }
         }

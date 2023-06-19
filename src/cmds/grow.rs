@@ -90,6 +90,7 @@ fn grow_tree_from_context(
     // "git clone --branch=name" clones the named branch.
     let branch_var = tree.branch.clone();
     let branch = eval::tree_value(
+        app_context,
         config,
         branch_var.get_expr(),
         &ctx.tree,
@@ -128,7 +129,13 @@ fn grow_tree_from_context(
 
     // The "origin" remote is cloned by convention. The "url" field maps to "origin".
     let url = match tree.remotes.get("origin") {
-        Some(remote) => eval::tree_value(config, remote.get_expr(), &ctx.tree, ctx.garden.as_ref()),
+        Some(remote) => eval::tree_value(
+            app_context,
+            config,
+            remote.get_expr(),
+            &ctx.tree,
+            ctx.garden.as_ref(),
+        ),
         None => return Ok(exit_status),
     };
 
@@ -235,7 +242,7 @@ fn update_tree_from_context(
     // Repositories created using "git worktree" share a common Git configuration
     // and only need to be configured once. Skip configuring the repository
     // if we've already processed it.
-    let shared_worktree_path = query::shared_worktree_path(config, ctx);
+    let shared_worktree_path = query::shared_worktree_path(app_context, config, ctx);
     if !configured_worktrees.insert(shared_worktree_path) {
         return Ok(exit_status);
     }
@@ -255,7 +262,13 @@ fn update_tree_from_context(
 
     // Loop over remotes and add/update the git remote configuration.
     for (remote, var) in &tree.remotes {
-        let url = eval::tree_value(config, var.get_expr(), &ctx.tree, ctx.garden.as_ref());
+        let url = eval::tree_value(
+            app_context,
+            config,
+            var.get_expr(),
+            &ctx.tree,
+            ctx.garden.as_ref(),
+        );
 
         let exec = if existing_remotes.contains(remote) {
             let remote_key = format!("remote.{remote}.url");
@@ -280,10 +293,22 @@ fn update_tree_from_context(
 
     // Set gitconfig settings
     for (var_name, var) in &tree.gitconfig {
-        let name = eval::tree_value(config, var_name, &ctx.tree, ctx.garden.as_ref());
+        let name = eval::tree_value(
+            app_context,
+            config,
+            var_name,
+            &ctx.tree,
+            ctx.garden.as_ref(),
+        );
         let value = match var.get_value() {
             Some(precomputed_value) => precomputed_value.to_string(),
-            None => eval::tree_value(config, var.get_expr(), &ctx.tree, ctx.garden.as_ref()),
+            None => eval::tree_value(
+                app_context,
+                config,
+                var.get_expr(),
+                &ctx.tree,
+                ctx.garden.as_ref(),
+            ),
         };
         let command = ["git", "config", name.as_ref(), value.as_ref()];
         let exec = cmd::exec_in_dir(&command, path);
@@ -300,7 +325,7 @@ fn update_tree_from_context(
         // Create all configured tracking branches.
         for (branch, expr) in &tree.branches {
             if !branches.contains(branch) {
-                let remote_branch = eval::get_value(app_context, config, expr.get_expr());
+                let remote_branch = eval::value(app_context, config, expr.get_expr());
                 if !remote_branch.is_empty() {
                     let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
                     let exec = cmd::exec_in_dir(&command, path);
@@ -344,28 +369,26 @@ fn grow_tree_from_context_as_worktree(
         None => return Ok(exit_status),
     };
     let worktree = eval::tree_value(
+        app_context,
         config,
         tree.worktree.get_expr(),
         &ctx.tree,
         ctx.garden.as_ref(),
     );
     let branch = eval::tree_value(
+        app_context,
         config,
         tree.branch.get_expr(),
         &ctx.tree,
         ctx.garden.as_ref(),
     );
 
-    let parent_ctx = query::tree_from_name(
-        config,
-        &worktree,
-        ctx.garden.as_ref(),
-        ctx.group.as_ref(),
-    )
-    .ok_or_else(|| errors::GardenError::WorktreeNotFound {
-        tree: tree.get_name().to_string(),
-        worktree: worktree.clone(),
-    })?;
+    let parent_ctx =
+        query::tree_from_name(config, &worktree, ctx.garden.as_ref(), ctx.group.as_ref())
+            .ok_or_else(|| errors::GardenError::WorktreeNotFound {
+                tree: tree.get_name().to_string(),
+                worktree: worktree.clone(),
+            })?;
 
     exit_status = grow_tree_from_context(
         app_context,
@@ -417,7 +440,7 @@ fn grow_tree_from_context_as_worktree(
         // Read the upstream branch from tree.<tree>.branches.<branch> when configured.
         // Defaults to "origin/<branch>" when not configured.
         if let Some(expr) = tree.branches.get(&branch) {
-            remote_branch = eval::get_value(app_context, config, expr.get_expr());
+            remote_branch = eval::value(app_context, config, expr.get_expr());
         } else {
             remote_branch = format!("origin/{branch}");
         }

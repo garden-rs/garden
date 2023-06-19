@@ -112,6 +112,7 @@ where
 /// - command: String vector of the command to run.
 
 pub fn exec_in_context<S>(
+    app_context: &model::ApplicationContext,
     config: &mut model::Configuration,
     context: &model::TreeContext,
     quiet: bool,
@@ -133,7 +134,7 @@ where
         return Ok(());
     }
     // Evaluate the tree environment and run the command.
-    let env = eval::environment(config, context);
+    let env = eval::environment(app_context, config, context);
     let command_vec = resolve_command(command, &env);
 
     // Create an Exec object.

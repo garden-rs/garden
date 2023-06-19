@@ -383,13 +383,18 @@ pub fn find_tree(
 }
 
 /// Return a path that that is either the tree's path or the tree's shared worktree path.
-pub fn shared_worktree_path(config: &model::Configuration, ctx: &model::TreeContext) -> String {
+pub fn shared_worktree_path(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    ctx: &model::TreeContext,
+) -> String {
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
         None => return String::new(),
     };
     if tree.is_worktree {
         let worktree = eval::tree_value(
+            app_context,
             config,
             tree.worktree.get_expr(),
             &ctx.tree,

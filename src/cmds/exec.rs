@@ -31,6 +31,7 @@ pub fn main(app: &mut model::ApplicationContext, exec_options: &ExecOptions) -> 
 
     let config = app.get_root_config_mut();
     exec(
+        app,
         config,
         quiet,
         verbose,
@@ -41,6 +42,7 @@ pub fn main(app: &mut model::ApplicationContext, exec_options: &ExecOptions) -> 
 
 /// Execute a command over every tree in the evaluated tree query.
 pub fn exec(
+    app_context: &model::ApplicationContext,
     config: &mut model::Configuration,
     quiet: bool,
     verbose: u8,
@@ -74,7 +76,7 @@ pub fn exec(
         }
         // Run the command in the current context.
         if let Err(errors::GardenError::ExitStatus(status)) =
-            cmd::exec_in_context(config, context, quiet, verbose, command)
+            cmd::exec_in_context(app_context, config, context, quiet, verbose, command)
         {
             exit_status = status;
         }

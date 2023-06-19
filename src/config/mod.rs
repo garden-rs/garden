@@ -79,26 +79,27 @@ pub fn xdg_dir() -> std::path::PathBuf {
 
 /// Parse and apply configuration from a YAML/JSON string
 pub fn parse(
+    app_context: &model::ApplicationContext,
     config_string: &str,
     verbose: u8,
     cfg: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-    reader::parse(config_string, verbose, cfg)?;
+    reader::parse(app_context, config_string, verbose, cfg)?;
     // Initialize the configuration now that the values have been read.
-    cfg.initialize();
+    cfg.initialize(app_context);
 
     Ok(())
 }
 
 /// Read grafts into the root configuration on down.
-pub fn read_grafts(app: &mut model::ApplicationContext) -> Result<(), errors::GardenError> {
+pub fn read_grafts(app: &model::ApplicationContext) -> Result<(), errors::GardenError> {
     let root_id = app.get_root_id();
     read_grafts_recursive(app, root_id)
 }
 
 /// Read grafts into the specified configuration
 pub fn read_grafts_recursive(
-    app: &mut model::ApplicationContext,
+    app: &model::ApplicationContext,
     id: ConfigId,
 ) -> Result<(), errors::GardenError> {
     // Defer the recursive calls to avoid an immutable borrow from preventing us from
