@@ -2,6 +2,13 @@
 
 ## Grafts (WIP)
 
+TODO:
+- update from_path() to take an app_context()
+- pass app_context to initialize()
+- update parse() to take an app_context() so that we can use get_value() everywhere
+  and use ApplicationContext instead of Option<ApplicationContext>
+- eval_config_pathbuf_from_include
+
 Make it possible to graft configuration from one garden file into another.
 Create "grafted" gardens by including an external garden.yaml and making its
 trees, variables and groups available under a `<graft>::` namespace that can
