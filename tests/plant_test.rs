@@ -170,7 +170,7 @@ fn plant_git_worktree() -> Result<()> {
     let pathbuf = fixture.pathbuf("garden.yaml");
     let app_context = garden::model::ApplicationContext::from_path_and_root(
         pathbuf,
-        &Some(fixture.root_pathbuf()),
+        Some(&fixture.root_pathbuf()),
     )?;
     let cfg = app_context.get_root_config();
     assert_eq!(2, cfg.trees.len());

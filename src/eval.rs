@@ -116,7 +116,7 @@ fn expand_vars(
         }
 
         let expr = var.get_expr();
-        let result = value(&app_context, config, expr);
+        let result = value(app_context, config, expr);
         var.set_value(result.clone());
 
         return Some(result);

@@ -28,7 +28,7 @@ fn tree_name_from_pathbuf() -> Result<()> {
     let pathbuf = std::path::PathBuf::from("tests/data/worktree.yaml");
     let app_context = garden::model::ApplicationContext::from_path_and_root(
         pathbuf,
-        &Some(fixture.root_pathbuf()),
+        Some(&fixture.root_pathbuf()),
     )?;
     let cfg = app_context.get_root_config();
 

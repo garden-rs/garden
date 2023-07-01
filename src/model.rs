@@ -495,8 +495,8 @@ impl Configuration {
     pub fn update(
         &mut self,
         app_context: &ApplicationContext,
-        config: &Option<std::path::PathBuf>,
-        root: &Option<std::path::PathBuf>,
+        config: Option<&std::path::PathBuf>,
+        root: Option<&std::path::PathBuf>,
         config_verbose: u8,
         parent: Option<ConfigId>,
     ) -> Result<(), errors::GardenError> {
@@ -930,8 +930,8 @@ impl Graft {
         &self.name
     }
 
-    pub fn get_id(&self) -> &Option<ConfigId> {
-        &self.id
+    pub fn get_id(&self) -> Option<ConfigId> {
+        self.id
     }
 
     pub fn set_id(&mut self, id: ConfigId) {
@@ -1214,8 +1214,8 @@ impl ApplicationContext {
         let config_verbose = options.debug_level("config");
         app_context.get_root_config_mut().update(
             &app_context,
-            &options.config,
-            &options.root,
+            options.config.as_ref(),
+            options.root.as_ref(),
             config_verbose,
             None,
         )?;
@@ -1230,14 +1230,14 @@ impl ApplicationContext {
     /// Construct an ApplicationContext from a path and root using default MainOptions.
     pub fn from_path_and_root(
         pathbuf: std::path::PathBuf,
-        root: &Option<std::path::PathBuf>,
+        root: Option<&std::path::PathBuf>,
     ) -> Result<Self, errors::GardenError> {
         let options = cli::MainOptions::new();
         let app_context = Self::new(options.clone());
         let config_verbose = options.debug_level("config");
         app_context.get_root_config_mut().update(
             &app_context,
-            &Some(pathbuf),
+            Some(&pathbuf),
             root,
             config_verbose,
             None,
@@ -1250,7 +1250,7 @@ impl ApplicationContext {
 
     /// Construct an ApplicationContext from a path using default MainOptions.
     pub fn from_path(pathbuf: std::path::PathBuf) -> Result<Self, errors::GardenError> {
-        Self::from_path_and_root(pathbuf, &None)
+        Self::from_path_and_root(pathbuf, None)
     }
 
     /// Construct an ApplicationContext from a path using default MainOptions.
@@ -1306,12 +1306,12 @@ impl ApplicationContext {
         config_id: ConfigId,
         graft_name: &str,
         path: &std::path::Path,
-        root: &Option<std::path::PathBuf>,
+        root: Option<&std::path::PathBuf>,
     ) -> Result<(), errors::GardenError> {
         let path = path.to_path_buf();
         let config_verbose = self.options.debug_level("config");
         let mut graft_config = Configuration::new();
-        graft_config.update(self, &Some(path), root, config_verbose, Some(config_id))?;
+        graft_config.update(self, Some(&path), root, config_verbose, Some(config_id))?;
 
         // The app Arena takes ownershp of the Configuration.
         let graft_id = self.add_graft(config_id, graft_config);
