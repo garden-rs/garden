@@ -33,8 +33,11 @@ pub fn main(app_context: &mut model::ApplicationContext, eval: &EvalOptions) -> 
         }
         Some(tree) => {
             // Evaluate and print the garden expression.
-            let config = app_context.get_root_config_mut();
-            let ctx = query::tree_context(config, tree, garden_opt)?;
+            let ctx = query::tree_context(app_context.get_root_config(), tree, garden_opt)?;
+            let config = match ctx.config {
+                Some(config_id) => app_context.get_config(config_id),
+                None => app_context.get_root_config(),
+            };
             let value = eval::tree_value(
                 app_context,
                 config,
