@@ -7,7 +7,8 @@ use super::syntax;
 use std::collections::HashMap;
 
 /// Expand variables across all scopes (garden, tree, and global).
-/// - `config`: reference to Configuration
+/// - `app_context`: reference to the top-level ApplicationContext.
+/// - `config`: reference to Configuration to use for evaluation
 /// - `tree_idx`: index into the tree being evaluated
 /// - `garden_name`: optional garden name being evaluated.
 /// - `name`: the name of the variable being expanded.
@@ -25,10 +26,40 @@ fn expand_tree_vars(
 
     // Special-case evaluation of ${graft::values}.
     if syntax::is_graft(name) {
-        let (_graft_id, _remainder) = match config.get_graft_id(name) {
-            Ok((graft_id, remainder)) => (graft_id, remainder),
-            Err(_) => return Some(String::new()),
-        };
+        // First, try the current config.
+        if let Ok((graft_id, remainder)) = config.get_graft_id(name) {
+            return expand_tree_vars(
+                app_context,
+                app_context.get_config(graft_id),
+                tree_name,
+                garden_name,
+                remainder,
+            );
+        }
+
+        // If nothing was found then try the parent config.
+        if let Some(parent_id) = config.parent_id {
+            let parent_config = app_context.get_config(parent_id);
+            if let Ok((graft_id, remainder)) = parent_config.get_graft_id(name) {
+                return expand_tree_vars(
+                    app_context,
+                    app_context.get_config(graft_id),
+                    tree_name,
+                    garden_name,
+                    remainder,
+                );
+            }
+        }
+        // Lastly, try the root configuraiton.
+        if let Ok((graft_id, remainder)) = app_context.get_root_config().get_graft_id(name) {
+            return expand_tree_vars(
+                app_context,
+                app_context.get_config(graft_id),
+                tree_name,
+                garden_name,
+                remainder,
+            );
+        }
     }
 
     // First check for the variable at the garden scope.

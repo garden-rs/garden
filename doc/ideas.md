@@ -3,11 +3,6 @@
 ## Grafts (WIP)
 
 TODO:
-- update from_path() to take an app_context()
-- pass app_context to initialize()
-- update parse() to take an app_context() so that we can use get_value() everywhere
-  and use ApplicationContext instead of Option<ApplicationContext>
-- eval_config_pathbuf_from_include
 
 Make it possible to graft configuration from one garden file into another.
 Create "grafted" gardens by including an external garden.yaml and making its
@@ -104,35 +99,3 @@ in the context of that configuration.
 GardenName and GroupName values are relative to their local configuration.
 The corresponding configuration must be used when resolving these values
 to actual Gardens and Groups.
-
-These are the call graphs that have to be adjusted to support graft evaluation.
-
-    eval::value():
-        src/eval.rs:
-            [ ] environment() ->
-            [ ] multi_variable() ->
-            [ ] tree_value() ->
-            [ ] value()
-    eval::environment():
-        src/cmd.rs:
-            [ ] exec_in_context() ->
-            [ ] environment() -> ...
-        src/cmds/cmd.rs:
-            [ ] cmd() ->
-            [ ] environment()
-    cmd::exec_in_context():
-        src/cmd.rs:
-            [ ] exec_in_context() ->
-            [ ] environment() -> ...
-        src/cmds/exec.rs:
-            [ ] exec() ->
-            [ ] exec_in_context() ->
-            [ ] environment() -> ...
-        src/cmds/exec.rs:
-            [ ] exec() ->
-            [ ] exec_in_context() ->
-            [ ] environment() -. ...
-        src/cmds/shell.rs:
-            [ ] main() ->
-            [ ] exec_in_context() ->
-            [ ] environment() -. ...

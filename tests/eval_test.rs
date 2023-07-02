@@ -498,9 +498,7 @@ fn eval_graft_tree() -> Result<()> {
         &ctx.tree,
         ctx.garden.as_ref(),
     );
-    // TODO: this should evaluate to "graft".
-    //assert_eq!("graft", actual);
-    assert_eq!("", actual);
+    assert_eq!("graft", actual);
 
     Ok(())
 }

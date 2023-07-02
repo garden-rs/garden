@@ -369,10 +369,13 @@ pub fn find_tree(
         if let Some(graft_name) = syntax::graft_basename(tree) {
             if syntax::is_graft(tree) && config.contains_graft(&graft_name) {
                 let graft = config.get_graft(&graft_name)?;
-                let graft_config = app.get_config(graft.get_id().unwrap());
-
+                let graft_id = graft
+                    .get_id()
+                    .ok_or(errors::GardenError::ConfigurationError(format!(
+                        "invalid graft: {graft_name}"
+                    )))?;
                 if let Some(next_graft) = syntax::trim_graft(tree) {
-                    return tree_context(graft_config, &next_graft, garden);
+                    return find_tree(app, graft_id, &next_graft, garden);
                 }
             }
         }

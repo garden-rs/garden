@@ -121,8 +121,10 @@ commands:
   - echo after error
   - "false"
 
+# WIP(grafts): grafts are not yet implemented. When implemented, the "grafts" block
+# will provide the namespaced "graft::*" and "libs::*" trees and variables that
+# can then be referenced within this file.
 gardens:
-  # WIP(grafts)
   dev:
     groups:
       - libs::core
@@ -135,9 +137,6 @@ gardens:
       - graft::graft
       - graft::core
 
-# WIP(grafts): grafts are not yet implemented. If implemented, the "grafts" block
-# will provide the namespaced "graft::*" and "libs::*" trees and variables that
-# can then be referenced within this file.
 grafts:
   graft: grafts/graft.yaml
   libs:
