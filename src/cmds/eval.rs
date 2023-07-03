@@ -18,7 +18,7 @@ pub struct EvalOptions {
 }
 
 /// Evaluate a garden expression using the Eval parameters
-pub fn main(app_context: &mut model::ApplicationContext, eval: &EvalOptions) -> Result<()> {
+pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Result<()> {
     let mut garden_opt: Option<&str> = None;
     if let Some(garden) = &eval.garden {
         garden_opt = Some(garden.as_str());

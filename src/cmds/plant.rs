@@ -23,10 +23,10 @@ pub struct PlantOptions {
     paths: Vec<String>,
 }
 
-pub fn main(app: &mut model::ApplicationContext, options: &PlantOptions) -> Result<()> {
+pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> Result<()> {
     // Read existing configuration
-    let verbose = app.options.verbose;
-    let config = app.get_root_config_mut();
+    let verbose = app_context.options.verbose;
+    let config = app_context.get_root_config();
     let mut doc = config::reader::read_yaml(config.get_path()?)?;
 
     // Output filename defaults to the input filename.

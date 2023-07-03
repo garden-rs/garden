@@ -102,7 +102,7 @@ fn exec_expression() -> Result<()> {
     assert_eq!(value, "cmd");
 
     // Ensure that exec expressions are evaluated in the tree directory.
-    let context = garden::query::tree_context(&config, "tmp", None)?;
+    let context = garden::query::tree_context(&app_context, &config, "tmp", None)?;
     let value = garden::eval::tree_value(&app_context, &config, "$ echo $PWD", &context.tree, None);
     assert!(value == "/tmp" || value == "/private/tmp");
 
@@ -117,7 +117,7 @@ fn exec_expression_in_tree_context() -> Result<()> {
     let app_context =
         garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let config = app_context.get_root_config();
-    let context = garden::query::tree_context(&config, "trees/prebuilt", None)?;
+    let context = garden::query::tree_context(&app_context, &config, "trees/prebuilt", None)?;
     let value = garden::eval::tree_value(&app_context, &config, "$ pwd", &context.tree, None);
     assert!(value.ends_with("/trees/prebuilt"));
 

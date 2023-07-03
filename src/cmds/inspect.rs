@@ -14,23 +14,28 @@ pub struct InspectOptions {
 }
 
 /// Main entry point for the "garden inspect" command
-pub fn main(app: &mut model::ApplicationContext, options: &mut InspectOptions) -> Result<()> {
+pub fn main(app_context: &model::ApplicationContext, options: &mut InspectOptions) -> Result<()> {
     if options.queries.is_empty() {
         options.queries.push(".".into());
     }
-    if app.options.debug_level("inspect") > 0 {
+    if app_context.options.debug_level("inspect") > 0 {
         debug!("queries: {:?}", options.queries);
     }
-    let verbose = app.options.verbose;
-    let config = app.get_root_config_mut();
-    inspect(config, verbose, &options.queries)
+    let verbose = app_context.options.verbose;
+    let config = app_context.get_root_config_mut();
+    inspect(app_context, config, verbose, &options.queries)
 }
 
 /// Inspect every tree in the evaluated tree query
-pub fn inspect(config: &mut model::Configuration, verbose: u8, queries: &[String]) -> Result<()> {
+pub fn inspect(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    verbose: u8,
+    queries: &[String],
+) -> Result<()> {
     for query in queries {
         // Resolve the tree query into a vector of tree contexts.
-        let contexts = query::resolve_trees(config, query);
+        let contexts = query::resolve_trees(app_context, config, query);
         // Loop over each context and inspect the tree.
         for context in &contexts {
             let tree = match config.trees.get(&context.tree) {

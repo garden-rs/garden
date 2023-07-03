@@ -17,9 +17,9 @@ pub struct ShellOptions {
     tree: Option<String>,
 }
 
-pub fn main(app_context: &mut model::ApplicationContext, options: &ShellOptions) -> Result<()> {
+pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> Result<()> {
     let config = app_context.get_root_config_mut();
-    let contexts = query::resolve_trees(config, &options.query);
+    let contexts = query::resolve_trees(app_context, config, &options.query);
     if contexts.is_empty() {
         return Err(errors::GardenError::EmptyTreeQueryResult(options.query.clone()).into());
     }

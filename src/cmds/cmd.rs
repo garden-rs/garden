@@ -67,14 +67,15 @@ pub struct CustomOptions {
 }
 
 /// Main entry point for `garden cmd <query> <command>...`.
-pub fn main_cmd(app: &mut model::ApplicationContext, options: &CmdOptions) -> Result<()> {
-    if app.options.debug_level("cmd") > 0 {
+pub fn main_cmd(app_context: &model::ApplicationContext, options: &CmdOptions) -> Result<()> {
+    if app_context.options.debug_level("cmd") > 0 {
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
         debug!("arguments: {:?}", options.arguments);
     }
     let params = CmdParams::from_cmd_options(options);
-    let exit_status = cmd(app, &options.query, &params)?;
+    let exit_status = cmd(app_context, &options.query, &params)?;
+
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
@@ -141,7 +142,7 @@ fn format_error<I: CommandFactory>(err: clap::Error) -> clap::Error {
 }
 
 /// Main entry point for `garden <command> <query>...`.
-pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>) -> Result<()> {
+pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<String>) -> Result<()> {
     // Set the command name to "garden <custom>".
     let name = &arguments[0];
     let garden_custom = format!("garden {name}");
@@ -150,7 +151,7 @@ pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>)
     let options = <CustomOptions as FromArgMatches>::from_arg_matches(&matches)
         .map_err(format_error::<CustomOptions>)?;
 
-    if app.options.debug_level("cmd") > 0 {
+    if app_context.options.debug_level("cmd") > 0 {
         debug!("command: {}", name);
         debug!("queries: {:?}", options.queries);
         debug!("arguments: {:?}", options.arguments);
@@ -160,7 +161,7 @@ pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>)
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
     params.commands.push(name.to_string());
 
-    cmds(app, &params)
+    cmds(app_context, &params)
 }
 
 /// Strategy: resolve the trees down to a set of tree indexes paired with an
@@ -174,14 +175,14 @@ pub fn main_custom(app: &mut model::ApplicationContext, arguments: &Vec<String>)
 /// with no garden context.
 
 pub fn cmd(
-    app_context: &mut model::ApplicationContext,
+    app_context: &model::ApplicationContext,
     query: &str,
     params: &CmdParams,
 ) -> Result<i32> {
     // Mutable scope for app.get_root_config_mut()
     let config = app_context.get_root_config_mut();
     // Resolve the tree query into a vector of tree contexts.
-    let contexts = query::resolve_trees(config, query);
+    let contexts = query::resolve_trees(app_context, config, query);
 
     if params.breadth_first {
         run_cmd_breadth_first(app_context, &contexts, params)
@@ -191,17 +192,15 @@ pub fn cmd(
 }
 
 pub fn run_cmd_breadth_first(
-    app_context: &mut model::ApplicationContext,
+    app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose;
-    let shell = {
-        let config = app_context.get_root_config();
-        config.shell.to_string()
-    };
+    let shell = app_context.get_root_config().shell.to_string();
+
     // Loop over each command, evaluate the tree environment,
     // and run the command in each context.
     for name in &params.commands {
@@ -255,17 +254,15 @@ pub fn run_cmd_breadth_first(
 }
 
 pub fn run_cmd_depth_first(
-    app_context: &mut model::ApplicationContext,
+    app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose;
-    let shell = {
-        let config = app_context.get_root_config();
-        config.shell.to_string()
-    };
+    let shell = app_context.get_root_config().shell.to_string();
+
     // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
         // Skip symlink trees.
@@ -381,7 +378,7 @@ fn run_cmd_vec(
 }
 
 /// Run cmd() over a Vec of tree queries
-pub fn cmds(app: &mut model::ApplicationContext, params: &CmdParams) -> Result<()> {
+pub fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
     let mut exit_status = errors::EX_OK;
 
     for query in &params.queries {

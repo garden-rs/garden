@@ -33,20 +33,20 @@ fn cmd_main() -> Result<()> {
         _ => (), // Handled below
     }
 
-    let mut app = model::ApplicationContext::from_options(&options)?;
+    let app = model::ApplicationContext::from_options(&options)?;
     match options.command {
-        cli::Command::Cmd(cmd) => cmds::cmd::main_cmd(&mut app, &cmd),
+        cli::Command::Cmd(cmd) => cmds::cmd::main_cmd(&app, &cmd),
         cli::Command::Completion(_) => Ok(()), // Handled above
-        cli::Command::Custom(args) => cmds::cmd::main_custom(&mut app, &args),
-        cli::Command::Eval(eval) => cmds::eval::main(&mut app, &eval),
-        cli::Command::Exec(exec) => cmds::exec::main(&mut app, &exec),
-        cli::Command::Grow(grow) => cmds::grow::main(&mut app, &grow),
+        cli::Command::Custom(args) => cmds::cmd::main_custom(&app, &args),
+        cli::Command::Eval(eval) => cmds::eval::main(&app, &eval),
+        cli::Command::Exec(exec) => cmds::exec::main(&app, &exec),
+        cli::Command::Grow(grow) => cmds::grow::main(&app, &grow),
         cli::Command::Init(_) => Ok(()), // Handled above
-        cli::Command::Inspect(mut inspect) => cmds::inspect::main(&mut app, &mut inspect),
-        cli::Command::List(list) => cmds::list::main(&mut app, &list),
-        cli::Command::Plant(plant) => cmds::plant::main(&mut app, &plant),
-        cli::Command::Prune(mut prune) => cmds::prune::main(&mut app, &mut prune),
-        cli::Command::Shell(shell) => cmds::shell::main(&mut app, &shell),
+        cli::Command::Inspect(mut inspect) => cmds::inspect::main(&app, &mut inspect),
+        cli::Command::List(list) => cmds::list::main(&app, &list),
+        cli::Command::Plant(plant) => cmds::plant::main(&app, &plant),
+        cli::Command::Prune(mut prune) => cmds::prune::main(&app, &mut prune),
+        cli::Command::Shell(shell) => cmds::shell::main(&app, &shell),
     }
 }
 

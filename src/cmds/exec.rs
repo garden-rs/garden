@@ -19,19 +19,19 @@ pub struct ExecOptions {
 }
 
 /// Main entry point for the "garden exec" command
-pub fn main(app: &mut model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
+pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
     // parse_args(&mut app.options, &mut query, &mut command);
-    let quiet = app.options.quiet;
-    let verbose = app.options.verbose;
+    let quiet = app_context.options.quiet;
+    let verbose = app_context.options.verbose;
 
-    if app.options.debug_level("exec") > 0 {
+    if app_context.options.debug_level("exec") > 0 {
         debug!("query: {}", exec_options.query);
         debug!("command: {:?}", exec_options.command);
     }
 
-    let config = app.get_root_config_mut();
+    let config = app_context.get_root_config_mut();
     exec(
-        app,
+        app_context,
         config,
         quiet,
         verbose,
@@ -43,7 +43,7 @@ pub fn main(app: &mut model::ApplicationContext, exec_options: &ExecOptions) -> 
 /// Execute a command over every tree in the evaluated tree query.
 pub fn exec(
     app_context: &model::ApplicationContext,
-    config: &mut model::Configuration,
+    config: &model::Configuration,
     quiet: bool,
     verbose: u8,
     query: &str,
@@ -60,7 +60,7 @@ pub fn exec(
     // with no garden context.
 
     // Resolve the tree query into a vector of tree contexts.
-    let contexts = query::resolve_trees(config, query);
+    let contexts = query::resolve_trees(app_context, config, query);
     let mut exit_status: i32 = 0;
 
     // Loop over each context, evaluate the tree environment,

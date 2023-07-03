@@ -45,8 +45,8 @@ pub struct PruneOptions {
 }
 
 /// Main entry point for the "garden prune" command
-pub fn main(app: &mut model::ApplicationContext, options: &mut PruneOptions) -> Result<()> {
-    let config = app.get_root_config_mut();
+pub fn main(app_context: &model::ApplicationContext, options: &mut PruneOptions) -> Result<()> {
+    let config = app_context.get_root_config_mut();
 
     // At least two threads must be running in order for the TraverseFilesystem task to
     // be able to produce results. Otherwise we'll block in the PromptUser thread without

@@ -22,7 +22,7 @@ pub struct GrowOptions {
 }
 
 /// Main entry point for the "garden grow" command
-pub fn main(app: &mut model::ApplicationContext, options: &GrowOptions) -> Result<()> {
+pub fn main(app: &model::ApplicationContext, options: &GrowOptions) -> Result<()> {
     let quiet = app.options.quiet;
     let verbose = app.options.verbose;
 
@@ -48,7 +48,7 @@ pub fn grow(
     query: &str,
 ) -> Result<i32> {
     let config = app_context.get_root_config();
-    let contexts = query::resolve_trees(config, query);
+    let contexts = query::resolve_trees(app_context, config, query);
     let mut exit_status = errors::EX_OK;
 
     for ctx in &contexts {
@@ -68,13 +68,13 @@ pub fn grow(
 fn grow_tree_from_context(
     app_context: &model::ApplicationContext,
     configured_worktrees: &mut HashSet<String>,
-    ctx: &model::TreeContext,
+    context: &model::TreeContext,
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
     let config = app_context.get_root_config();
     let mut exit_status = errors::EX_OK;
-    let tree = match config.trees.get(&ctx.tree) {
+    let tree = match config.trees.get(&context.tree) {
         Some(tree) => tree,
         None => return Ok(exit_status),
     };
@@ -95,15 +95,15 @@ fn grow_tree_from_context(
         app_context,
         config,
         branch_var.get_expr(),
-        &ctx.tree,
-        ctx.garden.as_ref(),
+        &context.tree,
+        context.garden.as_ref(),
     );
 
     if pathbuf.exists() {
         return update_tree_from_context(
             app_context,
             configured_worktrees,
-            ctx,
+            context,
             &pathbuf,
             None,
             quiet,
@@ -112,7 +112,7 @@ fn grow_tree_from_context(
     }
 
     if tree.is_symlink {
-        let status = grow_symlink(app_context, ctx).unwrap_or(errors::EX_IOERR);
+        let status = grow_symlink(app_context, context).unwrap_or(errors::EX_IOERR);
         if status != errors::EX_OK {
             exit_status = status;
         }
@@ -123,7 +123,7 @@ fn grow_tree_from_context(
         return grow_tree_from_context_as_worktree(
             app_context,
             configured_worktrees,
-            ctx,
+            context,
             quiet,
             verbose,
         );
@@ -135,8 +135,8 @@ fn grow_tree_from_context(
             app_context,
             config,
             remote.get_expr(),
-            &ctx.tree,
-            ctx.garden.as_ref(),
+            &context.tree,
+            context.garden.as_ref(),
         ),
         None => return Ok(exit_status),
     };
@@ -191,7 +191,7 @@ fn grow_tree_from_context(
     let status = update_tree_from_context(
         app_context,
         configured_worktrees,
-        ctx,
+        context,
         &pathbuf,
         Some(&branch),
         quiet,

@@ -118,7 +118,7 @@ where
 
 pub fn exec_in_context<S>(
     app_context: &model::ApplicationContext,
-    config: &mut model::Configuration,
+    config: &model::Configuration,
     context: &model::TreeContext,
     quiet: bool,
     verbose: u8,

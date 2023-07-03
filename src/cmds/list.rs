@@ -12,8 +12,8 @@ pub struct ListOptions {
 
 use super::super::model;
 
-pub fn main(app: &mut model::ApplicationContext, options: &ListOptions) -> Result<()> {
-    let config = app.get_root_config_mut();
+pub fn main(app_context: &model::ApplicationContext, options: &ListOptions) -> Result<()> {
+    let config = app_context.get_root_config_mut();
 
     if options.commands {
         println!("commands:");
