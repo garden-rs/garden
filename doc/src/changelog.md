@@ -5,7 +5,7 @@
 **Features**:
 
 - `garden` now supports a `grafts` feature that allows you to
-[stitch configuration entities from separate garden files](https://davvid.github.io/garden/configuration.html#l#grafts)
+[stitch configuration entities from separate garden files](https://davvid.github.io/garden/configuration.html#grafts)
 into a graft-specific namespace. Trees and variables from grafted configurations can be
 referenced using `graft::` namespace qualifiers.
 
