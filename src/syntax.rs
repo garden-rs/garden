@@ -86,6 +86,9 @@ pub fn trim_op_inplace(string: &mut String) {
 pub fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str) {
     let end = string.len();
     let split_len = split.len();
+    if end < split_len {
+        return (false, string, "");
+    }
     // split offset, everything up to this point is before the split
     let before = string.find(split).unwrap_or(end);
     let ok = before <= (end - split_len);
