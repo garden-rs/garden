@@ -1,0 +1,59 @@
+image: rust
+
+cache:
+  paths:
+    - target/release
+
+before_script:
+  - cargo build --release
+  - export PATH=${PWD}/target/release:${PATH}
+
+stages:
+  - test
+  - build
+  - pages
+
+tests:
+  stage: test
+  image: rust
+  script:
+    - git config --global user.name Garden
+    - git config --global user.email garden-tools@crates.io
+    - git config --global init.defaultBranch main
+    - garden -vv test
+
+checks:
+  stage: test
+  image: rust
+  script:
+    - rustup component add clippy
+    - rustup component add rustfmt
+    - garden -vv check
+
+build:amd64:
+  stage: build
+  image: rust
+  script:
+    - echo using pre-generated target/release/garden
+    - garden --version
+  artifacts:
+    paths:
+      - target/release/garden
+
+pages:
+  stage: pages
+  image: rust
+  script:
+    - apt-get update
+    - apt-get install -y curl rsync
+    - curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.31/mdbook-v0.4.31-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=target/release
+    - garden -vv doc
+    - mv target/doc doc/book/doc
+    - mv doc/book public
+    - echo "Read the generated documenation at $CI_PAGES_URL"
+  artifacts:
+    paths:
+      - public
+  only:
+    - dev
+    - main
