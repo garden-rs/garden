@@ -4,7 +4,10 @@
 
 **Features**:
 
-- `garden grow` learned to configure [upstream branches](https://davvid.github.io/garden/commands.html#upstream-branches).
+- `garden grow` can now configure [upstream branches](https://davvid.github.io/garden/commands.html#upstream-branches).
+
+- `garden grow` can now configure [gitconfig settings with multiple values](https://davvid.github.io/garden/commands.html#upstream-branches#git-configuration-values)
+  using [`git config --add <name> <value>`](https://git-scm.com/docs/git-config#Documentation/git-config.txt---add).
 
 ## v0.7.0
 
@@ -131,7 +134,7 @@
 - `garden prune` was added for removing orphaned Git repositories.
   ([#4](https://github.com/davvid/garden/issues/4))
 
-- `garden cmd` learned to run commands in breadth-first order when the
+- `garden cmd` can now run commands in breadth-first order when the
   `-b/--breadth-first` option is used. Depth-first tree traversal is the default.
   The `garden cmd --breadth-first` traversal runs all commands on a tree before
   continuing on to the next tree. The default `garden cmd` depth-first traversal
@@ -144,7 +147,7 @@
 
 **Features**:
 
-- `garden plant` learned to detect `git worktree` repositories.
+- `garden plant` can now detect `git worktree` repositories.
   ([#1](https://github.com/davvid/garden/issues/1))
 
 ## v0.2.0
@@ -157,9 +160,9 @@
 
 **Features**:
 
-- `garden grow` learned to grow trees using "git worktree" (#1).
+- `garden grow` can now grow trees using "git worktree" (#1).
 - `garden grow` learned to clone specific branches.
-- `garden grow` and `garden plant` learned to handle bare repositories.
+- `garden grow` and `garden plant` can now handle bare repositories.
 
 
 ## v0.1.0
