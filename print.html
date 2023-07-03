@@ -4,25 +4,39 @@
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>Garden User Guide</title>
+        
         <meta name="robots" content="noindex" />
+        
+        
 
 
         <!-- Custom HTML head -->
         
+
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Garden grows and cultivates Git trees">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
 
+        
         <link rel="icon" href="favicon.svg">
+        
+        
         <link rel="shortcut icon" href="favicon.png">
+        
         <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
+        
         <link rel="stylesheet" href="css/print.css" media="print">
+        
 
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        
         <link rel="stylesheet" href="fonts/fonts.css">
+        
 
         <!-- Highlight.js Stylesheets -->
         <link rel="stylesheet" href="highlight.css">
@@ -30,19 +44,22 @@
         <link rel="stylesheet" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
+        
 
+        
         <!-- MathJax -->
-        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        
     </head>
     <body>
         <!-- Provide site root to javascript -->
-        <script>
+        <script type="text/javascript">
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script>
+        <script type="text/javascript">
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -58,7 +75,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script>
+        <script type="text/javascript">
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -70,7 +87,7 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script>
+        <script type="text/javascript">
             var html = document.querySelector('html');
             var sidebar = 'hidden';
             if (document.body.clientWidth >= 1080) {
@@ -91,7 +108,8 @@
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
+                
+                <div id="menu-bar-hover-placeholder"></div>
                 <div id="menu-bar" class="menu-bar sticky bordered">
                     <div class="left-buttons">
                         <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
@@ -101,30 +119,38 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
+                        
                         <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
+                        
                     </div>
 
                     <h1 class="menu-title">Garden User Guide</h1>
 
                     <div class="right-buttons">
+                        
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
+                        
+                        
                         <a href="https://github.com/davvid/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
+                        
+                        
 
                     </div>
                 </div>
 
+                
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
                         <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
@@ -135,9 +161,10 @@
                         </ul>
                     </div>
                 </div>
+                
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script>
+                <script type="text/javascript">
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -158,7 +185,7 @@ built, installed and running with minimal effort for consumers of a Garden file.
 <p>Garden sits above any individual project's build scripts and conventions.
 Garden is all about making it easy to remix and reuse libraries maintained
 in seperate Git repositories.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
 <ul>
 <li>
 <p><em><strong>garden.yaml</strong></em> -- a Garden file defines trees, groups and gardens.</p>
@@ -189,7 +216,7 @@ Git repositories for any purposes.</p>
 are either available to any tree or scoped to specific gardens only.</p>
 <p>Groups are lighter-weight than a garden. They group trees together into named
 collections that can be referenced by gardens and commands.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>There are multiple ways to install <code>garden</code>.</p>
 <p>These instructions assume that you have <code>cargo</code> installed for Rust development.</p>
 <p><a href="installation.html#install-using-homebrew">Skip ahead to the Homebrew section</a> if you're on macOS
@@ -283,7 +310,7 @@ Garden's custom worfkflow commands.</p>
 untested and not supported by the core team on Windows or WSL.</p>
 <p>Issues related to Windows will be closed. Pull requests related to these systems are
 welcome as long as they do not clutter the core or test suite with Windows-isms.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="setup-and-usage"><a class="header" href="#setup-and-usage">Setup and Usage</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="setup-and-usage"><a class="header" href="#setup-and-usage">Setup and Usage</a></h1>
 <h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
 <p>A garden can be created in any directory. Run <code>garden init</code> to create
 an empty &quot;garden.yaml&quot; file for defining trees, groups and gardens.</p>
@@ -318,7 +345,7 @@ into existence by cloning trees that have been configured in a garden file.</p>
 <p>Garden commands are used to operate over sets of trees once a configuration
 has been defined. See the <a href="commands.html">Garden Commands Documentation</a> for
 detailed information about the built-in garden commands.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="tree-queries"><a class="header" href="#tree-queries">Tree Queries</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="tree-queries"><a class="header" href="#tree-queries">Tree Queries</a></h1>
 <p>Garden commands take arguments that specify which groups, gardens or trees to
 operate on. Tree queries are strings that resolve to a set of trees.</p>
 <p>Command arguments with garden, group or tree names, <code>@tree</code> references,
@@ -368,7 +395,7 @@ garden grow '@git*'
 # Run &quot;pwd&quot; in all of the same trees.
 garden exec '@git*' pwd
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="commands"><a class="header" href="#commands">Commands</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="commands"><a class="header" href="#commands">Commands</a></h1>
 <p>Garden includes a set of built-in commands and can be flexibly extended
 with user-defined commands. User-defined commands are one Garden's most
 useful features.</p>
@@ -426,7 +453,9 @@ After <code>garden init</code> the following files are created.</p>
 <p>Add a pre-existing Git worktree to <code>garden.yaml</code>.</p>
 <p>The <code>trees</code> section in the <code>garden.yaml</code> file will be updated with details
 about the new tree.</p>
-<p><code>garden plant</code> records the Git remotes associated with a repository.</p>
+<p><code>garden plant</code> records the Git remotes associated with a repository.
+It is safe to re-run <code>garden plant</code> in order to add new remotes to
+an existing configuration.</p>
 <p>Repositories created using <code>git worktree</code> are supported by <code>garden plant</code>.
 Parent trees must be planted first before planting a child tree.</p>
 <h2 id="garden--tree-query"><a class="header" href="#garden--tree-query">garden ... [tree-query]</a></h2>
@@ -456,7 +485,7 @@ cloned and checked out when the tree is grown.</p>
     branch: dev
     url: url
 </code></pre>
-<p><code>graden grow example</code> clones the repository using <code>git clone --branch=dev</code>.
+<p><code>garden grow example</code> clones the repository using <code>git clone --branch=dev</code>.
 The <code>branch</code> setting is a tree variable and supports <code>${variable}</code> expressions.</p>
 <h3 id="shallow-clones"><a class="header" href="#shallow-clones">Shallow Clones</a></h3>
 <p>The <code>depth: &lt;integer&gt;</code> tree parameter is used to create shallow clones.</p>
@@ -523,6 +552,29 @@ local branch names (the <code>key</code>) to a remote branch name expression (th
 </code></pre>
 <p>The above configuration creates local branches called <code>local</code> and <code>dev</code> and checks out
 the <code>local</code> branch when <code>garden grow example/branches</code> is run.</p>
+<h3 id="git-configuration-values"><a class="header" href="#git-configuration-values">Git Configuration Values</a></h3>
+<p>The <code>garden grow</code> command will apply git configuration values that are
+specified using the <code>gitconfig</code> key.</p>
+<pre><code class="language-yaml">trees:
+  foo:
+    gitconfig:
+      # Override the submodule URL for &quot;thirdparty/repo&quot;.
+      submodule.thirdparty/repo.url: &quot;git@private.example.com:thirdparty/repo.git&quot;
+</code></pre>
+<p>Multi-valued <code>git config --add</code> values are also supported, for example
+the <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt-remoteltnamegtpushurl">remote.$name.pushurl</a>
+value can be set to multiple values.</p>
+<p>Use a list as the value for the key and multiple values will be added using
+<a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt---add">git config --add $name $value</a>.</p>
+<pre><code class="language-yaml">trees:
+  foo:
+    url: &quot;git@github.com:example/foo.git&quot;
+    gitconfig:
+      remote.origin.pushurl:
+        # Push to multiple remotes when using &quot;git push origin&quot;
+        - &quot;git@github.com:example/foo.git&quot;
+        - &quot;git@private.example.com:example/foo.git&quot;
+</code></pre>
 <h3 id="bare-repositories"><a class="header" href="#bare-repositories">Bare Repositories</a></h3>
 <p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
 <pre><code class="language-yaml">trees:
@@ -760,7 +812,7 @@ depth. For example, <code>--min-depth 1</code> will not remove repositories in t
 as the garden file.</p>
 <p>Specifying a maximum depth will not remove repositories deeper than the specified
 depth. For example, <code>--max-depth 0</code> will not remove repositories in subdirectories
-below the directory containing the graden file.</p>
+below the directory containing the garden file.</p>
 <h2 id="enable-scripted-usage-by-answering-yes-to-all-prompts"><a class="header" href="#enable-scripted-usage-by-answering-yes-to-all-prompts">Enable scripted usage by answering &quot;yes&quot; to all prompts</a></h2>
 <pre><code>--no-prompt
 </code></pre>
@@ -832,7 +884,7 @@ following upstream issues:</p>
 <p><a href="https://github.com/epage/clapng/issues/92">clapng #92</a> - Dynamic completion support</p>
 </li>
 </ul>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
 <p>Garden is configured through a YAML configuration file, typically called
 &quot;garden.yaml&quot;.</p>
 <p>Garden will find <code>garden.yaml</code> in current directory or in specific locations
@@ -1242,7 +1294,7 @@ matches &quot;cola&quot; only.</p>
 </code></pre>
 <p>The &quot;path&quot; entry behaves like the tree &quot;path&quot; entry -- when unspecified it
 defaults to a path named after the tree relative to the garden root.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
 <p>These examples demonstrate how to setup and run real-world projects using <code>garden</code>.</p>
 <h2 id="photo-restoration"><a class="header" href="#photo-restoration">Photo Restoration</a></h2>
 <p>The &quot;Photo Restoration&quot; example sets up the
@@ -1252,7 +1304,7 @@ deep learning approaches.</p>
 <h2 id="git-cola-development"><a class="header" href="#git-cola-development">Git Cola Development</a></h2>
 <p>The &quot;Git Cola&quot; example sets up a development environment for
 <a href="https://git-cola.github.io/">Git Cola</a>, a PyQt-based graphical user interface for Git.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="photo-restoration-1"><a class="header" href="#photo-restoration-1">Photo Restoration</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="photo-restoration-1"><a class="header" href="#photo-restoration-1">Photo Restoration</a></h1>
 <p>This example demonstrates how to run the
 <a href="https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life">Bringing Old Photo Back to Life</a>
 photo restoration project.</p>
@@ -1340,7 +1392,7 @@ trees:
       run: ${env_py3}/bin/python3 run.py &quot;$@&quot;
 ...
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="git-cola-development-1"><a class="header" href="#git-cola-development-1">Git Cola Development</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="git-cola-development-1"><a class="header" href="#git-cola-development-1">Git Cola Development</a></h1>
 <p>This garden file sets up a development garden with the latest version of Git, Git Cola,
 qtpy and vx.</p>
 <p>Run the following commands to see this in action.</p>
@@ -1543,11 +1595,17 @@ by running the &quot;make install&quot; targets in each repo:</p>
 </code></pre>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<div id="chapter_begin" style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="v080"><a class="header" href="#v080">v0.8.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
-<li><code>garden grow</code> learned to configure <a href="https://davvid.github.io/garden/commands.html#upstream-branches">upstream branches</a>.</li>
+<li>
+<p><code>garden grow</code> can now configure <a href="https://davvid.github.io/garden/commands.html#upstream-branches">upstream branches</a>.</p>
+</li>
+<li>
+<p><code>garden grow</code> can now configure <a href="https://davvid.github.io/garden/commands.html#upstream-branches#git-configuration-values">gitconfig settings with multiple values</a>
+using <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt---add"><code>git config --add &lt;name&gt; &lt;value&gt;</code></a>.</p>
+</li>
 </ul>
 <h2 id="v070"><a class="header" href="#v070">v0.7.0</a></h2>
 <p><strong>Features</strong>:</p>
@@ -1680,7 +1738,7 @@ configuration variable can be used to override the default shell.</p>
 (<a href="https://github.com/davvid/garden/issues/4">#4</a>)</p>
 </li>
 <li>
-<p><code>garden cmd</code> learned to run commands in breadth-first order when the
+<p><code>garden cmd</code> can now run commands in breadth-first order when the
 <code>-b/--breadth-first</code> option is used. Depth-first tree traversal is the default.
 The <code>garden cmd --breadth-first</code> traversal runs all commands on a tree before
 continuing on to the next tree. The default <code>garden cmd</code> depth-first traversal
@@ -1692,7 +1750,7 @@ runs a command across all trees before continuing on to the next command.
 <p><em>Released 2022-08-20</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
-<li><code>garden plant</code> learned to detect <code>git worktree</code> repositories.
+<li><code>garden plant</code> can now detect <code>git worktree</code> repositories.
 (<a href="https://github.com/davvid/garden/issues/1">#1</a>)</li>
 </ul>
 <h2 id="v020"><a class="header" href="#v020">v0.2.0</a></h2>
@@ -1703,9 +1761,9 @@ runs a command across all trees before continuing on to the next command.
 </ul>
 <p><strong>Features</strong>:</p>
 <ul>
-<li><code>garden grow</code> learned to grow trees using &quot;git worktree&quot; (#1).</li>
+<li><code>garden grow</code> can now grow trees using &quot;git worktree&quot; (#1).</li>
 <li><code>garden grow</code> learned to clone specific branches.</li>
-<li><code>garden grow</code> and <code>garden plant</code> learned to handle bare repositories.</li>
+<li><code>garden grow</code> and <code>garden plant</code> can now handle bare repositories.</li>
 </ul>
 <h2 id="v010"><a class="header" href="#v010">v0.1.0</a></h2>
 <p><em>Released 2022-06-13</em></p>
@@ -1723,7 +1781,9 @@ runs a command across all trees before continuing on to the next command.
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                        
 
+                        
 
                         <div style="clear: both"></div>
                     </nav>
@@ -1731,44 +1791,61 @@ runs a command across all trees before continuing on to the next command.
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
 
+                
             </nav>
 
         </div>
 
+        
 
+        
 
-        <script>
+        
+        <script type="text/javascript">
             window.playground_line_numbers = true;
         </script>
+        
 
-        <script>
+        
+        <script type="text/javascript">
             window.playground_copyable = true;
         </script>
+        
 
-        <script src="ace.js"></script>
-        <script src="editor.js"></script>
-        <script src="mode-rust.js"></script>
-        <script src="theme-dawn.js"></script>
-        <script src="theme-tomorrow_night.js"></script>
+        
+        <script src="ace.js" type="text/javascript" charset="utf-8"></script>
+        <script src="editor.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mode-rust.js" type="text/javascript" charset="utf-8"></script>
+        <script src="theme-dawn.js" type="text/javascript" charset="utf-8"></script>
+        <script src="theme-tomorrow_night.js" type="text/javascript" charset="utf-8"></script>
+        
 
-        <script src="elasticlunr.min.js"></script>
-        <script src="mark.min.js"></script>
-        <script src="searcher.js"></script>
+        
+        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
 
-        <script src="clipboard.min.js"></script>
-        <script src="highlight.js"></script>
-        <script src="book.js"></script>
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
 
         <!-- Custom JS scripts -->
+        
 
-        <script>
+        
+        
+        <script type="text/javascript">
         window.addEventListener('load', function() {
             MathJax.Hub.Register.StartupHook('End', function() {
                 window.setTimeout(window.print, 100);
             });
         });
         </script>
+        
+        
 
     </body>
 </html>
