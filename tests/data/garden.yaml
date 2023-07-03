@@ -92,6 +92,8 @@ trees:
     url: https://example.com/replacement/tree
     replace: true
 
+  trees/prebuilt: "file://${repos}/example.git"
+
 templates:
   echo-template-extended:
     extend: echo-template

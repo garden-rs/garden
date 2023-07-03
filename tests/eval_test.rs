@@ -112,6 +112,18 @@ fn exec_expression() -> Result<()> {
     Ok(())
 }
 
+#[test]
+fn exec_expression_in_tree_context() -> Result<()> {
+    let app_context =
+        garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
+    let config = app_context.get_root_config();
+    let context = garden::query::tree_context(&config, "trees/prebuilt", None)?;
+    let value = garden::eval::tree_value(&app_context, &config, "$ pwd", &context.tree, None);
+    assert!(value.ends_with("/trees/prebuilt"));
+
+    Ok(())
+}
+
 /// Ensure that shell $variables can be used.
 #[test]
 fn shell_variable_syntax() -> Result<()> {

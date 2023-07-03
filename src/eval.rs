@@ -215,7 +215,6 @@ pub fn tree_value(
     })
     .to_string();
 
-    // TODO exec_expression_with_path() to use the tree path.
     // NOTE: an environment must not be calculated here otherwise any
     // exec expression will implicitly depend on the entire environment,
     // and potentially many variables (including itself).  Exec expressions

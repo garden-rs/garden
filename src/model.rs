@@ -1250,7 +1250,11 @@ impl ApplicationContext {
 
     /// Construct an ApplicationContext from a path using default MainOptions.
     pub fn from_path(pathbuf: std::path::PathBuf) -> Result<Self, errors::GardenError> {
-        Self::from_path_and_root(pathbuf, None)
+        if let Some(root_dir) = pathbuf.parent().map(std::path::Path::to_owned) {
+            Self::from_path_and_root(pathbuf, Some(&root_dir))
+        } else {
+            Self::from_path_and_root(pathbuf, None)
+        }
     }
 
     /// Construct an ApplicationContext from a path using default MainOptions.

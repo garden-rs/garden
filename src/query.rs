@@ -317,7 +317,6 @@ pub fn tree_context(
     garden: Option<&str>,
 ) -> Result<model::TreeContext, errors::GardenError> {
     let mut ctx = model::TreeContext::new("", config.get_id(), None, None);
-    // TODO: grafted trees
     if let Some(context) = tree_from_name(config, tree, None, None) {
         ctx.tree = context.tree;
     } else {
