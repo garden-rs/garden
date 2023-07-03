@@ -46,7 +46,17 @@ pub fn resolve_trees(
     // No matching gardens or groups were found.
     // Search for matching trees.
     if tree_query.include_trees {
-        result.append(&mut trees(config, pattern));
+        if syntax::is_graft(query) {
+            if let Ok((graft_id, remainder)) = config.get_graft_id(query) {
+                result.append(&mut resolve_trees(
+                    app_context,
+                    app_context.get_config(graft_id),
+                    remainder,
+                ));
+            }
+        } else {
+            result.append(&mut trees(config, pattern));
+        }
         if !result.is_empty() {
             return result;
         }
@@ -415,6 +425,10 @@ pub fn shared_worktree_path(
     config: &model::Configuration,
     ctx: &model::TreeContext,
 ) -> String {
+    let config = match ctx.config {
+        Some(config_id) => app_context.get_config(config_id),
+        None => config,
+    };
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
         None => return String::new(),

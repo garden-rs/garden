@@ -381,6 +381,10 @@ pub fn environment(
         // Evaluate garden environments.
         if let Some(garden) = &config.gardens.get(garden_name) {
             for ctx in query::trees_from_garden(app_context, config, garden) {
+                let config = match ctx.config {
+                    Some(config_id) => app_context.get_config(config_id),
+                    None => config,
+                };
                 if let Some(tree) = config.trees.get(&ctx.tree) {
                     for var in &tree.environment {
                         vars.push((ctx.clone(), var.clone()));
@@ -397,6 +401,10 @@ pub fn environment(
         // Evaluate group environments.
         if let Some(group) = config.groups.get(name) {
             for ctx in query::trees_from_group(app_context, config, None, group) {
+                let config = match ctx.config {
+                    Some(config_id) => app_context.get_config(config_id),
+                    None => config,
+                };
                 if let Some(tree) = config.trees.get(&ctx.tree) {
                     for var in &tree.environment {
                         vars.push((ctx.clone(), var.clone()));

@@ -232,7 +232,10 @@ fn update_tree_from_context(
     _quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let config = app_context.get_root_config();
+    let config = match ctx.config {
+        Some(config_id) => app_context.get_config(config_id),
+        None => app_context.get_root_config(),
+    };
     let mut exit_status = errors::EX_OK;
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
@@ -422,7 +425,10 @@ fn grow_tree_from_context_as_worktree(
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let config = app_context.get_root_config();
+    let config = match ctx.config {
+        Some(config_id) => app_context.get_config(config_id),
+        None => app_context.get_root_config(),
+    };
     let mut exit_status = errors::EX_OK;
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
