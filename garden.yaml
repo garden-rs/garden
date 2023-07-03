@@ -64,6 +64,10 @@ trees:
       davvid: "https://github.com/davvid/garden.git"
       jtietema: "https://github.com/jtietema/garden.git"
       slackline: "https://github.com/slackline/garden.git"
+    gitconfig:
+      remote.origin.pushurl:
+        - "git@gitlab.com:davvid/garden.git"
+        - "git@github.com:davvid/garden.git"
 
   doc/book:
     worktree: garden
