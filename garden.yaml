@@ -18,7 +18,7 @@ commands:
   doc: |
     cargo doc --no-deps --package ${cargo_package} "$@"
     cd doc
-    mdbook build --dest-dir book.new
+    ${mdbook} build --dest-dir book.new
     rsync -r --delete --exclude=.git book.new/ book/
     rm -rf book.new
   fix: cargo clippy --all --fix "$@" -- -D warnings
@@ -47,6 +47,7 @@ variables:
   prefix: ~/.cargo
   bindir: ${prefix}/bin
   docdir: ${prefix}/share/doc/garden
+  mdbook: mdbook
 
 groups:
   garden: garden
