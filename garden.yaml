@@ -58,6 +58,9 @@ groups:
 trees:
   garden:
     path: ${GARDEN_CONFIG_DIR}
+    url: "git@gitlab.com:davvid/garden.git"
+    remotes:
+      github: "git@github.com:davvid/garden.git"
   doc/book:
     worktree: garden
     branch: gh-pages
