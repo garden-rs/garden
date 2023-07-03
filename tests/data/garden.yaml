@@ -28,6 +28,8 @@ trees:
       remote.origin.pushurl:
         - "url1"
         - "url2"
+        - "url2"
+        # The duplicate "url2" value is ignored.
     path: example/tree/repo
     remotes:
       publish: "${gh_ssh}:user/example.git"

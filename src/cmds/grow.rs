@@ -389,10 +389,11 @@ fn append_gitconfig_value(
     }
 
     let mut status = errors::EX_OK;
-    if let Some(values) = config_map.get(name) {
+    if let Some(values) = config_map.get_mut(name) {
         // Now that we've populated the config_map cache then we
         // can avoid running "git config --add <name> <value>".
         if !values.contains(value) {
+            values.insert(value.to_string());
             let command = ["git", "config", "--add", name, value];
             let exec = cmd::exec_in_dir(&command, path);
             status = cmd::status(exec.join())
