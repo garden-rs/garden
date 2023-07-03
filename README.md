@@ -3,7 +3,7 @@
 Garden grows and cultivates collections of Git trees.
 
 Garden helps you define development workflows that operate over collections of
-self-contained and interdependent Git worktrees.
+self-contained and inter-dependent Git worktrees.
 
 ## Code Status
 
@@ -12,9 +12,7 @@ self-contained and interdependent Git worktrees.
 
 Garden is actively maintained and its current features are stable.
 
-Garden is nearly feature-complete and `v1.0.0` will be released sometime in 2023.
-
-The [ideas page](doc/ideas.md) contains ideas to explore before `v1.0.0`.
+Garden's core functionality is feature-complete and `v1.0.0` will be released in 2023.
 
 
 ## Documentation
@@ -41,6 +39,8 @@ repositories for development.
 * Define custom commands and workflows in a simple declarative config file.
 
 * Develop, build and test interdependent projects in self-contained sandboxes.
+
+* Configured using simple yet featureful YAML configuration files.
 
 
 ## Acknowledgements

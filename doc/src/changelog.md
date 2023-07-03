@@ -4,6 +4,11 @@
 
 **Features**:
 
+- `garden` now supports a `grafts` feature that allows you to
+[stitch configuration entities from separate garden files](https://davvid.github.io/garden/configuration.html#l#grafts)
+into a graft-specific namespace. Trees and variables from grafted configurations can be
+referenced using `graft::` namespace qualifiers.
+
 - `garden grow` can now configure [upstream branches](https://davvid.github.io/garden/commands.html#upstream-branches).
 
 - `garden grow` can now configure [gitconfig settings with multiple values](https://davvid.github.io/garden/commands.html#upstream-branches#git-configuration-values)

@@ -382,3 +382,48 @@ trees:
 
 The "path" entry behaves like the tree "path" entry -- when unspecified it
 defaults to a path named after the tree relative to the garden root.
+
+
+## Grafts
+
+A more advanced modularity feature allow you to stitch additional `garden.yaml`
+files underneath a custom "graft namespace".
+
+The example below demonstrates how to define trees and variables in separate
+"graft" files and refer to them using a `graft::` namespace qualfier.
+
+```yaml
+# Top-level garden.yaml
+grafts:
+  graft: graft.yaml
+  graft-repos:
+    config: repos.yaml
+    root: repos
+
+trees:
+  local-tree:
+    url: "https://git.example.com/repo.git"
+    variables:
+      value: "${graft::value}"
+
+gardens:
+  example:
+    trees:
+      - local-tree
+      - graft::tree
+      - repos::example
+```
+
+The `repos` graft entry demonstrates how to use a custom root directory for
+the trees provided by the grafted configuration.
+
+The `grafts.yaml` file provides a tree called `tree` and a variable called `value`.
+
+```yaml
+# The grafted "graft.yaml" file.
+trees:
+  tree: "https://git.example.com/tree.git"
+
+variables:
+  value: "grafted value"
+```
