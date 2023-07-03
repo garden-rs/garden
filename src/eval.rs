@@ -443,17 +443,16 @@ pub fn environment(
         let mut is_assign = false;
         let mut is_append = false;
 
-        if name.ends_with('=') {
+        if syntax::is_replace_op(&name) {
             is_assign = true;
         }
 
-        if name.ends_with('+') {
+        if syntax::is_append_op(&name) {
             is_append = true;
         }
 
         if is_assign || is_append {
-            let len = name.len();
-            name.remove(len - 1);
+            syntax::trim_op_inplace(&mut name);
         }
 
         for value in env_values {

@@ -193,7 +193,7 @@ impl MultiVariable {
 pub struct Tree {
     pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
-    pub gitconfig: VariableHashMap,
+    pub gitconfig: MultiVariableHashMap,
     pub remotes: VariableHashMap,
     pub symlink: Variable,
     pub templates: IndexSet<String>,
@@ -281,14 +281,11 @@ impl Tree {
             var.reset();
         }
 
-        for cfg in self.gitconfig.values() {
-            cfg.reset();
-        }
-
         for env in &self.environment {
             env.reset();
         }
 
+        reset_hashmap_variables(&self.gitconfig);
         reset_hashmap_variables(&self.commands);
     }
 
@@ -407,7 +404,7 @@ impl Template {
 pub struct Garden {
     pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
-    pub gitconfig: VariableHashMap,
+    pub gitconfig: MultiVariableHashMap,
     pub groups: IndexSet<String>,
     pub trees: IndexSet<String>,
     pub variables: VariableHashMap,

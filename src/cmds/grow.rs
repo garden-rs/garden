@@ -8,7 +8,9 @@ use super::super::query;
 
 use anyhow::Result;
 use clap::Parser;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
+
+type GitConfigMap = HashMap<String, HashSet<String>>;
 
 /// Options for the "garden grow" command
 #[derive(Parser, Clone, Debug)]
@@ -291,8 +293,9 @@ fn update_tree_from_context(
         }
     }
 
-    // Set gitconfig settings
-    for (var_name, var) in &tree.gitconfig {
+    // Set gitconfig settings.
+    let mut gitconfig_cache: GitConfigMap = GitConfigMap::new();
+    for (var_name, variables) in &tree.gitconfig {
         let name = eval::tree_value(
             app_context,
             config,
@@ -300,21 +303,27 @@ fn update_tree_from_context(
             &ctx.tree,
             ctx.garden.as_ref(),
         );
-        let value = match var.get_value() {
-            Some(precomputed_value) => precomputed_value.to_string(),
-            None => eval::tree_value(
-                app_context,
-                config,
-                var.get_expr(),
-                &ctx.tree,
-                ctx.garden.as_ref(),
-            ),
-        };
-        let command = ["git", "config", name.as_ref(), value.as_ref()];
-        let exec = cmd::exec_in_dir(&command, path);
-        let status = cmd::status(exec.join());
-        if status != errors::EX_OK {
-            exit_status = status;
+        for var in variables {
+            let value = match var.get_value() {
+                Some(precomputed_value) => precomputed_value.to_string(),
+                None => eval::tree_value(
+                    app_context,
+                    config,
+                    var.get_expr(),
+                    &ctx.tree,
+                    ctx.garden.as_ref(),
+                ),
+            };
+            let status = if variables.len() > 1 {
+                // Multiple values are set using "git config --add <name> <value>"
+                append_gitconfig_value(&name, &value, path, &mut gitconfig_cache)
+            } else {
+                // Single values are set directly using "git config <name> <value>".
+                set_gitconfig_value(&name, &value, path)
+            };
+            if status != errors::EX_OK {
+                exit_status = status;
+            }
         }
     }
 
@@ -351,6 +360,53 @@ fn update_tree_from_context(
     }
 
     Ok(exit_status)
+}
+
+/// Apply a "gitconfig" value in the specified directory.
+fn append_gitconfig_value(
+    name: &str,
+    value: &str,
+    path: &std::path::Path,
+    config_map: &mut GitConfigMap,
+) -> i32 {
+    // If the config_map doesn't contain this variable then we need
+    // to query git for the current values to avoid appending values
+    // that are already present.
+    let needs_cache = !config_map.contains_key(name);
+    if needs_cache {
+        let cmd = ["git", "config", "--get-all", name];
+        let exec = cmd::exec_in_dir(&cmd, path);
+        if let Ok(x) = cmd::capture_stdout(exec) {
+            let mut values = HashSet::new();
+            let output = cmd::stdout(&x);
+            for value in output.lines() {
+                values.insert(value.to_string());
+            }
+            config_map.insert(name.to_string(), values);
+        } else {
+            config_map.insert(name.to_string(), HashSet::new());
+        }
+    }
+
+    let mut status = errors::EX_OK;
+    if let Some(values) = config_map.get(name) {
+        // Now that we've populated the config_map cache then we
+        // can avoid running "git config --add <name> <value>".
+        if !values.contains(value) {
+            let command = ["git", "config", "--add", name, value];
+            let exec = cmd::exec_in_dir(&command, path);
+            status = cmd::status(exec.join())
+        }
+    }
+
+    status
+}
+
+fn set_gitconfig_value(name: &str, value: &str, path: &std::path::Path) -> i32 {
+    let command = ["git", "config", name, value];
+    let exec = cmd::exec_in_dir(&command, path);
+
+    cmd::status(exec.join())
 }
 
 /// Use "git worktree" to create a worktree.

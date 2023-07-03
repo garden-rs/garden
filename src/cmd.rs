@@ -46,9 +46,14 @@ pub fn status(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
     exit_status
 }
 
+/// Take a subprocess capture and return a raw string with trailing whitespace.
+pub fn stdout(capture: &subprocess::CaptureData) -> String {
+    capture.stdout_str()
+}
+
 /// Take a subprocess capture and return a string without trailing whitespace.
 pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
-    capture.stdout_str().trim_end().into()
+    capture.stdout_str().trim_end().to_string()
 }
 
 /// Convert a PopenError into a garden::errors::CommandError.

@@ -341,6 +341,32 @@ fn grow_gitconfig() -> Result<()> {
     Ok(())
 }
 
+/// `garden grow` sets up git config settings
+#[test]
+#[named]
+fn grow_gitconfig_append_value() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow examples/tree
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/tree",
+    ])?;
+
+    // remote.origin.pushurl is configured with two values.
+    let worktree = fixture.path("example/tree/repo");
+    let cmd = ["git", "config", "--get-all", "remote.origin.pushurl"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    assert_eq!("url1\nurl2", output);
+
+    Ok(())
+}
+
 /// `garden grow` sets up remote tracking branches configured in trees.<tree>.branches.<name>.
 #[test]
 #[named]

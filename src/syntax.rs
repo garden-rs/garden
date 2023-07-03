@@ -23,6 +23,16 @@ pub fn is_tree(string: &str) -> bool {
     string.starts_with('@')
 }
 
+/// Return true if `string` is a variable "replace" operation.
+pub fn is_append_op(string: &str) -> bool {
+    string.ends_with('+')
+}
+
+/// Return true if `string` is a variable "append" operation.
+pub fn is_replace_op(string: &str) -> bool {
+    string.ends_with('=')
+}
+
 /// Return true if `string` is a `graft::value` expression.
 pub fn is_graft(string: &str) -> bool {
     string.contains("::")
@@ -51,6 +61,24 @@ pub fn trim_exec(string: &str) -> &str {
         &string[prefix_len..]
     } else {
         string
+    }
+}
+
+/// Trim "+" and "=" suffixes from strings.
+pub fn trim_op(string: &str) -> &str {
+    let needs_trim = is_append_op(string) || is_replace_op(string);
+    if !string.len() > 1 && needs_trim {
+        &string[..string.len() - 1]
+    } else {
+        string
+    }
+}
+
+/// Trim "+" and "=" suffixes in-place.
+pub fn trim_op_inplace(string: &mut String) {
+    let len = string.len();
+    if len > 1 {
+        string.remove(len - 1);
     }
 }
 

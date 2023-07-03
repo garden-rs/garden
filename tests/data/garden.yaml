@@ -25,6 +25,9 @@ trees:
       remote.origin.annex-ignore: true
       user.name: A U Thor
       user.email: author@example.com
+      remote.origin.pushurl:
+        - "url1"
+        - "url2"
     path: example/tree/repo
     remotes:
       publish: "${gh_ssh}:user/example.git"

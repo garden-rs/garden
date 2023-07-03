@@ -85,6 +85,8 @@ The `trees` section in the `garden.yaml` file will be updated with details
 about the new tree.
 
 `garden plant` records the Git remotes associated with a repository.
+It is safe to re-run `garden plant` in order to add new remotes to
+an existing configuration.
 
 Repositories created using `git worktree` are supported by `garden plant`.
 Parent trees must be planted first before planting a child tree.
@@ -231,6 +233,36 @@ trees:
 The above configuration creates local branches called `local` and `dev` and checks out
 the `local` branch when `garden grow example/branches` is run.
 
+### Git Configuration Values
+
+The `garden grow` command will apply git configuration values that are
+specified using the `gitconfig` key.
+
+```yaml
+trees:
+  foo:
+    gitconfig:
+      # Override the submodule URL for "thirdparty/repo".
+      submodule.thirdparty/repo.url: "git@private.example.com:thirdparty/repo.git"
+```
+
+Multi-valued `git config --add` values are also supported, for example
+the [remote.$name.pushurl](https://git-scm.com/docs/git-config#Documentation/git-config.txt-remoteltnamegtpushurl)
+value can be set to multiple values.
+
+Use a list as the value for the key and multiple values will be added using
+[git config --add $name $value](https://git-scm.com/docs/git-config#Documentation/git-config.txt---add).
+
+```yaml
+trees:
+  foo:
+    url: "git@github.com:example/foo.git"
+    gitconfig:
+      remote.origin.pushurl:
+        # Push to multiple remotes when using "git push origin"
+        - "git@github.com:example/foo.git"
+        - "git@private.example.com:example/foo.git"
+```
 
 ### Bare Repositories
 

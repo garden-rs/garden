@@ -455,7 +455,14 @@ fn get_multivariables_hashmap(
                         multivariables.insert(key, variables);
                     }
                     Yaml::Integer(yaml_int) => {
+                        // Ints are already resolved.
                         let value = yaml_int.to_string();
+                        let variables = vec![model::Variable::new(value.clone(), Some(value))];
+                        multivariables.insert(key, variables);
+                    }
+                    Yaml::Boolean(yaml_bool) => {
+                        // Booleans are already resolved.
+                        let value = bool_to_string(*yaml_bool);
                         let variables = vec![model::Variable::new(value.clone(), Some(value))];
                         multivariables.insert(key, variables);
                     }
@@ -648,7 +655,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 #[inline]
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_variables_hashmap(&value["variables"], &mut tree.variables);
-    get_variables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
+    get_multivariables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
     get_str_variables_hashmap(&value["remotes"], &mut tree.remotes);
 
     get_multivariables(&value["environment"], &mut tree.environment);
@@ -803,7 +810,7 @@ fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bo
                 get_str(name, garden.get_name_mut());
                 get_indexset_str(&value["groups"], &mut garden.groups);
                 get_indexset_str(&value["trees"], &mut garden.trees);
-                get_variables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
+                get_multivariables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
                 get_variables_hashmap(&value["variables"], &mut garden.variables);
                 get_multivariables(&value["environment"], &mut garden.environment);
                 get_multivariables_hashmap(&value["commands"], &mut garden.commands);
