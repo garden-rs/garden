@@ -38,6 +38,10 @@ pub fn inspect(
         let contexts = query::resolve_trees(app_context, config, query);
         // Loop over each context and inspect the tree.
         for context in &contexts {
+            let config = match context.config {
+                Some(config_id) => app_context.get_config(config_id),
+                None => config,
+            };
             let tree = match config.trees.get(&context.tree) {
                 Some(tree) => tree,
                 None => continue,

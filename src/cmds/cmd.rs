@@ -207,7 +207,10 @@ pub fn run_cmd_breadth_first(
         // One invocation runs multiple commands
         for context in contexts {
             // Skip symlink trees.
-            let config = app_context.get_root_config();
+            let config = match context.config {
+                Some(config_id) => app_context.get_config(config_id),
+                None => app_context.get_root_config(),
+            };
             let tree = match config.trees.get(&context.tree) {
                 Some(tree) => tree,
                 None => continue,
@@ -266,7 +269,10 @@ pub fn run_cmd_depth_first(
     // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
         // Skip symlink trees.
-        let config = app_context.get_root_config();
+        let config = match context.config {
+            Some(config_id) => app_context.get_config(config_id),
+            None => app_context.get_root_config(),
+        };
         let tree = match config.trees.get(&context.tree) {
             Some(tree) => tree,
             None => continue,

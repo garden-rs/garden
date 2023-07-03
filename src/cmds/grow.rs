@@ -72,7 +72,10 @@ fn grow_tree_from_context(
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let config = app_context.get_root_config();
+    let config = match context.config {
+        Some(config_id) => app_context.get_config(config_id),
+        None => app_context.get_root_config(),
+    };
     let mut exit_status = errors::EX_OK;
     let tree = match config.trees.get(&context.tree) {
         Some(tree) => tree,

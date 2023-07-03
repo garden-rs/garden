@@ -10,6 +10,14 @@ garden:
     # Includes files are found relative to the include file.
     - includes/relative.yaml
 
+# Grafts attach additional configuration values under a graft namespace.
+# The "prebuilt" tree from grafts/graft.yaml is referenced as "graft::prebuilt".
+grafts:
+  graft: grafts/graft.yaml
+  libs:
+    config: grafts/libs.yaml
+    root: libs
+
 variables:
   current_config: main
   gh_ssh: "git@github.com"
@@ -17,7 +25,6 @@ variables:
   config_dir: ${GARDEN_CONFIG_DIR}
 
 trees:
-  # repos/example.git is created by setup.sh during the integration test.
   example/tree:
     environment:
       PATH: "${TREE_PATH}"
@@ -28,11 +35,12 @@ trees:
       remote.origin.pushurl:
         - "url1"
         - "url2"
-        - "url2"
         # The duplicate "url2" value is ignored.
+        - "url2"
     path: example/tree/repo
     remotes:
       publish: "${gh_ssh}:user/example.git"
+    # repos/example.git is created by setup.sh during the integration test.
     url: file://${repos}/example.git
 
   example/link:
@@ -107,11 +115,6 @@ templates:
     variables:
       template-variable: extended
 
-groups:
-  trees:
-    - tree1
-    - tree2
-
 commands:
   pwd: pwd
   basename: basename "$(pwd)"
@@ -128,24 +131,17 @@ commands:
   - echo after error
   - "false"
 
-# WIP(grafts): grafts are not yet implemented. When implemented, the "grafts" block
-# will provide the namespaced "graft::*" and "libs::*" trees and variables that
-# can then be referenced within this file.
-gardens:
-  dev:
-    groups:
-      - libs::core
-      - graft::core
-    trees:
-      - graft::graft
-      - example/tree
-  graft_garden:
-    trees:
-      - graft::graft
-      - graft::core
+groups:
+  trees:
+    - tree1
+    - tree2
+  grafted-group:
+    - graft::prebuilt
+    - trees/prebuilt
 
-grafts:
-  graft: grafts/graft.yaml
-  libs:
-    config: grafts/libs.yaml
-    root: libs
+gardens:
+  grafted-garden:
+    trees:
+      - graft::prebuilt
+      - trees/prebuilt
+

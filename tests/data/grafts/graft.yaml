@@ -19,3 +19,5 @@ groups:
 trees:
   graft: ${example_url}
   core: ${repos}/core.git
+  prebuilt:
+    path: trees/prebuilt

@@ -960,6 +960,46 @@ fn cmd_keep_going_and_no_errexit() {
     assert_eq!(output, "ok\nok\nok\nok");
 }
 
+/// Test the use of graft:: tree references in groups.
+#[test]
+fn cmd_exec_group_with_grafted_trees() {
+    // grafted-group is a group with graft::prebuilt.
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "exec",
+        "grafted-group",
+        "pwd",
+    ]);
+    let output_len = output.lines().count();
+    assert_eq!(output_len, 2);
+
+    for line in output.lines() {
+        assert!(line.ends_with("/tests/data/trees/prebuilt"));
+    }
+}
+
+/// Test the use of graft:: tree references in gardens.
+#[test]
+fn cmd_exec_garden_with_grafted_trees() {
+    // grafted-graden is a garden with graft::prebuilt.
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "exec",
+        "grafted-garden",
+        "pwd",
+    ]);
+    let output_len = output.lines().count();
+    assert_eq!(output_len, 2);
+
+    for line in output.lines() {
+        assert!(line.ends_with("/tests/data/trees/prebuilt"));
+    }
+}
+
 /// Test the use of $shell variables in commands.
 /// $shell variables are not expanded by garden.
 /// ${garden} variables are expanded.

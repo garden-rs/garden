@@ -199,6 +199,19 @@ pub fn trees_from_pattern(
     garden_name: Option<&model::GardenName>,
     group: Option<&model::GroupName>,
 ) -> Vec<model::TreeContext> {
+    if syntax::is_graft(tree) {
+        // First, try the current config.
+        if let Ok((graft_id, remainder)) = config.get_graft_id(tree) {
+            return trees_from_pattern(
+                app_context,
+                app_context.get_config(graft_id),
+                remainder,
+                garden_name,
+                group,
+            );
+        }
+    }
+
     let mut result = Vec::new();
     let pattern = match glob::Pattern::new(tree) {
         Ok(value) => value,
