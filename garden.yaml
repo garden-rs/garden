@@ -61,6 +61,10 @@ trees:
     url: "git@gitlab.com:davvid/garden.git"
     remotes:
       github: "git@github.com:davvid/garden.git"
+      davvid: "https://github.com/davvid/garden.git"
+      jtietema: "https://github.com/jtietema/garden.git"
+      slackline: "https://github.com/slackline/garden.git"
+
   doc/book:
     worktree: garden
     branch: gh-pages
