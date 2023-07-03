@@ -23,6 +23,7 @@ variables:
   gh_ssh: "git@github.com"
   repos: ${GARDEN_ROOT}/repos
   config_dir: ${GARDEN_CONFIG_DIR}
+  variable: global ${graft::variable}
 
 trees:
   example/tree:
@@ -105,7 +106,10 @@ trees:
     url: https://example.com/replacement/tree
     replace: true
 
-  trees/prebuilt: "file://${repos}/example.git"
+  trees/prebuilt:
+    url: "file://${repos}/example.git"
+    variables:
+      variable: "prebuilt ${graft::variable}"
 
 templates:
   echo-template-extended:

@@ -402,28 +402,43 @@ grafts:
 
 trees:
   local-tree:
-    url: "https://git.example.com/repo.git"
+    url: https://git.example.com/repo.git
     variables:
-      value: "${graft::value}"
+      value: "local ${graft::value}"
+
+variables:
+    value: "global ${graft::value}"
 
 gardens:
   example:
     trees:
       - local-tree
       - graft::tree
-      - repos::example
+      - graft-repos::example
 ```
 
-The `repos` graft entry demonstrates how to use a custom root directory for
+The `graft-repos` graft entry demonstrates how to use a custom root directory for
 the trees provided by the grafted configuration.
 
 The `grafts.yaml` file provides a tree called `tree` and a variable called `value`.
+We refer to them as `graft::tree` when specifying trees and `${graft::value}` when
+using variables.
+
+`graft.yaml` contains the following:
 
 ```yaml
 # The grafted "graft.yaml" file.
 trees:
-  tree: "https://git.example.com/tree.git"
+  tree: https://git.example.com/tree.git
 
 variables:
   value: "grafted value"
 ```
+
+Running `garden eval '${graft::value}'` will output `grafted value`.
+
+Running `garden eval '${value}'` wil output `global grafted value`, as it evaluates at
+global scope.
+
+Running `garden eval '${value}' local-tree` will output `local grafted value`, as it
+evaluates from `local-tree`'s scope.

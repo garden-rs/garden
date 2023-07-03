@@ -640,6 +640,38 @@ fn eval_root_with_root_and_chdir() {
     assert!(path.is_absolute());
 }
 
+/// Test evaluating a namespaced graft::variable.
+#[test]
+fn eval_grafted_variable_with_namespace() {
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${graft::variable}",
+    ]);
+    assert_eq!(output, "graft value");
+}
+
+/// Test evaluating a variable at global scope that references a graft::variable.
+#[test]
+fn eval_grafted_variable_at_global_scope() {
+    let output = garden_capture(&["--config", "tests/data/garden.yaml", "eval", "${variable}"]);
+    assert_eq!(output, "global graft value");
+}
+
+/// Test evaluating a variable at tree scope that references a graft::variable.
+#[test]
+fn eval_graft_variable_at_tree_scope() {
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${variable}",
+        "trees/prebuilt",
+    ]);
+    assert_eq!(output, "prebuilt graft value");
+}
+
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
 fn cmd_dash_dash_arguments() {
