@@ -1,4 +1,4 @@
-# This is the Gitlab CI pipeline for the pre-generated garden-rs.github.io repository
+# This is the Gitlab CI pipeline for the pre-generated garden-rs.gitlab.io repository
 # and is installed to doc/book/.gitlab-ci.yml
 pages:
   image: alpine

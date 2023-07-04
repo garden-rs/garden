@@ -42,7 +42,7 @@ code repository. If you want to install the latest pre-release version then you 
 build the Git version of Garden yourself using `cargo`.
 
 ```
-cargo install --git https://github.com/davvid/garden garden-tools
+cargo install --git https://gitlab.com/davvid/garden garden-tools
 ```
 
 
@@ -96,7 +96,7 @@ Read on for how to build garden from source.
 
 Garden has been packaged for
 [pkgsrc/NetBSD](http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html)
-as described in [ #13](https://github.com/davvid/garden/issues/13).
+as described in [#13](https://github.com/davvid/garden/issues/13).
 
 To install from the official repository, run:
 
@@ -118,7 +118,7 @@ If you would like to develop features and contribute to Garden then you will
 have to clone the repository on your local machine.
 
 ```bash
-git clone https://github.com/davvid/garden.git
+git clone https://gitlab.com/davvid/garden.git
 cd garden
 
 # Build ./target/debug/garden

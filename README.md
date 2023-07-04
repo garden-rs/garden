@@ -17,7 +17,7 @@ Garden's core functionality is feature-complete and `v1.0.0` will be released in
 
 ## Documentation
 
-Read the [Garden User Guide](https://davvid.github.io/garden)
+Read the [Garden User Guide](https://garden-rs.gitlab.io)
 for details on how to use and configure Garden.
 
 Read the [Garden API Documentation](https://docs.rs/garden-tools/)

@@ -5,13 +5,13 @@
 **Features**:
 
 - `garden` now supports a `grafts` feature that allows you to
-[stitch configuration entities from separate garden files](https://davvid.github.io/garden/configuration.html#grafts)
+[stitch configuration entities from separate garden files](https://garden-rs.gitlab.io/configuration.html#grafts)
 into a graft-specific namespace. Trees and variables from grafted configurations can be
 referenced using `graft::` namespace qualifiers.
 
-- `garden grow` can now configure [upstream branches](https://davvid.github.io/garden/commands.html#upstream-branches).
+- `garden grow` can now configure [upstream branches](https://garden-rs.gitlab.io/commands.html#upstream-branches).
 
-- `garden grow` can now configure [gitconfig settings with multiple values](https://davvid.github.io/garden/commands.html#upstream-branches#git-configuration-values)
+- `garden grow` can now configure [gitconfig settings with multiple values](https://garden-rs.gitlab.io/commands.html#upstream-branches#git-configuration-values)
   using [`git config --add <name> <value>`](https://git-scm.com/docs/git-config#Documentation/git-config.txt---add).
 
 ## v0.7.0
@@ -25,7 +25,7 @@ referenced using `graft::` namespace qualifiers.
   ([#14](https://github.com/davvid/garden/issues/14))
   ([#15](https://github.com/davvid/garden/pull/15))
 
-- [Trees now sparsely override existing entries](https://davvid.github.io/garden/configuration.html#l#the-last-one-wins-rule).
+- [Trees now sparsely override existing entries](https://garden-rs.gitlab.io/configuration.html#l#the-last-one-wins-rule).
   This behavior allows a tree definition to replace just the `url` field, or to replace
   individual tree commands while retaining the rest. Use `replace: true` in a Tree
   definition in order to completely replace the existing entry instead of sparsely
@@ -51,7 +51,7 @@ referenced using `graft::` namespace qualifiers.
 **Fixes**
 
 - The `zsh` workaround for `garden completion zsh` is no longer needed.
-  The [documentation for generating zsh completions](https://davvid.github.io/garden/commands.html#zsh)
+  The [documentation for generating zsh completions](https://garden-rs.gitlab.io/commands.html#zsh)
   has been updated.
   ([#10](https://github.com/davvid/garden/issues/10))
 
@@ -72,14 +72,14 @@ referenced using `graft::` namespace qualifiers.
 **Features**:
 
 - [Garden configuration files can now include other configuration files
-  ](https://davvid.github.io/garden/configuration.html#includes) by specifying
+  ](https://garden-rs.gitlab.io/configuration.html#includes) by specifying
   the additional files to include in the `garden.includes` field.
   The `includes` feature makes it possible to create modular and reusable garden files.
   The `trees`, `variables`, `commands`, `groups` and `gardens` defined in the included
   files are added to the current configuration.
   ([#7](https://github.com/davvid/garden/pull/7))
 
-- [Garden commands can now reference $shell variables](https://davvid.github.io/garden/commands.html#shell-syntax)
+- [Garden commands can now reference $shell variables](https://garden-rs.gitlab.io/commands.html#shell-syntax)
   using the standard (brace-less) shell `$variable` syntax. The braced `${garden}`
   variable syntax remains reserved for resolving Garden Variables.
   Double-`$` braces (ex: `$${...}`) can be used to escape a `$${variable}` from

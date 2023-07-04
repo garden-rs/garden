@@ -15,9 +15,9 @@ categories = [
 ]
 license = "MIT"
 readme = "README.md"
-homepage = "https://davvid.github.io/garden/"
-documentation = "https://docs.rs/garden-tools/latest/garden/"
-repository = "https://github.com/davvid/garden"
+homepage = "https://garden-rs.gitlab.io"
+documentation = "https://docs.rs/garden-tools/latest/garden"
+repository = "https://gitlab.com/davvid/garden"
 authors = ["David Aguilar <davvid@gmail.com>"]
 
 [badges]
