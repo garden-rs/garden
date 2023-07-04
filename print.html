@@ -161,34 +161,97 @@ in seperate Git repositories.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
 <ul>
 <li>
-<p><em><strong>garden.yaml</strong></em> -- a Garden file defines trees, groups and gardens.</p>
+<p><em><strong>garden.yaml</strong></em> -- also known as a &quot;Garden file&quot;, a YAML file named
+<code>garden.yaml</code> defines trees, groups gardens, variables, commands and
+environment variables. <code>garden</code> looks for a file named <code>garden.yaml</code>
+by default, but other filenames can be specified using the
+<code>garden -c | --config &lt;path&gt;</code> option.</p>
 </li>
 <li>
-<p><em><strong>tree</strong></em> -- a Git worktree. A single repository clone.</p>
+<p><em><strong>trees</strong></em> -- trees represent Git worktrees and repository clones.
+A tree represents a single repository and its configuration.
+Trees provide <em>garden variables</em>, <em>commands</em> and <em>environment variables</em>
+that are defined when commands are run on a tree. Environment variables
+are defined when a tree is operated on by itself and when combined alongside
+other trees in a group or garden context.</p>
 </li>
 <li>
-<p><em><strong>group</strong></em> -- a named collection of trees. The &quot;group&quot; block in the
-configuration file defines tree groups that are available for use by
-commands and gardens.</p>
+<p><em><strong>groups</strong></em> -- a named collection of trees. The <code>groups</code> block in the
+garden file defines groups of trees that are available for use by
+commands and gardens. Groups are lighter-weight than a garden and group
+trees together into named collections that can be referenced by gardens
+and commands. In contrast to gardens, groups <em>do not</em> provide a scope
+in which variables, commands environment variables can be defined.</p>
 </li>
 <li>
 <p><em><strong>garden</strong></em> -- a composite of trees and groups for defining project-level
-variables and commands.  Gardens help create environments for working on
-libraries, and application that use the library, in tandem.</p>
+variables, commands and environment variables. Gardens help create
+environments for working on projects composed of multiple Git repositories.
+The <code>gardens</code> YAML key/value block defines named gardens with a scope
+in which garden-specific variables, commands and environment variables
+can be defined.</p>
 </li>
 <li>
-<p><em><strong>tree query</strong></em> -- a <a href="https://github.com/netvl/shellexpand">shellexpand</a> glob expression that matches against garden
-names, group names and tree names. Many <code>garden</code> commands accept tree
-queries as arguments.</p>
+<p><strong>variables</strong>
+A YAML key/value table defines named variables that can be used in
+YAML strings by using braced <code>shell ${expressions}</code> to provide dynamic
+values that can be used to provide modularity and configurability to a garden
+file. Variables defined in a garden file are overridden on the
+command-line by using the <code>-D / --define key=value</code> option.</p>
+</li>
+<li>
+<p><strong>commands</strong>
+The <code>commands</code> YAML key/value table defines named commands that can be run
+against trees. The <code>commands</code> block extends <code>garden</code> with with user-defined
+functionality. The <code>commands</code> block can be defined at global scope, within a
+<code>tree</code> block, and within a <code>garden</code> block. The scope in which a command is
+defined limits the scope in which it is visible. This means that a command
+defined in tree scope will only execute when <code>garden &lt;command&gt; &lt;query&gt;</code>
+uses a query that ends up including that tree, and will only run when garden
+visits that specific tree.</p>
+</li>
+<li>
+<p><strong>environment variables</strong>
+Not to be confused with the <code>variables</code> block, the <code>environment</code> block
+is a YAML key/value table that defines environment variables that will
+be set when executing <em>commands</em>.</p>
+</li>
+<li>
+<p><em><strong>tree query</strong></em> -- a <a href="https://github.com/netvl/shellexpand">shellexpand</a> glob expression that matches against
+garden names, group names and tree names. Several <code>garden</code> builtin commands
+take tree queries as arguments as a mechanism for selecting one or more
+trees to operate on. The default behavior is to match the tree query pattern
+against gardens, groups and trees, in that order, and return the first
+matching set of trees. If searching for gardens finds matches then groups and
+trees are not searched. If searching for groups finds matches then trees are
+not searched. Prefix the tree query pattern with a percent-sign (<code>%</code>),
+eg. <code>%group*</code>, to only query for groups matching the pattern.
+Prefix the pattern with an at-sign (<code>@</code>), eg. <code>@tree</code>, to only query for trees.
+Prefix the pattern with colon (<code>:</code>), eg. <code>:garden</code>, to only query for gardens.
+The <code>:garden</code> syntax is not typically used because gardens are already
+searched first. <code>%group</code> and <code>@tree</code> can be used to disambiguate queries for
+groups and trees that share the same name as a garden.</p>
+</li>
+<li>
+<p><strong>string expressions</strong>
+String values can use shell <code>${variables}</code> expressions to interpolate
+and expand values in the string. <code>~</code> is expanded to <code>$HOME</code>.
+These expressions can be used in most fields where strings are accepted,
+eg. when definiting variables, commands and environment variables.</p>
+</li>
+<li>
+<p><strong>exec expressions</strong>
+When a <em>string expression</em> starts with <code>$ </code> (dollar-sign then space) then the
+variable's value is computed by expanding the string's <code>${garden}</code> variables
+and then executing the result and capturing stdout. The captured stdout
+output from the command becomes the variable's value. For example, if a
+variable called <code>my-pwd</code> is defined using an exec expression such as
+<code>my-pwd: $ pwd</code> then the <code>${my_pwd}</code> variable will contain a path.
+The <code>my_pwd</code> variable can be used to define other variables, environment
+variables, and commands. For example, a command called <code>example-cmd</code> can be
+defined using: <code>example-cmd: ls -l ${my-pwd} &amp;&amp; echo my_pwd is ${my_pwd}</code>,</p>
 </li>
 </ul>
-<p>Gardens can be used for software projects composed of multiple repositories,
-or they can be used to provide an approachable way to explore a curated set of
-Git repositories for any purposes.</p>
-<p>Gardens allow you to define environment variables and workflow commands that
-are either available to any tree or scoped to specific gardens only.</p>
-<p>Groups are lighter-weight than a garden. They group trees together into named
-collections that can be referenced by gardens and commands.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
 <p>There are multiple ways to install <code>garden</code>.</p>
 <p>These instructions assume that you have <code>cargo</code> installed for Rust development.</p>
@@ -213,7 +276,7 @@ to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</co
 <p>The version published to crates.io will sometimes be behind the source
 code repository. If you want to install the latest pre-release version then you can
 build the Git version of Garden yourself using <code>cargo</code>.</p>
-<pre><code>cargo install --git https://github.com/davvid/garden garden-tools
+<pre><code>cargo install --git https://gitlab.com/davvid/garden garden-tools
 </code></pre>
 <h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
 <p>You can install <code>garden</code> on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
@@ -244,7 +307,7 @@ actually downgrade <code>garden</code> to the latest stable release.</p>
 <h2 id="install-on-netbsd"><a class="header" href="#install-on-netbsd">Install on NetBSD</a></h2>
 <p>Garden has been packaged for
 <a href="http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html">pkgsrc/NetBSD</a>
-as described in <a href="https://github.com/davvid/garden/issues/13"> #13</a>.</p>
+as described in <a href="https://github.com/davvid/garden/issues/13">#13</a>.</p>
 <p>To install from the official repository, run:</p>
 <pre><code class="language-bash">pkgin install garden
 </code></pre>
@@ -255,7 +318,7 @@ make install
 <h2 id="build-and-install-from-source-for-development"><a class="header" href="#build-and-install-from-source-for-development">Build and Install from Source for Development</a></h2>
 <p>If you would like to develop features and contribute to Garden then you will
 have to clone the repository on your local machine.</p>
-<pre><code class="language-bash">git clone https://github.com/davvid/garden.git
+<pre><code class="language-bash">git clone https://gitlab.com/davvid/garden.git
 cd garden
 
 # Build ./target/debug/garden
@@ -1620,15 +1683,15 @@ and Git Cola ready to go for development.</p>
 <ul>
 <li>
 <p><code>garden</code> now supports a <code>grafts</code> feature that allows you to
-<a href="https://davvid.github.io/garden/configuration.html#grafts">stitch configuration entities from separate garden files</a>
+<a href="https://garden-rs.gitlab.io/configuration.html#grafts">stitch configuration entities from separate garden files</a>
 into a graft-specific namespace. Trees and variables from grafted configurations can be
 referenced using <code>graft::</code> namespace qualifiers.</p>
 </li>
 <li>
-<p><code>garden grow</code> can now configure <a href="https://davvid.github.io/garden/commands.html#upstream-branches">upstream branches</a>.</p>
+<p><code>garden grow</code> can now configure <a href="https://garden-rs.gitlab.io/commands.html#upstream-branches">upstream branches</a>.</p>
 </li>
 <li>
-<p><code>garden grow</code> can now configure <a href="https://davvid.github.io/garden/commands.html#upstream-branches#git-configuration-values">gitconfig settings with multiple values</a>
+<p><code>garden grow</code> can now configure <a href="https://garden-rs.gitlab.io/commands.html#upstream-branches#git-configuration-values">gitconfig settings with multiple values</a>
 using <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt---add"><code>git config --add &lt;name&gt; &lt;value&gt;</code></a>.</p>
 </li>
 </ul>
@@ -1644,7 +1707,7 @@ then only the final definition will be used.
 (<a href="https://github.com/davvid/garden/pull/15">#15</a>)</p>
 </li>
 <li>
-<p><a href="https://davvid.github.io/garden/configuration.html#l#the-last-one-wins-rule">Trees now sparsely override existing entries</a>.
+<p><a href="https://garden-rs.gitlab.io/configuration.html#l#the-last-one-wins-rule">Trees now sparsely override existing entries</a>.
 This behavior allows a tree definition to replace just the <code>url</code> field, or to replace
 individual tree commands while retaining the rest. Use <code>replace: true</code> in a Tree
 definition in order to completely replace the existing entry instead of sparsely
@@ -1670,7 +1733,7 @@ Previously only values were evaluated. Config names are evaluated now as well.</
 <p><strong>Fixes</strong></p>
 <ul>
 <li>The <code>zsh</code> workaround for <code>garden completion zsh</code> is no longer needed.
-The <a href="https://davvid.github.io/garden/commands.html#zsh">documentation for generating zsh completions</a>
+The <a href="https://garden-rs.gitlab.io/commands.html#zsh">documentation for generating zsh completions</a>
 has been updated.
 (<a href="https://github.com/davvid/garden/issues/10">#10</a>)</li>
 </ul>
@@ -1687,7 +1750,7 @@ tree's current directory.</li>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
-<p><a href="https://davvid.github.io/garden/configuration.html#includes">Garden configuration files can now include other configuration files
+<p><a href="https://garden-rs.gitlab.io/configuration.html#includes">Garden configuration files can now include other configuration files
 </a> by specifying
 the additional files to include in the <code>garden.includes</code> field.
 The <code>includes</code> feature makes it possible to create modular and reusable garden files.
@@ -1696,7 +1759,7 @@ files are added to the current configuration.
 (<a href="https://github.com/davvid/garden/pull/7">#7</a>)</p>
 </li>
 <li>
-<p><a href="https://davvid.github.io/garden/commands.html#shell-syntax">Garden commands can now reference $shell variables</a>
+<p><a href="https://garden-rs.gitlab.io/commands.html#shell-syntax">Garden commands can now reference $shell variables</a>
 using the standard (brace-less) shell <code>$variable</code> syntax. The braced <code>${garden}</code>
 variable syntax remains reserved for resolving Garden Variables.
 Double-<code>$</code> braces (ex: <code>$${...}</code>) can be used to escape a <code>$${variable}</code> from

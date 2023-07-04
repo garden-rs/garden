@@ -152,34 +152,97 @@
                         <h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
 <ul>
 <li>
-<p><em><strong>garden.yaml</strong></em> -- a Garden file defines trees, groups and gardens.</p>
+<p><em><strong>garden.yaml</strong></em> -- also known as a &quot;Garden file&quot;, a YAML file named
+<code>garden.yaml</code> defines trees, groups gardens, variables, commands and
+environment variables. <code>garden</code> looks for a file named <code>garden.yaml</code>
+by default, but other filenames can be specified using the
+<code>garden -c | --config &lt;path&gt;</code> option.</p>
 </li>
 <li>
-<p><em><strong>tree</strong></em> -- a Git worktree. A single repository clone.</p>
+<p><em><strong>trees</strong></em> -- trees represent Git worktrees and repository clones.
+A tree represents a single repository and its configuration.
+Trees provide <em>garden variables</em>, <em>commands</em> and <em>environment variables</em>
+that are defined when commands are run on a tree. Environment variables
+are defined when a tree is operated on by itself and when combined alongside
+other trees in a group or garden context.</p>
 </li>
 <li>
-<p><em><strong>group</strong></em> -- a named collection of trees. The &quot;group&quot; block in the
-configuration file defines tree groups that are available for use by
-commands and gardens.</p>
+<p><em><strong>groups</strong></em> -- a named collection of trees. The <code>groups</code> block in the
+garden file defines groups of trees that are available for use by
+commands and gardens. Groups are lighter-weight than a garden and group
+trees together into named collections that can be referenced by gardens
+and commands. In contrast to gardens, groups <em>do not</em> provide a scope
+in which variables, commands environment variables can be defined.</p>
 </li>
 <li>
 <p><em><strong>garden</strong></em> -- a composite of trees and groups for defining project-level
-variables and commands.  Gardens help create environments for working on
-libraries, and application that use the library, in tandem.</p>
+variables, commands and environment variables. Gardens help create
+environments for working on projects composed of multiple Git repositories.
+The <code>gardens</code> YAML key/value block defines named gardens with a scope
+in which garden-specific variables, commands and environment variables
+can be defined.</p>
 </li>
 <li>
-<p><em><strong>tree query</strong></em> -- a <a href="https://github.com/netvl/shellexpand">shellexpand</a> glob expression that matches against garden
-names, group names and tree names. Many <code>garden</code> commands accept tree
-queries as arguments.</p>
+<p><strong>variables</strong>
+A YAML key/value table defines named variables that can be used in
+YAML strings by using braced <code>shell ${expressions}</code> to provide dynamic
+values that can be used to provide modularity and configurability to a garden
+file. Variables defined in a garden file are overridden on the
+command-line by using the <code>-D / --define key=value</code> option.</p>
+</li>
+<li>
+<p><strong>commands</strong>
+The <code>commands</code> YAML key/value table defines named commands that can be run
+against trees. The <code>commands</code> block extends <code>garden</code> with with user-defined
+functionality. The <code>commands</code> block can be defined at global scope, within a
+<code>tree</code> block, and within a <code>garden</code> block. The scope in which a command is
+defined limits the scope in which it is visible. This means that a command
+defined in tree scope will only execute when <code>garden &lt;command&gt; &lt;query&gt;</code>
+uses a query that ends up including that tree, and will only run when garden
+visits that specific tree.</p>
+</li>
+<li>
+<p><strong>environment variables</strong>
+Not to be confused with the <code>variables</code> block, the <code>environment</code> block
+is a YAML key/value table that defines environment variables that will
+be set when executing <em>commands</em>.</p>
+</li>
+<li>
+<p><em><strong>tree query</strong></em> -- a <a href="https://github.com/netvl/shellexpand">shellexpand</a> glob expression that matches against
+garden names, group names and tree names. Several <code>garden</code> builtin commands
+take tree queries as arguments as a mechanism for selecting one or more
+trees to operate on. The default behavior is to match the tree query pattern
+against gardens, groups and trees, in that order, and return the first
+matching set of trees. If searching for gardens finds matches then groups and
+trees are not searched. If searching for groups finds matches then trees are
+not searched. Prefix the tree query pattern with a percent-sign (<code>%</code>),
+eg. <code>%group*</code>, to only query for groups matching the pattern.
+Prefix the pattern with an at-sign (<code>@</code>), eg. <code>@tree</code>, to only query for trees.
+Prefix the pattern with colon (<code>:</code>), eg. <code>:garden</code>, to only query for gardens.
+The <code>:garden</code> syntax is not typically used because gardens are already
+searched first. <code>%group</code> and <code>@tree</code> can be used to disambiguate queries for
+groups and trees that share the same name as a garden.</p>
+</li>
+<li>
+<p><strong>string expressions</strong>
+String values can use shell <code>${variables}</code> expressions to interpolate
+and expand values in the string. <code>~</code> is expanded to <code>$HOME</code>.
+These expressions can be used in most fields where strings are accepted,
+eg. when definiting variables, commands and environment variables.</p>
+</li>
+<li>
+<p><strong>exec expressions</strong>
+When a <em>string expression</em> starts with <code>$ </code> (dollar-sign then space) then the
+variable's value is computed by expanding the string's <code>${garden}</code> variables
+and then executing the result and capturing stdout. The captured stdout
+output from the command becomes the variable's value. For example, if a
+variable called <code>my-pwd</code> is defined using an exec expression such as
+<code>my-pwd: $ pwd</code> then the <code>${my_pwd}</code> variable will contain a path.
+The <code>my_pwd</code> variable can be used to define other variables, environment
+variables, and commands. For example, a command called <code>example-cmd</code> can be
+defined using: <code>example-cmd: ls -l ${my-pwd} &amp;&amp; echo my_pwd is ${my_pwd}</code>,</p>
 </li>
 </ul>
-<p>Gardens can be used for software projects composed of multiple repositories,
-or they can be used to provide an approachable way to explore a curated set of
-Git repositories for any purposes.</p>
-<p>Gardens allow you to define environment variables and workflow commands that
-are either available to any tree or scoped to specific gardens only.</p>
-<p>Groups are lighter-weight than a garden. They group trees together into named
-collections that can be referenced by gardens and commands.</p>
 
                     </main>
 

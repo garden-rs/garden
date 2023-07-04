@@ -155,15 +155,15 @@
 <ul>
 <li>
 <p><code>garden</code> now supports a <code>grafts</code> feature that allows you to
-<a href="https://davvid.github.io/garden/configuration.html#grafts">stitch configuration entities from separate garden files</a>
+<a href="https://garden-rs.gitlab.io/configuration.html#grafts">stitch configuration entities from separate garden files</a>
 into a graft-specific namespace. Trees and variables from grafted configurations can be
 referenced using <code>graft::</code> namespace qualifiers.</p>
 </li>
 <li>
-<p><code>garden grow</code> can now configure <a href="https://davvid.github.io/garden/commands.html#upstream-branches">upstream branches</a>.</p>
+<p><code>garden grow</code> can now configure <a href="https://garden-rs.gitlab.io/commands.html#upstream-branches">upstream branches</a>.</p>
 </li>
 <li>
-<p><code>garden grow</code> can now configure <a href="https://davvid.github.io/garden/commands.html#upstream-branches#git-configuration-values">gitconfig settings with multiple values</a>
+<p><code>garden grow</code> can now configure <a href="https://garden-rs.gitlab.io/commands.html#upstream-branches#git-configuration-values">gitconfig settings with multiple values</a>
 using <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt---add"><code>git config --add &lt;name&gt; &lt;value&gt;</code></a>.</p>
 </li>
 </ul>
@@ -179,7 +179,7 @@ then only the final definition will be used.
 (<a href="https://github.com/davvid/garden/pull/15">#15</a>)</p>
 </li>
 <li>
-<p><a href="https://davvid.github.io/garden/configuration.html#l#the-last-one-wins-rule">Trees now sparsely override existing entries</a>.
+<p><a href="https://garden-rs.gitlab.io/configuration.html#l#the-last-one-wins-rule">Trees now sparsely override existing entries</a>.
 This behavior allows a tree definition to replace just the <code>url</code> field, or to replace
 individual tree commands while retaining the rest. Use <code>replace: true</code> in a Tree
 definition in order to completely replace the existing entry instead of sparsely
@@ -205,7 +205,7 @@ Previously only values were evaluated. Config names are evaluated now as well.</
 <p><strong>Fixes</strong></p>
 <ul>
 <li>The <code>zsh</code> workaround for <code>garden completion zsh</code> is no longer needed.
-The <a href="https://davvid.github.io/garden/commands.html#zsh">documentation for generating zsh completions</a>
+The <a href="https://garden-rs.gitlab.io/commands.html#zsh">documentation for generating zsh completions</a>
 has been updated.
 (<a href="https://github.com/davvid/garden/issues/10">#10</a>)</li>
 </ul>
@@ -222,7 +222,7 @@ tree's current directory.</li>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
-<p><a href="https://davvid.github.io/garden/configuration.html#includes">Garden configuration files can now include other configuration files
+<p><a href="https://garden-rs.gitlab.io/configuration.html#includes">Garden configuration files can now include other configuration files
 </a> by specifying
 the additional files to include in the <code>garden.includes</code> field.
 The <code>includes</code> feature makes it possible to create modular and reusable garden files.
@@ -231,7 +231,7 @@ files are added to the current configuration.
 (<a href="https://github.com/davvid/garden/pull/7">#7</a>)</p>
 </li>
 <li>
-<p><a href="https://davvid.github.io/garden/commands.html#shell-syntax">Garden commands can now reference $shell variables</a>
+<p><a href="https://garden-rs.gitlab.io/commands.html#shell-syntax">Garden commands can now reference $shell variables</a>
 using the standard (brace-less) shell <code>$variable</code> syntax. The braced <code>${garden}</code>
 variable syntax remains reserved for resolving Garden Variables.
 Double-<code>$</code> braces (ex: <code>$${...}</code>) can be used to escape a <code>$${variable}</code> from
