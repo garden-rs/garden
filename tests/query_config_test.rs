@@ -32,10 +32,10 @@ fn tree_name_from_pathbuf() -> Result<()> {
     )?;
     let cfg = app_context.get_root_config();
 
-    let tree_name = garden::query::tree_name_from_path(&cfg, &fixture.worktree_pathbuf("dev"));
+    let tree_name = garden::query::tree_name_from_path(cfg, &fixture.worktree_pathbuf("dev"));
     assert_eq!(tree_name, Some(string!("dev")));
 
-    let tree_name = garden::query::tree_name_from_path(&cfg, &fixture.worktree_pathbuf("default"));
+    let tree_name = garden::query::tree_name_from_path(cfg, &fixture.worktree_pathbuf("default"));
     assert_eq!(tree_name, Some(string!("default")));
 
     Ok(())

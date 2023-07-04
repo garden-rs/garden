@@ -392,7 +392,7 @@ fn trees() -> Result<()> {
 fn gardens() -> Result<()> {
     let app_context = common::garden_context()?;
     let config = app_context.get_root_config();
-    test_gardens(&config)
+    test_gardens(config)
 }
 
 #[test]
@@ -431,7 +431,7 @@ fn gardens_json() -> Result<()> {
     );
     let app_context = common::garden_context_from_string(&string)?;
     let config = app_context.get_root_config();
-    test_gardens(&config)
+    test_gardens(config)
 }
 
 fn test_gardens(config: &garden::model::Configuration) -> Result<()> {

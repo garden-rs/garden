@@ -91,7 +91,7 @@ fn plant_empty_repo() -> Result<()> {
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo1", "repo2"])?;
 
     // Load the configuration and assert that the remotes are configured.
-    let app_context = garden::model::ApplicationContext::from_path(pathbuf.clone())?;
+    let app_context = garden::model::ApplicationContext::from_path(pathbuf)?;
     let cfg = app_context.get_root_config();
     assert_eq!(2, cfg.trees.len());
     assert_eq!("repo1", cfg.trees[0].get_name());
@@ -128,7 +128,7 @@ fn plant_bare_repo() -> Result<()> {
 
     // Load the configuration and assert that the remotes are configured.
     let pathbuf = fixture.pathbuf("garden.yaml");
-    let app_context = garden::model::ApplicationContext::from_path(pathbuf.clone())?;
+    let app_context = garden::model::ApplicationContext::from_path(pathbuf)?;
     let cfg = app_context.get_root_config();
     assert_eq!(1, cfg.trees.len());
     assert_eq!("repos/example.git", cfg.trees[0].get_name());
