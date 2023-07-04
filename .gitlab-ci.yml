@@ -1,5 +1,10 @@
 image: rust
 
+stages:
+  - pages
+  - test
+  - build
+
 cache:
   paths:
     - target/release
@@ -7,11 +12,6 @@ cache:
 before_script:
   - cargo build --release
   - export PATH=${PWD}/target/release:${PATH}
-
-stages:
-  - test
-  - build
-  - pages
 
 tests:
   stage: test
