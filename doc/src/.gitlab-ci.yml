@@ -14,4 +14,4 @@ pages:
       - public
   publish: public
   only:
-    - main
+    - pages
