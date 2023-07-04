@@ -66,11 +66,16 @@ trees:
       davvid: "https://github.com/davvid/garden.git"
       jtietema: "https://github.com/jtietema/garden.git"
       slackline: "https://github.com/slackline/garden.git"
+      pages: "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
     gitconfig:
       remote.origin.pushurl:
         - "git@gitlab.com:davvid/garden.git"
         - "git@github.com:davvid/garden.git"
+      branch.pages.remote: pages
+      remote.pages.pushurl:
+        - "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
+        - "git@github.com:davvid/garden.git"
 
   doc/book:
     worktree: garden
-    branch: gh-pages
+    branch: pages
