@@ -1,10 +1,9 @@
-stages:
-  - pages
-
+# This is the Gitlab CI pipeline for the pre-generated garden-rs.github.io repository
+# and is installed to doc/book/.gitlab-ci.yml
 pages:
   image: alpine
   script:
-    - apk --nocache add rsync
+    - apk add --update rsync
     - rsync -ar --exclude=public ./ ./public/
     - echo "Read the pre-generated documentation at $CI_PAGES_URL"
   artifacts:
@@ -12,4 +11,4 @@ pages:
       - public
   publish: public
   only:
-    - main
+    - pages
