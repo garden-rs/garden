@@ -7,8 +7,8 @@ self-contained and inter-dependent Git worktrees.
 
 ## Code Status
 
-[![Build status](https://github.com/davvid/garden/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/davvid/garden/actions/workflows/ci.yml)
-[![MIT License](https://img.shields.io/github/license/davvid/garden.svg)](LICENSE)
+[![Build status](https://gitlab.com/davvid/garden/badges/main/pipeline.svg)](https://gitlab.com/davvid/garden/-/pipelines)
+[![MIT License](https://img.shields.io/gitlab/license/davvid/garden.svg)](LICENSE)
 
 Garden is actively maintained and its current features are stable.
 

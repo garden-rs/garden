@@ -10,8 +10,8 @@ edition = "2021"
 [output.html]
 mathjax-support = true
 site-url = "/garden/"
-git-repository-url = "https://github.com/davvid/garden/tree/main/doc"
-edit-url-template = "https://github.com/davvid/garden/edit/main/doc/{path}"
+git-repository-url = "https://gitlab.com/davvid/garden/tree/main/doc"
+edit-url-template = "https://gitlab.com/davvid/garden/edit/main/doc/{path}"
 
 [output.html.fold]
 enable = false

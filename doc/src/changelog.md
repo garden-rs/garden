@@ -98,7 +98,7 @@ referenced using `graft::` namespace qualifiers.
 
 - The `Makefile` has been replaced by a `garden.yaml` Garden file.
   We can now use `garden {build, test, check, fmt, clippy, ...}` instead of `make ...`.
-  See [garden.yaml @ 5ef8d0ab16 for more details](https://github.com/davvid/garden/blob/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml).
+  See [garden.yaml @ 5ef8d0ab16 for more details](https://gitlab.com/davvid/garden/-/raw/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml).
   Packagers can use `cargo install` to install `garden` and invoke `mdbook` directly
   to install the user manual. We also provide
   `garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc` if distros
