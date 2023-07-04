@@ -79,3 +79,5 @@ trees:
   doc/book:
     worktree: garden
     branch: pages
+    branches:
+      pages: pages/pages
