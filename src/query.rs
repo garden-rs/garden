@@ -431,7 +431,10 @@ pub fn shared_worktree_path(
     };
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
-        None => return String::new(),
+        None => match app_context.get_root_config().trees.get(&ctx.tree) {
+            Some(tree) => tree,
+            None => return String::new(),
+        },
     };
     if tree.is_worktree {
         let worktree = eval::tree_value(
