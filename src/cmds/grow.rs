@@ -409,6 +409,7 @@ fn append_gitconfig_value(
     status
 }
 
+/// Set a simple gitconfig value.
 fn set_gitconfig_value(name: &str, value: &str, path: &std::path::Path) -> i32 {
     let command = ["git", "config", name, value];
     let exec = cmd::exec_in_dir(&command, path);
@@ -520,7 +521,6 @@ fn grow_tree_from_context_as_worktree(
     }
     let exec = cmd::exec_in_dir(&cmd, parent_path);
     exit_status = cmd::status(exec.join());
-
     if exit_status != 0 {
         return Err(errors::GardenError::WorktreeGitCheckoutError {
             tree: tree.get_name().clone(),
@@ -534,12 +534,15 @@ fn grow_tree_from_context_as_worktree(
 
 /// Initialize a tree symlink entry.
 fn grow_symlink(app_context: &model::ApplicationContext, ctx: &model::TreeContext) -> Result<i32> {
-    let config = app_context.get_root_config();
+    let config = match ctx.config {
+        Some(config_id) => app_context.get_config(config_id),
+        None => app_context.get_root_config(),
+    };
     let tree = match config.trees.get(&ctx.tree) {
         Some(tree) => tree,
         None => return Ok(errors::EX_OK),
     };
-    // Invalid usage: non-symlink
+    // Invalid usage: non-symlink.
     if !tree.is_symlink || tree.path_as_ref()?.is_empty() || tree.symlink_as_ref()?.is_empty() {
         return Err(errors::GardenError::ConfigurationError(format!(
             "invalid symlink: {}",
@@ -549,22 +552,18 @@ fn grow_symlink(app_context: &model::ApplicationContext, ctx: &model::TreeContex
     }
     let path_str = tree.path_as_ref()?;
     let path = std::path::PathBuf::from(&path_str);
-
     // Leave existing symlinks as-is.
     if std::fs::read_link(&path).is_ok() || path.exists() {
         return Ok(errors::EX_OK);
     }
-
     let symlink_str = tree.symlink_as_ref()?;
     let symlink = std::path::PathBuf::from(&symlink_str);
-
-    // Note: parent directory was already created by the caller.
+    // Note: the parent directory was already created by the caller.
     let parent = path
         .parent()
         .as_ref()
         .ok_or_else(|| errors::GardenError::AssertionError(format!("parent() failed: {path:?}")))?
         .to_path_buf();
-
     // Is the link target a child of the link's parent directory?
     let target = if symlink.starts_with(&parent) && symlink.strip_prefix(&parent).is_ok() {
         // If so, create the symlink using a relative path.
@@ -574,6 +573,7 @@ fn grow_symlink(app_context: &model::ApplicationContext, ctx: &model::TreeContex
         symlink.to_string_lossy()
     }
     .to_string();
+
     let target_path = std::path::PathBuf::from(&target);
     std::os::unix::fs::symlink(target_path, &path)?;
 
