@@ -118,7 +118,7 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://github.com/davvid/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
+                        <a href="https://gitlab.com/davvid/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
 
@@ -1399,7 +1399,7 @@ run the tools.</p>
 mkdir -p photo-restoration &amp;&amp; cd photo-restoration
 
 # Download and audit the garden file we're going to run.
-wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/examples/photo-restoration/garden.yaml
+wget https://gitlab.com/davvid/garden/-/raw/main/doc/src/examples/photo-restoration/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the trees. This will clone an &quot;old-photos&quot; repo.
@@ -1482,7 +1482,7 @@ qtpy and vx.</p>
 mkdir -p cola &amp;&amp; cd cola
 
 # Download and audit the garden file we're going to run.
-wget https://raw.githubusercontent.com/davvid/garden/main/doc/src/examples/git-cola/garden.yaml
+wget https://gitlab.com/davvid/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the repos in the &quot;cola&quot; garden and use a custom
@@ -1782,7 +1782,7 @@ the <code>garden</code> command version.</p>
 <li>
 <p>The <code>Makefile</code> has been replaced by a <code>garden.yaml</code> Garden file.
 We can now use <code>garden {build, test, check, fmt, clippy, ...}</code> instead of <code>make ...</code>.
-See <a href="https://github.com/davvid/garden/blob/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
+See <a href="https://gitlab.com/davvid/garden/-/raw/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
 Packagers can use <code>cargo install</code> to install <code>garden</code> and invoke <code>mdbook</code> directly
 to install the user manual. We also provide
 <code>garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc</code> if distros
