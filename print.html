@@ -1281,27 +1281,38 @@ grafts:
 
 trees:
   local-tree:
-    url: &quot;https://git.example.com/repo.git&quot;
+    url: https://git.example.com/repo.git
     variables:
-      value: &quot;${graft::value}&quot;
+      value: &quot;local ${graft::value}&quot;
+
+variables:
+    value: &quot;global ${graft::value}&quot;
 
 gardens:
   example:
     trees:
       - local-tree
       - graft::tree
-      - repos::example
+      - graft-repos::example
 </code></pre>
-<p>The <code>repos</code> graft entry demonstrates how to use a custom root directory for
+<p>The <code>graft-repos</code> graft entry demonstrates how to use a custom root directory for
 the trees provided by the grafted configuration.</p>
-<p>The <code>grafts.yaml</code> file provides a tree called <code>tree</code> and a variable called <code>value</code>.</p>
+<p>The <code>grafts.yaml</code> file provides a tree called <code>tree</code> and a variable called <code>value</code>.
+We refer to them as <code>graft::tree</code> when specifying trees and <code>${graft::value}</code> when
+using variables.</p>
+<p><code>graft.yaml</code> contains the following:</p>
 <pre><code class="language-yaml"># The grafted &quot;graft.yaml&quot; file.
 trees:
-  tree: &quot;https://git.example.com/tree.git&quot;
+  tree: https://git.example.com/tree.git
 
 variables:
   value: &quot;grafted value&quot;
 </code></pre>
+<p>Running <code>garden eval '${graft::value}'</code> will output <code>grafted value</code>.</p>
+<p>Running <code>garden eval '${value}'</code> wil output <code>global grafted value</code>, as it evaluates at
+global scope.</p>
+<p>Running <code>garden eval '${value}' local-tree</code> will output <code>local grafted value</code>, as it
+evaluates from <code>local-tree</code>'s scope.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
 <p>These examples demonstrate how to setup and run real-world projects using <code>garden</code>.</p>
 <h2 id="photo-restoration"><a class="header" href="#photo-restoration">Photo Restoration</a></h2>
