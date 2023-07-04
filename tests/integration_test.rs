@@ -702,6 +702,60 @@ fn cmd_dash_dash_arguments() {
     assert_eq!(output, format!("{msg}\n{msg}"));
 }
 
+/// `garden eval` evaluates builtin from the perspective of the graft.
+#[test]
+fn eval_grafted_builtin_variables() {
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_CONFIG_DIR}",
+        "graft::prebuilt",
+    ]);
+    assert!(
+        output.ends_with("/tests/data/grafts"),
+        "Grafted GARDEN_CONFIG_DIR ({output}) must use the grafted /tests/data/grafts config path"
+    );
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${TREE_PATH}",
+        "graft::prebuilt",
+    ]);
+    assert!(
+        output.ends_with("/tests/data/trees/prebuilt"),
+        "Grafted TREE_PATH ({output}) must be in /tests/data/trees/prebuilt"
+    );
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ROOT}",
+        "graft::prebuilt",
+    ]);
+    assert!(
+        output.ends_with("/tests/data"),
+        "Grafted GARDEN_ROOT ({output}) must use /tests/data from the current directory"
+    );
+    // This time we --chdir to tests/ instead and see it reflected in GARDEN_ROOT.
+    let output = garden_capture(&[
+        "--chdir",
+        "tests",
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_ROOT}",
+        "graft::prebuilt",
+    ]);
+    assert!(
+        output.ends_with("/tests"),
+        "Grafted GARDEN_ROOT ({output}) must use /tests from the current directory"
+    );
+}
+
 /// Test dash-dash arguments in custom commands via "garden <custom> ..."
 #[test]
 fn cmd_dash_dash_arguments_custom() {
