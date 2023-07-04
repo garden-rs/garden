@@ -12,12 +12,14 @@ variables:
   example_url: ${repos}/example.git
 
 groups:
-  core:
-    - deps::framework
-    - core
+  prebuilt-group:
+    - prebuilt
+    - prebuilt2
 
 trees:
   graft: ${example_url}
   core: ${repos}/core.git
   prebuilt:
+    path: trees/prebuilt
+  prebuilt2:
     path: trees/prebuilt

@@ -1086,6 +1086,26 @@ fn cmd_exec_garden_with_grafted_trees() {
     }
 }
 
+/// Test the use of graft:: tree references when querying for groups.
+#[test]
+fn cmd_exec_grafted_group() {
+    // prebuilt-group has two trees pointing to the same prebuilt path.
+    let output = garden_capture(&[
+        "--quiet",
+        "--chdir",
+        "tests/data",
+        "exec",
+        "graft::prebuilt-group",
+        "pwd",
+    ]);
+    let output_len = output.lines().count();
+    assert_eq!(output_len, 2);
+
+    for line in output.lines() {
+        assert!(line.ends_with("/tests/data/trees/prebuilt"));
+    }
+}
+
 /// Test the use of $shell variables in commands.
 /// $shell variables are not expanded by garden.
 /// ${garden} variables are expanded.
