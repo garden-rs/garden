@@ -32,12 +32,13 @@ commands:
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
   push: git push "$@"
-  setup: $0 grow doc/book
-  stage: git add -u "$@"
-  stat: git status -s "$@"
+  setup: garden grow doc/book
+  stage: git add --update "$@"
+  stat: git status --short "$@"
   status: git status "$@"
   test: cargo test "$@"
   update: cargo update "$@"
+  watch: cargo watch --shell "garden build && garden check && garden test"
 
 # Variables can be set externally. eg.:
 #   garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc
