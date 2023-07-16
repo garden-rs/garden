@@ -8,14 +8,15 @@ use super::path;
 #[command(name = "garden")]
 #[command(author, version, about, long_about = None)]
 pub struct MainOptions {
-    /// Set the color mode
+    /// Use ANSI colors [auto, true, false, on, off, always, never, 1, 0]
     #[arg(
         long,
         require_equals = true,
         num_args = 0..=1,
         default_value_t = model::ColorMode::Auto,
-        default_missing_value = "on",
-        value_enum,
+        default_missing_value = "true",
+        value_name = "WHEN",
+        value_parser = model::ColorMode::parse_from_str,
     )]
     color: model::ColorMode,
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.8.1 (beta0)
+
+**Development**:
+
+- Use `strum` to implement `FromStr` for `enum ColorMode`.
+
 ## v0.8.0
 
 **Features**:

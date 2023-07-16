@@ -6,11 +6,13 @@ use super::eval;
 use super::path;
 use super::syntax;
 
-use clap::ValueEnum;
 use indexmap::{IndexMap, IndexSet};
 use indextree::{Arena, NodeId};
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::str::FromStr;
+use strum::VariantNames;
+use strum_macros;
 use which::which;
 
 /// TreeName keys into config.trees
@@ -1048,28 +1050,55 @@ impl TreeQuery {
     }
 }
 
-#[derive(ValueEnum, Clone, Debug, Default, PartialEq, Eq)]
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    strum_macros::EnumString,
+    strum_macros::Display,
+    strum_macros::EnumVariantNames,
+)]
+#[strum(ascii_case_insensitive, serialize_all = "kebab-case")]
 pub enum ColorMode {
     /// Enable color when a tty is detected
     #[default]
     Auto,
-    /// Disable color
-    Off,
     /// Enable color
+    #[strum(
+        serialize = "1",
+        serialize = "on",
+        serialize = "true",
+        serialize = "always",
+        serialize = "y",
+        serialize = "yes"
+    )]
     On,
+    /// Disable color
+    #[strum(
+        serialize = "0",
+        serialize = "off",
+        serialize = "false",
+        serialize = "never",
+        serialize = "n",
+        serialize = "no"
+    )]
+    Off,
 }
 
 impl ColorMode {
+    /// Parse a color mode from a string using strum's from_str().
+    pub fn parse_from_str(string: &str) -> Result<ColorMode, String> {
+        ColorMode::from_str(string).map_err(|_| format!("choices are {:?}", Self::VARIANTS))
+    }
+
     pub fn is_enabled(&self) -> bool {
         match self {
             ColorMode::Auto => atty::is(atty::Stream::Stdout),
             ColorMode::Off => false,
             ColorMode::On => true,
         }
-    }
-
-    pub fn names() -> &'static str {
-        "auto, true, false, 1, 0, [y]es, [n]o, on, off, always, never"
     }
 
     pub fn update(&mut self) {
@@ -1085,30 +1114,6 @@ impl ColorMode {
 
         if *self == ColorMode::Off {
             yansi::Paint::disable();
-        }
-    }
-}
-
-impl std::str::FromStr for ColorMode {
-    type Err = (); // For the FromStr trait
-
-    fn from_str(src: &str) -> Result<ColorMode, ()> {
-        match src.to_lowercase().as_ref() {
-            "auto" => Ok(ColorMode::Auto),
-            "-1" => Ok(ColorMode::Auto),
-            "0" => Ok(ColorMode::Off),
-            "1" => Ok(ColorMode::On),
-            "false" => Ok(ColorMode::Off),
-            "true" => Ok(ColorMode::On),
-            "never" => Ok(ColorMode::Off),
-            "always" => Ok(ColorMode::Off),
-            "off" => Ok(ColorMode::Off),
-            "on" => Ok(ColorMode::On),
-            "n" => Ok(ColorMode::Off),
-            "y" => Ok(ColorMode::On),
-            "no" => Ok(ColorMode::Off),
-            "yes" => Ok(ColorMode::On),
-            _ => Err(()),
         }
     }
 }
