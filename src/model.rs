@@ -8,6 +8,7 @@ use super::syntax;
 
 use indexmap::{IndexMap, IndexSet};
 use indextree::{Arena, NodeId};
+use is_terminal::IsTerminal;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -1095,7 +1096,7 @@ impl ColorMode {
 
     pub fn is_enabled(&self) -> bool {
         match self {
-            ColorMode::Auto => atty::is(atty::Stream::Stdout),
+            ColorMode::Auto => std::io::stdout().is_terminal(),
             ColorMode::Off => false,
             ColorMode::On => true,
         }
@@ -1104,7 +1105,7 @@ impl ColorMode {
     pub fn update(&mut self) {
         if *self == ColorMode::Auto {
             // Speedup future calls to is_enabled() by performing the "auto"
-            // atty check once and caching the result.
+            // is_terminal() check once and caching the result.
             if self.is_enabled() {
                 *self = ColorMode::On;
             } else {

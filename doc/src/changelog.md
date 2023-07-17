@@ -11,6 +11,9 @@
 
 - Use `strum` to implement `FromStr` for `enum ColorMode`.
 
+- [is-terminal](https://crates.io/crates/is-terminal) is now used instead of
+  the unmaintained `atty` crate.
+
 ## v0.8.0
 
 **Features**:
