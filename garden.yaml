@@ -80,7 +80,7 @@ trees:
     url: "git@gitlab.com:garden-rs/garden.git"
     remotes:
       garden: "git@gitlab.com:garden-rs/garden.git"
-      davvid: "https://github.com/davvid/garden.git"
+      davvid: "git@gitlab.com:davvid/garden.git"
       github: "git@github.com:davvid/garden.git"
       jtietema: "https://github.com/jtietema/garden.git"
       slackline: "https://github.com/slackline/garden.git"
