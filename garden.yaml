@@ -33,7 +33,23 @@ commands:
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
   push: git push "$@"
-  setup: garden grow doc/book
+  setup: |
+    echo ':' git fetch pages
+    git fetch pages || (
+      echo
+      echo 'error: The "pages" remote is not available.'
+      echo
+      echo To fix this, run either of these two commands and try again.
+      echo
+      echo '    garden grow .'
+      echo
+      echo '    git remote add pages git@gitlab.com:garden-rs/garden-rs.github.io.git'
+      echo
+      echo 'The first command uses "garden" to configure the "pages" remote.'
+      echo 'The second command uses "git" to add the "pages" remote directly instead.'
+      return 1
+    )
+    garden grow doc/book
   stage: git add --update "$@"
   stat: git status --short "$@"
   status: git status "$@"
