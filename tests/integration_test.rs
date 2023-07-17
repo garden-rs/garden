@@ -702,6 +702,28 @@ fn cmd_dash_dash_arguments() {
     assert_eq!(output, format!("{msg}\n{msg}"));
 }
 
+/// `garden grow` creates symlinks
+#[test]
+#[named]
+fn git_branches() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    let root = fixture.root();
+    fixture.assert_worktree(&root);
+
+    let cmd = ["git", "branch", "abc"];
+    assert_cmd(&cmd, &root);
+
+    let cmd = ["git", "branch", "xyz"];
+    assert_cmd(&cmd, &root);
+
+    let branches = git::branches(&fixture.root_pathbuf());
+    assert_eq!(branches.len(), 3); // Default branch + abc + xyz
+    assert!(branches.contains(&"abc".to_string()));
+    assert!(branches.contains(&"xyz".to_string()));
+
+    Ok(())
+}
+
 /// `garden eval` evaluates builtin from the perspective of the graft.
 #[test]
 fn eval_grafted_builtin_variables() {

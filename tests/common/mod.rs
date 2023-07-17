@@ -258,6 +258,18 @@ impl<'a> BareRepoFixture<'a> {
         std::path::PathBuf::from(self.root())
     }
 
+    /// Return the root as a worktree and verify that it is a worktree.
+    pub fn root_worktree_pathbuf(&self) -> std::path::PathBuf {
+        let worktree = self.root();
+        self.assert_worktree(&worktree);
+        worktree.into()
+    }
+
+    /// Verify that the path is a valid Git worktree.
+    pub fn assert_worktree(&self, path: &str) {
+        assert_git_worktree(path);
+    }
+
     /// Return a path relative to the temporary directory for the current test.
     pub fn path(&self, path: &str) -> String {
         let fixture_path = format!("{}/{}", self.root(), path);
