@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.8.1 (beta0)
+## v0.8.1 (beta1)
 
 **Fixes**
 
