@@ -2,6 +2,11 @@
 
 ## v0.8.1 (beta0)
 
+**Fixes**
+
+- `garden grow` was fixed to detect existing branches when growing
+  `git worktree`-created child worktrees.
+
 **Development**:
 
 - Use `strum` to implement `FromStr` for `enum ColorMode`.

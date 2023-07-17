@@ -76,12 +76,12 @@ pub fn branches(path: &std::path::Path) -> Vec<String> {
     let exec = cmd::exec_in_dir(&cmd, &path);
     if let Ok(x) = cmd::capture_stdout(exec) {
         let output = cmd::trim_stdout(&x);
-        branches.push(
-            output
+        branches.append(
+            &mut output
                 .lines()
                 .filter(|x| !x.is_empty())
                 .map(|x| x.to_string())
-                .collect(),
+                .collect::<Vec<String>>(),
         );
     }
 
