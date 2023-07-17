@@ -42,7 +42,7 @@ code repository. If you want to install the latest pre-release version then you 
 build the Git version of Garden yourself using `cargo`.
 
 ```
-cargo install --git https://gitlab.com/davvid/garden garden-tools
+cargo install --git https://gitlab.com/garden-rs/garden.git garden-tools
 ```
 
 
@@ -118,7 +118,7 @@ If you would like to develop features and contribute to Garden then you will
 have to clone the repository on your local machine.
 
 ```bash
-git clone https://gitlab.com/davvid/garden.git
+git clone https://gitlab.com/garden-rs/garden.git
 cd garden
 
 # Build ./target/debug/garden

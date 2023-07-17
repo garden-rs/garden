@@ -10,7 +10,7 @@ Run the following commands to see this in action.
 mkdir -p cola && cd cola
 
 # Download and audit the garden file we're going to run.
-wget https://gitlab.com/davvid/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
+wget https://gitlab.com/garden-rs/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the repos in the "cola" garden and use a custom

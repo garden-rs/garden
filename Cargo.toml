@@ -17,7 +17,7 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://garden-rs.gitlab.io"
 documentation = "https://docs.rs/garden-tools/latest/garden"
-repository = "https://gitlab.com/davvid/garden"
+repository = "https://gitlab.com/garden-rs/garden"
 authors = ["David Aguilar <davvid@gmail.com>"]
 
 [badges]

@@ -7,8 +7,8 @@ self-contained and inter-dependent Git worktrees.
 
 ## Code Status
 
-[![Build status](https://gitlab.com/davvid/garden/badges/main/pipeline.svg)](https://gitlab.com/davvid/garden/-/pipelines)
-[![MIT License](https://img.shields.io/gitlab/license/davvid/garden.svg)](LICENSE)
+[![Build status](https://gitlab.com/garden-rs/garden/badges/main/pipeline.svg)](https://gitlab.com/garden-rs/garden/-/pipelines)
+[![MIT License](https://img.shields.io/gitlab/license/garden-rs/garden.svg)](LICENSE)
 
 Garden is actively maintained and its current features are stable.
 
@@ -49,6 +49,6 @@ The structure and content of the README and documentation was heavily inspired
 by the the [mdbook](https://github.com/rust-lang/mdBook) documentation.
 
 The [yaml-rust parser used by Garden](https://github.com/davvid/yaml-rust)
-is [@davvid](https://github.com/davvid)'s fork of the
-[original yaml-rust](https://github.com/chyh1990/yaml-rust) crate by
+is [@davvid](https://github.com/davvid)'s ([gitlab](https://gitlab.com/davvid))
+fork of the [original yaml-rust](https://github.com/chyh1990/yaml-rust) crate by
 [@chyh1990](https://github.com/chyh1990).

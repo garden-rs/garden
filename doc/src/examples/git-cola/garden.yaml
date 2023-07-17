@@ -100,7 +100,7 @@ trees:
 
   vx:
     description: Utility for activating Python virtualenvs
-    url: https://github.com/davvid/vx.git
+    url: https://gitlab.com/davvid/vx.git
     depth: 1  # Create a shallow clone using "git clone --depth=1"
     environment:
       PATH: ${TREE_PATH}

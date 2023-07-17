@@ -17,7 +17,7 @@ run the tools.
 mkdir -p photo-restoration && cd photo-restoration
 
 # Download and audit the garden file we're going to run.
-wget https://gitlab.com/davvid/garden/-/raw/main/doc/src/examples/photo-restoration/garden.yaml
+wget https://gitlab.com/garden-rs/garden/-/raw/main/doc/src/examples/photo-restoration/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the trees. This will clone an "old-photos" repo.

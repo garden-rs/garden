@@ -77,17 +77,17 @@ groups:
 trees:
   garden:
     path: ${GARDEN_CONFIG_DIR}
-    url: "git@gitlab.com:davvid/garden.git"
+    url: "git@gitlab.com:garden-rs/garden.git"
     remotes:
-      github: "git@github.com:davvid/garden.git"
-      gitlab: "git@gitlab.com:davvid/garden.git"
+      garden: "git@gitlab.com:garden-rs/garden.git"
       davvid: "https://github.com/davvid/garden.git"
+      github: "git@github.com:davvid/garden.git"
       jtietema: "https://github.com/jtietema/garden.git"
       slackline: "https://github.com/slackline/garden.git"
       pages: "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
     gitconfig:
       remote.origin.pushurl:
-        - "git@gitlab.com:davvid/garden.git"
+        - "git@gitlab.com:garden-rs/garden.git"
         - "git@github.com:davvid/garden.git"
       branch.pages.remote: pages
       remote.pages.pushurl:
