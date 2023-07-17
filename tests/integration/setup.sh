@@ -20,6 +20,8 @@ main () {
     mkdir -p "$1"
     (
         cd "./$1"
+        git init --quiet
+        git commit --quiet --allow-empty -m'Root directory'
         mkdir -p repos
         # Create repos/example.git
         git init ${quiet} --bare repos/example.git
