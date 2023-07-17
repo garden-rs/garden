@@ -23,6 +23,7 @@ commands:
     rm -rf book.new
   fix: cargo clippy --all --fix "$@" -- -D warnings
   fmt: cargo fmt "$@"
+  git: git "$@"
   install: |
     cargo build --release "$@"
     install -m 775 -d "${DESTDIR}${bindir}"
