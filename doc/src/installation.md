@@ -59,7 +59,7 @@ to allow `garden` to be added to the main homebrew-core repository.
 You will need to enable the `homebrew-garden` tap until then.
 
 ```bash
-brew tap davvid/homebrew-garden
+brew tap garden-rs/garden https://gitlab.com/garden-rs/homebrew-garden
 ```
 
 ### Stable Release
