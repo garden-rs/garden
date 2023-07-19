@@ -50,6 +50,7 @@ commands:
       return 1
     )
     garden grow doc/book
+    garden grow homebrew
   stage: git add --update "$@"
   stat: git status --short "$@"
   status: git status "$@"
@@ -70,9 +71,11 @@ variables:
 groups:
   garden: garden
   doc: doc/book
+  brew: homebrew
   all:
     - garden
     - doc/book
+    - homebrew
 
 trees:
   garden:
@@ -99,3 +102,5 @@ trees:
     branch: pages
     branches:
       pages: pages/pages
+
+  homebrew: "git@gitlab.com:garden-rs/homebrew-garden.git"
