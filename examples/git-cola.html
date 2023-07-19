@@ -117,10 +117,10 @@
                         <a href="../print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://gitlab.com/davvid/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
+                        <a href="https://gitlab.com/garden-rs/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://gitlab.com/davvid/garden/edit/main/doc/src/examples/git-cola.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://gitlab.com/garden-rs/garden/edit/main/doc/src/examples/git-cola.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -157,7 +157,7 @@ qtpy and vx.</p>
 mkdir -p cola &amp;&amp; cd cola
 
 # Download and audit the garden file we're going to run.
-wget https://gitlab.com/davvid/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
+wget https://gitlab.com/garden-rs/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the repos in the &quot;cola&quot; garden and use a custom
@@ -288,7 +288,7 @@ trees:
 
   vx:
     description: Utility for activating Python virtualenvs
-    url: https://github.com/davvid/vx.git
+    url: https://gitlab.com/davvid/vx.git
     depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
     environment:
       PATH: ${TREE_PATH}

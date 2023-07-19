@@ -118,7 +118,7 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://gitlab.com/davvid/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
+                        <a href="https://gitlab.com/garden-rs/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
 
@@ -276,7 +276,7 @@ to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</co
 <p>The version published to crates.io will sometimes be behind the source
 code repository. If you want to install the latest pre-release version then you can
 build the Git version of Garden yourself using <code>cargo</code>.</p>
-<pre><code>cargo install --git https://gitlab.com/davvid/garden garden-tools
+<pre><code>cargo install --git https://gitlab.com/garden-rs/garden.git garden-tools
 </code></pre>
 <h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
 <p>You can install <code>garden</code> on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
@@ -318,7 +318,7 @@ make install
 <h2 id="build-and-install-from-source-for-development"><a class="header" href="#build-and-install-from-source-for-development">Build and Install from Source for Development</a></h2>
 <p>If you would like to develop features and contribute to Garden then you will
 have to clone the repository on your local machine.</p>
-<pre><code class="language-bash">git clone https://gitlab.com/davvid/garden.git
+<pre><code class="language-bash">git clone https://gitlab.com/garden-rs/garden.git
 cd garden
 
 # Build ./target/debug/garden
@@ -1044,7 +1044,7 @@ trees:
 
   vx:
     description: Utility for activating Python virtualenvs
-    url: https://github.com/davvid/vx.git
+    url: https://gitlab.com/davvid/vx.git
     depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
     environment:
       PATH: ${TREE_PATH}
@@ -1399,7 +1399,7 @@ run the tools.</p>
 mkdir -p photo-restoration &amp;&amp; cd photo-restoration
 
 # Download and audit the garden file we're going to run.
-wget https://gitlab.com/davvid/garden/-/raw/main/doc/src/examples/photo-restoration/garden.yaml
+wget https://gitlab.com/garden-rs/garden/-/raw/main/doc/src/examples/photo-restoration/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the trees. This will clone an &quot;old-photos&quot; repo.
@@ -1482,7 +1482,7 @@ qtpy and vx.</p>
 mkdir -p cola &amp;&amp; cd cola
 
 # Download and audit the garden file we're going to run.
-wget https://gitlab.com/davvid/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
+wget https://gitlab.com/garden-rs/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
 cat garden.yaml
 
 # One-time setup: Clone all of the repos in the &quot;cola&quot; garden and use a custom
@@ -1613,7 +1613,7 @@ trees:
 
   vx:
     description: Utility for activating Python virtualenvs
-    url: https://github.com/davvid/vx.git
+    url: https://gitlab.com/davvid/vx.git
     depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
     environment:
       PATH: ${TREE_PATH}
@@ -1678,10 +1678,21 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
-<h2 id="v081-beta0"><a class="header" href="#v081-beta0">v0.8.1 (beta0)</a></h2>
+<h2 id="v081"><a class="header" href="#v081">v0.8.1</a></h2>
+<p><strong>Fixes</strong></p>
+<ul>
+<li><code>garden grow</code> was fixed to detect existing branches when growing
+<code>git worktree</code>-created child worktrees.</li>
+</ul>
 <p><strong>Development</strong>:</p>
 <ul>
-<li>Use <code>strum</code> to implement <code>FromStr</code> for <code>enum ColorMode</code>.</li>
+<li>
+<p><code>strum</code> is now used to implement <code>FromStr</code> for <code>enum ColorMode</code>.</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/is-terminal">is-terminal</a> is now used instead of
+the unmaintained <code>atty</code> crate.</p>
+</li>
 </ul>
 <h2 id="v080"><a class="header" href="#v080">v0.8.0</a></h2>
 <p><strong>Features</strong>:</p>
@@ -1787,7 +1798,7 @@ the <code>garden</code> command version.</p>
 <li>
 <p>The <code>Makefile</code> has been replaced by a <code>garden.yaml</code> Garden file.
 We can now use <code>garden {build, test, check, fmt, clippy, ...}</code> instead of <code>make ...</code>.
-See <a href="https://gitlab.com/davvid/garden/-/raw/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
+See <a href="https://gitlab.com/garden-rs/garden/-/raw/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
 Packagers can use <code>cargo install</code> to install <code>garden</code> and invoke <code>mdbook</code> directly
 to install the user manual. We also provide
 <code>garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc</code> if distros

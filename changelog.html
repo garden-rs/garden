@@ -117,10 +117,10 @@
                         <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                        <a href="https://gitlab.com/davvid/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
+                        <a href="https://gitlab.com/garden-rs/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
-                        <a href="https://gitlab.com/davvid/garden/edit/main/doc/src/changelog.md" title="Suggest an edit" aria-label="Suggest an edit">
+                        <a href="https://gitlab.com/garden-rs/garden/edit/main/doc/src/changelog.md" title="Suggest an edit" aria-label="Suggest an edit">
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
 
@@ -150,10 +150,21 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
-<h2 id="v081-beta0"><a class="header" href="#v081-beta0">v0.8.1 (beta0)</a></h2>
+<h2 id="v081"><a class="header" href="#v081">v0.8.1</a></h2>
+<p><strong>Fixes</strong></p>
+<ul>
+<li><code>garden grow</code> was fixed to detect existing branches when growing
+<code>git worktree</code>-created child worktrees.</li>
+</ul>
 <p><strong>Development</strong>:</p>
 <ul>
-<li>Use <code>strum</code> to implement <code>FromStr</code> for <code>enum ColorMode</code>.</li>
+<li>
+<p><code>strum</code> is now used to implement <code>FromStr</code> for <code>enum ColorMode</code>.</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/is-terminal">is-terminal</a> is now used instead of
+the unmaintained <code>atty</code> crate.</p>
+</li>
 </ul>
 <h2 id="v080"><a class="header" href="#v080">v0.8.0</a></h2>
 <p><strong>Features</strong>:</p>
@@ -259,7 +270,7 @@ the <code>garden</code> command version.</p>
 <li>
 <p>The <code>Makefile</code> has been replaced by a <code>garden.yaml</code> Garden file.
 We can now use <code>garden {build, test, check, fmt, clippy, ...}</code> instead of <code>make ...</code>.
-See <a href="https://gitlab.com/davvid/garden/-/raw/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
+See <a href="https://gitlab.com/garden-rs/garden/-/raw/5ef8d0ab16a64660fef2bfc551e69cc782dfd4a3/garden.yaml">garden.yaml @ 5ef8d0ab16 for more details</a>.
 Packagers can use <code>cargo install</code> to install <code>garden</code> and invoke <code>mdbook</code> directly
 to install the user manual. We also provide
 <code>garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc</code> if distros
