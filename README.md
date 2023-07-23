@@ -43,6 +43,17 @@ repositories for development.
 * Configured using simple yet featureful YAML configuration files.
 
 
+## Links and Related Projects
+
+* [Garden on crates.io](https://crates.io/crates/garden-tools)
+
+* [Garden Homebrew formula](https://gitlab.com/garden-rs/homebrew-garden)
+
+* [Garden NetBSD pkgsrc](https://cdn.netbsd.org/pub/pkgsrc/current/pkgsrc/devel/garden/index.html)
+
+* [Garden seeds](https://gitlab.com/davvid/garden-seeds) ~ reusable templates for garden.
+
+
 ## Acknowledgements
 
 The structure and content of the README and documentation was heavily inspired
