@@ -10,6 +10,7 @@ edition = "2021"
 [output.html]
 mathjax-support = true
 site-url = "/garden/"
+git-repository-icon= "fa-gitlab"
 git-repository-url = "https://gitlab.com/garden-rs/garden/tree/main/doc"
 edit-url-template = "https://gitlab.com/garden-rs/garden/edit/main/doc/{path}"
 
