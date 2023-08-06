@@ -35,10 +35,11 @@ build:amd64:
   image: rust
   script:
     - echo using pre-generated target/release/garden
+    - cp -p target/release/garden garden
     - garden --version
   artifacts:
     paths:
-      - target/release/garden
+      - garden
 
 pages:
   stage: pages
