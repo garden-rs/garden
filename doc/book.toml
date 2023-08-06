@@ -8,6 +8,8 @@ language = "en"
 edition = "2021"
 
 [output.html]
+default-theme = "ayu"
+preferred-dark-theme = "ayu"
 mathjax-support = true
 site-url = "/garden/"
 git-repository-icon= "fa-gitlab"
