@@ -2,7 +2,7 @@
 
 ## v0.8.1
 
-**Fixes**
+**Fixes**:
 
 - `garden grow` was fixed to detect existing branches when growing
   `git worktree`-created child worktrees.
@@ -47,7 +47,7 @@ referenced using `graft::` namespace qualifiers.
 
 - Improved shell completions for `garden`, `garden init` and `garden plant`.
 
-**Packaging**
+**Packaging**:
 
 - [0323pin](https://github.com/0323) packaged `garden` for pkgsrc/NetBSD and
   [merged the package into the main branch!](http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html)
@@ -62,7 +62,7 @@ referenced using `graft::` namespace qualifiers.
 - Both names and values in `gitconfig` can now use `${var}` expressions.
   Previously only values were evaluated. Config names are evaluated now as well.
 
-**Fixes**
+**Fixes**:
 
 - The `zsh` workaround for `garden completion zsh` is no longer needed.
   The [documentation for generating zsh completions](https://garden-rs.gitlab.io/commands.html#zsh)
