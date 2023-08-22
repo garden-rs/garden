@@ -4,9 +4,11 @@ on: [push, pull_request]
 
 jobs:
   check:
-    name: Lints and checks
+    name: Checks
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
       - name: Checkout
         uses: actions/checkout@v3
       - run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy --no-self-update
@@ -19,6 +21,8 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
       - name: Checkout
         uses: actions/checkout@v3
       - run: rustup toolchain install stable --profile minimal --no-self-update
@@ -29,7 +33,7 @@ jobs:
         run: garden -vv doc
 
   test:
-    name: Test using Rust ${{ matrix.rust }} on ${{ matrix.os }}
+    name: Test Rust ${{ matrix.rust }} on ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +41,8 @@ jobs:
         rust: [stable]
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.11.0
       - name: Checkout
         uses: actions/checkout@v3
       - run: git config --global init.defaultBranch main
