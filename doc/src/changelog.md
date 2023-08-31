@@ -93,11 +93,11 @@ referenced using `graft::` namespace qualifiers.
   files are added to the current configuration.
   ([#7](https://github.com/davvid/garden/pull/7))
 
-- [Garden commands can now reference $shell variables](https://garden-rs.gitlab.io/commands.html#shell-syntax)
+- [Garden commands can now reference \$shell variables](https://garden-rs.gitlab.io/commands.html#shell-syntax)
   using the standard (brace-less) shell `$variable` syntax. The braced `${garden}`
   variable syntax remains reserved for resolving Garden Variables.
   Double-`$` braces (ex: `$${...}`) can be used to escape a `$${variable}` from
-  evaluation so that a literal the `${variable}` value is used by the garden command.
+  evaluation so that a literal `${variable}` value is used in the garden command.
   ([#11](https://github.com/davvid/garden/issues/11))
   ([#12](https://github.com/davvid/garden/pull/12))
 
