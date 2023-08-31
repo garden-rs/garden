@@ -7,7 +7,7 @@
 commands:
   bench: cargo bench "$@"
   build: cargo build "$@"
-  check: garden -vv cmd garden check/clippy check/fmt
+  check: garden -vv cmd garden test check/clippy check/fmt
   check/clippy: cargo clippy --all "$@" -- -D warnings
   check/fmt: cargo fmt --check "$@"
   clean: cargo clean "$@"

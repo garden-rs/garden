@@ -14,8 +14,10 @@ jobs:
       - run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy --no-self-update
       - uses: Swatinem/rust-cache@v2
       - run: cargo install --path .
-      - name: Run checks
-        run: garden -vv check
+      - name: Run clippy checks
+        run: garden -vv check/clippy
+      - name: Run format checks
+        run: garden -vv check/fmt
 
   docs:
     name: Documentation
