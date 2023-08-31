@@ -261,6 +261,11 @@ fn grow_remotes() -> Result<()> {
     let output = assert_cmd_capture(&cmd, &worktree);
     assert_eq!("git@github.com:user/example.git", output);
 
+    // remote.publish.tagopt is --no-tags
+    let cmd = ["git", "config", "remote.publish.tagopt"];
+    let output = assert_cmd_capture(&cmd, &worktree);
+    assert_eq!("--no-tags", output);
+
     Ok(())
 }
 

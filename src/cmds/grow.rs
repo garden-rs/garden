@@ -278,24 +278,39 @@ fn update_tree_from_context(
             ctx.garden.as_ref(),
         );
 
-        let exec = if existing_remotes.contains(remote) {
+        if existing_remotes.contains(remote) {
             let remote_key = format!("remote.{remote}.url");
             let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            cmd::exec_in_dir(&command, path)
+            let exec = cmd::exec_in_dir(&command, path);
+            let status = cmd::status(exec.join());
+            if status != errors::EX_OK {
+                exit_status = status;
+            }
         } else {
             let command = ["git", "remote", "add", remote.as_ref(), url.as_ref()];
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            cmd::exec_in_dir(&command, path)
-        };
+            let exec = cmd::exec_in_dir(&command, path);
+            let status = cmd::status(exec.join());
+            if status != errors::EX_OK {
+                exit_status = status;
+            }
 
-        let status = cmd::status(exec.join());
-        if status != errors::EX_OK {
-            exit_status = status;
+            // git config remote.<name>.tagopt --no-tags
+            let key = format!("remote.{}.tagopt", remote);
+            let command = ["git", "config", key.as_ref(), "--no-tags"];
+            if verbose > 1 {
+                print_command_str(&command.join(" "));
+            }
+            let exec = cmd::exec_in_dir(&command, path);
+            let status = cmd::status(exec.join());
+            if status != errors::EX_OK {
+                exit_status = status;
+            }
         }
     }
 

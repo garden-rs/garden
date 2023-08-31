@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.0
+
+**Features**
+
+- `garden grow` now sets `git config remote.$name.tagopt --no-tags`
+  when adding additional remotes. This prevents accidentally fetching tags
+  when interacting with remotes.
+
 ## v0.8.1
 
 **Fixes**:
