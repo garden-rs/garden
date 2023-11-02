@@ -150,6 +150,13 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v090"><a class="header" href="#v090">v0.9.0</a></h2>
+<p><strong>Features</strong></p>
+<ul>
+<li><code>garden grow</code> now sets <code>git config remote.$name.tagopt --no-tags</code>
+when adding additional remotes. This prevents accidentally fetching tags
+when interacting with remotes.</li>
+</ul>
 <h2 id="v081"><a class="header" href="#v081">v0.8.1</a></h2>
 <p><strong>Fixes</strong>:</p>
 <ul>
@@ -251,7 +258,7 @@ files are added to the current configuration.
 using the standard (brace-less) shell <code>$variable</code> syntax. The braced <code>${garden}</code>
 variable syntax remains reserved for resolving Garden Variables.
 Double-<code>$</code> braces (ex: <code>$${...}</code>) can be used to escape a <code>$${variable}</code> from
-evaluation so that a literal the <code>${variable}</code> value is used by the garden command.
+evaluation so that a literal <code>${variable}</code> value is used in the garden command.
 (<a href="https://github.com/davvid/garden/issues/11">#11</a>)
 (<a href="https://github.com/davvid/garden/pull/12">#12</a>)</p>
 </li>
