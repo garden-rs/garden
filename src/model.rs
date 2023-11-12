@@ -456,6 +456,9 @@ pub struct Configuration {
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: IndexMap<TreeName, Tree>,
     pub variables: VariableHashMap,
+    /// Variables defined on the command-line using "-D name=value" have the
+    /// highest precedence and override variables defined by any configuration or tree.
+    pub override_variables: VariableHashMap,
     pub verbose: u8,
     pub parent_id: Option<ConfigId>,
     id: Option<ConfigId>,
@@ -599,7 +602,8 @@ impl Configuration {
             } else {
                 error!("unable to split '{}'", k_eq_v);
             }
-            self.variables.insert(name, Variable::new(expr, None));
+            self.override_variables
+                .insert(name, Variable::new(expr, None));
         }
 
         Ok(())

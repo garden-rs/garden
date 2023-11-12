@@ -24,6 +24,14 @@ fn expand_tree_vars(
         return Some(format!("${name}"));
     }
 
+    // Check for the variable in override scope defined by "garden -D name=value".
+    if let Some(var) = config.override_variables.get(name) {
+        let expr = var.get_expr();
+        let result = tree_value(app_context, config, expr, tree_name, garden_name);
+        var.set_value(result.clone());
+        return Some(result);
+    }
+
     // Special-case evaluation of ${graft::values}.
     if syntax::is_graft(name) {
         // First, try the current config.

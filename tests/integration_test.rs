@@ -501,6 +501,28 @@ fn eval_garden_config_dir() -> Result<()> {
     Ok(())
 }
 
+/// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
+#[test]
+#[named]
+fn eval_override_variables() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden eval ${tree_variable} current
+    let output = garden_capture(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "--define",
+        "tree_value=test",
+        "eval",
+        "${tree_value}",
+        "current",
+    ]);
+    assert_eq!(output, "test");
+
+    Ok(())
+}
+
 /// `garden::git::worktree_details(path)` returns a struct with branches and a
 /// GitTreeType (Tree, Bare, Parent, Worktree) for this worktree.
 #[test]

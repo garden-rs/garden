@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.9.1
+
+**Fixes**
+
+- `garden -D name=value` now overrides variables in all scopes.
+  Variables defined in tree scope were not subject to overrides and
+  will now get properly overridden by the `--define` / `-D`
+  command-line options.
+
 ## v0.9.0
 
 **Features**

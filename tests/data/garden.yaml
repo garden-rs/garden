@@ -55,6 +55,7 @@ trees:
     variables:
       exec_expr: $ value=$(echo expr); echo $value
       garden_value: garden
+      tree_value: tree
     commands:
       echo-dir:
         - basename "$(pwd)"
