@@ -438,7 +438,7 @@ fn get_default_shell() -> String {
     .to_string()
 }
 
-// Configuration represents an instantiated garden configuration
+/// Configuration represents an instantiated garden configuration
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
     pub commands: MultiVariableHashMap,
