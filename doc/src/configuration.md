@@ -295,8 +295,9 @@ and custom commands.
 
 ```yaml
 trees:
-  git:
+  git-scm:
     description: Fast, scalable, distributed version control
+    path: git
     url: git://git.kernel.org/pub/scm/git/git.git
     remotes:
       gitlab: https://gitlab.com/gitlab-org/git.git
@@ -307,16 +308,44 @@ trees:
       test: make test "$@"
     variables:
       num_procs: $ nproc 2>/dev/null || sysctl -n hw.activecpu 2>/dev/null || echo 4
-    path: git
 ```
 
 All fields are more or less optional. The `path` field defaults to the same
 name as the tree, so the `path: git` setting above can be omitted without
 any differences in behavior.
 
-The `path` field can be used to name trees on thing while placing them in
-a different directory on disk. `path` defaults to the same name as the tree,
-for example `git` above.
+The `path` field can be used to name trees independently of directory on disk.
+The `path` value defaults to the same name as the tree, for example `git-scm`
+would be used as the directory without the `path: git` setting above.
+
+The `path: git` setting causes `garden grow git` to clone into a directory called
+`git` instead of `git-scm`.
+
+Relative paths are assumed to be relative to the `${GARDEN_ROOT}`, typically the
+same directory as the `garden.yaml`.
+
+If the only field you want to configure is the `url` field then you can also
+use a `string` rather than a `dictionary` / `table` to represent a tree
+by providing just the URL. This configures a tree with a single `origin`
+remote pointing to the configured URL.
+
+```yaml
+trees:
+  git-scm: git://git.kernel.org/pub/scm/git/git.git
+```
+
+### Remotes
+
+The `remotes` field defines named
+[Git remotes](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes)
+that will be configured when growing the repository.
+
+If you edit your `garden.yaml` then you can always re-run `garden grow` to add remotes
+that were added to `garden.yaml`.
+
+Likewise, you can always rerun `garden plant` to record new remotes that
+you may have added using the `git remote add`
+[command-line interface](https://git-scm.com/docs/git-remote).
 
 
 ## Templates
