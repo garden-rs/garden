@@ -1,17 +1,17 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js ayu">
+<html lang="en" class="ayu" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>Garden User Guide</title>
-        <meta name="robots" content="noindex" />
+        <meta name="robots" content="noindex">
 
 
         <!-- Custom HTML head -->
         
         <meta name="description" content="Garden grows and cultivates Git trees">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -34,7 +34,8 @@
         <!-- MathJax -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     </head>
-    <body>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
@@ -63,22 +64,29 @@
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             var html = document.querySelector('html');
-            html.classList.remove('no-js')
             html.classList.remove('ayu')
             html.classList.add(theme);
-            html.classList.add('js');
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
         </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var html = document.querySelector('html');
-            var sidebar = 'hidden';
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
-            html.classList.remove('sidebar-visible');
-            html.classList.add("sidebar-" + sidebar);
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
@@ -88,15 +96,37 @@
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
                                 <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
@@ -1271,11 +1301,59 @@ and groups make those names available when querying and performing operations
 over trees.</p>
 <p>Gardens can also include environment, gitconfig, and custom group-level
 commands in addition to the commands provided by each tree.</p>
+<h2 id="trees"><a class="header" href="#trees">Trees</a></h2>
+<p>The <code>trees</code> block in a <code>garden.yaml</code> Garden file defines the trees that
+are available for running commands against.</p>
+<p>Trees represent Git worktrees and can be aggregated into groups and gardens.
+The <code>tree</code> block defines properties about a tree such as its Git URL,
+custom variables, environment variables, Git remotes, Git configuration variables,
+and custom commands.</p>
+<pre><code class="language-yaml">trees:
+  git-scm:
+    description: Fast, scalable, distributed version control
+    path: git
+    url: git://git.kernel.org/pub/scm/git/git.git
+    remotes:
+      gitlab: https://gitlab.com/gitlab-org/git.git
+      github: https://github.com/git/git.git
+      gitster: https://github.com/gitster/git.git
+    commands:
+      build: make all -j ${num_procs} &quot;$@&quot;
+      test: make test &quot;$@&quot;
+    variables:
+      num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.activecpu 2&gt;/dev/null || echo 4
+</code></pre>
+<p>All fields are more or less optional. The <code>path</code> field defaults to the same
+name as the tree, so the <code>path: git</code> setting above can be omitted without
+any differences in behavior.</p>
+<p>The <code>path</code> field can be used to name trees independently of directory on disk.
+The <code>path</code> value defaults to the same name as the tree, for example <code>git-scm</code>
+would be used as the directory without the <code>path: git</code> setting above.</p>
+<p>The <code>path: git</code> setting causes <code>garden grow git</code> to clone into a directory called
+<code>git</code> instead of <code>git-scm</code>.</p>
+<p>Relative paths are assumed to be relative to the <code>${GARDEN_ROOT}</code>, typically the
+same directory as the <code>garden.yaml</code>.</p>
+<p>If the only field you want to configure is the <code>url</code> field then you can also
+use a <code>string</code> rather than a <code>dictionary</code> / <code>table</code> to represent a tree
+by providing just the URL. This configures a tree with a single <code>origin</code>
+remote pointing to the configured URL.</p>
+<pre><code class="language-yaml">trees:
+  git-scm: git://git.kernel.org/pub/scm/git/git.git
+</code></pre>
+<h3 id="remotes"><a class="header" href="#remotes">Remotes</a></h3>
+<p>The <code>remotes</code> field defines named
+<a href="https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes">Git remotes</a>
+that will be configured when growing the repository.</p>
+<p>If you edit your <code>garden.yaml</code> then you can always re-run <code>garden grow</code> to add remotes
+that were added to <code>garden.yaml</code>.</p>
+<p>Likewise, you can always rerun <code>garden plant</code> to record new remotes that
+you may have added using the <code>git remote add</code>
+<a href="https://git-scm.com/docs/git-remote">command-line interface</a>.</p>
 <h2 id="templates"><a class="header" href="#templates">Templates</a></h2>
 <p>Templates allow sharing of command, variable, gitconfig, and environment
 definitions across trees. Adding an entry to the <code>templates</code> configuration block
 makes a template available when defining trees.</p>
-<p>Specify <code>templates: &lt;template-name&gt;</code> to inherit the the specified template's
+<p>Specify <code>templates: &lt;template-name&gt;</code> to inherit the specified template's
 settings when defining trees. The <code>templates</code> field also accepts a list of
 template names.</p>
 <p>Trees can also reuse another tree definition by specifying the &quot;extend&quot;
@@ -1696,6 +1774,14 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v091"><a class="header" href="#v091">v0.9.1</a></h2>
+<p><strong>Fixes</strong></p>
+<ul>
+<li><code>garden -D name=value</code> now overrides variables in all scopes.
+Variables defined in tree scope were not subject to overrides and
+will now get properly overridden by the <code>--define</code> / <code>-D</code>
+command-line options.</li>
+</ul>
 <h2 id="v090"><a class="header" href="#v090">v0.9.0</a></h2>
 <p><strong>Features</strong></p>
 <ul>
@@ -1957,5 +2043,6 @@ runs a command across all trees before continuing on to the next command.
         });
         </script>
 
+    </div>
     </body>
 </html>
