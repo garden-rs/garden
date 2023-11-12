@@ -283,13 +283,49 @@ Gardens can also include environment, gitconfig, and custom group-level
 commands in addition to the commands provided by each tree.
 
 
+## Trees
+
+The `trees` block in a `garden.yaml` Garden file defines the trees that
+are available for running commands against.
+
+Trees represent Git worktrees and can be aggregated into groups and gardens.
+The `tree` block defines properties about a tree such as its Git URL,
+custom variables, environment variables, Git remotes, Git configuration variables,
+and custom commands.
+
+```yaml
+trees:
+  git:
+    description: Fast, scalable, distributed version control
+    url: git://git.kernel.org/pub/scm/git/git.git
+    remotes:
+      gitlab: https://gitlab.com/gitlab-org/git.git
+      github: https://github.com/git/git.git
+      gitster: https://github.com/gitster/git.git
+    commands:
+      build: make all -j ${num_procs} "$@"
+      test: make test "$@"
+    variables:
+      num_procs: $ nproc 2>/dev/null || sysctl -n hw.activecpu 2>/dev/null || echo 4
+    path: git
+```
+
+All fields are more or less optional. The `path` field defaults to the same
+name as the tree, so the `path: git` setting above can be omitted without
+any differences in behavior.
+
+The `path` field can be used to name trees on thing while placing them in
+a different directory on disk. `path` defaults to the same name as the tree,
+for example `git` above.
+
+
 ## Templates
 
 Templates allow sharing of command, variable, gitconfig, and environment
 definitions across trees. Adding an entry to the `templates` configuration block
 makes a template available when defining trees.
 
-Specify `templates: <template-name>` to inherit the the specified template's
+Specify `templates: <template-name>` to inherit the specified template's
 settings when defining trees. The `templates` field also accepts a list of
 template names.
 
