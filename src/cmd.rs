@@ -185,9 +185,7 @@ where
 
     // Create a copy of the command so where the first entry has been replaced
     // with a $PATH-resolved absolute path.
-    let mut command_vec: Vec<String> = Vec::new();
-    command_vec.reserve(command.len());
-
+    let mut command_vec = Vec::with_capacity(command.len());
     command_vec.push(cmd_path.to_string_lossy().to_string());
     for arg in &command[1..] {
         let curpath = std::path::PathBuf::from(arg);
