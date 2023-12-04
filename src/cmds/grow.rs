@@ -92,16 +92,6 @@ fn grow_tree_from_context(
     std::fs::create_dir_all(parent)
         .map_err(|err| errors::GardenError::OSError(format!("unable to create {path}: {err}")))?;
 
-    // "git clone --branch=name" clones the named branch.
-    let branch_var = tree.branch.clone();
-    let branch = eval::tree_value(
-        app_context,
-        config,
-        branch_var.get_expr(),
-        &context.tree,
-        context.garden.as_ref(),
-    );
-
     if pathbuf.exists() {
         return update_tree_from_context(
             app_context,
@@ -155,6 +145,14 @@ fn grow_tree_from_context(
     }
 
     // "git clone --branch=name" clones the named branch.
+    let branch = eval::tree_value(
+        app_context,
+        config,
+        tree.branch.get_expr(),
+        &context.tree,
+        context.garden.as_ref(),
+    );
+
     let branch_opt;
     if !branch.is_empty() && !tree.branches.contains_key(&branch) {
         branch_opt = format!("--branch={branch}");
