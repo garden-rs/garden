@@ -169,3 +169,11 @@ pub fn escape_shell_variables(string: &str) -> String {
 
     result
 }
+
+/// Return the value of a boolean as a string.
+pub fn bool_to_string(value: bool) -> String {
+    match value {
+        true => string!("true"),
+        false => string!("false"),
+    }
+}

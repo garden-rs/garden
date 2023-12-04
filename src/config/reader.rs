@@ -360,7 +360,7 @@ fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> b
                         );
                     }
                     Yaml::Boolean(yaml_bool) => {
-                        let value = bool_to_string(*yaml_bool);
+                        let value = syntax::bool_to_string(*yaml_bool);
                         hashmap.insert(
                             key,
                             model::Variable::new(
@@ -378,13 +378,6 @@ fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> b
             true
         }
         _ => false,
-    }
-}
-
-fn bool_to_string(value: bool) -> String {
-    match value {
-        true => string!("true"),
-        false => string!("false"),
     }
 }
 
@@ -462,7 +455,7 @@ fn get_multivariables_hashmap(
                     }
                     Yaml::Boolean(yaml_bool) => {
                         // Booleans are already resolved.
-                        let value = bool_to_string(*yaml_bool);
+                        let value = syntax::bool_to_string(*yaml_bool);
                         let variables = vec![model::Variable::new(value.clone(), Some(value))];
                         multivariables.insert(key, variables);
                     }
