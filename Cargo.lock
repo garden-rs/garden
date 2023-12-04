@@ -341,6 +341,7 @@ dependencies = [
  "pathdiff",
  "rayon",
  "rm_rf",
+ "shell-words",
  "shellexpand",
  "shlex",
  "strum",
@@ -665,6 +666,12 @@ dependencies = [
  "quote",
  "syn 2.0.39",
 ]
+
+[[package]]
+name = "shell-words"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
 name = "shellexpand"
