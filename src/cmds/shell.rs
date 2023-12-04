@@ -66,6 +66,14 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
         &context.tree,
         context.garden.as_ref(),
     );
+    if app_context.options.verbose > 1 {
+        // Shell quote the list of commands.
+        println!(
+            "{} {}",
+            model::Color::cyan(":"),
+            model::Color::green(&shell),
+        );
+    }
 
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(

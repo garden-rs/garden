@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.0
+
+**Features**
+
+- `garden -vv exec` and `garden -vv shell` now display the command being run.
+
 ## v0.9.1
 
 **Fixes**
