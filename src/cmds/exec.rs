@@ -78,6 +78,15 @@ pub fn exec(
         if tree.is_symlink {
             continue;
         }
+        if verbose > 1 {
+            // Shell quote the list of commands.
+            let cmd_str = shell_words::join(command);
+            println!(
+                "{} {}",
+                model::Color::cyan(":"),
+                model::Color::green(&cmd_str),
+            );
+        }
         // Run the command in the current context.
         if let Err(errors::GardenError::ExitStatus(status)) =
             cmd::exec_in_context(app_context, config, context, quiet, verbose, command)
