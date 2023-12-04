@@ -284,7 +284,6 @@ impl Tree {
         for var in self.variables.values() {
             var.reset();
         }
-
         for env in &self.environment {
             env.reset();
         }
@@ -303,35 +302,28 @@ impl Tree {
 
         // "environment" follow last-set-wins semantics.
         self.environment.append(&mut tree.environment.clone());
-
         // The last value set is the one that wins.
         if tree.clone_depth > 0 {
             self.clone_depth = tree.clone_depth;
         }
-
         if tree.is_bare_repository {
             self.is_bare_repository = tree.is_bare_repository;
         }
-
         if tree.is_single_branch {
             self.is_single_branch = tree.is_single_branch;
         }
-
         if tree.is_worktree {
             self.is_worktree = tree.is_worktree;
         }
         if tree.is_symlink {
             self.is_symlink = tree.is_symlink;
         }
-
         if !tree.branch.is_empty() {
             self.branch = tree.branch.clone();
         }
-
         if !tree.symlink.is_empty() {
             self.symlink = tree.symlink.clone();
         }
-
         if !tree.worktree.is_empty() {
             self.worktree = tree.worktree.clone();
         }
