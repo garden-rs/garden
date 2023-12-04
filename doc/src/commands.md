@@ -484,6 +484,8 @@ garden or tree scope.
 For example, `garden build treesitters catsitters` will run a user-defined `build`
 command over both the `treesitters`  and `catsitters` groups.
 
+Use the `garden -vv` extra-verbose option to display the commands being run.
+
 
 ## garden exec
 
@@ -498,6 +500,8 @@ Run commands over the trees, groups or gardens matched by tree query.
 When the `<tree-query>` resolves to a garden then the environment
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.
+
+Use the `garden -vv` extra-verbose option to display the command being run.
 
 
 ## garden eval
