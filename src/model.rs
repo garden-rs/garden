@@ -7,6 +7,7 @@ use super::git;
 use super::path;
 use super::syntax;
 
+use derivative::Derivative;
 use indexmap::{IndexMap, IndexSet};
 use indextree::{Arena, NodeId};
 use is_terminal::IsTerminal;
@@ -193,7 +194,8 @@ impl MultiVariable {
 }
 
 /// Trees represent a single worktree
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Derivative)]
+#[derivative(Default)]
 pub struct Tree {
     pub commands: MultiVariableHashMap,
     pub environment: Vec<MultiVariable>,
@@ -205,6 +207,8 @@ pub struct Tree {
     pub branch: Variable,
     pub branches: VariableHashMap,
     pub worktree: Variable,
+    #[derivative(Default(value = "string!(\"origin\")"))]
+    pub default_remote: String,
     pub clone_depth: i64,
     pub is_single_branch: bool,
     pub is_symlink: bool,
@@ -327,6 +331,7 @@ impl Tree {
         if !tree.worktree.is_empty() {
             self.worktree = tree.worktree.clone();
         }
+        self.default_remote = tree.default_remote.to_string();
 
         self.update_flags();
     }

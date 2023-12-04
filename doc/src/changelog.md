@@ -4,6 +4,9 @@
 
 **Features**
 
+- The default `origin` remote name can now be configured using `tree.<tree>.default-remote`.
+  ([#16](https://gitlab.com/garden-rs/garden/-/issues/16))
+
 - Commands now display the tree's current branch alongside the tree name.
   ([#18](https://github.com/davvid/garden/issues/18))
 

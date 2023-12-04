@@ -424,7 +424,7 @@ fn grow_branches_for_clone() -> Result<()> {
     Ok(())
 }
 
-/// This creates a worktree
+/// Create a child worktrees using "git worktree".
 #[test]
 #[named]
 fn grow_worktree_and_parent() -> Result<()> {
@@ -475,6 +475,72 @@ fn grow_worktree_and_parent() -> Result<()> {
     ]);
     // The "echo" command is: echo ${TREE_NAME} "$@"
     assert_eq!("default hello", output);
+
+    Ok(())
+}
+
+/// `garden grow` uses the configured default remote when just "url" is configured.
+#[test]
+#[named]
+fn grow_default_remote_name() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow example/default-remote-name
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/default-remote-name",
+    ])?;
+    // Ensure that both "main" and "custom/main" branches are created.
+    let repo = fixture.worktree("example/tree/default-remote");
+    let cmd_main = ["git", "rev-parse", "default"];
+    let cmd_custom_main = ["git", "rev-parse", "custom/default"];
+    let main_commit_id = assert_cmd_capture(&cmd_main, &repo);
+    let custom_main_commit_id = assert_cmd_capture(&cmd_custom_main, &repo);
+    assert_eq!(main_commit_id, custom_main_commit_id);
+    // The "checkout.defaultRemoteName" configuration must be setup.
+    let cmd = ["git", "config", "checkout.defaultRemoteName"];
+    let output = assert_cmd_capture(&cmd, &repo);
+    assert_eq!("custom", output);
+    // The "remote.origin.url" configuration must be setup.
+    let cmd = ["git", "config", "remote.origin.url"];
+    let output = assert_cmd_capture(&cmd, &repo);
+    assert_eq!("git://git.example.org/example.git", output);
+
+    Ok(())
+}
+
+/// `garden grow` uses the configured default named remote.
+#[test]
+#[named]
+fn grow_default_remote_url() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow example/default-remote-url
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "grow",
+        "example/default-remote-url",
+    ])?;
+    // Ensure that both "main" and "custom/main" branches are created.
+    let repo = fixture.worktree("example/tree/default-remote");
+    let cmd_main = ["git", "rev-parse", "default"];
+    let cmd_custom_main = ["git", "rev-parse", "custom/default"];
+    let main_commit_id = assert_cmd_capture(&cmd_main, &repo);
+    let custom_main_commit_id = assert_cmd_capture(&cmd_custom_main, &repo);
+    assert_eq!(main_commit_id, custom_main_commit_id);
+    // The "checkout.defaultRemoteName" configuration must be setup.
+    let cmd = ["git", "config", "checkout.defaultRemoteName"];
+    let output = assert_cmd_capture(&cmd, &repo);
+    assert_eq!("custom", output);
 
     Ok(())
 }

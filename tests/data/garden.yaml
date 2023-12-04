@@ -81,6 +81,18 @@ trees:
     depth: 1
     single-branch: true
 
+  example/default-remote-url:
+    path: example/tree/default-remote
+    url: file://${repos}/example.git
+    default-remote: custom
+
+  example/default-remote-name:
+    path: example/tree/default-remote
+    default-remote: custom
+    remotes:
+      custom: file://${repos}/example.git
+      origin: git://git.example.org/example.git
+
   tree1:
     path: .
     variables:

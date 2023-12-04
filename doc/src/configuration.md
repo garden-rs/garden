@@ -358,6 +358,30 @@ Likewise, you can always rerun `garden plant` to record new remotes that
 you may have added using the `git remote add`
 [command-line interface](https://git-scm.com/docs/git-remote).
 
+### Default Remote Name
+
+The default `origin` remote name used by Git can be overridden by setting the
+`default-remote` field in the tree's configuration.
+
+```yaml
+trees:
+  git:
+    url: git://git.kernel.org/pub/scm/git/git.git
+    default-remote: kernel.org
+```
+
+This will create a remote called `kernel.org` instead or `origin` when growing trees.
+This feature can also be used when multiple named remotes are configured.
+
+```yaml
+trees:
+  git:
+    default-remote: kernel.org
+    remotes:
+      kernel.org: git://git.kernel.org/pub/scm/git/git.git
+      gitster: https://github.com/gitster/git.git
+```
+
 
 ## Templates
 

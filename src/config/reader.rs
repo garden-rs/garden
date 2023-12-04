@@ -653,6 +653,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_variables_hashmap(&value["variables"], &mut tree.variables);
     get_multivariables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
+    get_str(&value["default-remote"], &mut tree.default_remote);
     get_str_variables_hashmap(&value["remotes"], &mut tree.remotes);
 
     get_multivariables(&value["environment"], &mut tree.environment);
@@ -666,6 +667,17 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_i64(&value["depth"], &mut tree.clone_depth);
     get_bool(&value["bare"], &mut tree.is_bare_repository);
     get_bool(&value["single-branch"], &mut tree.is_single_branch);
+
+    // Load the URL and store it in the "origin" remote.
+    {
+        let mut url = String::new();
+        if get_str(&value["url"], &mut url) {
+            tree.remotes.insert(
+                tree.default_remote.to_string(),
+                model::Variable::new(url, None),
+            );
+        }
+    }
 
     tree.update_flags();
 }
@@ -752,15 +764,6 @@ fn get_tree(
             string!("TREE_PATH"),
             model::Variable::new(tree.get_path().get_expr().clone(), None),
         );
-    }
-
-    // Load the URL and store it in the "origin" remote.
-    {
-        let mut url = String::new();
-        if get_str(&value["url"], &mut url) {
-            tree.remotes
-                .insert(string!("origin"), model::Variable::new(url, None));
-        }
     }
 
     get_tree_fields(value, &mut tree);

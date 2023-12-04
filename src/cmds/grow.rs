@@ -122,8 +122,8 @@ fn grow_tree_from_context(
         );
     }
 
-    // The "origin" remote is cloned by convention. The "url" field maps to "origin".
-    let url = match tree.remotes.get("origin") {
+    // The "url" field maps to the default remote.
+    let url = match tree.remotes.get(&tree.default_remote) {
         Some(remote) => eval::tree_value(
             app_context,
             config,
@@ -142,6 +142,12 @@ fn grow_tree_from_context(
     // "git clone --bare" clones bare repositories.
     if tree.is_bare_repository {
         cmd.push("--bare");
+    }
+
+    // "git clone --remote <name>" uses an alternatively-named remote instead of "origin".
+    if tree.default_remote != "origin" {
+        cmd.push("--origin");
+        cmd.push(&tree.default_remote);
     }
 
     // "git clone --branch=name" clones the named branch.
@@ -264,6 +270,11 @@ fn update_tree_from_context(
                 existing_remotes.insert(String::from(line));
             }
         }
+    }
+
+    // The "default-remote" field is used to change the name of the default "origin" remote.
+    if tree.default_remote != "origin" {
+        set_gitconfig_value("checkout.defaultRemoteName", &tree.default_remote, path);
     }
 
     // Loop over remotes and add/update the git remote configuration.
@@ -518,11 +529,13 @@ fn grow_tree_from_context_as_worktree(
     let remote_branch;
     if !branch.is_empty() {
         // Read the upstream branch from tree.<tree>.branches.<branch> when configured.
-        // Defaults to "origin/<branch>" when not configured.
+        // Defaults to "<remote>/<branch>" when not configured.
         if let Some(expr) = tree.branches.get(&branch) {
             remote_branch = eval::value(app_context, config, expr.get_expr());
         } else {
-            remote_branch = format!("origin/{branch}");
+            // The "default-remote" field is used to change the name of the default "origin" remote.
+            let default_remote = tree.default_remote.to_string();
+            remote_branch = format!("{default_remote}/{branch}");
         }
         if !remote_branch.is_empty() {
             cmd.push(&remote_branch);
