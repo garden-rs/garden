@@ -1359,6 +1359,23 @@ that were added to <code>garden.yaml</code>.</p>
 <p>Likewise, you can always rerun <code>garden plant</code> to record new remotes that
 you may have added using the <code>git remote add</code>
 <a href="https://git-scm.com/docs/git-remote">command-line interface</a>.</p>
+<h3 id="default-remote-name"><a class="header" href="#default-remote-name">Default Remote Name</a></h3>
+<p>The default <code>origin</code> remote name used by Git can be overridden by setting the
+<code>default-remote</code> field in the tree's configuration.</p>
+<pre><code class="language-yaml">trees:
+  git:
+    url: git://git.kernel.org/pub/scm/git/git.git
+    default-remote: kernel.org
+</code></pre>
+<p>This will create a remote called <code>kernel.org</code> instead or <code>origin</code> when growing trees.
+This feature can also be used when multiple named remotes are configured.</p>
+<pre><code class="language-yaml">trees:
+  git:
+    default-remote: kernel.org
+    remotes:
+      kernel.org: git://git.kernel.org/pub/scm/git/git.git
+      gitster: https://github.com/gitster/git.git
+</code></pre>
 <h2 id="templates"><a class="header" href="#templates">Templates</a></h2>
 <p>Templates allow sharing of command, variable, gitconfig, and environment
 definitions across trees. Adding an entry to the <code>templates</code> configuration block
@@ -1787,6 +1804,10 @@ and Git Cola ready to go for development.</p>
 <h2 id="v100"><a class="header" href="#v100">v1.0.0</a></h2>
 <p><strong>Features</strong></p>
 <ul>
+<li>
+<p>The default <code>origin</code> remote name can now be configured using <code>tree.&lt;tree&gt;.default-remote</code>.
+(<a href="https://gitlab.com/garden-rs/garden/-/issues/16">#16</a>)</p>
+</li>
 <li>
 <p>Commands now display the tree's current branch alongside the tree name.
 (<a href="https://github.com/davvid/garden/issues/18">#18</a>)</p>
