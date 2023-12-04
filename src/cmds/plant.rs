@@ -88,23 +88,21 @@ fn plant_path(
 
     let mut is_worktree = false;
     let mut parent_tree_name = String::new();
-    let parent_pathbuf;
     let worktree_details = git::worktree_details(&pathbuf)?;
 
     // If this is a worktree child then automatically "garden plant" the parent worktree.
-    if let model::GitTreeType::Worktree(parent_path_abspath) = worktree_details.tree_type {
-        parent_pathbuf = std::path::PathBuf::from(parent_path_abspath);
-        let parent_path = path::strip_prefix_into_string(&root, &parent_pathbuf)?;
+    if let model::GitTreeType::Worktree(parent_path) = worktree_details.tree_type {
         is_worktree = true;
 
-        parent_tree_name = match query::tree_name_from_abspath(config, &parent_pathbuf) {
+        parent_tree_name = match query::tree_name_from_abspath(config, &parent_path) {
             Some(tree_name) => tree_name,
             None => {
+                let relative_path = path::strip_prefix(&root, &parent_path)?;
                 return Err(errors::GardenError::WorktreeParentNotPlantedError {
-                    parent: parent_path,
+                    parent: relative_path,
                     tree: raw_path.into(),
                 }
-                .into())
+                .into());
             }
         };
     }

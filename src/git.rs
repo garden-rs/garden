@@ -17,18 +17,19 @@ pub fn worktree_details(pathbuf: &std::path::Path) -> Result<GitTreeDetails, err
     let branch_token = "branch refs/heads/";
     let bare_token = "bare";
 
-    let path_str = path.to_string_lossy().to_string();
-    let mut parent_path = String::new();
+    let mut parent_path = std::path::PathBuf::new();
     let mut branch = String::new();
     let mut is_current = false;
     let mut is_bare = false;
 
     for line in output.lines() {
-        if let Some(worktree_path) = line.strip_prefix(worktree_token) {
-            is_current = worktree_path == path_str;
+        if let Some(worktree) = line.strip_prefix(worktree_token) {
+            let worktree_path = std::path::PathBuf::from(worktree);
+            let current_path = path::abspath(&worktree_path);
+            is_current = current_path == path;
             // The first worktree is the "parent" worktree.
             if worktree_count == 0 {
-                parent_path = worktree_path.to_string();
+                parent_path = current_path;
             }
             worktree_count += 1;
         } else if is_current && line.starts_with(branch_token) {
@@ -51,7 +52,7 @@ pub fn worktree_details(pathbuf: &std::path::Path) -> Result<GitTreeDetails, err
         });
     }
 
-    if path_str == parent_path {
+    if path == parent_path {
         return Ok(GitTreeDetails {
             branch,
             tree_type: GitTreeType::Parent,

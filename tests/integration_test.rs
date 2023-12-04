@@ -574,13 +574,7 @@ fn git_worktree_details() -> Result<()> {
     assert_eq!(details.tree_type, model::GitTreeType::Parent);
 
     // The "child" repository is a GitTreeType::Worktree(parent_path).
-    let parent_path_relative = &fixture.pathbuf("parent");
-    let parent_path = parent_path_relative
-        .clone()
-        .canonicalize()
-        .unwrap_or_else(|_| parent_path_relative.clone())
-        .to_string_lossy()
-        .to_string();
+    let parent_path = garden::path::abspath(&fixture.pathbuf("parent"));
     let details = git::worktree_details(&fixture.pathbuf("child"))?;
     assert_eq!(details.branch, "dev");
     assert_eq!(details.tree_type, model::GitTreeType::Worktree(parent_path));

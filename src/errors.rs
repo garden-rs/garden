@@ -82,7 +82,10 @@ pub enum GardenError {
     WorktreeParentCreationError { worktree: String, tree: String },
 
     #[error("unable to plant {tree:?}: worktree parent {parent:?} has not been planted")]
-    WorktreeParentNotPlantedError { parent: String, tree: String },
+    WorktreeParentNotPlantedError {
+        parent: std::path::PathBuf,
+        tree: String,
+    },
 
     #[error("unable to write configuration: {path:?}")]
     WriteConfigurationError { path: std::path::PathBuf },

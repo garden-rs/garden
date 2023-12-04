@@ -1340,10 +1340,14 @@ impl ApplicationContext {
 /// Represent the different types of Git worktree.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum GitTreeType {
-    Parent,           // A worktree with child worktrees attached to it.
-    Worktree(String), // A child worktree created with "git worktree".
-    Tree,             // A plain ole Git clone / worktree created with "git clone/init".
-    Bare,             // A bare repository.
+    /// A worktree with child worktrees attached to it.
+    Parent,
+    /// A child worktree created with "git worktree".
+    Worktree(std::path::PathBuf),
+    /// A regular Git clone / worktree created with "git clone/init".
+    Tree,
+    /// A bare repository.
+    Bare,
 }
 
 impl_display!(GitTreeType);
