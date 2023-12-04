@@ -366,6 +366,14 @@ when <code>garden.shell</code> is omitted. The first one found is the one that's
 <li><code>bash</code></li>
 <li><code>sh</code></li>
 </ul>
+<h2 id="tree-display"><a class="header" href="#tree-display">Tree Display</a></h2>
+<p>Garden will display the tree's current branch when running commands.
+While this has a marginal performance impact, this feature can be disabled by either
+passing the <code>garden -D garden.tree-branches=0</code> option or by configuring the
+<code>garden.tree-branches</code> option to <code>false</code> in the <code>garden.yaml</code> configuration.</p>
+<pre><code class="language-yaml">garden:
+  tree-branches: false
+</code></pre>
 <h2 id="includes"><a class="header" href="#includes">Includes</a></h2>
 <p>Garden files can be split apart into several files for modularity and reuse.
 You can use the <code>garden.includes</code> list to specify other garden files to include

@@ -385,7 +385,7 @@ garden cmd cola build test -- V=1
 </code></pre>
 <p>Run one or more user-defined commands over the gardens, groups or trees
 that match the specified tree query.</p>
-<p>The exapmle above runs the <code>build</code> and <code>test</code> commands in all of the trees
+<p>The example above runs the <code>build</code> and <code>test</code> commands in all of the trees
 that are part of the <code>cola</code> garden.</p>
 <h3 id="commands-1"><a class="header" href="#commands-1">Commands</a></h3>
 <p><code>garden cmd</code> and <code>garden &lt;command&gt;</code> interact with custom commands that are
@@ -520,6 +520,7 @@ garden or tree scope.</p>
 <p><code>garden &lt;command&gt; ...</code> runs a command over multiple queries.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
+<p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
 <h2 id="garden-exec"><a class="header" href="#garden-exec">garden exec</a></h2>
 <pre><code class="language-bash">garden exec &lt;tree-query&gt; &lt;command&gt; [&lt;arguments&gt;]*
 
@@ -530,6 +531,7 @@ garden exec cola git status -s
 When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environment
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
+<p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
 <pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 

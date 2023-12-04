@@ -685,7 +685,7 @@ garden cmd cola build test -- V=1
 </code></pre>
 <p>Run one or more user-defined commands over the gardens, groups or trees
 that match the specified tree query.</p>
-<p>The exapmle above runs the <code>build</code> and <code>test</code> commands in all of the trees
+<p>The example above runs the <code>build</code> and <code>test</code> commands in all of the trees
 that are part of the <code>cola</code> garden.</p>
 <h3 id="commands-1"><a class="header" href="#commands-1">Commands</a></h3>
 <p><code>garden cmd</code> and <code>garden &lt;command&gt;</code> interact with custom commands that are
@@ -820,6 +820,7 @@ garden or tree scope.</p>
 <p><code>garden &lt;command&gt; ...</code> runs a command over multiple queries.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
+<p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
 <h2 id="garden-exec"><a class="header" href="#garden-exec">garden exec</a></h2>
 <pre><code class="language-bash">garden exec &lt;tree-query&gt; &lt;command&gt; [&lt;arguments&gt;]*
 
@@ -830,6 +831,7 @@ garden exec cola git status -s
 When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environment
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
+<p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
 <pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 
@@ -1155,6 +1157,14 @@ when <code>garden.shell</code> is omitted. The first one found is the one that's
 <li><code>bash</code></li>
 <li><code>sh</code></li>
 </ul>
+<h2 id="tree-display"><a class="header" href="#tree-display">Tree Display</a></h2>
+<p>Garden will display the tree's current branch when running commands.
+While this has a marginal performance impact, this feature can be disabled by either
+passing the <code>garden -D garden.tree-branches=0</code> option or by configuring the
+<code>garden.tree-branches</code> option to <code>false</code> in the <code>garden.yaml</code> configuration.</p>
+<pre><code class="language-yaml">garden:
+  tree-branches: false
+</code></pre>
 <h2 id="includes"><a class="header" href="#includes">Includes</a></h2>
 <p>Garden files can be split apart into several files for modularity and reuse.
 You can use the <code>garden.includes</code> list to specify other garden files to include
@@ -1774,6 +1784,17 @@ by running the &quot;make install&quot; targets in each repo:</p>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v100"><a class="header" href="#v100">v1.0.0</a></h2>
+<p><strong>Features</strong></p>
+<ul>
+<li>
+<p>Commands now display the tree's current branch alongside the tree name.
+(<a href="https://github.com/davvid/garden/issues/18">#18</a>)</p>
+</li>
+<li>
+<p><code>garden -vv exec</code> and <code>garden -vv shell</code> now display the command being run.</p>
+</li>
+</ul>
 <h2 id="v091"><a class="header" href="#v091">v0.9.1</a></h2>
 <p><strong>Fixes</strong></p>
 <ul>
