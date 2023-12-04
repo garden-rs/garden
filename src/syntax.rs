@@ -177,3 +177,12 @@ pub fn bool_to_string(value: bool) -> String {
         false => string!("false"),
     }
 }
+
+/// Return the value of a string as a boolean. Accepts "true", "false", "1" and "0".
+pub fn string_to_bool(value: &str) -> Option<bool> {
+    match value {
+        "true" | "1" => Some(true),
+        "false" | "0" => Some(false),
+        _ => None,
+    }
+}
