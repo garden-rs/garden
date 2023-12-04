@@ -304,7 +304,7 @@ garden cmd cola build test -- V=1
 Run one or more user-defined commands over the gardens, groups or trees
 that match the specified tree query.
 
-The exapmle above runs the `build` and `test` commands in all of the trees
+The example above runs the `build` and `test` commands in all of the trees
 that are part of the `cola` garden.
 
 ### Commands
