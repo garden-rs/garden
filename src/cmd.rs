@@ -132,7 +132,7 @@ where
         path = tree.path_as_ref()?;
 
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !model::print_tree(tree, verbose, quiet) {
+        if !model::print_tree(tree, config.tree_branches, verbose, quiet) {
             return Ok(());
         }
     } else {

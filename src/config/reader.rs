@@ -66,6 +66,10 @@ fn parse_recursive(
     if get_str(&doc["garden"]["shell"], &mut config.shell) && config_verbose > 0 {
         debug!("yaml: garden.shell = {}", config.shell);
     }
+    // garden.tree-branches
+    if get_bool(&doc["garden"]["tree-branches"], &mut config.tree_branches) && config_verbose > 0 {
+        debug!("yaml: garden.tree-branches = {}", config.tree_branches);
+    }
 
     // GARDEN_ROOT and GARDEN_CONFIG_DIR are relative to the root configuration.
     // Referencing these variables from garden files included using garden.includes

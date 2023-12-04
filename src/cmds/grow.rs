@@ -83,7 +83,7 @@ fn grow_tree_from_context(
     };
 
     let path = tree.path_as_ref()?.clone();
-    model::print_tree_details(tree, verbose, quiet);
+    model::print_tree_details(tree, config.tree_branches, verbose, quiet);
 
     let pathbuf = std::path::PathBuf::from(&path);
     let parent = pathbuf.parent().ok_or_else(|| {

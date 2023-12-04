@@ -88,3 +88,26 @@ pub fn branches(path: &std::path::Path) -> Vec<String> {
 
     branches
 }
+
+/// Return the current branch name for the specified repository path.
+pub fn branch(path: &std::path::Path) -> Option<String> {
+    let cmd = ["git", "symbolic-ref", "--quiet", "--short", "HEAD"];
+    let exec = cmd::exec_in_dir(&cmd, &path);
+    if let Ok(capture_data) = cmd::capture_stdout(exec) {
+        let output = cmd::trim_stdout(&capture_data);
+        if !output.is_empty() {
+            return Some(output);
+        }
+    }
+    // Detached head? Show an abbreviated commit ID. This respects `git config core.abbrev`.
+    let cmd = ["git", "rev-parse", "--short", "HEAD"];
+    let exec = cmd::exec_in_dir(&cmd, &path);
+    if let Ok(capture_data) = cmd::capture_stdout(exec) {
+        let output = cmd::trim_stdout(&capture_data);
+        if !output.is_empty() {
+            return Some(output);
+        }
+    }
+    // Unknown branch is an empty string.
+    None
+}

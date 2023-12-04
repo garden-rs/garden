@@ -76,6 +76,17 @@ when `garden.shell` is omitted. The first one found is the one that's used.
 * `bash`
 * `sh`
 
+## Tree Display
+
+Garden will display the tree's current branch when running commands.
+While this has a marginal performance impact, this feature can be disabled by either
+passing the `garden -D garden.tree-branches=0` option or by configuring the
+`garden.tree-branches` option to `false` in the `garden.yaml` configuration.
+
+```yaml
+garden:
+  tree-branches: false
+```
 
 ## Includes
 

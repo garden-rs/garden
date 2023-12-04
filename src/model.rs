@@ -3,6 +3,7 @@ use super::collections::{append_hashmap, append_indexset};
 use super::config;
 use super::errors;
 use super::eval;
+use super::git;
 use super::path;
 use super::syntax;
 
@@ -460,6 +461,7 @@ pub struct Configuration {
     /// highest precedence and override variables defined by any configuration or tree.
     pub override_variables: VariableHashMap,
     pub verbose: u8,
+    pub tree_branches: bool,
     pub parent_id: Option<ConfigId>,
     id: Option<ConfigId>,
 }
@@ -473,6 +475,7 @@ impl Configuration {
             id: None,
             parent_id: None,
             shell: get_default_shell(),
+            tree_branches: true,
             ..std::default::Default::default()
         }
     }
@@ -602,8 +605,17 @@ impl Configuration {
             } else {
                 error!("unable to split '{}'", k_eq_v);
             }
-            self.override_variables
-                .insert(name, Variable::new(expr, None));
+            // Allow overridding garden.tree-branches using "garden -D garden.tree-branches=false".
+            if name == "garden.tree-branches" {
+                if let Some(value) = syntax::string_to_bool(&expr) {
+                    self.tree_branches = value;
+                } else {
+                    error!("'{}' is not a valid value for \"garden.tree-branches\". Must be true, false, 0 or 1", expr);
+                }
+            } else {
+                self.override_variables
+                    .insert(name, Variable::new(expr, None));
+            }
         }
 
         Ok(())
@@ -1145,21 +1157,46 @@ pub fn display_missing_tree(tree: &Tree, path: &str, verbose: u8) -> String {
     }
 }
 
-pub fn display_tree(tree: &Tree, path: &str, verbose: u8) -> String {
+pub fn display_tree(tree: &Tree, path_str: &str, tree_branches: bool, verbose: u8) -> String {
     if verbose > 0 {
+        if tree_branches {
+            if let Some(path) = tree.canonical_pathbuf() {
+                if let Some(branch) = git::branch(&path) {
+                    return format!(
+                        "{} {} ({}) {}",
+                        Color::cyan("#"),
+                        Color::blue(&tree.name).bold(),
+                        Color::blue(&branch),
+                        Color::blue(&path_str)
+                    );
+                }
+            }
+        }
         format!(
-            "{} {}  {}",
+            "{} {} {}",
             Color::cyan("#"),
             Color::blue(&tree.name).bold(),
-            Color::blue(&path)
+            Color::blue(&path_str)
         )
     } else {
+        if tree_branches {
+            if let Some(path) = tree.canonical_pathbuf() {
+                if let Some(branch) = git::branch(&path) {
+                    return format!(
+                        "{} {} ({})",
+                        Color::cyan("#"),
+                        Color::blue(&tree.name).bold(),
+                        Color::blue(&branch)
+                    );
+                }
+            }
+        }
         format!("{} {}", Color::cyan("#"), Color::blue(&tree.name).bold())
     }
 }
 
 /// Print a tree if it exists, otherwise print a missing tree
-pub fn print_tree(tree: &Tree, verbose: u8, quiet: bool) -> bool {
+pub fn print_tree(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) -> bool {
     if let Ok(path) = tree.path_as_ref() {
         // Sparse gardens/missing trees are ok -> skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
@@ -1169,7 +1206,7 @@ pub fn print_tree(tree: &Tree, verbose: u8, quiet: bool) -> bool {
             return false;
         }
 
-        print_tree_details(tree, verbose, quiet);
+        print_tree_details(tree, tree_branches, verbose, quiet);
         return true;
     } else if !quiet {
         eprintln!("{}", display_missing_tree(tree, "[invalid-path]", verbose));
@@ -1179,10 +1216,10 @@ pub fn print_tree(tree: &Tree, verbose: u8, quiet: bool) -> bool {
 }
 
 /// Print a tree
-pub fn print_tree_details(tree: &Tree, verbose: u8, quiet: bool) {
+pub fn print_tree_details(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) {
     if !quiet {
         if let Ok(path) = tree.path_as_ref() {
-            eprintln!("{}", display_tree(tree, path, verbose));
+            eprintln!("{}", display_tree(tree, path, tree_branches, verbose));
         }
     }
 }
@@ -1322,6 +1359,10 @@ impl ApplicationContext {
         let path = path.to_path_buf();
         let config_verbose = self.options.debug_level("config");
         let mut graft_config = Configuration::new();
+        // Propogate the current config's "garden.tree-branches" setting down to child grafts.
+        // The graft's configuration override the parent's "garden.tree-branches" setting.
+        graft_config.tree_branches = self.get_config(config_id).tree_branches;
+        // Parse the config file for the graft.
         graft_config.update(self, Some(&path), root, config_verbose, Some(config_id))?;
 
         // The app Arena takes ownershp of the Configuration.

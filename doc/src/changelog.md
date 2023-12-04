@@ -4,6 +4,9 @@
 
 **Features**
 
+- Commands now display the tree's current branch alongside the tree name.
+  ([#18](https://github.com/davvid/garden/issues/18))
+
 - `garden -vv exec` and `garden -vv shell` now display the command being run.
 
 ## v0.9.1

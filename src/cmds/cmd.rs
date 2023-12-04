@@ -224,7 +224,7 @@ pub fn run_cmd_breadth_first(
             // Run each command in the tree's context
             let path = tree.path_as_ref()?.to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !model::print_tree(tree, verbose, quiet) {
+            if !model::print_tree(tree, config.tree_branches, verbose, quiet) {
                 continue;
             }
 
@@ -282,12 +282,10 @@ pub fn run_cmd_depth_first(
         }
         // Evaluate the tree environment
         let env = eval::environment(app_context, config, context);
-
         // Run each command in the tree's context
         let path = tree.path_as_ref()?.to_string();
-
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !model::print_tree(tree, verbose, quiet) {
+        if !model::print_tree(tree, config.tree_branches, verbose, quiet) {
             continue;
         }
 
