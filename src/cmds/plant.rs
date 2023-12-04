@@ -165,17 +165,36 @@ fn plant_path(
         None => false,
     };
 
-    // Gather remote names
+    // Attempt to get the default remote from "checkout.defaultRemoteName".
+    // This can be used to set the default remote name when multiple remotes exist.
+    let mut default_remote = "origin".to_string();
+    let command = ["git", "config", "checkout.defaultRemoteName"];
+    let exec = cmd::exec_in_dir(&command, &path);
+    if let Ok(x) = cmd::capture_stdout(exec) {
+        let output = cmd::trim_stdout(&x);
+        // If only a single remote exists then capture its name.
+        if !output.is_empty() {
+            default_remote = output.to_string();
+        }
+    }
+
+    // Gather remote names.
     let mut remote_names: Vec<String> = Vec::new();
     {
         let command = ["git", "remote"];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(x) = cmd::capture_stdout(exec) {
             let output = cmd::trim_stdout(&x);
+            // We have to do this in two passes to detect the scenario where only a
+            // single remote exists and its name is *not* "origin".
+            // If only a single remote exists then capture its name.
+            if !output.is_empty() && output.lines().count() == 1 {
+                default_remote = output.to_string();
+            }
 
             for line in output.lines() {
-                // Skip "origin" since it is defined by the "url" entry.
-                if line == "origin" {
+                // Skip the default remote since it is defined by the "url" entry.
+                if line == default_remote {
                     continue;
                 }
                 // Any other remotes are part of the "remotes" hash.
@@ -230,12 +249,21 @@ fn plant_path(
 
     // Update the "url" field.
     {
-        let command = ["git", "config", "remote.origin.url"];
+        let remote_url = format!("remote.{default_remote}.url");
+        let command = ["git", "config", remote_url.as_str()];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(cmd_stdout) = cmd::capture_stdout(exec) {
-            let origin_url = cmd::trim_stdout(&cmd_stdout);
-            entry.insert(url_key, Yaml::String(origin_url));
+            let remote_url = cmd::trim_stdout(&cmd_stdout);
+            entry.insert(url_key, Yaml::String(remote_url));
         }
+    }
+
+    // Update the "default-remote" field.
+    if default_remote != "origin" {
+        entry.insert(
+            Yaml::String("default-remote".into()),
+            Yaml::String(default_remote),
+        );
     }
 
     // Update the "bare" field.
