@@ -361,9 +361,9 @@ fn run_cmd_vec(
             for (k, v) in env {
                 exec = exec.env(k, v);
             }
-            let status = cmd::status(exec.join());
             // When a command list is used then the return code from the final command
             // is the one that is returned when --no-errexit is in effect.
+            let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
                 if exit_on_error {

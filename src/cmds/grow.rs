@@ -190,7 +190,7 @@ fn grow_tree_from_context(
     }
 
     let exec = cmd::exec_cmd(&cmd);
-    let status = cmd::status(exec.join());
+    let status = cmd::status(exec);
     if status != 0 {
         exit_status = status;
     }
@@ -264,8 +264,7 @@ fn update_tree_from_context(
     {
         let command = ["git", "remote"];
         let exec = cmd::exec_in_dir(&command, path);
-        if let Ok(x) = cmd::capture_stdout(exec) {
-            let output = cmd::trim_stdout(&x);
+        if let Ok(output) = cmd::stdout_to_string(exec) {
             for line in output.lines() {
                 existing_remotes.insert(String::from(line));
             }
@@ -294,7 +293,7 @@ fn update_tree_from_context(
                 print_command_str(&command.join(" "));
             }
             let exec = cmd::exec_in_dir(&command, path);
-            let status = cmd::status(exec.join());
+            let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
             }
@@ -304,7 +303,7 @@ fn update_tree_from_context(
                 print_command_str(&command.join(" "));
             }
             let exec = cmd::exec_in_dir(&command, path);
-            let status = cmd::status(exec.join());
+            let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
             }
@@ -316,7 +315,7 @@ fn update_tree_from_context(
                 print_command_str(&command.join(" "));
             }
             let exec = cmd::exec_in_dir(&command, path);
-            let status = cmd::status(exec.join());
+            let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
             }
@@ -368,7 +367,7 @@ fn update_tree_from_context(
                 if !remote_branch.is_empty() {
                     let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
                     let exec = cmd::exec_in_dir(&command, path);
-                    let status = cmd::status(exec.join());
+                    let status = cmd::status(exec);
                     if status != errors::EX_OK {
                         exit_status = status;
                     }
@@ -382,7 +381,7 @@ fn update_tree_from_context(
         if tree.branches.contains_key(branch) {
             let command = ["git", "checkout", branch];
             let exec = cmd::exec_in_dir(&command, path);
-            let status = cmd::status(exec.join());
+            let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
             }
@@ -406,9 +405,8 @@ fn append_gitconfig_value(
     if needs_cache {
         let cmd = ["git", "config", "--get-all", name];
         let exec = cmd::exec_in_dir(&cmd, path);
-        if let Ok(x) = cmd::capture_stdout(exec) {
+        if let Ok(output) = cmd::stdout_to_string(exec) {
             let mut values = HashSet::new();
-            let output = cmd::stdout(&x);
             for value in output.lines() {
                 values.insert(value.to_string());
             }
@@ -426,7 +424,7 @@ fn append_gitconfig_value(
             values.insert(value.to_string());
             let command = ["git", "config", "--add", name, value];
             let exec = cmd::exec_in_dir(&command, path);
-            status = cmd::status(exec.join())
+            status = cmd::status(exec)
         }
     }
 
@@ -438,7 +436,7 @@ fn set_gitconfig_value(name: &str, value: &str, path: &std::path::Path) -> i32 {
     let command = ["git", "config", name, value];
     let exec = cmd::exec_in_dir(&command, path);
 
-    cmd::status(exec.join())
+    cmd::status(exec)
 }
 
 /// Use "git worktree" to create a worktree.
@@ -546,7 +544,7 @@ fn grow_tree_from_context_as_worktree(
         print_quoted_command(&cmd);
     }
     let exec = cmd::exec_in_dir(&cmd, parent_path);
-    exit_status = cmd::status(exec.join());
+    exit_status = cmd::status(exec);
     if exit_status != 0 {
         return Err(errors::GardenError::WorktreeGitCheckoutError {
             tree: tree.get_name().clone(),

@@ -294,7 +294,7 @@ pub fn value(
 /// The result of the expression is the stdout output from the command.
 pub fn exec_expression(string: &str, pathbuf: Option<std::path::PathBuf>) -> String {
     let cmd = syntax::trim_exec(string);
-    let mut proc = subprocess::Exec::shell(cmd).stdout(subprocess::Redirection::Pipe);
+    let mut proc = subprocess::Exec::shell(cmd);
     // Run the exec expression inside the tree's directory when specified.
     if let Some(pathbuf) = pathbuf {
         let current_dir = path::current_dir_string();
@@ -302,12 +302,8 @@ pub fn exec_expression(string: &str, pathbuf: Option<std::path::PathBuf>) -> Str
         // Set $PWD to ensure that commands that are sensitive to it see the right value.
         proc = proc.env("PWD", pathbuf.to_str().unwrap_or(&current_dir));
     }
-    let capture = proc.capture();
-    if let Ok(x) = capture {
-        return cmd::trim_stdout(&x);
-    }
-    // An error occurred running the command -- empty output by design
-    String::new()
+
+    cmd::stdout_to_string(proc).unwrap_or_default()
 }
 
 /// Evaluate a variable in the given context

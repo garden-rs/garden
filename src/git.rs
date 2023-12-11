@@ -11,7 +11,7 @@ pub fn worktree_details(pathbuf: &std::path::Path) -> Result<GitTreeDetails, err
     let cmd = ["git", "worktree", "list", "--porcelain"];
     let path = path::abspath(pathbuf);
     let exec = cmd::exec_in_dir(&cmd, &path);
-    let output = cmd::capture(exec)?.stdout_str();
+    let output = cmd::stdout_to_string(exec)?;
 
     let worktree_token = "worktree ";
     let branch_token = "branch refs/heads/";
@@ -75,8 +75,7 @@ pub fn branches(path: &std::path::Path) -> Vec<String> {
         "refs/heads",
     ];
     let exec = cmd::exec_in_dir(&cmd, &path);
-    if let Ok(x) = cmd::capture_stdout(exec) {
-        let output = cmd::trim_stdout(&x);
+    if let Ok(output) = cmd::stdout_to_string(exec) {
         branches.append(
             &mut output
                 .lines()
@@ -93,8 +92,7 @@ pub fn branches(path: &std::path::Path) -> Vec<String> {
 pub fn branch(path: &std::path::Path) -> Option<String> {
     let cmd = ["git", "symbolic-ref", "--quiet", "--short", "HEAD"];
     let exec = cmd::exec_in_dir(&cmd, &path);
-    if let Ok(capture_data) = cmd::capture_stdout(exec) {
-        let output = cmd::trim_stdout(&capture_data);
+    if let Ok(output) = cmd::stdout_to_string(exec) {
         if !output.is_empty() {
             return Some(output);
         }
@@ -102,8 +100,7 @@ pub fn branch(path: &std::path::Path) -> Option<String> {
     // Detached head? Show an abbreviated commit ID. This respects `git config core.abbrev`.
     let cmd = ["git", "rev-parse", "--short", "HEAD"];
     let exec = cmd::exec_in_dir(&cmd, &path);
-    if let Ok(capture_data) = cmd::capture_stdout(exec) {
-        let output = cmd::trim_stdout(&capture_data);
+    if let Ok(output) = cmd::stdout_to_string(exec) {
         if !output.is_empty() {
             return Some(output);
         }

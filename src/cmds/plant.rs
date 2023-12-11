@@ -170,8 +170,7 @@ fn plant_path(
     let mut default_remote = "origin".to_string();
     let command = ["git", "config", "checkout.defaultRemoteName"];
     let exec = cmd::exec_in_dir(&command, &path);
-    if let Ok(x) = cmd::capture_stdout(exec) {
-        let output = cmd::trim_stdout(&x);
+    if let Ok(output) = cmd::stdout_to_string(exec) {
         // If only a single remote exists then capture its name.
         if !output.is_empty() {
             default_remote = output.to_string();
@@ -183,8 +182,7 @@ fn plant_path(
     {
         let command = ["git", "remote"];
         let exec = cmd::exec_in_dir(&command, &path);
-        if let Ok(x) = cmd::capture_stdout(exec) {
-            let output = cmd::trim_stdout(&x);
+        if let Ok(output) = cmd::stdout_to_string(exec) {
             // We have to do this in two passes to detect the scenario where only a
             // single remote exists and its name is *not* "origin".
             // If only a single remote exists then capture its name.
@@ -209,8 +207,7 @@ fn plant_path(
         for remote in &remote_names {
             let cmd = ["git", "config", &format!("remote.{remote}.url")];
             let exec = cmd::exec_in_dir(&cmd, &path);
-            if let Ok(x) = cmd::capture_stdout(exec) {
-                let output = cmd::trim_stdout(&x);
+            if let Ok(output) = cmd::stdout_to_string(exec) {
                 remotes.push((remote.clone(), output));
             }
         }
@@ -252,8 +249,7 @@ fn plant_path(
         let remote_url = format!("remote.{default_remote}.url");
         let command = ["git", "config", remote_url.as_str()];
         let exec = cmd::exec_in_dir(&command, &path);
-        if let Ok(cmd_stdout) = cmd::capture_stdout(exec) {
-            let remote_url = cmd::trim_stdout(&cmd_stdout);
+        if let Ok(remote_url) = cmd::stdout_to_string(exec) {
             entry.insert(url_key, Yaml::String(remote_url));
         }
     }
@@ -271,8 +267,7 @@ fn plant_path(
         let bare_key = Yaml::String("bare".into());
         let command = ["git", "config", "--bool", "core.bare"];
         let exec = cmd::exec_in_dir(&command, &path);
-        if let Ok(cmd_stdout) = cmd::capture_stdout(exec) {
-            let is_bare = cmd::trim_stdout(&cmd_stdout);
+        if let Ok(is_bare) = cmd::stdout_to_string(exec) {
             if is_bare == "true" {
                 entry.insert(bare_key, Yaml::Boolean(true));
             }

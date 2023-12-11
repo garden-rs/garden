@@ -167,23 +167,8 @@ pub fn garden_capture(args: &[&str]) -> String {
 /// Execute a command and ensure that the exit status is returned.
 pub fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
     let exec = cmd::exec_in_dir(cmd, directory);
-    let capture = cmd::capture_stdout(exec);
-    assert!(capture.is_ok());
-
-    match capture.unwrap().exit_status {
-        subprocess::ExitStatus::Exited(val) => {
-            assert_eq!(val as i32, status);
-        }
-        subprocess::ExitStatus::Signaled(val) => {
-            assert_eq!(val as i32, status);
-        }
-        subprocess::ExitStatus::Other(val) => {
-            assert_eq!(val, status);
-        }
-        subprocess::ExitStatus::Undetermined => {
-            panic!("undetermined exit status");
-        }
-    }
+    let cmd_status = cmd::status(exec);
+    assert_eq!(cmd_status, status);
 }
 
 /// Execute a command and ensure that exit status 0 is returned.
@@ -194,10 +179,10 @@ pub fn assert_cmd(cmd: &[&str], directory: &str) {
 /// Execute a command and ensure that exit status 0 is returned. Return the Exec object.
 pub fn assert_cmd_capture(cmd: &[&str], directory: &str) -> String {
     let exec = cmd::exec_in_dir(cmd, directory);
-    let capture = cmd::capture_stdout(exec);
+    let capture = cmd::stdout_to_string(exec);
     assert!(capture.is_ok());
 
-    cmd::trim_stdout(&capture.unwrap())
+    capture.unwrap()
 }
 
 /// Assert that the specified path exists.

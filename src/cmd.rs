@@ -2,20 +2,6 @@ use super::errors;
 use super::eval;
 use super::model;
 
-/// Return a subprocess::Exec instance from a command vector.
-pub fn run<S>(cmd: &[S]) -> Result<(), errors::GardenError>
-where
-    S: AsRef<std::ffi::OsStr>,
-{
-    let mut exit_status = errors::EX_ERROR;
-
-    if let Ok(mut p) = subprocess::Popen::create(cmd, subprocess::PopenConfig::default()) {
-        exit_status = status(p.wait());
-    }
-
-    result_from_exit_status(exit_status)
-}
-
 /// Convert an exit status to Result<(), GardenError>.
 pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
     match exit_status {
@@ -24,35 +10,24 @@ pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenErr
     }
 }
 
-/// Extract the return status from subprocess::Result<subprocess::ExitStatus>.
-pub fn status(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
-    let mut exit_status = errors::EX_ERROR;
-
-    if let Ok(status_result) = result {
-        match status_result {
-            subprocess::ExitStatus::Exited(status) => {
-                exit_status = status as i32;
-            }
-            subprocess::ExitStatus::Signaled(status) => {
-                exit_status = status as i32;
-            }
-            subprocess::ExitStatus::Other(status) => {
-                exit_status = status;
-            }
-            _ => (),
-        }
-    }
-
-    exit_status
+/// Return an exit status code from a subprocess::Exec instance.
+pub fn status(exec: subprocess::Exec) -> i32 {
+    status_code(exec.join())
 }
 
-/// Take a subprocess capture and return a raw string with trailing whitespace.
-pub fn stdout(capture: &subprocess::CaptureData) -> String {
-    capture.stdout_str()
+/// Return the status code from subprocess::Result<subprocess::ExitStatus>.
+fn status_code(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
+    match result {
+        Ok(subprocess::ExitStatus::Exited(status)) => status as i32,
+        Ok(subprocess::ExitStatus::Signaled(status)) => status as i32,
+        Ok(subprocess::ExitStatus::Other(status)) => status,
+        Ok(subprocess::ExitStatus::Undetermined) => errors::EX_ERROR,
+        Err(_) => errors::EX_ERROR,
+    }
 }
 
 /// Take a subprocess capture and return a string without trailing whitespace.
-pub fn trim_stdout(capture: &subprocess::CaptureData) -> String {
+fn stdout(capture: &subprocess::CaptureData) -> String {
     capture.stdout_str().trim_end().to_string()
 }
 
@@ -78,13 +53,9 @@ pub fn capture_stdout(
         .map_err(|popen_err| command_error_from_popen_error(command, popen_err))
 }
 
-/// Return a CaptureData result for a subprocess's stdout and stderr.
-pub fn capture(exec: subprocess::Exec) -> Result<subprocess::CaptureData, errors::CommandError> {
-    let command = exec.to_cmdline_lossy();
-    exec.stdout(subprocess::Redirection::Pipe)
-        .stderr(subprocess::Redirection::Pipe)
-        .capture()
-        .map_err(|popen_err| command_error_from_popen_error(command, popen_err))
+/// Return a trimmed stdout string for an subprocess::Exec instance.
+pub fn stdout_to_string(exec: subprocess::Exec) -> Result<String, errors::CommandError> {
+    Ok(stdout(&capture_stdout(exec)?))
 }
 
 /// Return a `subprocess::Exec` for a command.
@@ -150,7 +121,7 @@ where
         exec = exec.env(name, value);
     }
 
-    result_from_exit_status(status(exec.join()))
+    result_from_exit_status(status(exec))
 }
 
 /// The command might be a path that only exists inside the resolved
