@@ -49,6 +49,7 @@ pub fn capture_stdout(
 ) -> Result<subprocess::CaptureData, errors::CommandError> {
     let command = exec.to_cmdline_lossy();
     exec.stdout(subprocess::Redirection::Pipe)
+        .stderr(subprocess::NullFile {}) // Redirect stderr to /dev/null
         .capture()
         .map_err(|popen_err| command_error_from_popen_error(command, popen_err))
 }
