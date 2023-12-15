@@ -402,7 +402,7 @@ This allows nested include files to use relative paths for their nested includes
 <p>If an include file is not found relative to the current garden file then a path relative
 to the root configuration directory will be checked for the existence of the file.</p>
 <p>Includes files are treated like &quot;optional&quot; includes -- include files that cannot be
-found are silenty ignored.</p>
+found are silently ignored.</p>
 <p>Enable the <code>garden -d config ...</code> debug flag to display warnings about missing include
 files.</p>
 <h3 id="the-last-one-wins-rule"><a class="header" href="#the-last-one-wins-rule">The &quot;Last One Wins&quot; Rule</a></h3>
@@ -410,7 +410,7 @@ files.</p>
 <code>variables</code> can be sparsely defined across multiple files by using <code>includes</code>.</p>
 <p>When the same entry is found in multiple included files then the only last definition
 will be used. This is referred to as the &quot;Last One Wins&quot; rule.</p>
-<p>Entities defined in the the root <code>garden.yaml</code> have the highest precedence and override
+<p>Entities defined in the root <code>garden.yaml</code> have the highest precedence and override
 entries provided via <code>garden.includes</code>.</p>
 <p><code>variables</code>, <code>commands</code>, <code>groups</code> and <code>gardens</code> are completely replaced when multiple
 definitions are found.</p>
@@ -471,28 +471,25 @@ override/replace variables defined in a tree scope.</p>
 <p>Garden automatically defines some built-in variables that can be useful
 when constructing values for variables, commands, and paths.</p>
 <ul>
-<li><strong>GARDEN_CONFIG_DIR</strong> -- Directory containing the <code>garden.yaml</code> config file.</li>
+<li><strong>GARDEN_CONFIG_DIR</strong> -- Directory containing the <code>garden.yaml</code> file.</li>
 <li><strong>GARDEN_ROOT</strong> -- Root directory for trees.</li>
 <li><strong>TREE_NAME</strong> -- Current tree name.</li>
 <li><strong>TREE_PATH</strong> -- Current tree path.</li>
 </ul>
 <h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
 <p>The &quot;environment&quot; block defines variables that are stored in the environment.</p>
-<p>Environment variables are resolved in the same order as the garden variables:
+<p>Environment variables are resolved in the same order as garden variables:
 global scope, tree scope, and garden scope.  This allows gardens to
 prepend/append variables after a tree, thus allowing for customization
 of behavior from the garden scope.</p>
-<p>Environment variables are resolved after garden variables.  This allows
-the use of garden variables when defining environment variable values.</p>
-<p>Environment variable names can use garden <code>${variable}</code> syntax when defining
-both their name and values.</p>
-<p>Values in environment blocks prepend to the named environment variable.</p>
+<p>Values in environment blocks prepend to the environment variable by default.
+The <code>:</code> UNIX path separator is used when prepending and appending values.</p>
 <pre><code class="language-yaml">trees:
   foo:
     environment:
       PATH: ${TREE_PATH}/bin
 </code></pre>
-<p>The example above prepends the <code>foo/bin</code> directory to the colon (<code>:</code>)-delimeted <code>PATH</code>
+<p>The example above prepends the <code>foo/bin</code> directory to the colon (<code>:</code>)-delimited <code>PATH</code>
 environment variable.</p>
 <p>Names with an equals sign (<code>=</code>) suffix are treated as &quot;store&quot; operations and are
 stored into the environment, fully replacing any pre-existing values.</p>
@@ -501,8 +498,10 @@ stored into the environment, fully replacing any pre-existing values.</p>
     environment:
       ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 </code></pre>
-<p>The example above exports a variable called <code>foo_LOCATION</code> with the location of the tree.
-If <code>foo_LOCATION</code> is already defined then its value is replaced.</p>
+<p>Environment variable entries can use garden <code>${variable}</code> syntax when defining
+both their name and values. The example above exports a variable called <code>foo_LOCATION</code>
+with the location of the tree. If <code>foo_LOCATION</code> is already defined then its value is
+replaced.</p>
 <p>A plus sign (<code>+</code>) suffix in the name append to a variable instead of prepending.</p>
 <pre><code class="language-yaml">trees:
   foo:
@@ -618,7 +617,7 @@ trees:
     variables:
       message: The time is now: $(date)
 </code></pre>
-<p>When a tree specifies multiple templates then all of the tempaltes are merged into
+<p>When a tree specifies multiple templates then all of the templates are merged into
 the tree's definitions. If variables are multiply-defined across multiple templates
 then the variable's value from the last specified template will be used.</p>
 <h2 id="string-to-list-promotion"><a class="header" href="#string-to-list-promotion">String to List Promotion</a></h2>
@@ -657,7 +656,7 @@ due to the automatic promotion of Strings into Lists.</p>
 wildcard patterns.</p>
 <p>The &quot;annex&quot; group definition is: <code>annex/*</code>.   This matches all trees that
 start with &quot;annex/&quot;.  The &quot;git-all&quot; group has two entries -- <code>git*</code> and
-<code>cola</code>.  the first matches all trees that start with &quot;git&quot;, and the second one
+<code>cola</code>.  The first matches all trees that start with &quot;git&quot;, and the second one
 matches &quot;cola&quot; only.</p>
 <h2 id="symlinks"><a class="header" href="#symlinks">Symlinks</a></h2>
 <p>Symlink trees create a symlink on the filesystem during <code>garden init</code>.
@@ -673,7 +672,7 @@ defaults to a path named after the tree relative to the garden root.</p>
 <p>A more advanced modularity feature allow you to stitch additional <code>garden.yaml</code>
 files underneath a custom &quot;graft namespace&quot;.</p>
 <p>The example below demonstrates how to define trees and variables in separate
-&quot;graft&quot; files and refer to them using a <code>graft::</code> namespace qualfier.</p>
+&quot;graft&quot; files and refer to them using a <code>graft::</code> namespace qualifier.</p>
 <pre><code class="language-yaml"># Top-level garden.yaml
 grafts:
   graft: graft.yaml
@@ -711,7 +710,7 @@ variables:
   value: &quot;grafted value&quot;
 </code></pre>
 <p>Running <code>garden eval '${graft::value}'</code> will output <code>grafted value</code>.</p>
-<p>Running <code>garden eval '${value}'</code> wil output <code>global grafted value</code>, as it evaluates at
+<p>Running <code>garden eval '${value}'</code> will output <code>global grafted value</code>, as it evaluates at
 global scope.</p>
 <p>Running <code>garden eval '${value}' local-tree</code> will output <code>local grafted value</code>, as it
 evaluates from <code>local-tree</code>'s scope.</p>

@@ -191,7 +191,7 @@ and prefer to install <code>garden</code> using <code>pkgin</code> or the pkgsrc
 <h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
 <p>If you already have <code>cargo</code> installed then you can skip this section.</p>
 <p>You may be able to install <code>cargo</code> on macOS and Linux using standard package
-managers, eg. <code>brew install rust</code> or <code>apt install rust-all</code>.</p>
+managers, e.g. <code>brew install rust</code> or <code>apt install rust-all</code>.</p>
 <p>Other platforms and older distributions can get a Rust development toolchain
 by going to <a href="https://rustup.rs">rustup.rs and following the installation instructions</a>.</p>
 <h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
@@ -258,10 +258,10 @@ cargo install --path .
 </code></pre>
 <p>Running <code>cargo install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
 <p>Once you have <code>garden</code> installed then you can use Garden's <code>garden.yaml</code> to run
-Garden's custom worfkflow commands.</p>
+Garden's custom workflow commands.</p>
 <ul>
 <li><code>garden test</code> runs the test suite using <code>cargo test</code>.</li>
-<li><code>garden check</code> runs checks and linters.</li>
+<li><code>garden check</code> runs checks and lints.</li>
 <li><code>garden doc</code> builds the documentation.</li>
 <li><code>garden fmt</code> formats the source code.</li>
 <li><code>garden install-doc</code> installs the documentation.</li>
@@ -270,7 +270,7 @@ Garden's custom worfkflow commands.</p>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
 <p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
 <p>Garden is not supported on Windows.</p>
-<p>Garden &quot;should&quot; work fine on Windows if you install a shell (eg. <code>bash.exe</code> or
+<p>Garden &quot;should&quot; work fine on Windows if you install a shell (e.g. <code>bash.exe</code> or
 <code>zsh.exe</code>) in <code>$PATH</code> and patch a few details to deal with Windows-isms, but Garden is
 untested and not supported by the core team on Windows or WSL.</p>
 <p>Issues related to Windows will be closed. Pull requests related to these systems are

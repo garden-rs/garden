@@ -198,13 +198,13 @@ garden &lt;command&gt; --help
 <p>The following options come before <code>&lt;command&gt;</code> and are common to all commands.</p>
 <pre><code>-C | --chdir &lt;directory&gt;
 </code></pre>
-<p>chdir to the specified directory before searching for configuration.
+<p>Navigate to the specified directory before searching for configuration.
 This is modeled after <code>make -C &lt;path&gt; ...</code> or <code>git -C &lt;path&gt; ...</code>.</p>
 <pre><code>-c | --config &lt;filename&gt;
 </code></pre>
-<p>Specify a garden config file to use instead of searching for <code>garden.yaml</code>.
-The path can either be the path to an actual config file, or it can be
-the basename of a file in the configuration search path.</p>
+<p>Specify a garden file to use instead of searching for <code>garden.yaml</code>.
+The filename can be either the path to a file or the basename of a file in the
+configuration search path.</p>
 <pre><code>-v | --verbose
 </code></pre>
 <p>Enable verbose debugging output.</p>
@@ -262,7 +262,7 @@ into existence.</p>
 and places them into the paths defined by the garden file.</p>
 <p>It is safe to re-run the <code>grow</code> command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
-repositories are created by cloning the configured tree url.</p>
+repositories are created by cloning the configured tree URL.</p>
 <h3 id="branches"><a class="header" href="#branches">Branches</a></h3>
 <p>The <code>branch: &lt;branch-name&gt;</code> tree variable is used to specify which branch should be
 cloned and checked out when the tree is grown.</p>
@@ -284,12 +284,12 @@ The <code>branch</code> setting is a tree variable and supports <code>${variable
 <pre><code class="language-bash">git clone --depth=42 --no-single-branch
 </code></pre>
 <p>Even though a shallow clone is created, all of the remote tracking branches
-(eg. <code>origin/*</code>) are available because we clone the repository using
+(e.g. <code>origin/*</code>) are available because we clone the repository using
 the <code>--no-single-branch</code> option.</p>
 <p>The <code>single-branch: true</code> tree parameter is used to create clones that contain
 a single branch only. This is useful if you want to limit the on-disk footprint
 of repositories by only having a single branch available.</p>
-<p>This paramter is typically used in conjunction with <code>branch: &lt;branch-name&gt;</code> and
+<p>This par mater is typically used in conjunction with <code>branch: &lt;branch-name&gt;</code> and
 <code>depth: 1</code> to create a 1-commit shallow clone with a single branch.</p>
 <pre><code class="language-yaml">trees:
   example:
@@ -416,7 +416,7 @@ If neither <code>zsh</code> nor <code>bash</code> is installed then <code>sh</co
 environment from the corresponding garden, group, or tree.</p>
 <p>Multi-line and multi-statement command strings will stop executing as soon as the
 first non-zero exit code is encountered due to the use of the <code>-e</code> shell option.
-Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> errexit option.</p>
+Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> &quot;errexit&quot; option.</p>
 <p>The <code>--no-errexit</code> option causes commands with multiple statements to run to completion
 even when a non-zero exit code is encountered. This is akin to a regular shell script.</p>
 <p>You can also opt-out of the <code>errexit</code> behavior on a per-command basis by adding
@@ -430,7 +430,7 @@ used to rerun garden from within a garden command.</p>
 subsequent variables will be set according to each argument.</p>
 <pre><code class="language-yaml"># Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via &quot;String to List Promotion&quot;.
-# The YAML reader accepts multi-line strings using the the &quot;|&quot; pipe syntax.
+# The YAML reader accepts multi-line strings using the &quot;|&quot; pipe syntax.
 
 commands:
   one-liner: echo hello &quot;$@&quot;
@@ -480,15 +480,15 @@ be accessed using the braced-variable syntax.</p>
 <p>The plain <code>$variable</code> syntax is reserved for use by the shell commands used in
 user-defined Commands and Exec Expressions.</p>
 <p>Environment Variables can be used in shell scriptlets through both the <code>$ENV</code> and
-<code>${ENV}</code> braced variable syntax. Garden makes <code>${PATH}</code> and all other environment
-variables available during variable expansion.</p>
+<code>${ENV}</code> braced variable syntax. Garden makes all environment variables available during
+variable expansion.</p>
 <p>The distinction between the <code>${garden}</code> and <code>$shell</code> syntax is only relevant when
 using variables defined within shell command, such as <code>$shell_variable</code> above.</p>
 <p>If the <code>${shell_variable}</code> syntax were to be used in the <code>example-command</code> then an
 empty value would have been used instead of the output of <code>date +%s</code>.</p>
 <p>Sometimes it is necessary to actually use the <code>${...}</code> braced literal syntax
 in shell commands. The <code>$${...}</code> braced double-dollar syntax can be used to
-escape a braced value and disable evalution by <code>garden</code>.</p>
+escape a braced value and disable evaluation by <code>garden</code>.</p>
 <p>Double-<code>$</code> can generally be used to escape literal <code>$</code> values in commands, but
 escaping is handled automatically for regular <code>$shell</code> variables.</p>
 <h3 id="depth-first-and-breadth-first-tree-traversal"><a class="header" href="#depth-first-and-breadth-first-tree-traversal">Depth-first and Breadth-first Tree Traversal</a></h3>
@@ -570,7 +570,7 @@ creating the shell.</p>
 <p>Traverse the filesystem and interactively delete any repositories that are
 not referenced by the garden file.</p>
 <p>This command is intended to cleanup a garden-managed directory. Its intended
-usage is to delete repositories that were created (eg. via <code>garden grow</code>) and
+usage is to delete repositories that were created (e.g. via <code>garden grow</code>) and
 have since been removed from your version-controlled garden configuration.</p>
 <p><strong>Warning</strong>: <code>garden prune</code> is a dangerous command and must be run with care.
 <code>garden prune</code> deletes repositories and all of their files (including the <code>.git</code> storage)!</p>

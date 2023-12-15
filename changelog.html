@@ -261,7 +261,7 @@ then only the final definition will be used.
 This behavior allows a tree definition to replace just the <code>url</code> field, or to replace
 individual tree commands while retaining the rest. Use <code>replace: true</code> in a Tree
 definition in order to completely replace the existing entry instead of sparsely
-overridding it.</p>
+overriding it.</p>
 </li>
 <li>
 <p>Improved shell completions for <code>garden</code>, <code>garden init</code> and <code>garden plant</code>.</p>
@@ -278,7 +278,7 @@ overridding it.</p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>Both names and values in <code>gitconfig</code> can now use <code>${var}</code> expressions.
-Previously only values were evaluated. Config names are evaluated now as well.</li>
+Previously only values were evaluated. Names are evaluated now as well.</li>
 </ul>
 <p><strong>Fixes</strong>:</p>
 <ul>
@@ -292,7 +292,7 @@ has been updated.
 <p><strong>Fixes</strong></p>
 <ul>
 <li>Exec expressions were previously run with the current directory set to the
-directory from which garden was run. Exec expresssions are now run in the
+directory from which garden was run. Exec expressions are now run in the
 tree's current directory.</li>
 </ul>
 <h2 id="v050"><a class="header" href="#v050">v0.5.0</a></h2>
@@ -409,7 +409,7 @@ runs a command across all trees before continuing on to the next command.
 <p>This is the initial garden release.</p>
 <ul>
 <li><code>garden grow</code> grows worktrees.</li>
-<li><code>garden init</code> intitializes configuration.</li>
+<li><code>garden init</code> initializes configuration.</li>
 <li><code>garden plant</code> (formerly <code>garden add</code>) adds existing trees.</li>
 <li><code>garden cmd</code> and <code>garden &lt;custom-command&gt;</code> can run custom commands.</li>
 <li>Templates, variables, and environment variables are all supported.</li>

@@ -215,11 +215,11 @@ garden cmd cola status build
 </code></pre>
 <h2 id="paths"><a class="header" href="#paths">Paths</a></h2>
 <p>Paths can be specified as well, but the filesystem has the lowest priority
-relative to gardens, groups, and trees.  When specifyiing paths they must
-resolve to a configured tree.  For example,</p>
+relative to gardens, groups, and trees.  When specifying paths they must
+resolve to a configured tree.  For example:</p>
 <pre><code class="language-bash">garden build . -- --verbose
 </code></pre>
-<p>runs the <code>build</code> command on the tree in the current directory and passes the
+<p>This runs the <code>build</code> command on the tree in the current directory and passes the
 <code>--verbose</code> flag to the configured <code>build</code> command.</p>
 <h2 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h2>
 <p>Garden understands shell wildcards.  Glob wildcards in tree queries allows

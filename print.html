@@ -184,12 +184,12 @@
 <p>Garden streamlines development workflows that involve a loosely-coupled set of
 multiple, independent Git trees.</p>
 <p>Garden allows you to define dynamic relationships and workflows between these
-repositories using a declarative YAML config file that can be shared and used as
-a bootstrapping mechanism for getting a auditable, from-source project cloned,
+repositories using a YAML configuration file that can be shared and used as
+a bootstrapping mechanism for getting an audit-able, from-source project cloned,
 built, installed and running with minimal effort for consumers of a Garden file.</p>
 <p>Garden sits above any individual project's build scripts and conventions.
 Garden is all about making it easy to remix and reuse libraries maintained
-in seperate Git repositories.</p>
+in separate Git repositories.</p>
 <h3 id="project-links"><a class="header" href="#project-links">Project Links</a></h3>
 <ul>
 <li>
@@ -275,9 +275,9 @@ against gardens, groups and trees, in that order, and return the first
 matching set of trees. If searching for gardens finds matches then groups and
 trees are not searched. If searching for groups finds matches then trees are
 not searched. Prefix the tree query pattern with a percent-sign (<code>%</code>),
-eg. <code>%group*</code>, to only query for groups matching the pattern.
-Prefix the pattern with an at-sign (<code>@</code>), eg. <code>@tree</code>, to only query for trees.
-Prefix the pattern with colon (<code>:</code>), eg. <code>:garden</code>, to only query for gardens.
+e.g. <code>%group*</code>, to only query for groups matching the pattern.
+Prefix the pattern with an at-sign (<code>@</code>), e.g. <code>@tree</code>, to only query for trees.
+Prefix the pattern with colon (<code>:</code>), e.g. <code>:garden</code>, to only query for gardens.
 The <code>:garden</code> syntax is not typically used because gardens are already
 searched first. <code>%group</code> and <code>@tree</code> can be used to disambiguate queries for
 groups and trees that share the same name as a garden.</p>
@@ -287,7 +287,7 @@ groups and trees that share the same name as a garden.</p>
 String values can use shell <code>${variables}</code> expressions to interpolate
 and expand values in the string. <code>~</code> is expanded to <code>$HOME</code>.
 These expressions can be used in most fields where strings are accepted,
-eg. when definiting variables, commands and environment variables.</p>
+e.g. when defining variables, commands and environment variables.</p>
 </li>
 <li>
 <p><strong>exec expressions</strong>
@@ -312,7 +312,7 @@ and prefer to install <code>garden</code> using <code>pkgin</code> or the pkgsrc
 <h2 id="rust-and-cargo"><a class="header" href="#rust-and-cargo">Rust and Cargo</a></h2>
 <p>If you already have <code>cargo</code> installed then you can skip this section.</p>
 <p>You may be able to install <code>cargo</code> on macOS and Linux using standard package
-managers, eg. <code>brew install rust</code> or <code>apt install rust-all</code>.</p>
+managers, e.g. <code>brew install rust</code> or <code>apt install rust-all</code>.</p>
 <p>Other platforms and older distributions can get a Rust development toolchain
 by going to <a href="https://rustup.rs">rustup.rs and following the installation instructions</a>.</p>
 <h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
@@ -379,10 +379,10 @@ cargo install --path .
 </code></pre>
 <p>Running <code>cargo install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
 <p>Once you have <code>garden</code> installed then you can use Garden's <code>garden.yaml</code> to run
-Garden's custom worfkflow commands.</p>
+Garden's custom workflow commands.</p>
 <ul>
 <li><code>garden test</code> runs the test suite using <code>cargo test</code>.</li>
-<li><code>garden check</code> runs checks and linters.</li>
+<li><code>garden check</code> runs checks and lints.</li>
 <li><code>garden doc</code> builds the documentation.</li>
 <li><code>garden fmt</code> formats the source code.</li>
 <li><code>garden install-doc</code> installs the documentation.</li>
@@ -391,7 +391,7 @@ Garden's custom worfkflow commands.</p>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
 <p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
 <p>Garden is not supported on Windows.</p>
-<p>Garden &quot;should&quot; work fine on Windows if you install a shell (eg. <code>bash.exe</code> or
+<p>Garden &quot;should&quot; work fine on Windows if you install a shell (e.g. <code>bash.exe</code> or
 <code>zsh.exe</code>) in <code>$PATH</code> and patch a few details to deal with Windows-isms, but Garden is
 untested and not supported by the core team on Windows or WSL.</p>
 <p>Issues related to Windows will be closed. Pull requests related to these systems are
@@ -465,11 +465,11 @@ garden cmd cola status build
 </code></pre>
 <h2 id="paths"><a class="header" href="#paths">Paths</a></h2>
 <p>Paths can be specified as well, but the filesystem has the lowest priority
-relative to gardens, groups, and trees.  When specifyiing paths they must
-resolve to a configured tree.  For example,</p>
+relative to gardens, groups, and trees.  When specifying paths they must
+resolve to a configured tree.  For example:</p>
 <pre><code class="language-bash">garden build . -- --verbose
 </code></pre>
-<p>runs the <code>build</code> command on the tree in the current directory and passes the
+<p>This runs the <code>build</code> command on the tree in the current directory and passes the
 <code>--verbose</code> flag to the configured <code>build</code> command.</p>
 <h2 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h2>
 <p>Garden understands shell wildcards.  Glob wildcards in tree queries allows
@@ -498,13 +498,13 @@ garden &lt;command&gt; --help
 <p>The following options come before <code>&lt;command&gt;</code> and are common to all commands.</p>
 <pre><code>-C | --chdir &lt;directory&gt;
 </code></pre>
-<p>chdir to the specified directory before searching for configuration.
+<p>Navigate to the specified directory before searching for configuration.
 This is modeled after <code>make -C &lt;path&gt; ...</code> or <code>git -C &lt;path&gt; ...</code>.</p>
 <pre><code>-c | --config &lt;filename&gt;
 </code></pre>
-<p>Specify a garden config file to use instead of searching for <code>garden.yaml</code>.
-The path can either be the path to an actual config file, or it can be
-the basename of a file in the configuration search path.</p>
+<p>Specify a garden file to use instead of searching for <code>garden.yaml</code>.
+The filename can be either the path to a file or the basename of a file in the
+configuration search path.</p>
 <pre><code>-v | --verbose
 </code></pre>
 <p>Enable verbose debugging output.</p>
@@ -562,7 +562,7 @@ into existence.</p>
 and places them into the paths defined by the garden file.</p>
 <p>It is safe to re-run the <code>grow</code> command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
-repositories are created by cloning the configured tree url.</p>
+repositories are created by cloning the configured tree URL.</p>
 <h3 id="branches"><a class="header" href="#branches">Branches</a></h3>
 <p>The <code>branch: &lt;branch-name&gt;</code> tree variable is used to specify which branch should be
 cloned and checked out when the tree is grown.</p>
@@ -584,12 +584,12 @@ The <code>branch</code> setting is a tree variable and supports <code>${variable
 <pre><code class="language-bash">git clone --depth=42 --no-single-branch
 </code></pre>
 <p>Even though a shallow clone is created, all of the remote tracking branches
-(eg. <code>origin/*</code>) are available because we clone the repository using
+(e.g. <code>origin/*</code>) are available because we clone the repository using
 the <code>--no-single-branch</code> option.</p>
 <p>The <code>single-branch: true</code> tree parameter is used to create clones that contain
 a single branch only. This is useful if you want to limit the on-disk footprint
 of repositories by only having a single branch available.</p>
-<p>This paramter is typically used in conjunction with <code>branch: &lt;branch-name&gt;</code> and
+<p>This par mater is typically used in conjunction with <code>branch: &lt;branch-name&gt;</code> and
 <code>depth: 1</code> to create a 1-commit shallow clone with a single branch.</p>
 <pre><code class="language-yaml">trees:
   example:
@@ -716,7 +716,7 @@ If neither <code>zsh</code> nor <code>bash</code> is installed then <code>sh</co
 environment from the corresponding garden, group, or tree.</p>
 <p>Multi-line and multi-statement command strings will stop executing as soon as the
 first non-zero exit code is encountered due to the use of the <code>-e</code> shell option.
-Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> errexit option.</p>
+Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> &quot;errexit&quot; option.</p>
 <p>The <code>--no-errexit</code> option causes commands with multiple statements to run to completion
 even when a non-zero exit code is encountered. This is akin to a regular shell script.</p>
 <p>You can also opt-out of the <code>errexit</code> behavior on a per-command basis by adding
@@ -730,7 +730,7 @@ used to rerun garden from within a garden command.</p>
 subsequent variables will be set according to each argument.</p>
 <pre><code class="language-yaml"># Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via &quot;String to List Promotion&quot;.
-# The YAML reader accepts multi-line strings using the the &quot;|&quot; pipe syntax.
+# The YAML reader accepts multi-line strings using the &quot;|&quot; pipe syntax.
 
 commands:
   one-liner: echo hello &quot;$@&quot;
@@ -780,15 +780,15 @@ be accessed using the braced-variable syntax.</p>
 <p>The plain <code>$variable</code> syntax is reserved for use by the shell commands used in
 user-defined Commands and Exec Expressions.</p>
 <p>Environment Variables can be used in shell scriptlets through both the <code>$ENV</code> and
-<code>${ENV}</code> braced variable syntax. Garden makes <code>${PATH}</code> and all other environment
-variables available during variable expansion.</p>
+<code>${ENV}</code> braced variable syntax. Garden makes all environment variables available during
+variable expansion.</p>
 <p>The distinction between the <code>${garden}</code> and <code>$shell</code> syntax is only relevant when
 using variables defined within shell command, such as <code>$shell_variable</code> above.</p>
 <p>If the <code>${shell_variable}</code> syntax were to be used in the <code>example-command</code> then an
 empty value would have been used instead of the output of <code>date +%s</code>.</p>
 <p>Sometimes it is necessary to actually use the <code>${...}</code> braced literal syntax
 in shell commands. The <code>$${...}</code> braced double-dollar syntax can be used to
-escape a braced value and disable evalution by <code>garden</code>.</p>
+escape a braced value and disable evaluation by <code>garden</code>.</p>
 <p>Double-<code>$</code> can generally be used to escape literal <code>$</code> values in commands, but
 escaping is handled automatically for regular <code>$shell</code> variables.</p>
 <h3 id="depth-first-and-breadth-first-tree-traversal"><a class="header" href="#depth-first-and-breadth-first-tree-traversal">Depth-first and Breadth-first Tree Traversal</a></h3>
@@ -870,7 +870,7 @@ creating the shell.</p>
 <p>Traverse the filesystem and interactively delete any repositories that are
 not referenced by the garden file.</p>
 <p>This command is intended to cleanup a garden-managed directory. Its intended
-usage is to delete repositories that were created (eg. via <code>garden grow</code>) and
+usage is to delete repositories that were created (e.g. via <code>garden grow</code>) and
 have since been removed from your version-controlled garden configuration.</p>
 <p><strong>Warning</strong>: <code>garden prune</code> is a dangerous command and must be run with care.
 <code>garden prune</code> deletes repositories and all of their files (including the <code>.git</code> storage)!</p>
@@ -1193,7 +1193,7 @@ This allows nested include files to use relative paths for their nested includes
 <p>If an include file is not found relative to the current garden file then a path relative
 to the root configuration directory will be checked for the existence of the file.</p>
 <p>Includes files are treated like &quot;optional&quot; includes -- include files that cannot be
-found are silenty ignored.</p>
+found are silently ignored.</p>
 <p>Enable the <code>garden -d config ...</code> debug flag to display warnings about missing include
 files.</p>
 <h3 id="the-last-one-wins-rule"><a class="header" href="#the-last-one-wins-rule">The &quot;Last One Wins&quot; Rule</a></h3>
@@ -1201,7 +1201,7 @@ files.</p>
 <code>variables</code> can be sparsely defined across multiple files by using <code>includes</code>.</p>
 <p>When the same entry is found in multiple included files then the only last definition
 will be used. This is referred to as the &quot;Last One Wins&quot; rule.</p>
-<p>Entities defined in the the root <code>garden.yaml</code> have the highest precedence and override
+<p>Entities defined in the root <code>garden.yaml</code> have the highest precedence and override
 entries provided via <code>garden.includes</code>.</p>
 <p><code>variables</code>, <code>commands</code>, <code>groups</code> and <code>gardens</code> are completely replaced when multiple
 definitions are found.</p>
@@ -1262,28 +1262,25 @@ override/replace variables defined in a tree scope.</p>
 <p>Garden automatically defines some built-in variables that can be useful
 when constructing values for variables, commands, and paths.</p>
 <ul>
-<li><strong>GARDEN_CONFIG_DIR</strong> -- Directory containing the <code>garden.yaml</code> config file.</li>
+<li><strong>GARDEN_CONFIG_DIR</strong> -- Directory containing the <code>garden.yaml</code> file.</li>
 <li><strong>GARDEN_ROOT</strong> -- Root directory for trees.</li>
 <li><strong>TREE_NAME</strong> -- Current tree name.</li>
 <li><strong>TREE_PATH</strong> -- Current tree path.</li>
 </ul>
 <h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
 <p>The &quot;environment&quot; block defines variables that are stored in the environment.</p>
-<p>Environment variables are resolved in the same order as the garden variables:
+<p>Environment variables are resolved in the same order as garden variables:
 global scope, tree scope, and garden scope.  This allows gardens to
 prepend/append variables after a tree, thus allowing for customization
 of behavior from the garden scope.</p>
-<p>Environment variables are resolved after garden variables.  This allows
-the use of garden variables when defining environment variable values.</p>
-<p>Environment variable names can use garden <code>${variable}</code> syntax when defining
-both their name and values.</p>
-<p>Values in environment blocks prepend to the named environment variable.</p>
+<p>Values in environment blocks prepend to the environment variable by default.
+The <code>:</code> UNIX path separator is used when prepending and appending values.</p>
 <pre><code class="language-yaml">trees:
   foo:
     environment:
       PATH: ${TREE_PATH}/bin
 </code></pre>
-<p>The example above prepends the <code>foo/bin</code> directory to the colon (<code>:</code>)-delimeted <code>PATH</code>
+<p>The example above prepends the <code>foo/bin</code> directory to the colon (<code>:</code>)-delimited <code>PATH</code>
 environment variable.</p>
 <p>Names with an equals sign (<code>=</code>) suffix are treated as &quot;store&quot; operations and are
 stored into the environment, fully replacing any pre-existing values.</p>
@@ -1292,8 +1289,10 @@ stored into the environment, fully replacing any pre-existing values.</p>
     environment:
       ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 </code></pre>
-<p>The example above exports a variable called <code>foo_LOCATION</code> with the location of the tree.
-If <code>foo_LOCATION</code> is already defined then its value is replaced.</p>
+<p>Environment variable entries can use garden <code>${variable}</code> syntax when defining
+both their name and values. The example above exports a variable called <code>foo_LOCATION</code>
+with the location of the tree. If <code>foo_LOCATION</code> is already defined then its value is
+replaced.</p>
 <p>A plus sign (<code>+</code>) suffix in the name append to a variable instead of prepending.</p>
 <pre><code class="language-yaml">trees:
   foo:
@@ -1409,7 +1408,7 @@ trees:
     variables:
       message: The time is now: $(date)
 </code></pre>
-<p>When a tree specifies multiple templates then all of the tempaltes are merged into
+<p>When a tree specifies multiple templates then all of the templates are merged into
 the tree's definitions. If variables are multiply-defined across multiple templates
 then the variable's value from the last specified template will be used.</p>
 <h2 id="string-to-list-promotion"><a class="header" href="#string-to-list-promotion">String to List Promotion</a></h2>
@@ -1448,7 +1447,7 @@ due to the automatic promotion of Strings into Lists.</p>
 wildcard patterns.</p>
 <p>The &quot;annex&quot; group definition is: <code>annex/*</code>.   This matches all trees that
 start with &quot;annex/&quot;.  The &quot;git-all&quot; group has two entries -- <code>git*</code> and
-<code>cola</code>.  the first matches all trees that start with &quot;git&quot;, and the second one
+<code>cola</code>.  The first matches all trees that start with &quot;git&quot;, and the second one
 matches &quot;cola&quot; only.</p>
 <h2 id="symlinks"><a class="header" href="#symlinks">Symlinks</a></h2>
 <p>Symlink trees create a symlink on the filesystem during <code>garden init</code>.
@@ -1464,7 +1463,7 @@ defaults to a path named after the tree relative to the garden root.</p>
 <p>A more advanced modularity feature allow you to stitch additional <code>garden.yaml</code>
 files underneath a custom &quot;graft namespace&quot;.</p>
 <p>The example below demonstrates how to define trees and variables in separate
-&quot;graft&quot; files and refer to them using a <code>graft::</code> namespace qualfier.</p>
+&quot;graft&quot; files and refer to them using a <code>graft::</code> namespace qualifier.</p>
 <pre><code class="language-yaml"># Top-level garden.yaml
 grafts:
   graft: graft.yaml
@@ -1502,7 +1501,7 @@ variables:
   value: &quot;grafted value&quot;
 </code></pre>
 <p>Running <code>garden eval '${graft::value}'</code> will output <code>grafted value</code>.</p>
-<p>Running <code>garden eval '${value}'</code> wil output <code>global grafted value</code>, as it evaluates at
+<p>Running <code>garden eval '${value}'</code> will output <code>global grafted value</code>, as it evaluates at
 global scope.</p>
 <p>Running <code>garden eval '${value}' local-tree</code> will output <code>local grafted value</code>, as it
 evaluates from <code>local-tree</code>'s scope.</p>
@@ -1887,7 +1886,7 @@ then only the final definition will be used.
 This behavior allows a tree definition to replace just the <code>url</code> field, or to replace
 individual tree commands while retaining the rest. Use <code>replace: true</code> in a Tree
 definition in order to completely replace the existing entry instead of sparsely
-overridding it.</p>
+overriding it.</p>
 </li>
 <li>
 <p>Improved shell completions for <code>garden</code>, <code>garden init</code> and <code>garden plant</code>.</p>
@@ -1904,7 +1903,7 @@ overridding it.</p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>Both names and values in <code>gitconfig</code> can now use <code>${var}</code> expressions.
-Previously only values were evaluated. Config names are evaluated now as well.</li>
+Previously only values were evaluated. Names are evaluated now as well.</li>
 </ul>
 <p><strong>Fixes</strong>:</p>
 <ul>
@@ -1918,7 +1917,7 @@ has been updated.
 <p><strong>Fixes</strong></p>
 <ul>
 <li>Exec expressions were previously run with the current directory set to the
-directory from which garden was run. Exec expresssions are now run in the
+directory from which garden was run. Exec expressions are now run in the
 tree's current directory.</li>
 </ul>
 <h2 id="v050"><a class="header" href="#v050">v0.5.0</a></h2>
@@ -2035,7 +2034,7 @@ runs a command across all trees before continuing on to the next command.
 <p>This is the initial garden release.</p>
 <ul>
 <li><code>garden grow</code> grows worktrees.</li>
-<li><code>garden init</code> intitializes configuration.</li>
+<li><code>garden init</code> initializes configuration.</li>
 <li><code>garden plant</code> (formerly <code>garden add</code>) adds existing trees.</li>
 <li><code>garden cmd</code> and <code>garden &lt;custom-command&gt;</code> can run custom commands.</li>
 <li>Templates, variables, and environment variables are all supported.</li>
