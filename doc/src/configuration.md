@@ -41,7 +41,14 @@ Slashes in tree paths will create new directories on disk as needed.
 `garden.root` defaults to the current directory when unspecified.
 
 The built-in `${GARDEN_CONFIG_DIR}` variable can be used to create relocatable
-setups that define a `garden.root` relative to the garden file itself.
+setups by defining `garden.root` relative to the garden file itself.
+
+```yaml
+# By default, "garden init" generates a "garden.yaml" that uses the
+# ${GARDEN_CONFIG_DIR} for its "garden.root" location.
+garden:
+  root: ${GARDEN_CONFIG_DIR}
+```
 
 To place all trees in a `src` directory sibling to the `garden.yaml` file, the
 following configuration can be used:
@@ -255,7 +262,7 @@ trees:
 ```
 
 The example above exports a variable called `foo_LOCATION` with the location of the tree.
-If `foo_LOCATION` is already defined then it its value is replaced.
+If `foo_LOCATION` is already defined then its value is replaced.
 
 A plus sign (`+`) suffix in the name append to a variable instead of prepending.
 
