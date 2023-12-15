@@ -1,0 +1,5 @@
+[licenses]
+allow = [
+  "MIT",
+  "Unicode-DFS-2016"
+]
