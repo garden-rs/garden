@@ -12,6 +12,12 @@
 
 - `garden -vv exec` and `garden -vv shell` now display the command being run.
 
+**Packaging**:
+
+- `garden` can now be installed as a `nix flake` package.
+  A `flake.nix` file is now provided.
+  ([#16](https://github.com/davvid/garden/issues/16))
+
 ## v0.9.1
 
 **Fixes**
