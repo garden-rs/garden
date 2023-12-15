@@ -49,14 +49,14 @@ garden cmd cola status build
 ## Paths
 
 Paths can be specified as well, but the filesystem has the lowest priority
-relative to gardens, groups, and trees.  When specifyiing paths they must
-resolve to a configured tree.  For example,
+relative to gardens, groups, and trees.  When specifying paths they must
+resolve to a configured tree.  For example:
 
 ```bash
 garden build . -- --verbose
 ```
 
-runs the `build` command on the tree in the current directory and passes the
+This runs the `build` command on the tree in the current directory and passes the
 `--verbose` flag to the configured `build` command.
 
 

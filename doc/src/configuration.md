@@ -123,7 +123,7 @@ If an include file is not found relative to the current garden file then a path 
 to the root configuration directory will be checked for the existence of the file.
 
 Includes files are treated like "optional" includes -- include files that cannot be
-found are silenty ignored.
+found are silently ignored.
 
 Enable the `garden -d config ...` debug flag to display warnings about missing include
 files.
@@ -137,7 +137,7 @@ Entities in garden files such as `trees`, `gardens`, `groups`, `commands` and
 When the same entry is found in multiple included files then the only last definition
 will be used. This is referred to as the "Last One Wins" rule.
 
-Entities defined in the the root `garden.yaml` have the highest precedence and override
+Entities defined in the root `garden.yaml` have the highest precedence and override
 entries provided via `garden.includes`.
 
 `variables`, `commands`, `groups` and `gardens` are completely replaced when multiple
@@ -219,7 +219,7 @@ override/replace variables defined in a tree scope.
 Garden automatically defines some built-in variables that can be useful
 when constructing values for variables, commands, and paths.
 
-* **GARDEN_CONFIG_DIR** -- Directory containing the `garden.yaml` config file.
+* **GARDEN_CONFIG_DIR** -- Directory containing the `garden.yaml` file.
 * **GARDEN_ROOT** -- Root directory for trees.
 * **TREE_NAME** -- Current tree name.
 * **TREE_PATH** -- Current tree path.
@@ -228,18 +228,13 @@ when constructing values for variables, commands, and paths.
 
 The "environment" block defines variables that are stored in the environment.
 
-Environment variables are resolved in the same order as the garden variables:
+Environment variables are resolved in the same order as garden variables:
 global scope, tree scope, and garden scope.  This allows gardens to
 prepend/append variables after a tree, thus allowing for customization
 of behavior from the garden scope.
 
-Environment variables are resolved after garden variables.  This allows
-the use of garden variables when defining environment variable values.
-
-Environment variable names can use garden `${variable}` syntax when defining
-both their name and values.
-
-Values in environment blocks prepend to the named environment variable.
+Values in environment blocks prepend to the environment variable by default.
+The `:` UNIX path separator is used when prepending and appending values.
 
 ```yaml
 trees:
@@ -248,7 +243,7 @@ trees:
       PATH: ${TREE_PATH}/bin
 ```
 
-The example above prepends the `foo/bin` directory to the colon (`:`)-delimeted `PATH`
+The example above prepends the `foo/bin` directory to the colon (`:`)-delimited `PATH`
 environment variable.
 
 Names with an equals sign (`=`) suffix are treated as "store" operations and are
@@ -261,8 +256,10 @@ trees:
       ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 ```
 
-The example above exports a variable called `foo_LOCATION` with the location of the tree.
-If `foo_LOCATION` is already defined then its value is replaced.
+Environment variable entries can use garden `${variable}` syntax when defining
+both their name and values. The example above exports a variable called `foo_LOCATION`
+with the location of the tree. If `foo_LOCATION` is already defined then its value is
+replaced.
 
 A plus sign (`+`) suffix in the name append to a variable instead of prepending.
 
@@ -422,7 +419,7 @@ trees:
       message: The time is now: $(date)
 ```
 
-When a tree specifies multiple templates then all of the tempaltes are merged into
+When a tree specifies multiple templates then all of the templates are merged into
 the tree's definitions. If variables are multiply-defined across multiple templates
 then the variable's value from the last specified template will be used.
 
@@ -471,7 +468,7 @@ wildcard patterns.
 
 The "annex" group definition is: `annex/*`.   This matches all trees that
 start with "annex/".  The "git-all" group has two entries -- `git*` and
-`cola`.  the first matches all trees that start with "git", and the second one
+`cola`.  The first matches all trees that start with "git", and the second one
 matches "cola" only.
 
 
@@ -497,7 +494,7 @@ A more advanced modularity feature allow you to stitch additional `garden.yaml`
 files underneath a custom "graft namespace".
 
 The example below demonstrates how to define trees and variables in separate
-"graft" files and refer to them using a `graft::` namespace qualfier.
+"graft" files and refer to them using a `graft::` namespace qualifier.
 
 ```yaml
 # Top-level garden.yaml
@@ -544,7 +541,7 @@ variables:
 
 Running `garden eval '${graft::value}'` will output `grafted value`.
 
-Running `garden eval '${value}'` wil output `global grafted value`, as it evaluates at
+Running `garden eval '${value}'` will output `global grafted value`, as it evaluates at
 global scope.
 
 Running `garden eval '${value}' local-tree` will output `local grafted value`, as it

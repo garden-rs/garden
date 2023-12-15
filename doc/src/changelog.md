@@ -72,7 +72,7 @@ referenced using `graft::` namespace qualifiers.
   This behavior allows a tree definition to replace just the `url` field, or to replace
   individual tree commands while retaining the rest. Use `replace: true` in a Tree
   definition in order to completely replace the existing entry instead of sparsely
-  overridding it.
+  overriding it.
 
 - Improved shell completions for `garden`, `garden init` and `garden plant`.
 
@@ -89,7 +89,7 @@ referenced using `graft::` namespace qualifiers.
 **Features**:
 
 - Both names and values in `gitconfig` can now use `${var}` expressions.
-  Previously only values were evaluated. Config names are evaluated now as well.
+  Previously only values were evaluated. Names are evaluated now as well.
 
 **Fixes**:
 
@@ -105,7 +105,7 @@ referenced using `graft::` namespace qualifiers.
 **Fixes**
 
 - Exec expressions were previously run with the current directory set to the
-  directory from which garden was run. Exec expresssions are now run in the
+  directory from which garden was run. Exec expressions are now run in the
   tree's current directory.
 
 ## v0.5.0
@@ -222,7 +222,7 @@ referenced using `graft::` namespace qualifiers.
 This is the initial garden release.
 
 - `garden grow` grows worktrees.
-- `garden init` intitializes configuration.
+- `garden init` initializes configuration.
 - `garden plant` (formerly `garden add`) adds existing trees.
 - `garden cmd` and `garden <custom-command>` can run custom commands.
 - Templates, variables, and environment variables are all supported.

@@ -16,7 +16,7 @@ and prefer to install `garden` using `pkgin` or the pkgsrc/NetBSD sources.
 If you already have `cargo` installed then you can skip this section.
 
 You may be able to install `cargo` on macOS and Linux using standard package
-managers, eg. `brew install rust` or `apt install rust-all`.
+managers, e.g. `brew install rust` or `apt install rust-all`.
 
 Other platforms and older distributions can get a Rust development toolchain
 by going to [rustup.rs and following the installation instructions](https://rustup.rs).
@@ -131,10 +131,10 @@ cargo install --path .
 Running `cargo install` with no arguments installs to `~/.cargo/bin/garden` by default.
 
 Once you have `garden` installed then you can use Garden's `garden.yaml` to run
-Garden's custom worfkflow commands.
+Garden's custom workflow commands.
 
 * `garden test` runs the test suite using `cargo test`.
-* `garden check` runs checks and linters.
+* `garden check` runs checks and lints.
 * `garden doc` builds the documentation.
 * `garden fmt` formats the source code.
 * `garden install-doc` installs the documentation.
@@ -148,7 +148,7 @@ Garden is developed on Linux and supported on macOS and BSDs where Rust is avail
 
 Garden is not supported on Windows.
 
-Garden "should" work fine on Windows if you install a shell (eg. `bash.exe` or
+Garden "should" work fine on Windows if you install a shell (e.g. `bash.exe` or
 `zsh.exe`) in `$PATH` and patch a few details to deal with Windows-isms, but Garden is
 untested and not supported by the core team on Windows or WSL.
 

@@ -57,9 +57,9 @@
   matching set of trees. If searching for gardens finds matches then groups and
   trees are not searched. If searching for groups finds matches then trees are
   not searched. Prefix the tree query pattern with a percent-sign (`%`),
-  eg. `%group*`, to only query for groups matching the pattern.
-  Prefix the pattern with an at-sign (`@`), eg. `@tree`, to only query for trees.
-  Prefix the pattern with colon (`:`), eg. `:garden`, to only query for gardens.
+  e.g. `%group*`, to only query for groups matching the pattern.
+  Prefix the pattern with an at-sign (`@`), e.g. `@tree`, to only query for trees.
+  Prefix the pattern with colon (`:`), e.g. `:garden`, to only query for gardens.
   The `:garden` syntax is not typically used because gardens are already
   searched first. `%group` and `@tree` can be used to disambiguate queries for
   groups and trees that share the same name as a garden.
@@ -68,7 +68,7 @@
   String values can use shell `${variables}` expressions to interpolate
   and expand values in the string. `~` is expanded to `$HOME`.
   These expressions can be used in most fields where strings are accepted,
-  eg. when definiting variables, commands and environment variables.
+  e.g. when defining variables, commands and environment variables.
 
 * **exec expressions**
   When a *string expression* starts with `$ ` (dollar-sign then space) then the

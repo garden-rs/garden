@@ -24,14 +24,14 @@ The following options come before `<command>` and are common to all commands.
 
     -C | --chdir <directory>
 
-chdir to the specified directory before searching for configuration.
+Navigate to the specified directory before searching for configuration.
 This is modeled after `make -C <path> ...` or `git -C <path> ...`.
 
     -c | --config <filename>
 
-Specify a garden config file to use instead of searching for `garden.yaml`.
-The path can either be the path to an actual config file, or it can be
-the basename of a file in the configuration search path.
+Specify a garden file to use instead of searching for `garden.yaml`.
+The filename can be either the path to a file or the basename of a file in the
+configuration search path.
 
     -v | --verbose
 
@@ -119,7 +119,7 @@ and places them into the paths defined by the garden file.
 
 It is safe to re-run the `grow` command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
-repositories are created by cloning the configured tree url.
+repositories are created by cloning the configured tree URL.
 
 ### Branches
 
@@ -155,14 +155,14 @@ git clone --depth=42 --no-single-branch
 ```
 
 Even though a shallow clone is created, all of the remote tracking branches
-(eg. `origin/*`) are available because we clone the repository using
+(e.g. `origin/*`) are available because we clone the repository using
 the `--no-single-branch` option.
 
 The `single-branch: true` tree parameter is used to create clones that contain
 a single branch only. This is useful if you want to limit the on-disk footprint
 of repositories by only having a single branch available.
 
-This paramter is typically used in conjunction with `branch: <branch-name>` and
+This par mater is typically used in conjunction with `branch: <branch-name>` and
 `depth: 1` to create a 1-commit shallow clone with a single branch.
 
 ```yaml
@@ -342,7 +342,7 @@ environment from the corresponding garden, group, or tree.
 
 Multi-line and multi-statement command strings will stop executing as soon as the
 first non-zero exit code is encountered due to the use of the `-e` shell option.
-Use the `-n | --no-errexit` option to inhibit the use of the `-e` errexit option.
+Use the `-n | --no-errexit` option to inhibit the use of the `-e` "errexit" option.
 
 The `--no-errexit` option causes commands with multiple statements to run to completion
 even when a non-zero exit code is encountered. This is akin to a regular shell script.
@@ -363,7 +363,7 @@ subsequent variables will be set according to each argument.
 ```yaml
 # Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via "String to List Promotion".
-# The YAML reader accepts multi-line strings using the the "|" pipe syntax.
+# The YAML reader accepts multi-line strings using the "|" pipe syntax.
 
 commands:
   one-liner: echo hello "$@"
@@ -422,8 +422,8 @@ The plain `$variable` syntax is reserved for use by the shell commands used in
 user-defined Commands and Exec Expressions.
 
 Environment Variables can be used in shell scriptlets through both the `$ENV` and
-`${ENV}` braced variable syntax. Garden makes `${PATH}` and all other environment
-variables available during variable expansion.
+`${ENV}` braced variable syntax. Garden makes all environment variables available during
+variable expansion.
 
 The distinction between the `${garden}` and `$shell` syntax is only relevant when
 using variables defined within shell command, such as `$shell_variable` above.
@@ -433,7 +433,7 @@ empty value would have been used instead of the output of `date +%s`.
 
 Sometimes it is necessary to actually use the `${...}` braced literal syntax
 in shell commands. The `$${...}` braced double-dollar syntax can be used to
-escape a braced value and disable evalution by `garden`.
+escape a braced value and disable evaluation by `garden`.
 
 Double-`$` can generally be used to escape literal `$` values in commands, but
 escaping is handled automatically for regular `$shell` variables.
@@ -555,7 +555,7 @@ Traverse the filesystem and interactively delete any repositories that are
 not referenced by the garden file.
 
 This command is intended to cleanup a garden-managed directory. Its intended
-usage is to delete repositories that were created (eg. via `garden grow`) and
+usage is to delete repositories that were created (e.g. via `garden grow`) and
 have since been removed from your version-controlled garden configuration.
 
 **Warning**: `garden prune` is a dangerous command and must be run with care.
