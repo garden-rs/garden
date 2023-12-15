@@ -92,7 +92,9 @@
             <div class="sidebar-scrollbox">
                 <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html" class="active"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
         </nav>
 
         <!-- Track and set sidebar scroll position -->
@@ -342,7 +344,12 @@ This directory is the parent directory in which all trees will be cloned.</p>
 <p>Slashes in tree paths will create new directories on disk as needed.
 <code>garden.root</code> defaults to the current directory when unspecified.</p>
 <p>The built-in <code>${GARDEN_CONFIG_DIR}</code> variable can be used to create relocatable
-setups that define a <code>garden.root</code> relative to the garden file itself.</p>
+setups by defining <code>garden.root</code> relative to the garden file itself.</p>
+<pre><code class="language-yaml"># By default, &quot;garden init&quot; generates a &quot;garden.yaml&quot; that uses the
+# ${GARDEN_CONFIG_DIR} for its &quot;garden.root&quot; location.
+garden:
+  root: ${GARDEN_CONFIG_DIR}
+</code></pre>
 <p>To place all trees in a <code>src</code> directory sibling to the <code>garden.yaml</code> file, the
 following configuration can be used:</p>
 <pre><code class="language-yaml">garden:
@@ -495,7 +502,7 @@ stored into the environment, fully replacing any pre-existing values.</p>
       ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 </code></pre>
 <p>The example above exports a variable called <code>foo_LOCATION</code> with the location of the tree.
-If <code>foo_LOCATION</code> is already defined then it its value is replaced.</p>
+If <code>foo_LOCATION</code> is already defined then its value is replaced.</p>
 <p>A plus sign (<code>+</code>) suffix in the name append to a variable instead of prepending.</p>
 <pre><code class="language-yaml">trees:
   foo:
