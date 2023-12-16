@@ -10,9 +10,7 @@ self-contained and inter-dependent Git worktrees.
 [![Build status](https://gitlab.com/garden-rs/garden/badges/main/pipeline.svg)](https://gitlab.com/garden-rs/garden/-/pipelines)
 [![MIT License](https://img.shields.io/gitlab/license/garden-rs/garden.svg)](LICENSE)
 
-Garden is actively maintained and its current features are stable.
-
-Garden's core functionality is feature-complete and `v1.0.0` will be released in 2023.
+Garden is actively maintained and its core functionality is stable and feature-complete.
 
 
 ## Documentation
