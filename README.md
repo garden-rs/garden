@@ -38,7 +38,12 @@ repositories for development.
 
 * Develop, build and test interdependent projects in self-contained sandboxes.
 
-* Configured using simple yet featureful YAML configuration files.
+* Leverage your existing shell scripting knowledge. If you already know
+(bash/zsh/etc) shell then you can learn to use `garden` with minimal effort.
+
+* Configured using simple YAML files extended with a flexible expression syntax.
+Garden helps you define (multi-repository) workflows using the vast ecosystem of
+command-line tools.
 
 
 ## Links and Related Projects
@@ -55,7 +60,7 @@ repositories for development.
 ## Acknowledgements
 
 The structure and content of the README and documentation was heavily inspired
-by the the [mdbook](https://github.com/rust-lang/mdBook) documentation.
+by the [mdbook documentation](https://github.com/rust-lang/mdBook).
 
 The [yaml-rust parser used by Garden](https://github.com/davvid/yaml-rust)
 is [@davvid](https://github.com/davvid)'s ([gitlab](https://gitlab.com/davvid))
