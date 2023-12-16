@@ -142,6 +142,55 @@ Garden's custom workflow commands.
 See Garden's `garden.yaml` for more details.
 
 
+## Nix Flakes
+
+[Nix Flakes](https://nixos.wiki/wiki/Flakes) can be used to build, test and install `garden`.
+A `flake.nix` file is provided in the source tree.
+
+[Enabling flakes permanently](https://nixos.wiki/wiki/Flakes#Enable_flakes_permanently_in_NixOS)
+is recommended by either adding `experimental-features = nix-command flakes` to your
+`~/.config/nix/nix.conf` or `/etc/nix/nix.conf`, or by using
+[Home Manager](https://nixos.wiki/wiki/Flakes#Other_Distros.2C_with_Home-Manager)
+to install flakes.
+
+The following commands are available once installed.
+
+* `nix build` builds the `garden` package.
+* `nix shell` opens a shell with `garden` installed.
+* `nix develop` opens a development shell with `garden` and `cargo` installed.
+* `nix flake check` builds `garden` and runs the test suite.
+
+### Activating Garden's Nix Package
+
+The `nix shell` command above only works when run from `garden`'s source tree.
+A separate `nix-shell` command can be used to get a shell with `garden` from any
+directory by using the package's [Nix Store](https://nixos.org/manual/nix/stable/store/)
+location. To do this we need to get the package's nix store output path.
+
+Garden's nix derivation can be inspected using `nix derivation show`.
+The `output.path` field contains the Nix Store location of the `nix` package.
+For example, `nix derivation show` will contain output that looks like the following:
+
+```yaml
+{
+  "/nix/store/n92qrx1j889bl2ippabpghsr4kyqbknh-garden-tools-1.0.0-beta2.drv": {
+    # ...
+    "outputs": {
+      "out": {
+        "path": "/nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2"
+      }
+    },
+    # ...
+  }
+}
+```
+
+You can use these details to open a shell with your previously-built `garden` package.
+
+```bash
+`nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
+```
+
 ## Windows
 
 Garden is developed on Linux and supported on macOS and BSDs where Rust is available.
