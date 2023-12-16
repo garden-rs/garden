@@ -267,6 +267,44 @@ Garden's custom workflow commands.</p>
 <li><code>garden install-doc</code> installs the documentation.</li>
 </ul>
 <p>See Garden's <code>garden.yaml</code> for more details.</p>
+<h2 id="nix-flakes"><a class="header" href="#nix-flakes">Nix Flakes</a></h2>
+<p><a href="https://nixos.wiki/wiki/Flakes">Nix Flakes</a> can be used to build, test and install <code>garden</code>.
+A <code>flake.nix</code> file is provided in the source tree.</p>
+<p><a href="https://nixos.wiki/wiki/Flakes#Enable_flakes_permanently_in_NixOS">Enabling flakes permanently</a>
+is recommended by either adding <code>experimental-features = nix-command flakes</code> to your
+<code>~/.config/nix/nix.conf</code> or <code>/etc/nix/nix.conf</code>, or by using
+<a href="https://nixos.wiki/wiki/Flakes#Other_Distros.2C_with_Home-Manager">Home Manager</a>
+to install flakes.</p>
+<p>The following commands are available once installed.</p>
+<ul>
+<li><code>nix build</code> builds the <code>garden</code> package.</li>
+<li><code>nix shell</code> opens a shell with <code>garden</code> installed.</li>
+<li><code>nix develop</code> opens a development shell with <code>garden</code> and <code>cargo</code> installed.</li>
+<li><code>nix flake check</code> builds <code>garden</code> and runs the test suite.</li>
+</ul>
+<h3 id="activating-gardens-nix-package"><a class="header" href="#activating-gardens-nix-package">Activating Garden's Nix Package</a></h3>
+<p>The <code>nix shell</code> command above only works when run from <code>garden</code>'s source tree.
+A separate <code>nix-shell</code> command can be used to get a shell with <code>garden</code> from any
+directory by using the package's <a href="https://nixos.org/manual/nix/stable/store/">Nix Store</a>
+location. To do this we need to get the package's nix store output path.</p>
+<p>Garden's nix derivation can be inspected using <code>nix derivation show</code>.
+The <code>output.path</code> field contains the Nix Store location of the <code>nix</code> package.
+For example, <code>nix derivation show</code> will contain output that looks like the following:</p>
+<pre><code class="language-yaml">{
+  &quot;/nix/store/n92qrx1j889bl2ippabpghsr4kyqbknh-garden-tools-1.0.0-beta2.drv&quot;: {
+    # ...
+    &quot;outputs&quot;: {
+      &quot;out&quot;: {
+        &quot;path&quot;: &quot;/nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2&quot;
+      }
+    },
+    # ...
+  }
+}
+</code></pre>
+<p>You can use these details to open a shell with your previously-built <code>garden</code> package.</p>
+<pre><code class="language-bash">`nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
+</code></pre>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
 <p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
 <p>Garden is not supported on Windows.</p>
