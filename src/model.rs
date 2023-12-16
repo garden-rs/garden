@@ -1138,7 +1138,7 @@ pub type Color<T> = yansi::Paint<T>;
 pub fn display_missing_tree(tree: &Tree, path: &str, verbose: u8) -> String {
     if verbose > 0 {
         format!(
-            "{} {}  {} {}",
+            "{} {} {} {}",
             Color::black("#").bold(),
             Color::black(&tree.name).bold(),
             Color::black(&path).bold(),
@@ -1160,10 +1160,12 @@ pub fn display_tree(tree: &Tree, path_str: &str, tree_branches: bool, verbose: u
             if let Some(path) = tree.canonical_pathbuf() {
                 if let Some(branch) = git::branch(&path) {
                     return format!(
-                        "{} {} ({}) {}",
+                        "{} {} {}{}{} {}",
                         Color::cyan("#"),
                         Color::blue(&tree.name).bold(),
-                        Color::blue(&branch),
+                        Color::blue("["),
+                        Color::cyan(&branch),
+                        Color::blue("]"),
                         Color::blue(&path_str)
                     );
                 }
@@ -1180,10 +1182,12 @@ pub fn display_tree(tree: &Tree, path_str: &str, tree_branches: bool, verbose: u
             if let Some(path) = tree.canonical_pathbuf() {
                 if let Some(branch) = git::branch(&path) {
                     return format!(
-                        "{} {} ({})",
+                        "{} {} {}{}{}",
                         Color::cyan("#"),
                         Color::blue(&tree.name).bold(),
-                        Color::blue(&branch)
+                        Color::blue("["),
+                        Color::cyan(&branch),
+                        Color::blue("]")
                     );
                 }
             }
