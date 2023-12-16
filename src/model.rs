@@ -1195,7 +1195,7 @@ pub fn display_tree(tree: &Tree, path_str: &str, tree_branches: bool, verbose: u
 /// Print a tree if it exists, otherwise print a missing tree
 pub fn print_tree(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) -> bool {
     if let Ok(path) = tree.path_as_ref() {
-        // Sparse gardens/missing trees are ok -> skip these entries.
+        // Sparse gardens/missing trees are expected. Skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
             if !quiet {
                 eprintln!("{}", display_missing_tree(tree, path, verbose));

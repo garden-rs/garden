@@ -278,14 +278,14 @@ impl<'a> BareRepoFixture<'a> {
     }
 
     /// Asserts that the path is a Git worktree.
-    /// Returns a pathbuf for the specified worktree.
+    /// Returns a PathBuf for the specified worktree.
     pub fn worktree_pathbuf(&self, path: &str) -> std::path::PathBuf {
         std::path::PathBuf::from(self.worktree(path))
     }
 }
 
 impl Drop for BareRepoFixture<'_> {
-    /// Teardown the test repository.
+    /// Teardown the test repository filesystem data.
     fn drop(&mut self) {
         teardown_tmp_test_data(&self.root());
     }
