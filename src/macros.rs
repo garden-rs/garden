@@ -2,7 +2,7 @@
 ///
 /// Parameters:
 /// - `args`: A `std::fmt::Arguments`
-pub fn error(args: std::fmt::Arguments) {
+pub(crate) fn error(args: std::fmt::Arguments) {
     eprintln!("error: {args}");
 }
 
@@ -10,7 +10,7 @@ pub fn error(args: std::fmt::Arguments) {
 ///
 /// Parameters:
 /// - `args`: A `std::fmt::Arguments`
-pub fn debug(args: std::fmt::Arguments) {
+pub(crate) fn debug(args: std::fmt::Arguments) {
     eprintln!("debug: {args}");
 }
 

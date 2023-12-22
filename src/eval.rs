@@ -120,15 +120,6 @@ fn expand_tree_vars(
     Some(String::new())
 }
 
-/// Expand variables using a tree context.
-fn _expand_tree_context_vars(
-    _app: &model::ApplicationContext,
-    _tree_context: &model::TreeContext,
-    _name: &str,
-) -> Result<Option<String>, String> {
-    Ok(None)
-}
-
 /// Expand variables at global scope only
 fn expand_vars(
     app_context: &model::ApplicationContext,
@@ -237,7 +228,7 @@ pub fn tree_value(
 
 /// Resolve an expression in a garden/tree/global scope for execution by a shell.
 /// This is used to generate the commands used internally by garden.
-pub fn tree_value_for_shell(
+fn tree_value_for_shell(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     expr: &str,
@@ -292,7 +283,7 @@ pub fn value(
 
 /// Evaluate `$ <command>` command strings, AKA "exec expressions".
 /// The result of the expression is the stdout output from the command.
-pub fn exec_expression(string: &str, pathbuf: Option<std::path::PathBuf>) -> String {
+fn exec_expression(string: &str, pathbuf: Option<std::path::PathBuf>) -> String {
     let cmd = syntax::trim_exec(string);
     let mut proc = subprocess::Exec::shell(cmd);
     // Run the exec expression inside the tree's directory when specified.
@@ -337,7 +328,7 @@ pub fn multi_variable(
 }
 
 /// Evaluate a variable in the given context for execution in a shell
-pub fn variables_for_shell(
+fn variables_for_shell(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     variables: &mut Vec<model::Variable>,

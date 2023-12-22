@@ -41,7 +41,7 @@ pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions)
 }
 
 /// Execute a command over every tree in the evaluated tree query.
-pub fn exec(
+fn exec(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     quiet: bool,

@@ -87,7 +87,7 @@ impl MainOptions {
 }
 
 /// Parse a vector of debug level arguments to count how many have been set
-pub fn debug_level(debug: &[String], name: &str) -> u8 {
+fn debug_level(debug: &[String], name: &str) -> u8 {
     debug.iter().filter(|&x| x == name).count() as u8
 }
 

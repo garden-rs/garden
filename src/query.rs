@@ -80,7 +80,7 @@ pub fn resolve_trees(
 /// - config: `&garden::model::Configuration`
 /// - pattern: `&glob::Pattern`
 
-pub fn garden_trees(
+fn garden_trees(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     pattern: &glob::Pattern,
@@ -254,12 +254,15 @@ pub fn trees_from_pattern(
 }
 
 /// Return a tree context for the specified path string.
-pub fn tree_from_path(config: &model::Configuration, path: &str) -> Option<model::TreeContext> {
+pub(crate) fn tree_from_path(
+    config: &model::Configuration,
+    path: &str,
+) -> Option<model::TreeContext> {
     tree_from_pathbuf(config, &std::path::PathBuf::from(path))
 }
 
 /// Return a tree context for the specified path.
-pub fn tree_from_pathbuf(
+fn tree_from_pathbuf(
     config: &model::Configuration,
     path: &std::path::Path,
 ) -> Option<model::TreeContext> {
@@ -297,7 +300,7 @@ pub fn tree_name_from_path(
 
 /// Return the name of an existing tree from an absolute path.
 
-pub fn tree_name_from_abspath(
+pub(crate) fn tree_name_from_abspath(
     config: &model::Configuration,
     path: &std::path::Path,
 ) -> Option<String> {
@@ -364,7 +367,7 @@ pub fn tree_context(
                 garden: garden_name.into(),
             }
         })?;
-        let contexts = query::garden_trees(app_context, config, &pattern);
+        let contexts = garden_trees(app_context, config, &pattern);
 
         if contexts.is_empty() {
             return Err(errors::GardenError::GardenNotFound {
@@ -420,7 +423,7 @@ pub fn find_tree(
 }
 
 /// Return a path that that is either the tree's path or the tree's shared worktree path.
-pub fn shared_worktree_path(
+pub(crate) fn shared_worktree_path(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     ctx: &model::TreeContext,

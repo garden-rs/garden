@@ -1,17 +1,17 @@
 use super::errors;
 
 /// Return the current directoy as a PathBuf.
-pub fn current_dir() -> std::path::PathBuf {
+pub(crate) fn current_dir() -> std::path::PathBuf {
     std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
 }
 
 /// Return the current directory as a string.
-pub fn current_dir_string() -> String {
+pub(crate) fn current_dir_string() -> String {
     current_dir().to_string_lossy().to_string()
 }
 
 /// Return the home directory for the current user.
-pub fn home_dir() -> std::path::PathBuf {
+pub(crate) fn home_dir() -> std::path::PathBuf {
     dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("/tmp"))
 }
 
@@ -23,7 +23,7 @@ pub fn abspath(path: &std::path::Path) -> std::path::PathBuf {
 }
 
 /// Strip a prefix from a path.
-pub fn strip_prefix(
+pub(crate) fn strip_prefix(
     root: &std::path::Path,
     path: &std::path::Path,
 ) -> Result<std::path::PathBuf, errors::GardenError> {
@@ -44,7 +44,7 @@ pub fn strip_prefix(
 }
 
 /// Strip a prefix from a path. Returns a path as a string.
-pub fn strip_prefix_into_string(
+pub(crate) fn strip_prefix_into_string(
     root: &std::path::Path,
     path: &std::path::Path,
 ) -> Result<String, errors::GardenError> {

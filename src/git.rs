@@ -89,7 +89,7 @@ pub fn branches(path: &std::path::Path) -> Vec<String> {
 }
 
 /// Return the current branch name for the specified repository path.
-pub fn branch(path: &std::path::Path) -> Option<String> {
+pub(crate) fn branch(path: &std::path::Path) -> Option<String> {
     let cmd = ["git", "symbolic-ref", "--quiet", "--short", "HEAD"];
     let exec = cmd::exec_in_dir(&cmd, &path);
     if let Ok(output) = cmd::stdout_to_string(exec) {

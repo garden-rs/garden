@@ -1,10 +1,10 @@
 /// Return true if the string contains 0-9 digits only
-pub fn is_digit(string: &str) -> bool {
+pub(crate) fn is_digit(string: &str) -> bool {
     string.chars().all(|c| c.is_ascii_digit())
 }
 
 /// Return true if `string` is an `$ exec` expression.
-pub fn is_exec(string: &str) -> bool {
+pub(crate) fn is_exec(string: &str) -> bool {
     string.starts_with("$ ")
 }
 
@@ -24,12 +24,12 @@ pub fn is_tree(string: &str) -> bool {
 }
 
 /// Return true if `string` is a variable "replace" operation.
-pub fn is_append_op(string: &str) -> bool {
+pub(crate) fn is_append_op(string: &str) -> bool {
     string.ends_with('+')
 }
 
 /// Return true if `string` is a variable "append" operation.
-pub fn is_replace_op(string: &str) -> bool {
+pub(crate) fn is_replace_op(string: &str) -> bool {
     string.ends_with('=')
 }
 
@@ -44,7 +44,7 @@ pub fn is_git_dir(string: &str) -> bool {
 }
 
 /// Trim garden, group, and tree prefixes
-pub fn trim(string: &str) -> &str {
+pub(crate) fn trim(string: &str) -> &str {
     let needs_trim = is_group(string) || is_tree(string) || is_garden(string);
     if !string.is_empty() && needs_trim {
         &string[1..]
@@ -59,16 +59,6 @@ pub fn trim_exec(string: &str) -> &str {
     let prefix_len = prefix.len();
     if string.len() >= prefix_len && string.starts_with(prefix) {
         &string[prefix_len..]
-    } else {
-        string
-    }
-}
-
-/// Trim "+" and "=" suffixes from strings.
-pub fn trim_op(string: &str) -> &str {
-    let needs_trim = is_append_op(string) || is_replace_op(string);
-    if !string.len() > 1 && needs_trim {
-        &string[..string.len() - 1]
     } else {
         string
     }
@@ -171,7 +161,7 @@ pub fn escape_shell_variables(string: &str) -> String {
 }
 
 /// Return the value of a boolean as a string.
-pub fn bool_to_string(value: bool) -> String {
+pub(crate) fn bool_to_string(value: bool) -> String {
     match value {
         true => string!("true"),
         false => string!("false"),
@@ -179,7 +169,7 @@ pub fn bool_to_string(value: bool) -> String {
 }
 
 /// Return the value of a string as a boolean. Accepts "true", "false", "1" and "0".
-pub fn string_to_bool(value: &str) -> Option<bool> {
+pub(crate) fn string_to_bool(value: &str) -> Option<bool> {
     match value {
         "true" | "1" => Some(true),
         "false" | "0" => Some(false),

@@ -174,11 +174,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
 
-pub fn cmd(
-    app_context: &model::ApplicationContext,
-    query: &str,
-    params: &CmdParams,
-) -> Result<i32> {
+fn cmd(app_context: &model::ApplicationContext, query: &str, params: &CmdParams) -> Result<i32> {
     // Mutable scope for app.get_root_config_mut()
     let config = app_context.get_root_config_mut();
     // Resolve the tree query into a vector of tree contexts.
@@ -191,7 +187,7 @@ pub fn cmd(
     }
 }
 
-pub fn run_cmd_breadth_first(
+fn run_cmd_breadth_first(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
@@ -256,7 +252,7 @@ pub fn run_cmd_breadth_first(
     Ok(exit_status)
 }
 
-pub fn run_cmd_depth_first(
+fn run_cmd_depth_first(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
@@ -382,7 +378,7 @@ fn run_cmd_vec(
 }
 
 /// Run cmd() over a Vec of tree queries
-pub fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
+fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
     let mut exit_status = errors::EX_OK;
 
     for query in &params.queries {

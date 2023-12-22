@@ -27,7 +27,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &mut InspectOption
 }
 
 /// Inspect every tree in the evaluated tree query
-pub fn inspect(
+fn inspect(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     verbose: u8,

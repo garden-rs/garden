@@ -226,7 +226,7 @@ impl Tree {
         &self.name
     }
 
-    pub fn get_name_mut(&mut self) -> &mut String {
+    pub(crate) fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
     }
 
@@ -234,16 +234,16 @@ impl Tree {
         &self.path
     }
 
-    pub fn get_path_mut(&mut self) -> &mut Variable {
+    pub(crate) fn get_path_mut(&mut self) -> &mut Variable {
         &mut self.path
     }
 
-    pub fn path_is_valid(&self) -> bool {
+    pub(crate) fn path_is_valid(&self) -> bool {
         self.path.get_value().is_some()
     }
 
     /// Build a canonicalized pathbuf for the current tree.
-    pub fn canonical_pathbuf(&self) -> Option<std::path::PathBuf> {
+    pub(crate) fn canonical_pathbuf(&self) -> Option<std::path::PathBuf> {
         if let Some(pathbuf) = self.pathbuf() {
             if let Ok(canon_path) = pathbuf.canonicalize() {
                 return Some(canon_path);
@@ -254,7 +254,7 @@ impl Tree {
     }
 
     /// Build a pathbuf for the current tree.
-    pub fn pathbuf(&self) -> Option<std::path::PathBuf> {
+    pub(crate) fn pathbuf(&self) -> Option<std::path::PathBuf> {
         if !self.path_is_valid() {
             return None;
         }
@@ -271,7 +271,7 @@ impl Tree {
         }
     }
 
-    pub fn symlink_as_ref(&self) -> Result<&String, errors::GardenError> {
+    pub(crate) fn symlink_as_ref(&self) -> Result<&String, errors::GardenError> {
         match self.symlink.get_value() {
             Some(value) => Ok(value),
             None => Err(errors::GardenError::ConfigurationError(format!(
@@ -281,7 +281,7 @@ impl Tree {
         }
     }
 
-    pub fn reset_variables(&self) {
+    pub(crate) fn reset_variables(&self) {
         // self.path is a variable but it is not reset because
         // the tree path is evaluated once when the configuration
         // is first read, and never again.
@@ -297,7 +297,7 @@ impl Tree {
     }
 
     /// Copy the guts of another tree into the current tree.
-    pub fn clone_from_tree(&mut self, tree: &Tree) {
+    pub(crate) fn clone_from_tree(&mut self, tree: &Tree) {
         append_hashmap(&mut self.commands, &tree.commands);
         append_hashmap(&mut self.gitconfig, &tree.gitconfig);
         append_hashmap(&mut self.variables, &tree.variables);
@@ -337,7 +337,7 @@ impl Tree {
     }
 
     /// Update internal flags in response to newly read data.
-    pub fn update_flags(&mut self) {
+    pub(crate) fn update_flags(&mut self) {
         if !self.symlink.is_empty() {
             self.is_symlink = true;
         }
@@ -364,11 +364,11 @@ impl Group {
     }
 
     /// Return an owned copy of the name field.
-    pub fn get_name_owned(&self) -> String {
+    pub(crate) fn get_name_owned(&self) -> String {
         self.get_name().to_owned()
     }
 
-    pub fn get_name_mut(&mut self) -> &mut String {
+    pub(crate) fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
     }
 }
@@ -390,12 +390,12 @@ impl Template {
         &self.name
     }
 
-    pub fn get_name_mut(&mut self) -> &mut String {
+    pub(crate) fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
     }
 
     /// Apply this template onto the specified tree.
-    pub fn apply(&self, tree: &mut Tree) {
+    pub(crate) fn apply(&self, tree: &mut Tree) {
         tree.clone_from_tree(&self.tree);
     }
 }
@@ -419,7 +419,7 @@ impl Garden {
         &self.name
     }
 
-    pub fn get_name_mut(&mut self) -> &mut String {
+    pub(crate) fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
     }
 }
@@ -458,8 +458,8 @@ pub struct Configuration {
     /// highest precedence and override variables defined by any configuration or tree.
     pub override_variables: VariableHashMap,
     pub verbose: u8,
-    pub tree_branches: bool,
-    pub parent_id: Option<ConfigId>,
+    pub(crate) tree_branches: bool,
+    pub(crate) parent_id: Option<ConfigId>,
     id: Option<ConfigId>,
 }
 
@@ -477,7 +477,7 @@ impl Configuration {
         }
     }
 
-    pub fn initialize(&mut self, app_context: &ApplicationContext) {
+    pub(crate) fn initialize(&mut self, app_context: &ApplicationContext) {
         // Evaluate garden.root
         let expr = String::from(self.root.get_expr());
         let value = eval::value(app_context, self, &expr);
@@ -495,7 +495,7 @@ impl Configuration {
         self.reset();
     }
 
-    pub fn update(
+    pub(crate) fn update(
         &mut self,
         app_context: &ApplicationContext,
         config: Option<&std::path::PathBuf>,
@@ -569,7 +569,7 @@ impl Configuration {
     }
 
     /// Apply MainOptions to a Configuration.
-    pub fn update_options(
+    pub(crate) fn update_options(
         &mut self,
         options: &cli::MainOptions,
     ) -> Result<(), errors::GardenError> {
@@ -618,7 +618,7 @@ impl Configuration {
         Ok(())
     }
 
-    pub fn reset(&mut self) {
+    pub(crate) fn reset(&mut self) {
         // Reset variables to allow for tree-scope evaluation
         self.reset_variables();
 
@@ -688,7 +688,7 @@ impl Configuration {
     }
 
     /// Return a path string relative to the garden root
-    pub fn tree_path(&self, path: &str) -> String {
+    pub(crate) fn tree_path(&self, path: &str) -> String {
         if std::path::PathBuf::from(path).is_absolute() {
             // Absolute path, nothing to do
             path.into()
@@ -702,7 +702,7 @@ impl Configuration {
     }
 
     /// Return a pathbuf relative to the garden root.
-    pub fn relative_pathbuf(&self, path: &str) -> std::path::PathBuf {
+    pub(crate) fn relative_pathbuf(&self, path: &str) -> std::path::PathBuf {
         let pathbuf = std::path::PathBuf::from(path);
         if pathbuf.is_absolute() {
             // Absolute path, nothing to do
@@ -721,13 +721,13 @@ impl Configuration {
     }
 
     /// Evaluate and return a path string relative to the garden root.
-    pub fn eval_tree_path(&mut self, app_context: &ApplicationContext, path: &str) -> String {
+    fn eval_tree_path(&mut self, app_context: &ApplicationContext, path: &str) -> String {
         let value = eval::value(app_context, self, path);
         self.tree_path(&value)
     }
 
     /// Resolve a pathbuf relative to the config directory.
-    pub fn config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
+    pub(crate) fn config_pathbuf(&self, path: &str) -> Option<std::path::PathBuf> {
         let path_buf = std::path::PathBuf::from(path);
         if path_buf.is_absolute() {
             // Absolute path, nothing to do
@@ -745,7 +745,7 @@ impl Configuration {
 
     /// Resolve a pathbuf relative to specified include file or the config directory.
     /// Returns the first file found. The include file's directory is checked first.
-    pub fn config_pathbuf_from_include(
+    fn config_pathbuf_from_include(
         &self,
         include_path: &std::path::Path,
         path: &str,
@@ -772,7 +772,7 @@ impl Configuration {
     }
 
     /// Resolve a path string relative to the config directory.
-    pub fn config_path(&self, path: &str) -> String {
+    fn config_path(&self, path: &str) -> String {
         if let Some(path_buf) = self.config_pathbuf(path) {
             path_buf.to_string_lossy().to_string()
         } else {
@@ -781,23 +781,13 @@ impl Configuration {
     }
 
     /// Evaluate and resolve a path string and relative to the config directory.
-    pub fn eval_config_path(&self, app_context: &ApplicationContext, path: &str) -> String {
+    pub(crate) fn eval_config_path(&self, app_context: &ApplicationContext, path: &str) -> String {
         let value = eval::value(app_context, self, path);
         self.config_path(&value)
     }
 
-    /// Evaluate and resolve a pathbuf relative to the config directory.
-    pub fn eval_config_pathbuf(
-        &self,
-        app_context: &ApplicationContext,
-        path: &str,
-    ) -> Option<std::path::PathBuf> {
-        let value = eval::value(app_context, self, path);
-        self.config_pathbuf(&value)
-    }
-
     /// Evaluate and resolve a pathbuf relative to the config directory for "includes".
-    pub fn eval_config_pathbuf_from_include(
+    pub(crate) fn eval_config_pathbuf_from_include(
         &self,
         app_context: &ApplicationContext,
         include_path: Option<&std::path::Path>,
@@ -814,7 +804,7 @@ impl Configuration {
     }
 
     /// Reset resolved variables
-    pub fn reset_variables(&mut self) {
+    pub(crate) fn reset_variables(&mut self) {
         for var in self.variables.values() {
             var.reset();
         }
@@ -830,21 +820,21 @@ impl Configuration {
     }
 
     /// Set the ConfigId from the Arena for this configuration.
-    pub fn set_id(&mut self, id: ConfigId) {
+    pub(crate) fn set_id(&mut self, id: ConfigId) {
         self.id = Some(id);
     }
 
-    pub fn get_id(&self) -> Option<ConfigId> {
+    pub(crate) fn get_id(&self) -> Option<ConfigId> {
         self.id
     }
 
     /// Set the parent ConfigId from the Arena for this configuration.
-    pub fn set_parent(&mut self, id: ConfigId) {
+    pub(crate) fn set_parent(&mut self, id: ConfigId) {
         self.parent_id = Some(id);
     }
 
     /// Set the config path and the dirname fields
-    pub fn set_path(&mut self, path: std::path::PathBuf) {
+    pub(crate) fn set_path(&mut self, path: std::path::PathBuf) {
         let mut dirname = path.clone();
         dirname.pop();
 
@@ -853,7 +843,7 @@ impl Configuration {
     }
 
     /// Get the config path if it is defined.
-    pub fn get_path(&self) -> Result<&std::path::PathBuf, errors::GardenError> {
+    pub(crate) fn get_path(&self) -> Result<&std::path::PathBuf, errors::GardenError> {
         self.path
             .as_ref()
             .ok_or_else(|| errors::GardenError::AssertionError("cfg.path is unset".into()))
@@ -861,7 +851,7 @@ impl Configuration {
 
     /// Get a path string for this configuration.
     /// Returns the current directory when the configuration does not have a valid path.
-    pub fn get_path_for_display(&self) -> String {
+    pub(crate) fn get_path_for_display(&self) -> String {
         let default_pathbuf = std::path::PathBuf::from(".");
         self.path
             .as_ref()
@@ -871,13 +861,13 @@ impl Configuration {
     }
 
     /// Return true if the configuration contains the named graft.
-    pub fn contains_graft(&self, name: &str) -> bool {
+    pub(crate) fn contains_graft(&self, name: &str) -> bool {
         let graft_name = syntax::trim(name);
         self.grafts.contains_key(graft_name)
     }
 
     /// Return a graft by name.
-    pub fn get_graft(&self, name: &str) -> Result<&Graft, errors::GardenError> {
+    pub(crate) fn get_graft(&self, name: &str) -> Result<&Graft, errors::GardenError> {
         let graft_name = syntax::trim(name);
         self.grafts.get(graft_name).ok_or_else(|| {
             errors::GardenError::ConfigurationError(format!("{name}: no such graft"))
@@ -886,7 +876,7 @@ impl Configuration {
 
     /// Parse a "graft::value" string and return the ConfigId for the graft and the
     /// remaining unparsed "value".
-    pub fn get_graft_id<'a>(
+    pub(crate) fn get_graft_id<'a>(
         &self,
         value: &'a str,
     ) -> Result<(ConfigId, &'a str), errors::GardenError> {
@@ -907,12 +897,12 @@ impl Configuration {
     }
 
     /// Find a tree by name and return a reference if it exists.
-    pub fn get_tree(&self, name: &str) -> Option<&Tree> {
+    pub(crate) fn get_tree(&self, name: &str) -> Option<&Tree> {
         self.trees.get(name)
     }
 
     /// Return a pathbuf for the specified Tree index
-    pub fn get_tree_pathbuf(&self, tree_name: &str) -> Option<std::path::PathBuf> {
+    pub(crate) fn get_tree_pathbuf(&self, tree_name: &str) -> Option<std::path::PathBuf> {
         self.get_tree(tree_name)
             .map(|tree| tree.canonical_pathbuf())
             .unwrap_or(None)
@@ -947,7 +937,7 @@ impl Graft {
         self.id
     }
 
-    pub fn set_id(&mut self, id: ConfigId) {
+    pub(crate) fn set_id(&mut self, id: ConfigId) {
         self.id = Some(id);
     }
 }
@@ -1115,7 +1105,7 @@ impl ColorMode {
         }
     }
 
-    pub fn update(&mut self) {
+    pub(crate) fn update(&mut self) {
         if *self == ColorMode::Auto {
             // Speedup future calls to is_enabled() by performing the "auto"
             // is_terminal() check once and caching the result.
@@ -1135,7 +1125,7 @@ impl ColorMode {
 // Color is an alias for yansi::Paint.
 pub type Color<T> = yansi::Paint<T>;
 
-pub fn display_missing_tree(tree: &Tree, path: &str, verbose: u8) -> String {
+pub(crate) fn display_missing_tree(tree: &Tree, path: &str, verbose: u8) -> String {
     if verbose > 0 {
         format!(
             "{} {} {} {}",
@@ -1154,7 +1144,12 @@ pub fn display_missing_tree(tree: &Tree, path: &str, verbose: u8) -> String {
     }
 }
 
-pub fn display_tree(tree: &Tree, path_str: &str, tree_branches: bool, verbose: u8) -> String {
+pub(crate) fn display_tree(
+    tree: &Tree,
+    path_str: &str,
+    tree_branches: bool,
+    verbose: u8,
+) -> String {
     if verbose > 0 {
         if tree_branches {
             if let Some(path) = tree.canonical_pathbuf() {
@@ -1197,7 +1192,7 @@ pub fn display_tree(tree: &Tree, path_str: &str, tree_branches: bool, verbose: u
 }
 
 /// Print a tree if it exists, otherwise print a missing tree
-pub fn print_tree(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) -> bool {
+pub(crate) fn print_tree(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) -> bool {
     if let Ok(path) = tree.path_as_ref() {
         // Sparse gardens/missing trees are expected. Skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
@@ -1217,7 +1212,7 @@ pub fn print_tree(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) ->
 }
 
 /// Print a tree
-pub fn print_tree_details(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) {
+pub(crate) fn print_tree_details(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) {
     if !quiet {
         if let Ok(path) = tree.path_as_ref() {
             eprintln!("{}", display_tree(tree, path, tree_branches, verbose));
@@ -1323,7 +1318,7 @@ impl ApplicationContext {
     }
 
     #[allow(clippy::mut_from_ref)]
-    pub fn get_config_mut(&self, id: ConfigId) -> &mut Configuration {
+    pub(crate) fn get_config_mut(&self, id: ConfigId) -> &mut Configuration {
         unsafe { (*self.arena.as_ptr()).get_mut(id).unwrap().get_mut() }
     }
 
@@ -1335,12 +1330,12 @@ impl ApplicationContext {
         self.get_config(self.get_root_id())
     }
 
-    pub fn get_root_config_mut(&self) -> &mut Configuration {
+    pub(crate) fn get_root_config_mut(&self) -> &mut Configuration {
         self.get_config_mut(self.get_root_id())
     }
 
     /// Add a child Configuration graft onto the parent ConfigId.
-    pub fn add_graft(&self, parent: ConfigId, config: Configuration) -> ConfigId {
+    pub(crate) fn add_graft(&self, parent: ConfigId, config: Configuration) -> ConfigId {
         let graft_id = self.arena.borrow_mut().new_node(config); // Take ownership of config.
         parent.append(graft_id, &mut self.arena.borrow_mut());
 
@@ -1350,7 +1345,7 @@ impl ApplicationContext {
     }
 
     /// Attach a graft to the configuration specified by ConfigId.
-    pub fn add_graft_config(
+    pub(crate) fn add_graft_config(
         &self,
         config_id: ConfigId,
         graft_name: &str,

@@ -40,7 +40,7 @@ pub fn main(app: &model::ApplicationContext, options: &GrowOptions) -> Result<()
 }
 
 /// Create/update trees in the evaluated tree query.
-pub fn grow(
+fn grow(
     app_context: &model::ApplicationContext,
     configured_worktrees: &mut HashSet<String>,
     quiet: bool,
