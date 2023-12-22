@@ -103,4 +103,11 @@ trees:
     branches:
       pages: pages/pages
 
-  homebrew: "git@gitlab.com:garden-rs/homebrew-garden.git"
+  homebrew:
+    url: "git@gitlab.com:garden-rs/homebrew-garden.git"
+    remotes:
+      davvid: "git@github.com:davvid/homebrew-garden.git"
+    gitconfig:
+      remote.origin.pushurl:
+        - "git@gitlab.com:garden-rs/homebrew-garden.git"
+        - "git@github.com:davvid/homebrew-garden.git"
