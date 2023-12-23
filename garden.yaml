@@ -4,6 +4,8 @@
 #   garden build -- --offline
 #   garden -D prefix=/usr/local install
 #   garden -D prefix=/usr/local install-doc
+#   garden -vv check
+#   garden doc
 commands:
   bench: cargo bench "$@"
   build: cargo build "$@"
