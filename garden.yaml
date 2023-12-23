@@ -59,7 +59,7 @@ commands:
   status: git status "$@"
   test: cargo test "$@"
   update: cargo update "$@"
-  watch: cargo watch --shell "garden build && garden check && garden test"
+  watch: cargo watch --shell "garden build && garden check"
 
 # Variables can be set externally. eg.:
 #   garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc
