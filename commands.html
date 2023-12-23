@@ -493,7 +493,7 @@ escape a braced value and disable evaluation by <code>garden</code>.</p>
 escaping is handled automatically for regular <code>$shell</code> variables.</p>
 <h3 id="depth-first-and-breadth-first-tree-traversal"><a class="header" href="#depth-first-and-breadth-first-tree-traversal">Depth-first and Breadth-first Tree Traversal</a></h3>
 <p>The following two invocations run commands in a different order:</p>
-<pre><code># Depth-first (default)
+<pre><code class="language-bash"># Depth-first (default)
 garden cmd treesitters build test
 
 # Breadth-first
@@ -523,6 +523,51 @@ garden or tree scope.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
+<h3 id="pre-and-post-commands"><a class="header" href="#pre-and-post-commands">Pre and Post Commands</a></h3>
+<p>Commands can specify references to other commands that should be run before and/or after
+a command.</p>
+<ul>
+<li>
+<p>Pre-commands are run before the command.</p>
+</li>
+<li>
+<p>Pre-commands use a <code>&lt;</code> suffix with values that specify the names of other commands to
+run before the command.</p>
+</li>
+<li>
+<p>Post-commands are run after the command.</p>
+</li>
+<li>
+<p>Post-commands use a <code>&gt;</code> suffix with values that specify the names of other commands to
+run after the command.</p>
+</li>
+<li>
+<p>Pre-commands and post-commands can only refer to other custom commands.</p>
+</li>
+</ul>
+<pre><code class="language-yaml">commands:
+  custom-cmd: echo custom-cmd
+  custom-cmd&lt;: pre
+  custom-cmd&gt;:
+    - post1
+    - post2
+  pre: echo before
+  post1: echo after1
+  post1: echo after2
+</code></pre>
+<p>Running <code>garden custom-cmd</code> with the above configuration runs the following commands:</p>
+<pre><code># pre
+echo before
+
+# custom-cmd
+echo custom-cmd
+
+# post1
+echo after1
+
+# post2
+echo after2
+</code></pre>
 <h2 id="garden-exec"><a class="header" href="#garden-exec">garden exec</a></h2>
 <pre><code class="language-bash">garden exec &lt;tree-query&gt; &lt;command&gt; [&lt;arguments&gt;]*
 
