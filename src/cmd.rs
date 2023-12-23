@@ -183,13 +183,11 @@ pub(crate) fn get_command_values(
     context: &model::TreeContext,
     name: &str,
 ) -> Vec<String> {
-    let mut commands = Vec::new();
-    let mut vec_variables = Vec::new();
-
     let config = match context.config {
         Some(config_id) => app_context.get_config(config_id),
         None => app_context.get_root_config(),
     };
+    let mut vec_variables = Vec::new();
 
     // Global commands
     for (command_name, var) in &config.commands {
@@ -218,6 +216,7 @@ pub(crate) fn get_command_values(
         }
     }
 
+    let mut commands = Vec::with_capacity(vec_variables.len() * 2);
     for variables in vec_variables.iter_mut() {
         let values = eval::variables_for_shell(app_context, config, variables, context);
         commands.extend(values);
