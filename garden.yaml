@@ -7,7 +7,10 @@
 commands:
   bench: cargo bench "$@"
   build: cargo build "$@"
-  check: garden -vv cmd garden test check/clippy check/fmt
+  check<:
+    - check/fmt
+    - check/clippy
+    - test
   check/clippy: cargo clippy --all "$@" -- -D warnings
   check/fmt: cargo fmt --check "$@"
   clean: cargo clean "$@"
@@ -28,8 +31,8 @@ commands:
     cargo build --release "$@"
     install -m 775 -d "${DESTDIR}${bindir}"
     install -m 755 target/release/garden "${DESTDIR}${bindir}"
+  install-doc<: doc
   install-doc: |
-    garden doc "$@"
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
   push: git push "$@"

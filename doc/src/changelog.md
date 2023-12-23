@@ -4,6 +4,11 @@
 
 **Features**
 
+- Commands can now specify pre-commands and post-commands that are run before/after
+  the specified command.
+  ([#3](https://github.com/davvid/garden/issues/3))
+  ([documentation](https://garden-rs.gitlab.io/commands.html#pre-and-post-commands))
+
 - The default `origin` remote name can now be configured using `tree.<tree>.default-remote`.
   ([#16](https://gitlab.com/garden-rs/garden/-/issues/16))
 
