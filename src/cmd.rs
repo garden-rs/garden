@@ -3,7 +3,7 @@ use super::eval;
 use super::model;
 
 /// Convert an exit status to Result<(), GardenError>.
-pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
+pub(crate) fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
     match exit_status {
         errors::EX_OK => Ok(()),
         _ => Err(errors::GardenError::ExitStatus(exit_status)),
@@ -44,7 +44,7 @@ fn command_error_from_popen_error(
 }
 
 /// Return a CaptureData result for a subprocess's stdout.
-pub fn capture_stdout(
+pub(crate) fn capture_stdout(
     exec: subprocess::Exec,
 ) -> Result<subprocess::CaptureData, errors::CommandError> {
     let command = exec.to_cmdline_lossy();
@@ -60,7 +60,7 @@ pub fn stdout_to_string(exec: subprocess::Exec) -> Result<String, errors::Comman
 }
 
 /// Return a `subprocess::Exec` for a command.
-pub fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
+pub(crate) fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
 where
     S: AsRef<std::ffi::OsStr>,
 {
@@ -88,7 +88,7 @@ where
 /// - verbose: increase verbosity of messages.
 /// - command: String vector of the command to run.
 
-pub fn exec_in_context<S>(
+pub(crate) fn exec_in_context<S>(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     context: &model::TreeContext,
@@ -168,9 +168,79 @@ where
 }
 
 /// Return the current executable path.
-pub fn current_exe() -> String {
+pub(crate) fn current_exe() -> String {
     match std::env::current_exe() {
         Err(_) => "garden".into(),
         Ok(path) => path.to_string_lossy().into(),
     }
+}
+
+/// Given a command name, eg. "custom>", collect all of the custom command values
+/// configured using the specified name. This function is used to gather
+/// pre and post-commands associated with a command.
+pub(crate) fn get_command_values(
+    app_context: &model::ApplicationContext,
+    context: &model::TreeContext,
+    name: &str,
+) -> Vec<String> {
+    let mut commands = Vec::new();
+    let mut vec_variables = Vec::new();
+
+    let config = match context.config {
+        Some(config_id) => app_context.get_config(config_id),
+        None => app_context.get_root_config(),
+    };
+
+    // Global commands
+    for (command_name, var) in &config.commands {
+        if name == command_name {
+            vec_variables.push(var.clone());
+        }
+    }
+
+    // Tree commands
+    if let Some(tree) = config.trees.get(&context.tree) {
+        for (command_name, var) in &tree.commands {
+            if name == command_name {
+                vec_variables.push(var.clone());
+            }
+        }
+    }
+
+    // Optional garden command scope
+    if let Some(garden_name) = &context.garden {
+        if let Some(garden) = &config.gardens.get(garden_name) {
+            for (command_name, var) in &garden.commands {
+                if name == command_name {
+                    vec_variables.push(var.clone());
+                }
+            }
+        }
+    }
+
+    for variables in vec_variables.iter_mut() {
+        let values = eval::variables_for_shell(app_context, config, variables, context);
+        commands.extend(values);
+    }
+
+    commands
+}
+
+/// Expand a named command to include its pre-commands and post-commands.
+pub(crate) fn expand_command_names(
+    app_context: &model::ApplicationContext,
+    context: &model::TreeContext,
+    name: &str,
+) -> Vec<String> {
+    let pre_name = format!("{}<", name);
+    let post_name = format!("{}>", name);
+    let pre_commands = get_command_values(app_context, context, &pre_name);
+    let post_commands = get_command_values(app_context, context, &post_name);
+
+    let mut command_names = Vec::with_capacity(pre_commands.len() + 1 + post_commands.len());
+    command_names.extend(pre_commands);
+    command_names.push(name.to_string());
+    command_names.extend(post_commands);
+
+    command_names
 }

@@ -328,7 +328,7 @@ pub fn multi_variable(
 }
 
 /// Evaluate a variable in the given context for execution in a shell
-fn variables_for_shell(
+pub(crate) fn variables_for_shell(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     variables: &mut Vec<model::Variable>,

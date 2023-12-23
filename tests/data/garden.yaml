@@ -69,6 +69,13 @@ trees:
       echo-escaped: |
         values=(a array c)
         echo $1 $${values[@]:1:1} $2
+      echo-pre-and-post: echo cmd
+      echo-pre-and-post<: echo-pre
+      echo-pre-and-post>:
+        - echo-dir
+        - echo-post
+      echo-pre: echo pre
+      echo-post: echo post
 
   example/shallow:
     path: example/tree/shallow

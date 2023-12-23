@@ -1155,6 +1155,27 @@ fn cmd_keep_going_and_no_errexit() {
     assert_eq!(output, "ok\nok\nok\nok");
 }
 
+/// Test pre and post-commands
+#[test]
+fn cmd_pre_and_post_commands() {
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        ".",
+        "echo-pre-and-post",
+    ]);
+    let output_len = output.lines().count();
+    assert_eq!(output_len, 4);
+    assert_eq!(output, "pre\ncmd\ndata\npost");
+
+    let output = garden_capture(&["--chdir", "tests/data", "--quiet", "echo-pre-and-post"]);
+    let output_len = output.lines().count();
+    assert_eq!(output_len, 4);
+    assert_eq!(output, "pre\ncmd\ndata\npost");
+}
+
 /// Test the use of graft:: tree references in groups.
 #[test]
 fn cmd_exec_group_with_grafted_trees() {

@@ -442,7 +442,7 @@ escaping is handled automatically for regular `$shell` variables.
 
 The following two invocations run commands in a different order:
 
-```
+```bash
 # Depth-first (default)
 garden cmd treesitters build test
 
@@ -460,7 +460,7 @@ traversal runs the `build` command over *all* of the trees in the `treesitters` 
 
 ### Custom Commands
 
-``` bash
+```bash
 garden <command> <query> [<query>]* [-- <arguments>...]
 
 # Example usage
@@ -485,6 +485,51 @@ For example, `garden build treesitters catsitters` will run a user-defined `buil
 command over both the `treesitters`  and `catsitters` groups.
 
 Use the `garden -vv` extra-verbose option to display the commands being run.
+
+### Pre and Post Commands
+
+Commands can specify references to other commands that should be run before and/or after
+a command.
+
+* Pre-commands are run before the command.
+
+* Pre-commands use a `<` suffix with values that specify the names of other commands to
+  run before the command.
+
+* Post-commands are run after the command.
+
+* Post-commands use a `>` suffix with values that specify the names of other commands to
+  run after the command.
+
+* Pre-commands and post-commands can only refer to other custom commands.
+
+```yaml
+commands:
+  custom-cmd: echo custom-cmd
+  custom-cmd<: pre
+  custom-cmd>:
+    - post1
+    - post2
+  pre: echo before
+  post1: echo after1
+  post1: echo after2
+```
+
+Running `garden custom-cmd` with the above configuration runs the following commands:
+
+```
+# pre
+echo before
+
+# custom-cmd
+echo custom-cmd
+
+# post1
+echo after1
+
+# post2
+echo after2
+```
 
 
 ## garden exec

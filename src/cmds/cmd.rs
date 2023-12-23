@@ -224,25 +224,29 @@ fn run_cmd_breadth_first(
                 continue;
             }
 
-            // One command maps to multiple command sequences.
-            // When the scope is tree, only the tree's commands
-            // are included.  When the scope includes a gardens,
-            // its matching commands are appended to the end.
-            let cmd_seq_vec = eval::command(app_context, context, name);
-            app_context.get_root_config_mut().reset();
+            // Expand one named command to include its pre-commands and post-commands.
+            let command_names = cmd::expand_command_names(app_context, context, name);
+            for command_name in command_names.iter() {
+                // One command maps to multiple command sequences.
+                // When the scope is tree, only the tree's commands
+                // are included.  When the scope includes a gardens,
+                // its matching commands are appended to the end.
+                let cmd_seq_vec = eval::command(app_context, context, command_name);
+                app_context.get_root_config_mut().reset();
 
-            if let Err(cmd_status) = run_cmd_vec(
-                &app_context.options,
-                &path,
-                &shell,
-                &env,
-                &cmd_seq_vec,
-                &params.arguments,
-                params.exit_on_error,
-            ) {
-                exit_status = cmd_status;
-                if !params.keep_going {
-                    return Ok(cmd_status);
+                if let Err(cmd_status) = run_cmd_vec(
+                    &app_context.options,
+                    &path,
+                    &shell,
+                    &env,
+                    &cmd_seq_vec,
+                    &params.arguments,
+                    params.exit_on_error,
+                ) {
+                    exit_status = cmd_status;
+                    if !params.keep_going {
+                        return Ok(cmd_status);
+                    }
                 }
             }
         }
@@ -287,25 +291,29 @@ fn run_cmd_depth_first(
 
         // One invocation runs multiple commands
         for name in &params.commands {
-            // One command maps to multiple command sequences.
-            // When the scope is tree, only the tree's commands
-            // are included.  When the scope includes a gardens,
-            // its matching commands are appended to the end.
-            let cmd_seq_vec = eval::command(app_context, context, name);
-            app_context.get_root_config_mut().reset();
+            // Expand one named command to include its pre-commands and post-commands.
+            let command_names = cmd::expand_command_names(app_context, context, name);
+            for command_name in command_names.iter() {
+                // One command maps to multiple command sequences.
+                // When the scope is tree, only the tree's commands
+                // are included.  When the scope includes a gardens,
+                // its matching commands are appended to the end.
+                let cmd_seq_vec = eval::command(app_context, context, command_name);
+                app_context.get_root_config_mut().reset();
 
-            if let Err(cmd_status) = run_cmd_vec(
-                &app_context.options,
-                &path,
-                &shell,
-                &env,
-                &cmd_seq_vec,
-                &params.arguments,
-                params.exit_on_error,
-            ) {
-                exit_status = cmd_status;
-                if !params.keep_going {
-                    return Ok(cmd_status);
+                if let Err(cmd_status) = run_cmd_vec(
+                    &app_context.options,
+                    &path,
+                    &shell,
+                    &env,
+                    &cmd_seq_vec,
+                    &params.arguments,
+                    params.exit_on_error,
+                ) {
+                    exit_status = cmd_status;
+                    if !params.keep_going {
+                        return Ok(cmd_status);
+                    }
                 }
             }
         }
