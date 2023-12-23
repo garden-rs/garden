@@ -226,7 +226,8 @@ pub(crate) fn get_command_values(
     commands
 }
 
-/// Expand a named command to include its pre-commands and post-commands.
+/// Recursively expand a command name to include its pre-commands and post-commands.
+/// Self-referential loops are avoided. Duplicate commands are retained.
 pub(crate) fn expand_command_names(
     app_context: &model::ApplicationContext,
     context: &model::TreeContext,
@@ -238,9 +239,21 @@ pub(crate) fn expand_command_names(
     let post_commands = get_command_values(app_context, context, &post_name);
 
     let mut command_names = Vec::with_capacity(pre_commands.len() + 1 + post_commands.len());
-    command_names.extend(pre_commands);
+    // Recursively expand pre-commands.
+    for cmd_name in pre_commands.iter() {
+        if cmd_name != name {
+            // Avoid self-referential loops.
+            command_names.extend(expand_command_names(app_context, context, cmd_name));
+        }
+    }
     command_names.push(name.to_string());
-    command_names.extend(post_commands);
+    // Recursively expand post-commands.
+    for cmd_name in post_commands.iter() {
+        if cmd_name != name {
+            // Avoid self-referential loops.
+            command_names.extend(expand_command_names(app_context, context, cmd_name));
+        }
+    }
 
     command_names
 }

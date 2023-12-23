@@ -1176,6 +1176,32 @@ fn cmd_pre_and_post_commands() {
     assert_eq!(output, "pre\ncmd\ndata\npost");
 }
 
+/// Test pre and post nested commands
+#[test]
+fn cmd_pre_and_post_nested_commands() {
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        ".",
+        "echo-pre-and-post-nested",
+    ]);
+    let output_len = output.lines().count();
+    assert_eq!(output_len, 6);
+    assert_eq!(output, "pre\ncmd\ndata\npost\nnested\nfini");
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "echo-pre-and-post-nested",
+    ]);
+    let output_len = output.lines().count();
+    assert_eq!(output_len, 6);
+    assert_eq!(output, "pre\ncmd\ndata\npost\nnested\nfini");
+}
+
 /// Test the use of graft:: tree references in groups.
 #[test]
 fn cmd_exec_group_with_grafted_trees() {

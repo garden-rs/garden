@@ -76,6 +76,11 @@ trees:
         - echo-post
       echo-pre: echo pre
       echo-post: echo post
+      echo-pre-and-post-nested<: echo-pre-and-post
+      echo-pre-and-post-nested: echo nested
+      echo-pre-and-post-nested>: echo-pre-and-post-nested-after
+      echo-pre-and-post-nested-after>: echo-pre-and-post-nested-fini
+      echo-pre-and-post-nested-fini: echo fini
 
   example/shallow:
     path: example/tree/shallow
