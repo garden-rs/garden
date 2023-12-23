@@ -176,3 +176,15 @@ pub(crate) fn string_to_bool(value: &str) -> Option<bool> {
         _ => None,
     }
 }
+
+/// Add a pre-command suffix to a command name.
+#[inline]
+pub(crate) fn pre_command(name: &str) -> String {
+    format!("{}<", name)
+}
+
+/// Add a post-command suffix to a command name.
+#[inline]
+pub(crate) fn post_command(name: &str) -> String {
+    format!("{}>", name)
+}

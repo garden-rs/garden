@@ -1,6 +1,7 @@
 use super::errors;
 use super::eval;
 use super::model;
+use super::syntax;
 
 /// Convert an exit status to Result<(), GardenError>.
 pub(crate) fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
@@ -231,8 +232,8 @@ pub(crate) fn expand_command_names(
     context: &model::TreeContext,
     name: &str,
 ) -> Vec<String> {
-    let pre_name = format!("{}<", name);
-    let post_name = format!("{}>", name);
+    let pre_name = syntax::pre_command(name);
+    let post_name = syntax::post_command(name);
     let pre_commands = get_command_values(app_context, context, &pre_name);
     let post_commands = get_command_values(app_context, context, &post_name);
 
