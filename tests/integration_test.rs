@@ -1,7 +1,3 @@
-// The "path" attribute is needed to avoid this error:
-// Error writing files: failed to resolve mod `common`: garden/tests does not exist
-// https://github.com/rust-lang/rustfmt/issues/4510
-#[path = "common/mod.rs"]
 pub mod common;
 use common::{
     assert_cmd, assert_cmd_capture, assert_ref, assert_ref_missing, exec_garden, garden_capture,
