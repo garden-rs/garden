@@ -103,6 +103,7 @@ trees:
       - "https://garden-rs.gitlab.io"
       - "https://crates.io/crates/garden-tools"
       - "https://docs.rs/garden-tools/latest/garden/"
+      - "https://lib.rs/crates/garden-tools"
       - "https://gitlab.com/garden-rs/garden"
       - "https://github.com/davvid/garden"
 
@@ -123,3 +124,5 @@ trees:
       remote.origin.pushurl:
         - "git@gitlab.com:garden-rs/homebrew-garden.git"
         - "git@github.com:davvid/homebrew-garden.git"
+    links:
+      - "https://gitlab.com/garden-rs/homebrew-garden"
