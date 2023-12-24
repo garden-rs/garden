@@ -17,6 +17,9 @@ pub mod collections;
 /// Configuration
 pub mod config;
 
+/// Display subsystem
+pub mod display;
+
 /// Errors
 pub mod errors;
 
