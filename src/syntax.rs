@@ -1,49 +1,59 @@
 /// Return true if the string contains 0-9 digits only
+#[inline]
 pub(crate) fn is_digit(string: &str) -> bool {
     string.chars().all(|c| c.is_ascii_digit())
 }
 
 /// Return true if `string` is an `$ exec` expression.
+#[inline]
 pub(crate) fn is_exec(string: &str) -> bool {
     string.starts_with("$ ")
 }
 
 /// Return true if `string` is a `:garden` expression.
+#[inline]
 pub fn is_garden(string: &str) -> bool {
     string.starts_with(':')
 }
 
 /// Return true if `string` is a `%group` expression.
+#[inline]
 pub fn is_group(string: &str) -> bool {
     string.starts_with('%')
 }
 
 /// Return true if `string` is a `@tree` expression.
+#[inline]
 pub fn is_tree(string: &str) -> bool {
     string.starts_with('@')
 }
 
 /// Return true if `string` is a variable "replace" operation.
+#[inline]
 pub(crate) fn is_append_op(string: &str) -> bool {
     string.ends_with('+')
 }
 
 /// Return true if `string` is a variable "append" operation.
+#[inline]
 pub(crate) fn is_replace_op(string: &str) -> bool {
     string.ends_with('=')
 }
 
 /// Return true if `string` is a `graft::value` expression.
+#[inline]
 pub fn is_graft(string: &str) -> bool {
     string.contains("::")
 }
 
 /// Return true if `string` ends in ".git". This is used to detect bare repositories.
+#[inline]
 pub fn is_git_dir(string: &str) -> bool {
     string.len() > 4 && string.ends_with(".git") && !string.ends_with("/.git")
 }
 
 /// Trim garden, group, and tree prefixes
+#[inline]
 pub(crate) fn trim(string: &str) -> &str {
     let needs_trim = is_group(string) || is_tree(string) || is_garden(string);
     if !string.is_empty() && needs_trim {
@@ -54,6 +64,7 @@ pub(crate) fn trim(string: &str) -> &str {
 }
 
 /// Trim the "$ " prefix from an exec expression
+#[inline]
 pub fn trim_exec(string: &str) -> &str {
     let prefix = "$ ";
     let prefix_len = prefix.len();
@@ -65,6 +76,7 @@ pub fn trim_exec(string: &str) -> &str {
 }
 
 /// Trim "+" and "=" suffixes in-place.
+#[inline]
 pub fn trim_op_inplace(string: &mut String) {
     let len = string.len();
     if len > 1 {
@@ -73,6 +85,7 @@ pub fn trim_op_inplace(string: &mut String) {
 }
 
 /// Safely a string into pre and post-split references
+#[inline]
 pub fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str) {
     let end = string.len();
     let split_len = split.len();
@@ -89,11 +102,13 @@ pub fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str
 }
 
 /// Split a string into pre and post-graft namespace string refs
+#[inline]
 pub fn split_graft(string: &str) -> (bool, &str, &str) {
     split_string(string, "::")
 }
 
 /// Remove the graft basename leaving the remainder of the graft string.
+#[inline]
 pub fn trim_graft(string: &str) -> Option<String> {
     let (ok, _before, after) = split_graft(string);
     if !ok {
@@ -115,6 +130,7 @@ pub fn trim_graft(string: &str) -> Option<String> {
 }
 
 /// Return the graft basename.  "@foo::bar::baz" -> "foo"
+#[inline]
 pub fn graft_basename(string: &str) -> Option<String> {
     let (ok, before, _after) = split_graft(string);
     if !ok {
@@ -132,6 +148,7 @@ pub fn graft_basename(string: &str) -> Option<String> {
 }
 
 /// Escape $variable into $$variable for evaluation by shellexpand.
+#[inline]
 pub fn escape_shell_variables(string: &str) -> String {
     let mut result = String::new();
 
@@ -161,6 +178,7 @@ pub fn escape_shell_variables(string: &str) -> String {
 }
 
 /// Return the value of a boolean as a string.
+#[inline]
 pub(crate) fn bool_to_string(value: bool) -> String {
     match value {
         true => string!("true"),
@@ -169,6 +187,7 @@ pub(crate) fn bool_to_string(value: bool) -> String {
 }
 
 /// Return the value of a string as a boolean. Accepts "true", "false", "1" and "0".
+#[inline]
 pub(crate) fn string_to_bool(value: &str) -> Option<bool> {
     match value {
         "true" | "1" => Some(true),
