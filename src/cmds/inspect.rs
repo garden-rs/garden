@@ -1,10 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use super::super::eval;
-use super::super::model;
-use super::super::model::Color;
-use super::super::query;
+use crate::{display, model, query};
 
 /// Query tree status
 #[derive(Parser, Clone, Debug)]
@@ -64,115 +61,29 @@ fn inspect(
             };
             let path = tree.path_as_ref()?;
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !std::path::PathBuf::from(&path).exists() {
-                if verbose > 0 {
-                    println!(
-                        "{} {} {}",
-                        Color::red("-").dimmed(),
-                        Color::red(tree.get_name()),
-                        Color::red(&path).dimmed()
-                    );
-                } else {
-                    println!(
-                        "{} {}",
-                        Color::red("-").dimmed(),
-                        Color::red(tree.get_name())
-                    );
-                }
+            if !std::path::PathBuf::from(path).exists() {
+                display::print_missing_tree(tree, path, verbose);
                 if display_all {
-                    print_extended_tree_details(app_context, context, tree, display_worktrees);
+                    display::print_tree_extended_details(
+                        app_context,
+                        context,
+                        tree,
+                        display_worktrees,
+                    );
+                    println!();
                 }
-                println!();
                 continue;
             }
 
             if tree.is_symlink {
-                if verbose > 0 {
-                    println!(
-                        "{} {} {} {} {}",
-                        Color::green("+"),
-                        Color::green(tree.get_name()).bold(),
-                        Color::green(&path),
-                        Color::yellow("->").bold(),
-                        Color::blue(&tree.symlink_as_ref()?).bold()
-                    );
-                } else {
-                    println!(
-                        "{} {} {} {}",
-                        Color::green("+"),
-                        Color::green(tree.get_name()).bold(),
-                        Color::yellow("->").bold(),
-                        Color::blue(tree.symlink_as_ref()?).bold()
-                    );
-                }
-            } else if verbose > 0 {
-                println!(
-                    "{} {} {}",
-                    Color::green("+"),
-                    Color::green(tree.get_name()).bold(),
-                    Color::green(&path)
-                );
-            } else {
-                println!(
-                    "{} {}",
-                    Color::green("+"),
-                    Color::green(tree.get_name()).bold()
-                );
+                display::print_symlink_tree_entry(tree, path, verbose);
+                continue;
             }
-            print_extended_tree_details(app_context, context, tree, display_worktrees);
-            println!();
+
+            display::print_tree(tree, true, verbose, false);
+            display::print_tree_extended_details(app_context, context, tree, display_worktrees);
         }
     }
 
     Ok(())
-}
-
-/// Print the description, url, remotes and links for a tree
-fn print_extended_tree_details(
-    app_context: &model::ApplicationContext,
-    context: &model::TreeContext,
-    tree: &model::Tree,
-    display_worktrees: bool,
-) {
-    let config = match context.config {
-        Some(config_id) => app_context.get_config(config_id),
-        None => app_context.get_root_config(),
-    };
-    if !tree.description.is_empty() {
-        println!("{}", Color::cyan(&tree.description));
-    }
-    if tree.is_worktree && !display_worktrees {
-        return;
-    }
-    if !tree.remotes.is_empty() {
-        println!("{}", Color::blue("remotes:"));
-        for (name, remote) in &tree.remotes {
-            let value = eval::tree_value(
-                app_context,
-                config,
-                remote.get_expr(),
-                &context.tree,
-                context.garden.as_ref(),
-            );
-            println!(
-                "  {}{} {}",
-                Color::blue(name),
-                Color::blue(":"),
-                Color::yellow(value)
-            );
-        }
-    }
-    if !tree.links.is_empty() {
-        println!("{}", Color::blue("links:"));
-        for link in &tree.links {
-            let value = eval::tree_value(
-                app_context,
-                config,
-                link.get_expr(),
-                &context.tree,
-                context.garden.as_ref(),
-            );
-            println!("  {} {}", Color::blue("-"), Color::yellow(value));
-        }
-    }
 }

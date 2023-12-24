@@ -1,14 +1,11 @@
-use super::super::cmd;
-use super::super::errors;
-use super::super::model;
-use super::super::model::Color;
+use std::collections::HashSet;
+use std::io::prelude::*;
 
 use anyhow::Result;
 use clap::Parser;
 use rayon::prelude::*;
 
-use std::collections::HashSet;
-use std::io::prelude::*;
+use crate::{cmd, display::Color, errors, model};
 
 /// Get the default number of prune jobs to run in parallel
 fn default_num_jobs() -> usize {

@@ -1,10 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, ValueHint};
 
-use super::super::cmd;
-use super::super::errors;
-use super::super::model;
-use super::super::query;
+use crate::{cmd, display, errors, model, query};
 
 /// Evaluate garden expressions
 #[derive(Parser, Clone, Debug)]
@@ -83,8 +80,8 @@ fn exec(
             let cmd_str = shell_words::join(command);
             println!(
                 "{} {}",
-                model::Color::cyan(":"),
-                model::Color::green(&cmd_str),
+                display::Color::cyan(":"),
+                display::Color::green(&cmd_str),
             );
         }
         // Run the command in the current context.

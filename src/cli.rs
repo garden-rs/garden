@@ -1,8 +1,6 @@
 use clap::{Parser, Subcommand, ValueHint};
 
-use super::cmds;
-use super::model;
-use super::path;
+use crate::{cmds, model, path};
 
 #[derive(Clone, Debug, Default, Parser)]
 #[command(name = "garden")]

@@ -1,12 +1,8 @@
-use super::super::cli;
-use super::super::config;
-use super::super::errors;
-use super::super::path;
-
 use anyhow::Result;
 use clap::{Parser, ValueHint};
-use yaml_rust::yaml::Hash as YamlHash;
-use yaml_rust::yaml::Yaml;
+use yaml_rust::{yaml, Yaml};
+
+use crate::{cli, config, errors, path};
 
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
@@ -96,7 +92,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     {
         if let Yaml::Hash(ref mut doc_hash) = doc {
             let garden_key = Yaml::String("garden".into());
-            let garden: &mut YamlHash = match doc_hash.get_mut(&garden_key) {
+            let garden: &mut yaml::Hash = match doc_hash.get_mut(&garden_key) {
                 Some(Yaml::Hash(ref mut hash)) => hash,
                 _ => {
                     return Err(errors::GardenError::InvalidConfiguration {

@@ -1,4 +1,4 @@
-use super::errors;
+use crate::errors;
 
 /// Return the current directoy as a PathBuf.
 pub(crate) fn current_dir() -> std::path::PathBuf {

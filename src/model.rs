@@ -1,22 +1,16 @@
-use super::cli;
-use super::collections::{append_hashmap, append_indexset};
-use super::config;
-use super::errors;
-use super::eval;
-use super::git;
-use super::path;
-use super::syntax;
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::str::FromStr;
 
 use derivative::Derivative;
 use indexmap::{IndexMap, IndexSet};
 use indextree::{Arena, NodeId};
 use is_terminal::IsTerminal;
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::str::FromStr;
 use strum::VariantNames;
 use strum_macros;
 use which::which;
+
+use crate::{cli, collections, config, errors, eval, path, syntax};
 
 /// TreeName keys into config.trees
 pub type TreeName = String;
@@ -300,11 +294,11 @@ impl Tree {
 
     /// Copy the guts of another tree into the current tree.
     pub(crate) fn clone_from_tree(&mut self, tree: &Tree) {
-        append_hashmap(&mut self.commands, &tree.commands);
-        append_hashmap(&mut self.gitconfig, &tree.gitconfig);
-        append_hashmap(&mut self.variables, &tree.variables);
-        append_hashmap(&mut self.remotes, &tree.remotes);
-        append_indexset(&mut self.templates, &tree.templates);
+        collections::append_hashmap(&mut self.commands, &tree.commands);
+        collections::append_hashmap(&mut self.gitconfig, &tree.gitconfig);
+        collections::append_hashmap(&mut self.variables, &tree.variables);
+        collections::append_hashmap(&mut self.remotes, &tree.remotes);
+        collections::append_indexset(&mut self.templates, &tree.templates);
 
         // "environment" follow last-set-wins semantics.
         self.environment.append(&mut tree.environment.clone());
@@ -1122,104 +1116,6 @@ impl ColorMode {
 
         if *self == ColorMode::Off {
             yansi::Paint::disable();
-        }
-    }
-}
-
-// Color is an alias for yansi::Paint.
-pub type Color<T> = yansi::Paint<T>;
-
-pub(crate) fn display_missing_tree(tree: &Tree, path: &str, verbose: u8) -> String {
-    if verbose > 0 {
-        format!(
-            "{} {} {} {}",
-            Color::black("#").bold(),
-            Color::black(&tree.name).bold(),
-            Color::black(&path).bold(),
-            Color::black("(skipped)").bold()
-        )
-    } else {
-        format!(
-            "{} {} {}",
-            Color::black("#").bold(),
-            Color::black(&tree.name).bold(),
-            Color::black("(skipped)").bold()
-        )
-    }
-}
-
-pub(crate) fn display_tree(
-    tree: &Tree,
-    path_str: &str,
-    tree_branches: bool,
-    verbose: u8,
-) -> String {
-    if verbose > 0 {
-        if tree_branches {
-            if let Some(path) = tree.canonical_pathbuf() {
-                if let Some(branch) = git::branch(&path) {
-                    return format!(
-                        "{} {} {}{}{} {}",
-                        Color::cyan("#"),
-                        Color::blue(&tree.name).bold(),
-                        Color::blue("["),
-                        Color::cyan(&branch),
-                        Color::blue("]"),
-                        Color::blue(&path_str)
-                    );
-                }
-            }
-        }
-        format!(
-            "{} {} {}",
-            Color::cyan("#"),
-            Color::blue(&tree.name).bold(),
-            Color::blue(&path_str)
-        )
-    } else {
-        if tree_branches {
-            if let Some(path) = tree.canonical_pathbuf() {
-                if let Some(branch) = git::branch(&path) {
-                    return format!(
-                        "{} {} {}{}{}",
-                        Color::cyan("#"),
-                        Color::blue(&tree.name).bold(),
-                        Color::blue("["),
-                        Color::cyan(&branch),
-                        Color::blue("]")
-                    );
-                }
-            }
-        }
-        format!("{} {}", Color::cyan("#"), Color::blue(&tree.name).bold())
-    }
-}
-
-/// Print a tree if it exists, otherwise print a missing tree
-pub(crate) fn print_tree(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) -> bool {
-    if let Ok(path) = tree.path_as_ref() {
-        // Sparse gardens/missing trees are expected. Skip these entries.
-        if !std::path::PathBuf::from(&path).exists() {
-            if !quiet {
-                eprintln!("{}", display_missing_tree(tree, path, verbose));
-            }
-            return false;
-        }
-
-        print_tree_details(tree, tree_branches, verbose, quiet);
-        return true;
-    } else if !quiet {
-        eprintln!("{}", display_missing_tree(tree, "[invalid-path]", verbose));
-    }
-
-    false
-}
-
-/// Print a tree
-pub(crate) fn print_tree_details(tree: &Tree, tree_branches: bool, verbose: u8, quiet: bool) {
-    if !quiet {
-        if let Ok(path) = tree.path_as_ref() {
-            eprintln!("{}", display_tree(tree, path, tree_branches, verbose));
         }
     }
 }

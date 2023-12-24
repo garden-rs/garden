@@ -1,7 +1,4 @@
-use super::errors;
-use super::eval;
-use super::model;
-use super::syntax;
+use crate::{display, errors, eval, model, syntax};
 
 /// Convert an exit status to Result<(), GardenError>.
 pub(crate) fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
@@ -105,7 +102,7 @@ where
         path = tree.path_as_ref()?;
 
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !model::print_tree(tree, config.tree_branches, verbose, quiet) {
+        if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
             return Ok(());
         }
     } else {

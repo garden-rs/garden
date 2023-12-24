@@ -1,9 +1,4 @@
-use super::errors;
-use super::eval;
-use super::model;
-use super::path;
-use super::query;
-use super::syntax;
+use crate::{errors, eval, model, path, query, syntax};
 
 /// Resolve a tree query into a `Vec<garden::model::TreeContext>`.
 ///

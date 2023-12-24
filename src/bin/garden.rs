@@ -1,10 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use garden::cli;
-use garden::cmds;
-use garden::errors;
-use garden::model;
+use garden::{cli, cmds, errors, model};
 
 /// Main entry point for the "garden" command.
 fn main() -> Result<()> {

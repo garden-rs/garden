@@ -1,9 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use super::super::eval;
-use super::super::model;
-use super::super::query;
+use crate::{eval, model, query};
 
 /// Evaluate garden expressions
 #[derive(Parser, Clone, Debug)]

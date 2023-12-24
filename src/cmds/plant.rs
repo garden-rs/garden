@@ -1,15 +1,8 @@
-use super::super::cmd;
-use super::super::config;
-use super::super::errors;
-use super::super::git;
-use super::super::model;
-use super::super::path;
-use super::super::query;
-
 use anyhow::Result;
 use clap::{Parser, ValueHint};
-use yaml_rust::yaml::Hash as YamlHash;
-use yaml_rust::yaml::Yaml;
+use yaml_rust::{yaml, Yaml};
+
+use crate::{cmd, config, errors, git, model, path, query};
 
 // Add pre-existing worktrees to a garden configuration file
 #[derive(Parser, Clone, Debug)]
@@ -38,7 +31,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
     // Mutable YAML scope.
     {
         // Get a mutable reference to top-level document hash.
-        let doc_hash: &mut YamlHash = match doc {
+        let doc_hash: &mut yaml::Hash = match doc {
             Yaml::Hash(ref mut hash) => hash,
             _ => {
                 error!("invalid config: not a hash");
@@ -47,7 +40,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
 
         // Get a mutable reference to the "trees" hash.
         let key = Yaml::String("trees".into());
-        let trees: &mut YamlHash = match doc_hash.get_mut(&key) {
+        let trees: &mut yaml::Hash = match doc_hash.get_mut(&key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
                 error!("invalid trees: not a hash");
@@ -69,7 +62,7 @@ fn plant_path(
     config: &model::Configuration,
     verbose: u8,
     raw_path: &str,
-    trees: &mut YamlHash,
+    trees: &mut yaml::Hash,
 ) -> Result<()> {
     // Garden root path
     let root = config.root_path.canonicalize().map_err(|err| {
@@ -128,7 +121,7 @@ fn plant_path(
 
     // Update an existing tree entry if it already exists.
     // Add a new entry otherwise.
-    let mut entry: YamlHash = YamlHash::new();
+    let mut entry: yaml::Hash = yaml::Hash::new();
     if let Some(tree_yaml) = trees.get(&key) {
         if let Some(tree_hash) = tree_yaml.as_hash() {
             if verbose > 0 {
@@ -215,10 +208,10 @@ fn plant_path(
 
     if !remotes.is_empty() {
         if !has_remotes {
-            entry.insert(remotes_key.clone(), Yaml::Hash(YamlHash::new()));
+            entry.insert(remotes_key.clone(), Yaml::Hash(yaml::Hash::new()));
         }
 
-        let remotes_hash: &mut YamlHash = match entry.get_mut(&remotes_key) {
+        let remotes_hash: &mut yaml::Hash = match entry.get_mut(&remotes_key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
                 return Err(

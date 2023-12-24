@@ -1,13 +1,7 @@
-use super::super::cli;
-use super::super::cmd;
-use super::super::errors;
-use super::super::eval;
-use super::super::model;
-use super::super::query;
-
 use anyhow::Result;
-use clap;
 use clap::{CommandFactory, FromArgMatches, Parser};
+
+use crate::{cli, cmd, display, errors, eval, model, query};
 
 /// Run one or more custom commands over a tree query
 #[derive(Parser, Clone, Debug)]
@@ -220,7 +214,7 @@ fn run_cmd_breadth_first(
             // Run each command in the tree's context
             let path = tree.path_as_ref()?.to_string();
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !model::print_tree(tree, config.tree_branches, verbose, quiet) {
+            if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
                 continue;
             }
 
@@ -285,7 +279,7 @@ fn run_cmd_depth_first(
         // Run each command in the tree's context
         let path = tree.path_as_ref()?.to_string();
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !model::print_tree(tree, config.tree_branches, verbose, quiet) {
+        if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
             continue;
         }
 
@@ -348,8 +342,8 @@ fn run_cmd_vec(
             if options.verbose > 1 {
                 println!(
                     "{} {}",
-                    model::Color::cyan(":"),
-                    model::Color::green(&cmd_str),
+                    display::Color::cyan(":"),
+                    display::Color::green(&cmd_str),
                 );
             }
             let mut exec = subprocess::Exec::cmd(shell).cwd(path);

@@ -1,9 +1,8 @@
 use std::io::Write;
 
-use yaml_rust::Yaml;
-use yaml_rust::YamlEmitter;
+use yaml_rust::{Yaml, YamlEmitter};
 
-use super::super::errors;
+use crate::errors;
 
 /// Write a Yaml object to a file
 

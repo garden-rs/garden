@@ -1,12 +1,10 @@
-use super::cmd;
-use super::errors;
-use super::model::GitTreeDetails;
-use super::model::GitTreeType;
-use super::path;
+use crate::{cmd, errors, model, path};
 
 /// Return Ok(garden::model::GitTreeDetails) for the specified path on success
 /// or Err(garden::errors::CommandError) when Git commands error out.
-pub fn worktree_details(pathbuf: &std::path::Path) -> Result<GitTreeDetails, errors::CommandError> {
+pub fn worktree_details(
+    pathbuf: &std::path::Path,
+) -> Result<model::GitTreeDetails, errors::CommandError> {
     let mut worktree_count = 0;
     let cmd = ["git", "worktree", "list", "--porcelain"];
     let path = path::abspath(pathbuf);
@@ -43,25 +41,25 @@ pub fn worktree_details(pathbuf: &std::path::Path) -> Result<GitTreeDetails, err
     // 0 or 1 worktrees implies that this is a regular worktree.
     // 0 doesn't happen in practice.
     if worktree_count < 2 {
-        return Ok(GitTreeDetails {
+        return Ok(model::GitTreeDetails {
             branch,
             tree_type: match is_bare {
-                true => GitTreeType::Bare,
-                false => GitTreeType::Tree,
+                true => model::GitTreeType::Bare,
+                false => model::GitTreeType::Tree,
             },
         });
     }
 
     if path == parent_path {
-        return Ok(GitTreeDetails {
+        return Ok(model::GitTreeDetails {
             branch,
-            tree_type: GitTreeType::Parent,
+            tree_type: model::GitTreeType::Parent,
         });
     }
 
-    Ok(GitTreeDetails {
+    Ok(model::GitTreeDetails {
         branch,
-        tree_type: GitTreeType::Worktree(parent_path),
+        tree_type: model::GitTreeType::Worktree(parent_path),
     })
 }
 

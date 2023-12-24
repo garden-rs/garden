@@ -1,14 +1,10 @@
 /// Grow garden worktrees
-use super::super::cmd;
-use super::super::errors;
-use super::super::eval;
-use super::super::git;
-use super::super::model;
-use super::super::query;
+use std::collections::{HashMap, HashSet};
 
 use anyhow::Result;
 use clap::Parser;
-use std::collections::{HashMap, HashSet};
+
+use crate::{cmd, display, errors, eval, git, model, query};
 
 type GitConfigMap = HashMap<String, HashSet<String>>;
 
@@ -83,7 +79,7 @@ fn grow_tree_from_context(
     };
 
     let path = tree.path_as_ref()?.clone();
-    model::print_tree_details(tree, config.tree_branches, verbose, quiet);
+    display::print_tree_details(tree, config.tree_branches, verbose, quiet);
 
     let pathbuf = std::path::PathBuf::from(&path);
     let parent = pathbuf.parent().ok_or_else(|| {
@@ -223,7 +219,11 @@ fn print_quoted_command(command: &[&str]) {
 
 /// Print a command that will be executed from a string.
 fn print_command_str(cmd: &str) {
-    println!("{} {}", model::Color::cyan(":"), model::Color::green(cmd),)
+    println!(
+        "{} {}",
+        display::Color::cyan(":"),
+        display::Color::green(cmd),
+    )
 }
 
 /// Add remotes that do not already exist and synchronize .git/config values.

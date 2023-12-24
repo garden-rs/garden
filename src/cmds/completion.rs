@@ -1,11 +1,9 @@
-use anyhow::Result;
-use clap::{value_parser, Arg, Command, CommandFactory, Parser};
-use clap_complete;
-use clap_complete::Shell;
 use std::io::Write;
 
-use super::super::cli::MainOptions;
-use super::super::model;
+use anyhow::Result;
+use clap::{value_parser, Arg, Command, CommandFactory, Parser};
+
+use crate::{cli, model};
 
 /// Generate shell completions
 #[derive(Parser, Clone, Debug)]
@@ -15,13 +13,13 @@ pub struct CompletionOptions {
     #[arg(long, short)]
     commands: bool,
     /// Shell syntax to emit
-    #[arg(default_value_t = Shell::Bash, value_parser = value_parser!(Shell))]
-    pub shell: Shell,
+    #[arg(default_value_t = clap_complete::Shell::Bash, value_parser = value_parser!(clap_complete::Shell))]
+    pub shell: clap_complete::Shell,
 }
 
 /// Print shell completions for "garden completion"
-pub fn main(options: &MainOptions, completion_options: &CompletionOptions) -> Result<()> {
-    let mut cmd = MainOptions::command();
+pub fn main(options: &cli::MainOptions, completion_options: &CompletionOptions) -> Result<()> {
+    let mut cmd = cli::MainOptions::command();
 
     // Register custom commands with the completion system
     if completion_options.commands {

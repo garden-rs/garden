@@ -4,10 +4,7 @@ pub mod reader;
 /// YAML writer
 pub mod writer;
 
-use super::errors;
-use super::model;
-use super::model::ConfigId;
-use super::path;
+use crate::{errors, model, path};
 
 /// Search for configuration in the following locations:
 ///  .
@@ -100,7 +97,7 @@ pub fn read_grafts(app: &model::ApplicationContext) -> Result<(), errors::Garden
 /// Read grafts into the specified configuration
 pub fn read_grafts_recursive(
     app: &model::ApplicationContext,
-    id: ConfigId,
+    id: model::ConfigId,
 ) -> Result<(), errors::GardenError> {
     // Defer the recursive calls to avoid an immutable borrow from preventing us from
     // recursively taking an immutable borrow.

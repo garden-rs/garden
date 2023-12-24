@@ -1,6 +1,8 @@
 use anyhow::Result;
 use clap::Parser;
 
+use crate::model;
+
 /// List available gardens, groups, trees and commands
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
@@ -9,8 +11,6 @@ pub struct ListOptions {
     #[arg(long, short)]
     commands: bool,
 }
-
-use super::super::model;
 
 pub fn main(app_context: &model::ApplicationContext, options: &ListOptions) -> Result<()> {
     let config = app_context.get_root_config_mut();

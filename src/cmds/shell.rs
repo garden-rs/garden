@@ -1,11 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use super::super::cmd;
-use super::super::errors;
-use super::super::eval;
-use super::super::model;
-use super::super::query;
+use crate::{cmd, display, errors, eval, model, query};
 
 /// Open a shell in a garden environment
 #[derive(Parser, Clone, Debug)]
@@ -70,8 +66,8 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
         // Shell quote the list of commands.
         println!(
             "{} {}",
-            model::Color::cyan(":"),
-            model::Color::green(&shell),
+            display::Color::cyan(":"),
+            display::Color::green(&shell),
         );
     }
 

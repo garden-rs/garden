@@ -1,10 +1,6 @@
-use super::cmd;
-use super::model;
-use super::path;
-use super::query;
-use super::syntax;
-
 use std::collections::HashMap;
+
+use crate::{cmd, model, path, query, syntax};
 
 /// Expand variables across all scopes (garden, tree, and global).
 /// - `app_context`: reference to the top-level ApplicationContext.
