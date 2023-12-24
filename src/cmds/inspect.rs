@@ -138,13 +138,13 @@ fn print_extended_tree_details(
         Some(config_id) => app_context.get_config(config_id),
         None => app_context.get_root_config(),
     };
-    if tree.description.len() > 0 {
+    if !tree.description.is_empty() {
         println!("{}", Color::cyan(&tree.description));
     }
     if tree.is_worktree && !display_worktrees {
         return;
     }
-    if tree.remotes.len() > 0 {
+    if !tree.remotes.is_empty() {
         println!("{}", Color::blue("remotes:"));
         for (name, remote) in &tree.remotes {
             let value = eval::tree_value(
@@ -162,7 +162,7 @@ fn print_extended_tree_details(
             );
         }
     }
-    if tree.links.len() > 0 {
+    if !tree.links.is_empty() {
         println!("{}", Color::blue("links:"));
         for link in &tree.links {
             let value = eval::tree_value(
