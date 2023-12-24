@@ -12,19 +12,19 @@ pub(crate) fn is_exec(string: &str) -> bool {
 
 /// Return true if `string` is a `:garden` expression.
 #[inline]
-pub fn is_garden(string: &str) -> bool {
+pub(crate) fn is_garden(string: &str) -> bool {
     string.starts_with(':')
 }
 
 /// Return true if `string` is a `%group` expression.
 #[inline]
-pub fn is_group(string: &str) -> bool {
+pub(crate) fn is_group(string: &str) -> bool {
     string.starts_with('%')
 }
 
 /// Return true if `string` is a `@tree` expression.
 #[inline]
-pub fn is_tree(string: &str) -> bool {
+pub(crate) fn is_tree(string: &str) -> bool {
     string.starts_with('@')
 }
 
@@ -42,13 +42,13 @@ pub(crate) fn is_replace_op(string: &str) -> bool {
 
 /// Return true if `string` is a `graft::value` expression.
 #[inline]
-pub fn is_graft(string: &str) -> bool {
+pub(crate) fn is_graft(string: &str) -> bool {
     string.contains("::")
 }
 
 /// Return true if `string` ends in ".git". This is used to detect bare repositories.
 #[inline]
-pub fn is_git_dir(string: &str) -> bool {
+pub(crate) fn is_git_dir(string: &str) -> bool {
     string.len() > 4 && string.ends_with(".git") && !string.ends_with("/.git")
 }
 
@@ -65,7 +65,7 @@ pub(crate) fn trim(string: &str) -> &str {
 
 /// Trim the "$ " prefix from an exec expression
 #[inline]
-pub fn trim_exec(string: &str) -> &str {
+pub(crate) fn trim_exec(string: &str) -> &str {
     let prefix = "$ ";
     let prefix_len = prefix.len();
     if string.len() >= prefix_len && string.starts_with(prefix) {
@@ -77,7 +77,7 @@ pub fn trim_exec(string: &str) -> &str {
 
 /// Trim "+" and "=" suffixes in-place.
 #[inline]
-pub fn trim_op_inplace(string: &mut String) {
+pub(crate) fn trim_op_inplace(string: &mut String) {
     let len = string.len();
     if len > 1 {
         string.remove(len - 1);
@@ -86,7 +86,7 @@ pub fn trim_op_inplace(string: &mut String) {
 
 /// Safely a string into pre and post-split references
 #[inline]
-pub fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str) {
+pub(crate) fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str) {
     let end = string.len();
     let split_len = split.len();
     if end < split_len {
@@ -103,13 +103,13 @@ pub fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str
 
 /// Split a string into pre and post-graft namespace string refs
 #[inline]
-pub fn split_graft(string: &str) -> (bool, &str, &str) {
+pub(crate) fn split_graft(string: &str) -> (bool, &str, &str) {
     split_string(string, "::")
 }
 
 /// Remove the graft basename leaving the remainder of the graft string.
 #[inline]
-pub fn trim_graft(string: &str) -> Option<String> {
+pub(crate) fn trim_graft(string: &str) -> Option<String> {
     let (ok, _before, after) = split_graft(string);
     if !ok {
         return None;
@@ -131,7 +131,7 @@ pub fn trim_graft(string: &str) -> Option<String> {
 
 /// Return the graft basename.  "@foo::bar::baz" -> "foo"
 #[inline]
-pub fn graft_basename(string: &str) -> Option<String> {
+pub(crate) fn graft_basename(string: &str) -> Option<String> {
     let (ok, before, _after) = split_graft(string);
     if !ok {
         return None;
@@ -149,7 +149,7 @@ pub fn graft_basename(string: &str) -> Option<String> {
 
 /// Escape $variable into $$variable for evaluation by shellexpand.
 #[inline]
-pub fn escape_shell_variables(string: &str) -> String {
+pub(crate) fn escape_shell_variables(string: &str) -> String {
     let mut result = String::new();
 
     // Did we just see '$' ? If so, we might need to escape it.
@@ -206,4 +206,229 @@ pub(crate) fn pre_command(name: &str) -> String {
 #[inline]
 pub(crate) fn post_command(name: &str) -> String {
     format!("{}>", name)
+}
+
+/// Unit tests
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn is_garden() {
+        assert!(super::is_garden(":garden"), ":garden is a garden");
+        assert!(!super::is_garden("garden"), "garden is not a garden");
+    }
+
+    #[test]
+    fn is_graft() {
+        assert!(super::is_graft("foo::bar"), "foo::bar is a graft");
+        assert!(!super::is_graft("foo"), "foo is not a graft");
+    }
+
+    #[test]
+    fn is_group() {
+        assert!(super::is_group("%group"), "%group is a group");
+        assert!(!super::is_group("group"), "group is not a group");
+    }
+
+    #[test]
+    fn is_tree() {
+        assert!(super::is_tree("@tree"), "@tree is a tree");
+        assert!(!super::is_tree("tree"), "tree is not a tree");
+    }
+
+    #[test]
+    fn is_git_dir() {
+        assert!(super::is_git_dir("tree.git"), "tree.git is a git dir");
+        assert!(
+            super::is_git_dir("/src/tree.git"),
+            "/src/tree.git is a git dir"
+        );
+        assert!(
+            !super::is_git_dir("src/tree/.git"),
+            "src/tree/.git is a git dir"
+        );
+        assert!(!super::is_git_dir(".git"), ".git is a git dir");
+        assert!(!super::is_git_dir("/.git"), "/.git is a git dir");
+    }
+
+    #[test]
+    fn split_string_ok() {
+        let (ok, pre, post) = super::split_string("foo::bar", "::");
+        assert!(ok, "split :: on foo::bar is ok");
+        assert_eq!(pre, "foo");
+        assert_eq!(post, "bar");
+    }
+
+    #[test]
+    fn split_string_empty() {
+        let (ok, pre, post) = super::split_string("foo::", "::");
+        assert!(ok, "split :: on foo:: is ok");
+        assert_eq!(pre, "foo");
+        assert_eq!(post, "");
+    }
+
+    #[test]
+    fn split_string_not_found() {
+        let (ok, pre, post) = super::split_string("foo", "::");
+        assert!(!ok, "split :: on foo is false");
+        assert_eq!(pre, "foo");
+        assert_eq!(post, "");
+    }
+
+    #[test]
+    fn split_graft_ok() {
+        let (ok, pre, post) = super::split_graft("foo::bar");
+        assert!(ok, "split_graft on foo::bar is ok");
+        assert_eq!(pre, "foo");
+        assert_eq!(post, "bar");
+    }
+
+    #[test]
+    fn split_graft_nested_ok() {
+        let (ok, pre, post) = super::split_graft("@foo::bar::baz");
+        assert!(ok, "split_graft on @foo::bar::baz is ok");
+        assert_eq!(pre, "@foo");
+        assert_eq!(post, "bar::baz");
+    }
+
+    #[test]
+    fn split_graft_empty() {
+        let (ok, pre, post) = super::split_graft("foo::");
+        assert!(ok, "split_graft on foo:: is ok");
+        assert_eq!(pre, "foo");
+        assert_eq!(post, "");
+    }
+
+    #[test]
+    fn split_graft_not_found() {
+        let (ok, pre, post) = super::split_graft("foo");
+        assert!(!ok, "split_graft on foo is false");
+        assert_eq!(pre, "foo");
+        assert_eq!(post, "");
+    }
+
+    #[test]
+    fn trim_exec() {
+        assert_eq!("cmd", super::trim_exec("$ cmd"));
+        assert_eq!("$cmd", super::trim_exec("$cmd"));
+        assert_eq!("cmd", super::trim_exec("cmd"));
+        assert_eq!("", super::trim_exec("$ "));
+        assert_eq!("$", super::trim_exec("$"));
+        assert_eq!("", super::trim_exec(""));
+    }
+
+    #[test]
+    fn trim_graft() {
+        let value = super::trim_graft("foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!("bar::baz", value.unwrap());
+
+        let value = super::trim_graft("@foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!("@bar::baz", value.unwrap());
+
+        let value = super::trim_graft("%foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!("%bar::baz", value.unwrap());
+
+        let value = super::trim_graft(":foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!(":bar::baz", value.unwrap());
+
+        let value = super::trim_graft("foo::bar");
+        assert!(value.is_some());
+        assert_eq!("bar", value.unwrap());
+
+        let value = super::trim_graft("foo");
+        assert!(value.is_none());
+    }
+
+    #[test]
+    fn graft_basename() {
+        let value = super::graft_basename("foo");
+        assert!(value.is_none());
+
+        let value = super::graft_basename(":foo");
+        assert!(value.is_none());
+
+        let value = super::graft_basename("%foo");
+        assert!(value.is_none());
+
+        let value = super::graft_basename("@foo");
+        assert!(value.is_none());
+
+        let value = super::graft_basename("foo::bar");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+
+        let value = super::graft_basename(":foo::bar");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+
+        let value = super::graft_basename("%foo::bar");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+
+        let value = super::graft_basename("@foo::bar");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+
+        let value = super::graft_basename("foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+
+        let value = super::graft_basename(":foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+
+        let value = super::graft_basename("%foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+
+        let value = super::graft_basename("@foo::bar::baz");
+        assert!(value.is_some());
+        assert_eq!("foo", value.unwrap());
+    }
+
+    #[test]
+    fn escape_shell_variables() {
+        let value = super::escape_shell_variables("$");
+        assert_eq!(value, "$");
+
+        let value = super::escape_shell_variables("$ ");
+        assert_eq!(value, "$ ");
+
+        let value = super::escape_shell_variables("$$");
+        assert_eq!(value, "$$");
+
+        let value = super::escape_shell_variables("$_");
+        assert_eq!(value, "$$_");
+
+        let value = super::escape_shell_variables("$a");
+        assert_eq!(value, "$$a");
+
+        let value = super::escape_shell_variables("$_a");
+        assert_eq!(value, "$$_a");
+
+        let value = super::escape_shell_variables("$ echo");
+        assert_eq!(value, "$ echo");
+
+        let value = super::escape_shell_variables("embedded $$ value");
+        assert_eq!(value, "embedded $$ value");
+
+        let value = super::escape_shell_variables("$variable");
+        assert_eq!(value, "$$variable");
+
+        let value = super::escape_shell_variables("$$variable");
+        assert_eq!(value, "$$variable");
+
+        let value = super::escape_shell_variables("${braces}${ignored}");
+        assert_eq!(value, "${braces}${ignored}");
+
+        let value = super::escape_shell_variables("$a ${b} $c $");
+        assert_eq!(value, "$$a ${b} $$c $");
+
+        // Escaped ${braced} value
+        let value = super::escape_shell_variables("echo $${value[@]:0:1}");
+        assert_eq!(value, "echo $${value[@]:0:1}");
+    }
 }
