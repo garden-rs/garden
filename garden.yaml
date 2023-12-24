@@ -54,7 +54,7 @@ commands:
       echo 'The second command uses "git" to add the "pages" remote directly instead.'
       return 1
     )
-    garden grow doc/book
+    garden grow doc
     garden grow homebrew
   stage: git add --update "$@"
   stat: git status --short "$@"
@@ -74,12 +74,9 @@ variables:
   mdbook: mdbook
 
 groups:
-  garden: garden
-  doc: doc/book
-  brew: homebrew
   all:
     - garden
-    - doc/book
+    - doc
     - homebrew
 
 trees:
@@ -109,8 +106,9 @@ trees:
       - "https://gitlab.com/garden-rs/garden"
       - "https://github.com/davvid/garden"
 
-  doc/book:
+  doc:
     description: Prebuilt garden user manual for garden-rs.gitlab.io
+    path: doc/book
     worktree: garden
     branch: pages
     branches:
