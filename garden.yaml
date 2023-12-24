@@ -88,8 +88,8 @@ trees:
       garden: "git@gitlab.com:garden-rs/garden.git"
       davvid: "git@gitlab.com:davvid/garden.git"
       github: "git@github.com:davvid/garden.git"
-      jtietema: "https://github.com/jtietema/garden.git"
-      slackline: "https://github.com/slackline/garden.git"
+      jtietema: "git@github.com:jtietema/garden.git"
+      slackline: "git@github.com:slackline/garden.git"
       pages: "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
     gitconfig:
       remote.origin.pushurl:
