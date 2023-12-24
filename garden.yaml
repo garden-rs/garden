@@ -84,6 +84,7 @@ groups:
 
 trees:
   garden:
+    description: Garden grows and cultivates collections of Git trees
     path: ${GARDEN_CONFIG_DIR}
     url: "git@gitlab.com:garden-rs/garden.git"
     remotes:
@@ -101,14 +102,22 @@ trees:
       remote.pages.pushurl:
         - "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
         - "git@github.com:davvid/garden.git"
+    links:
+      - "https://garden-rs.gitlab.io"
+      - "https://crates.io/crates/garden-tools"
+      - "https://docs.rs/garden-tools/latest/garden/"
+      - "https://gitlab.com/garden-rs/garden"
+      - "https://github.com/davvid/garden"
 
   doc/book:
+    description: Rendered garden user manual for garden-rs.gitlab.io
     worktree: garden
     branch: pages
     branches:
       pages: pages/pages
 
   homebrew:
+    description: Homebrew tap for installing Garden on macOS
     url: "git@gitlab.com:garden-rs/homebrew-garden.git"
     remotes:
       davvid: "git@github.com:davvid/homebrew-garden.git"

@@ -214,6 +214,8 @@ pub struct Tree {
     pub is_symlink: bool,
     pub is_bare_repository: bool,
     pub is_worktree: bool,
+    pub(crate) description: String,
+    pub(crate) links: Vec<Variable>,
 
     name: String,
     path: Variable,
@@ -332,6 +334,8 @@ impl Tree {
             self.worktree = tree.worktree.clone();
         }
         self.default_remote = tree.default_remote.to_string();
+        self.description = tree.description.to_string();
+        self.links = tree.links.clone();
 
         self.update_flags();
     }

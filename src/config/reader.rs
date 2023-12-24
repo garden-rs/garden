@@ -254,6 +254,17 @@ fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     }
 }
 
+/// Yaml -> String
+fn get_str_trimmed(yaml: &Yaml, string: &mut String) -> bool {
+    match yaml {
+        Yaml::String(yaml_string) => {
+            *string = yaml_string.trim_end().to_string();
+            !string.is_empty()
+        }
+        _ => false,
+    }
+}
+
 /// Yaml -> i64
 fn get_i64(yaml: &Yaml, value: &mut i64) -> bool {
     match yaml {
@@ -654,7 +665,9 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_variables_hashmap(&value["variables"], &mut tree.variables);
     get_multivariables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
     get_str(&value["default-remote"], &mut tree.default_remote);
+    get_str_trimmed(&value["description"], &mut tree.description);
     get_str_variables_hashmap(&value["remotes"], &mut tree.remotes);
+    get_vec_variables(&value["links"], &mut tree.links);
 
     get_multivariables(&value["environment"], &mut tree.environment);
     get_multivariables_hashmap(&value["commands"], &mut tree.commands);

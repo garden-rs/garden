@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.0
+
+**Features**
+
+- `garden inspect` now displays the `description`, `remotes` and `links` tree fields.
+
 ## v1.0.0
 
 **Features**
