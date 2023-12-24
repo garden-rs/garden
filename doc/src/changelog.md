@@ -6,6 +6,8 @@
 
 - `garden inspect` now displays the `description`, `remotes` and `links` tree fields.
 
+- `garden ls` displays more details and a `-l` long listing mode was added.
+
 ## v1.0.0
 
 **Features**
