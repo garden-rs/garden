@@ -59,7 +59,10 @@ fn inspect(
                 Some(tree) => tree,
                 None => continue,
             };
-            let path = tree.path_as_ref()?;
+            let path = match tree.path_as_ref() {
+                Ok(path) => path,
+                Err(_) => continue,
+            };
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !std::path::PathBuf::from(path).exists() {
                 display::print_missing_tree(tree, path, verbose);
