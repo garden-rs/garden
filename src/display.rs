@@ -205,3 +205,27 @@ pub(crate) fn print_tree_extended_details(
         }
     }
 }
+
+/// Print a list of commands
+pub(crate) fn print_commands(commands: &model::MultiVariableHashMap) {
+    println!("{}", Color::blue("commands:"));
+    for cmd in commands.keys() {
+        println!("  {} {}", Color::blue("-"), Color::yellow(cmd));
+    }
+}
+
+/// Print groups
+pub(crate) fn print_groups(groups: &model::GroupMap) {
+    println!("{}", Color::blue("groups:"));
+    for group in groups.keys() {
+        println!("  {} {}", Color::blue("-"), Color::yellow(group));
+    }
+}
+
+/// Print gardens
+pub(crate) fn print_gardens(gardens: &model::GardenMap) {
+    println!("{}", Color::blue("gardens:"));
+    for garden in gardens.keys() {
+        println!("  {} {}", Color::blue("-"), Color::yellow(garden));
+    }
+}

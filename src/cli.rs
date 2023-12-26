@@ -106,10 +106,8 @@ pub enum Command {
     Grow(cmds::grow::GrowOptions),
     /// Initialize a "garden.yaml" garden configuration file
     Init(cmds::init::InitOptions),
-    /// Query tree status
-    Inspect(cmds::inspect::InspectOptions),
     /// List available gardens, groups, trees and commands
-    #[command(alias = "ls")]
+    #[command(name = "ls")]
     List(cmds::list::ListOptions),
     /// Add pre-existing worktrees to a garden configuration file
     Plant(cmds::plant::PlantOptions),

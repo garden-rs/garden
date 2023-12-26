@@ -39,8 +39,7 @@ fn cmd_main() -> Result<()> {
         cli::Command::Exec(exec) => cmds::exec::main(&app, &exec),
         cli::Command::Grow(grow) => cmds::grow::main(&app, &grow),
         cli::Command::Init(_) => Ok(()), // Handled above
-        cli::Command::Inspect(mut inspect) => cmds::inspect::main(&app, &mut inspect),
-        cli::Command::List(list) => cmds::list::main(&app, &list),
+        cli::Command::List(mut list) => cmds::list::main(&app, &mut list),
         cli::Command::Plant(plant) => cmds::plant::main(&app, &plant),
         cli::Command::Prune(mut prune) => cmds::prune::main(&app, &mut prune),
         cli::Command::Shell(shell) => cmds::shell::main(&app, &shell),

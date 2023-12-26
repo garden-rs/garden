@@ -592,6 +592,18 @@ and tree share a name -- garden will chdir into that same-named tree when
 creating the shell.
 
 
+## garden ls
+
+    garden ls [options] [<tree-query>...]
+
+Display configured information about trees and commands.
+Tree details are not displayed for missing / ungrown trees.
+Use the `-a` option to display details for missing trees.
+
+If no tree-queries are specified then `garden ls` behaves as if
+`garden ls '@*'` were specified, which displays all trees.
+
+
 ## garden prune
 
     garden prune [options] [<subdirs>...]

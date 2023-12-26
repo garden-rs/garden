@@ -371,6 +371,9 @@ impl Group {
     }
 }
 
+/// Groups are stored in a GroupMap inside Configuration.
+pub type GroupMap = IndexMap<GroupName, Group>;
+
 /// Templates can be used to create trees.
 /// They contain a (path-less) tree object which can be used for creating
 /// materialized trees.
@@ -422,6 +425,9 @@ impl Garden {
     }
 }
 
+/// Gardens are stored in a GardenMap inside Configuration.
+pub type GardenMap = IndexMap<GardenName, Garden>;
+
 /// Return the default shell to use for custom commands and "garden shell".
 fn get_default_shell() -> String {
     if which("zsh").is_ok() {
@@ -440,9 +446,9 @@ pub struct Configuration {
     pub commands: MultiVariableHashMap,
     pub debug: HashMap<String, u8>,
     pub environment: Vec<MultiVariable>,
-    pub gardens: IndexMap<GardenName, Garden>,
+    pub gardens: GardenMap,
     pub grafts: IndexMap<GraftName, Graft>,
-    pub groups: IndexMap<GroupName, Group>,
+    pub groups: GroupMap,
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
     pub root: Variable,

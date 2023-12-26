@@ -1,85 +1,114 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{display::Color, model};
+use crate::{display, model, query};
 
-/// List available gardens, groups, trees and commands
+/// Query tree status
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct ListOptions {
-    /// Long listing
-    #[arg(short)]
-    long_listing: bool,
-    /// List commands
-    #[arg(long, short)]
-    commands: bool,
+    /// Display details for all trees, including missing trees
+    #[arg(short, long, default_value_t = false)]
+    all: bool,
+    /// Display worktrees
+    #[arg(short, long, default_value_t = false)]
+    worktrees: bool,
+    /// Tree query for the gardens, groups or trees to display
+    queries: Vec<String>,
 }
 
-pub fn main(app_context: &model::ApplicationContext, options: &ListOptions) -> Result<()> {
-    let config = app_context.get_root_config_mut();
+/// Main entry point for the "garden ls" command
+pub fn main(app_context: &model::ApplicationContext, options: &mut ListOptions) -> Result<()> {
+    if options.queries.is_empty() {
+        options.queries.push("@*".into());
+    }
+    list(app_context, options)
+}
 
-    if options.commands {
-        println!("{}", Color::blue("commands:"));
-        for cmd in config.commands.keys() {
-            println!("  - {}", Color::yellow(cmd));
-        }
-        return Ok(());
+/// List tree details
+fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Result<()> {
+    let config = app_context.get_root_config();
+    let display_all = options.all;
+    let display_worktrees = options.worktrees;
+    let verbose = app_context.options.verbose;
+    let mut needs_newline = false;
+
+    if app_context.options.debug_level("list") > 0 {
+        debug!("queries: {:?}", options.queries);
     }
 
-    if !config.trees.is_empty() {
-        println!("{}", Color::blue("trees:"));
-        if options.long_listing {
-            for (name, tree) in config.trees.iter() {
-                let default_display_path = tree.get_path().get_expr();
-                let display_path = tree.get_path().get_value().unwrap_or(default_display_path);
-                if tree.commands.is_empty() {
-                    println!(
-                        "  {}{} {}",
-                        Color::yellow(name),
-                        Color::yellow(":"),
-                        Color::green(display_path)
+    for query in &options.queries {
+        // Resolve the tree query into a vector of tree contexts.
+        let contexts = query::resolve_trees(app_context, config, query);
+        // Loop over each context and display the tree.
+        for (idx, context) in contexts.iter().enumerate() {
+            let config = match context.config {
+                Some(config_id) => app_context.get_config(config_id),
+                None => config,
+            };
+            let tree = match config.trees.get(&context.tree) {
+                Some(tree) => tree,
+                None => continue,
+            };
+            let path = match tree.path_as_ref() {
+                Ok(path) => path,
+                Err(_) => continue,
+            };
+            // Sparse gardens/missing trees are ok -> skip these entries.
+            if !std::path::PathBuf::from(path).exists() {
+                if needs_newline {
+                    println!();
+                }
+                display::print_missing_tree(tree, path, verbose);
+                if display_all {
+                    display::print_tree_extended_details(
+                        app_context,
+                        context,
+                        tree,
+                        display_worktrees,
                     );
-                } else {
-                    println!("  {}{}", Color::yellow(name), Color::yellow(":"));
-                    println!(
-                        "    {} {}",
-                        Color::yellow("path:"),
-                        Color::green(display_path)
-                    );
-                    println!("    {}", Color::yellow("commands:"));
-                    for cmd in tree.commands.keys() {
-                        println!("      - {}", Color::green(cmd));
+                    if !tree.commands.is_empty() {
+                        display::print_commands(&tree.commands);
                     }
                 }
+                needs_newline = display_all;
+                continue;
             }
-        } else {
-            for name in config.trees.keys() {
-                println!("  - {}", Color::yellow(name));
+
+            if tree.is_symlink {
+                if needs_newline {
+                    println!();
+                }
+                display::print_symlink_tree_entry(tree, path, verbose);
+                needs_newline = false;
+                continue;
             }
+
+            if idx > 0 {
+                println!();
+            }
+            display::print_tree(tree, config.tree_branches, verbose, false);
+            display::print_tree_extended_details(app_context, context, tree, display_worktrees);
+            if !tree.commands.is_empty() {
+                display::print_commands(&tree.commands);
+            }
+            needs_newline = true;
         }
     }
 
     if !config.groups.is_empty() {
-        println!("{}", Color::blue("groups:"));
-        if options.long_listing {
-            for (name, group) in &config.groups {
-                println!("  {}{}", Color::yellow(name), Color::yellow(":"));
-                for member in &group.members {
-                    println!("    - {}", Color::green(member));
-                }
-            }
-        } else {
-            for name in config.groups.keys() {
-                println!("  - {}", Color::yellow(name));
-            }
-        }
+        println!();
+        display::print_groups(&config.groups);
     }
 
     if !config.gardens.is_empty() {
-        println!("{}", Color::blue("gardens:"));
-        for garden in config.gardens.keys() {
-            println!("  - {}", Color::yellow(garden));
-        }
+        println!();
+        display::print_gardens(&config.gardens);
+    }
+
+    if !config.commands.is_empty() {
+        println!();
+        display::print_commands(&config.commands);
     }
 
     Ok(())
