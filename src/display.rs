@@ -37,7 +37,7 @@ pub(crate) fn display_tree(
                         Color::cyan("#"),
                         Color::blue(tree.get_name()).bold(),
                         Color::blue("["),
-                        Color::cyan(&branch),
+                        Color::green(&branch).bold(),
                         Color::blue("]"),
                         Color::blue(&path_str)
                     );
@@ -59,7 +59,7 @@ pub(crate) fn display_tree(
                         Color::cyan("#"),
                         Color::blue(tree.get_name()).bold(),
                         Color::blue("["),
-                        Color::cyan(&branch),
+                        Color::green(&branch).bold(),
                         Color::blue("]")
                     );
                 }
@@ -117,14 +117,14 @@ pub(crate) fn print_missing_tree(tree: &model::Tree, path: &str, verbose: u8) {
     if verbose > 0 {
         println!(
             "{} {} {}",
-            Color::red("-").dimmed(),
+            Color::red("#-").dimmed(),
             Color::red(tree.get_name()),
             Color::red(path).dimmed()
         );
     } else {
         println!(
             "{} {}",
-            Color::red("-").dimmed(),
+            Color::red("#-").dimmed(),
             Color::red(tree.get_name())
         );
     }
@@ -139,19 +139,19 @@ pub(crate) fn print_symlink_tree_entry(tree: &model::Tree, path: &str, verbose: 
     if verbose > 0 {
         println!(
             "{} {} {} {} {}",
-            Color::green("+"),
-            Color::green(tree.get_name()).bold(),
+            Color::cyan("#+"),
+            Color::blue(tree.get_name()).bold(),
             Color::green(path),
-            Color::yellow("->").bold(),
-            Color::blue(symlink).bold()
+            Color::green("->"),
+            Color::yellow(symlink)
         );
     } else {
         println!(
             "{} {} {} {}",
-            Color::green("+"),
-            Color::green(tree.get_name()).bold(),
-            Color::yellow("->").bold(),
-            Color::blue(symlink).bold()
+            Color::cyan("#"),
+            Color::blue(tree.get_name()).bold(),
+            Color::green("->"),
+            Color::yellow(symlink)
         );
     }
 }
@@ -168,7 +168,7 @@ pub(crate) fn print_tree_extended_details(
         None => app_context.get_root_config(),
     };
     if !tree.description.is_empty() {
-        println!("{}", Color::cyan(&tree.description));
+        println!("{}", Color::green(&tree.description));
     }
     if tree.is_worktree && !display_worktrees {
         return;
