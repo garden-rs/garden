@@ -10,6 +10,9 @@ pub struct ListOptions {
     /// Display details for all trees, including missing trees
     #[arg(short, long, default_value_t = false)]
     all: bool,
+    /// Do not list commands
+    #[arg(long, short = 'c', default_value_t = false)]
+    no_commands: bool,
     /// Display worktrees
     #[arg(short, long, default_value_t = false)]
     worktrees: bool,
@@ -30,6 +33,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let config = app_context.get_root_config();
     let display_all = options.all;
     let display_worktrees = options.worktrees;
+    let show_commands = !options.no_commands;
     let verbose = app_context.options.verbose;
     let mut needs_newline = false;
 
@@ -67,7 +71,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
                         tree,
                         display_worktrees,
                     );
-                    if !tree.commands.is_empty() {
+                    if show_commands && !tree.commands.is_empty() {
                         display::print_commands(&tree.commands);
                     }
                 }
@@ -89,7 +93,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
             }
             display::print_tree(tree, config.tree_branches, verbose, false);
             display::print_tree_extended_details(app_context, context, tree, display_worktrees);
-            if !tree.commands.is_empty() {
+            if show_commands && !tree.commands.is_empty() {
                 display::print_commands(&tree.commands);
             }
             needs_newline = true;
@@ -106,7 +110,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
         display::print_gardens(&config.gardens);
     }
 
-    if !config.commands.is_empty() {
+    if show_commands && !config.commands.is_empty() {
         println!();
         display::print_commands(&config.commands);
     }
