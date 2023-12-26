@@ -947,6 +947,14 @@ query string then that tree's directory will be used when opening the shell.
 The optional tree argument is not needed for the case where a garden
 and tree share a name -- garden will chdir into that same-named tree when
 creating the shell.</p>
+<h2 id="garden-ls"><a class="header" href="#garden-ls">garden ls</a></h2>
+<pre><code>garden ls [options] [&lt;tree-query&gt;...]
+</code></pre>
+<p>Display configured information about trees and commands.
+Tree details are not displayed for missing / ungrown trees.
+Use the <code>-a</code> option to display details for missing trees.</p>
+<p>If no tree-queries are specified then <code>garden ls</code> behaves as if
+<code>garden ls '@*'</code> were specified, which displays all trees.</p>
 <h2 id="garden-prune"><a class="header" href="#garden-prune">garden prune</a></h2>
 <pre><code>garden prune [options] [&lt;subdirs&gt;...]
 </code></pre>
@@ -1894,10 +1902,10 @@ and Git Cola ready to go for development.</p>
 <p><strong>Features</strong></p>
 <ul>
 <li>
-<p><code>garden inspect</code> now displays the <code>description</code>, <code>remotes</code> and <code>links</code> tree fields.</p>
+<p><code>garden ls</code> now displays information about trees, groups, gardens and commands.</p>
 </li>
 <li>
-<p><code>garden ls</code> displays more details and a <code>-l</code> long listing mode was added.</p>
+<p><code>garden ls -c</code> hides command details from the output.</p>
 </li>
 </ul>
 <h2 id="v100"><a class="header" href="#v100">v1.0.0</a></h2>
