@@ -10,7 +10,7 @@
 
 ## v1.0.0
 
-**Features**
+**Features**:
 
 - Commands can now specify pre-commands and post-commands that are run before/after
   the specified command.
@@ -33,7 +33,7 @@
 
 ## v0.9.1
 
-**Fixes**
+**Fixes**:
 
 - `garden -D name=value` now overrides variables in all scopes.
   Variables defined in tree scope were not subject to overrides and
@@ -42,7 +42,7 @@
 
 ## v0.9.0
 
-**Features**
+**Features**:
 
 - `garden grow` now sets `git config remote.$name.tagopt --no-tags`
   when adding additional remotes. This prevents accidentally fetching tags
@@ -121,7 +121,7 @@ referenced using `graft::` namespace qualifiers.
 
 *Released 2023-01-15*
 
-**Fixes**
+**Fixes**:
 
 - Exec expressions were previously run with the current directory set to the
   directory from which garden was run. Exec expressions are now run in the
