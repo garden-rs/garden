@@ -8,6 +8,11 @@
 
 - `garden ls -c` hides command details from the output.
 
+**Development**:
+
+- Garden is now using
+  [shellexpand v3](https://gitlab.com/ijackson/rust-shellexpand#version-300-2022-12-01).
+
 ## v1.0.0
 
 **Features**:
