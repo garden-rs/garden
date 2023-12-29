@@ -1908,8 +1908,13 @@ and Git Cola ready to go for development.</p>
 <p><code>garden ls -c</code> hides command details from the output.</p>
 </li>
 </ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>Garden is now using
+<a href="https://gitlab.com/ijackson/rust-shellexpand#version-300-2022-12-01">shellexpand v3</a>.</li>
+</ul>
 <h2 id="v100"><a class="header" href="#v100">v1.0.0</a></h2>
-<p><strong>Features</strong></p>
+<p><strong>Features</strong>:</p>
 <ul>
 <li>
 <p>Commands can now specify pre-commands and post-commands that are run before/after
@@ -1936,7 +1941,7 @@ A <code>flake.nix</code> file is now provided.
 (<a href="https://github.com/davvid/garden/issues/16">#16</a>)</li>
 </ul>
 <h2 id="v091"><a class="header" href="#v091">v0.9.1</a></h2>
-<p><strong>Fixes</strong></p>
+<p><strong>Fixes</strong>:</p>
 <ul>
 <li><code>garden -D name=value</code> now overrides variables in all scopes.
 Variables defined in tree scope were not subject to overrides and
@@ -1944,7 +1949,7 @@ will now get properly overridden by the <code>--define</code> / <code>-D</code>
 command-line options.</li>
 </ul>
 <h2 id="v090"><a class="header" href="#v090">v0.9.0</a></h2>
-<p><strong>Features</strong></p>
+<p><strong>Features</strong>:</p>
 <ul>
 <li><code>garden grow</code> now sets <code>git config remote.$name.tagopt --no-tags</code>
 when adding additional remotes. This prevents accidentally fetching tags
@@ -2027,7 +2032,7 @@ has been updated.
 </ul>
 <h2 id="v051"><a class="header" href="#v051">v0.5.1</a></h2>
 <p><em>Released 2023-01-15</em></p>
-<p><strong>Fixes</strong></p>
+<p><strong>Fixes</strong>:</p>
 <ul>
 <li>Exec expressions were previously run with the current directory set to the
 directory from which garden was run. Exec expressions are now run in the
