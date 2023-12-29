@@ -181,12 +181,12 @@ fn expand_graft_vars(
 }
 
 /// Resolve ~ to the current user's home directory
-fn home_dir() -> Option<std::path::PathBuf> {
+fn home_dir() -> Option<String> {
     // Honor $HOME when set in the environment.
     if let Ok(home) = std::env::var("HOME") {
-        return Some(std::path::PathBuf::from(home));
+        return Some(home);
     }
-    dirs::home_dir()
+    dirs::home_dir().map(|x| x.to_string_lossy().to_string())
 }
 
 /// Resolve an expression in a garden/tree/global scope
