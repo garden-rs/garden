@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{cmd, display, errors, eval, model, query};
+use crate::{cmd, errors, eval, model, query};
 
 /// Open a shell in a garden environment
 #[derive(Parser, Clone, Debug)]
@@ -62,22 +62,16 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
         &context.tree,
         context.garden.as_ref(),
     );
-    if app_context.options.verbose > 1 {
-        // Shell quote the list of commands.
-        println!(
-            "{} {}",
-            display::Color::cyan(":"),
-            display::Color::green(&shell),
-        );
-    }
 
+    let verbose = app_context.options.verbose;
+    let quiet = verbose == 0;
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(
             app_context,
             config,
             &context,
-            /*quiet*/ true,
-            /*verbose*/ 0,
+            quiet,
+            verbose,
             /*dry_run*/ false,
             &value,
         )
