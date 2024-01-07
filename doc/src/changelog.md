@@ -11,6 +11,9 @@
 - `garden plant -s` (i.e. `--sort`) sorts all of the configured `trees` entries
   after planting the specified trees.
 
+- `garden exec -n` (i.e. `--dry-run`) performs a trial run without executing
+  any commands.
+
 **Development**:
 
 - Garden is now using

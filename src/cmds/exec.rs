@@ -1,12 +1,15 @@
 use anyhow::Result;
 use clap::{Parser, ValueHint};
 
-use crate::{cmd, display, errors, model, query};
+use crate::{cmd, errors, model, query};
 
 /// Evaluate garden expressions
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct ExecOptions {
+    /// Perform a trial run without executing any commands
+    #[arg(long, short = 'n')]
+    dry_run: bool,
     /// Tree query for the gardens, groups or trees to run the command
     #[arg(value_hint=ValueHint::Other)]
     query: String,
@@ -20,7 +23,6 @@ pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions)
     // parse_args(&mut app.options, &mut query, &mut command);
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose;
-
     if app_context.options.debug_level("exec") > 0 {
         debug!("query: {}", exec_options.query);
         debug!("command: {:?}", exec_options.command);
@@ -32,6 +34,7 @@ pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions)
         config,
         quiet,
         verbose,
+        exec_options.dry_run,
         &exec_options.query,
         &exec_options.command,
     )
@@ -43,6 +46,7 @@ fn exec(
     config: &model::Configuration,
     quiet: bool,
     verbose: u8,
+    dry_run: bool,
     query: &str,
     command: &[String],
 ) -> Result<()> {
@@ -75,19 +79,16 @@ fn exec(
         if tree.is_symlink {
             continue;
         }
-        if verbose > 1 {
-            // Shell quote the list of commands.
-            let cmd_str = shell_words::join(command);
-            println!(
-                "{} {}",
-                display::Color::cyan(":"),
-                display::Color::green(&cmd_str),
-            );
-        }
         // Run the command in the current context.
-        if let Err(errors::GardenError::ExitStatus(status)) =
-            cmd::exec_in_context(app_context, config, context, quiet, verbose, command)
-        {
+        if let Err(errors::GardenError::ExitStatus(status)) = cmd::exec_in_context(
+            app_context,
+            config,
+            context,
+            quiet,
+            verbose,
+            dry_run,
+            command,
+        ) {
             exit_status = status;
         }
     }

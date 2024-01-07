@@ -92,6 +92,7 @@ pub(crate) fn exec_in_context<S>(
     context: &model::TreeContext,
     quiet: bool,
     verbose: u8,
+    dry_run: bool,
     command: &[S],
 ) -> Result<(), errors::GardenError>
 where
@@ -111,6 +112,18 @@ where
     // Evaluate the tree environment and run the command.
     let env = eval::environment(app_context, config, context);
     let command_vec = resolve_command(command, &env);
+    if verbose > 1 || dry_run {
+        // Shell quote the list of commands.
+        let cmd_str = shell_words::join(&command_vec);
+        println!(
+            "{} {}",
+            display::Color::cyan(":"),
+            display::Color::green(&cmd_str),
+        );
+    }
+    if dry_run {
+        return Ok(());
+    }
 
     // Create an Exec object.
     let mut exec = exec_in_dir(&command_vec, path);

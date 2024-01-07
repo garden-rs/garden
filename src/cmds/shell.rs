@@ -78,6 +78,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
             &context,
             /*quiet*/ true,
             /*verbose*/ 0,
+            /*dry_run*/ false,
             &value,
         )
         .map_err(|err| err.into())
