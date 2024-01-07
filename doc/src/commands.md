@@ -550,6 +550,8 @@ custom commands from both the tree and the garden.
 
 Use the `garden -vv` extra-verbose option to display the command being run.
 
+Use the `--dry-run` / `-n` option to perform a trial run without running any commands.
+
 
 ## garden eval
 
