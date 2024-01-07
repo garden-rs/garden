@@ -6,7 +6,7 @@
 
 - `garden ls` now displays information about trees, groups, gardens and commands.
 
-- `garden ls -c` hides command details from the output.
+- `garden ls -c` (i.e. `--no-commands`) hides command details from the output.
 
 **Development**:
 
