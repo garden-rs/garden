@@ -244,6 +244,7 @@ It is safe to re-run <code>garden plant</code> in order to add new remotes to
 an existing configuration.</p>
 <p>Repositories created using <code>git worktree</code> are supported by <code>garden plant</code>.
 Parent trees must be planted first before planting a child tree.</p>
+<p>Use the <code>--sort</code> option to sort all of the <code>trees</code> entries after planting.</p>
 <h2 id="garden--tree-query"><a class="header" href="#garden--tree-query">garden ... [tree-query]</a></h2>
 <p>Garden commands accept <a href="tree-queries.html">tree query</a> strings that are used to
 refer to sets of trees.</p>
@@ -579,6 +580,7 @@ When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environme
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
+<p>Use the <code>--dry-run</code> / <code>-n</code> option to perform a trial run without running any commands.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
 <pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 
