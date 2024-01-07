@@ -8,6 +8,9 @@
 
 - `garden ls -c` (i.e. `--no-commands`) hides command details from the output.
 
+- `garden plant -s` (i.e. `--sort`) sorts all of the configured `trees` entries
+  after planting the specified trees.
+
 **Development**:
 
 - Garden is now using

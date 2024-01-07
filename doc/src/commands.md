@@ -91,6 +91,8 @@ an existing configuration.
 Repositories created using `git worktree` are supported by `garden plant`.
 Parent trees must be planted first before planting a child tree.
 
+Use the `--sort` option to sort all of the `trees` entries after planting.
+
 
 ## garden ... [tree-query]
 

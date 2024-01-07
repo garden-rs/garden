@@ -11,6 +11,9 @@ pub struct PlantOptions {
     /// Garden configuration file to write [default: "garden.yaml"]
     #[arg(long, short)]
     output: Option<String>,
+    /// Sort all trees after planting new trees
+    #[arg(long, short)]
+    sort: bool,
     /// Trees to plant
     #[arg(required = true, value_hint=ValueHint::DirPath)]
     paths: Vec<String>,
@@ -27,6 +30,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
         Some(output) => output.to_string(),
         None => config.get_path()?.to_string_lossy().to_string(),
     };
+    let trees_key = Yaml::String("trees".to_string());
 
     // Mutable YAML scope.
     {
@@ -37,20 +41,52 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
                 error!("invalid config: not a hash");
             }
         };
-
         // Get a mutable reference to the "trees" hash.
-        let key = Yaml::String("trees".into());
-        let trees: &mut yaml::Hash = match doc_hash.get_mut(&key) {
+        let trees: &mut yaml::Hash = match doc_hash.get_mut(&trees_key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
                 error!("invalid trees: not a hash");
             }
         };
-
         for path in &options.paths {
             if let Err(msg) = plant_path(config, verbose, path, trees) {
                 error!("{}", msg);
             }
+        }
+    }
+
+    if options.sort {
+        // Get a mutable reference to top-level document hash.
+        let doc_hash: &mut yaml::Hash = match doc {
+            Yaml::Hash(ref mut hash) => hash,
+            _ => {
+                error!("invalid config: not a hash");
+            }
+        };
+        // Gather and clone trees in a read-only scope.
+        let mut names_and_trees = Vec::new();
+        {
+            let trees: &yaml::Hash = match doc_hash.get(&trees_key) {
+                Some(Yaml::Hash(hash)) => hash,
+                _ => {
+                    error!("invalid trees: not a hash");
+                }
+            };
+            for (k, v) in trees {
+                if let Yaml::String(tree_name) = k {
+                    names_and_trees.push((tree_name.clone(), v.clone()));
+                }
+            }
+        }
+        // Sort trees case-insensitively.
+        names_and_trees.sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
+        // Build a new trees table and replace the existing entry with it.
+        let mut sorted_trees = yaml::Hash::new();
+        for (name, tree) in names_and_trees {
+            sorted_trees.insert(Yaml::String(name), tree);
+        }
+        if let Some(trees) = doc_hash.get_mut(&trees_key) {
+            *trees = Yaml::Hash(sorted_trees);
         }
     }
 
