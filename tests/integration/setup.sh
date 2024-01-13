@@ -21,6 +21,9 @@ main () {
     (
         cd "./$1"
         git init --quiet
+        git config user.name Garden
+        git config user.email garden-tools@crates.io
+        git config init.defaultBranch garden
         git commit --quiet --allow-empty -m'Root directory'
         mkdir -p repos
         # Create repos/example.git

@@ -17,9 +17,6 @@ tests:
   stage: test
   image: rust
   script:
-    - git config --global user.name Garden
-    - git config --global user.email garden-tools@crates.io
-    - git config --global init.defaultBranch main
     - garden -vv test
 
 checks:
