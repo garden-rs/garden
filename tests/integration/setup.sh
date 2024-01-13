@@ -21,9 +21,7 @@ main () {
     (
         cd "./$1"
         git init --quiet
-        git config user.name Garden
-        git config user.email garden-tools@crates.io
-        git config init.defaultBranch garden
+        configure_git
         git commit --quiet --allow-empty -m'Root directory'
         mkdir -p repos
         # Create repos/example.git
@@ -31,6 +29,7 @@ main () {
         (
             # Create an empty commit
             cd ./repos/example.git
+            configure_git
 
             tree=$(git write-tree)
             git commit-tree -m "$1" "$tree" >refs/heads/default
@@ -39,6 +38,12 @@ main () {
             git rev-parse HEAD >refs/heads/dev
         )
     )
+}
+
+configure_git () {
+    git config user.name Garden
+    git config user.email garden-tools@crates.io
+    git config init.defaultBranch garden
 }
 
 main "$@"
