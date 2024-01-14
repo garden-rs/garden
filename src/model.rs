@@ -462,6 +462,7 @@ pub struct Configuration {
     /// highest precedence and override variables defined by any configuration or tree.
     pub override_variables: VariableHashMap,
     pub verbose: u8,
+    pub(crate) shell_exit_on_error: bool,
     pub(crate) tree_branches: bool,
     pub(crate) parent_id: Option<ConfigId>,
     id: Option<ConfigId>,
@@ -476,6 +477,7 @@ impl Configuration {
             id: None,
             parent_id: None,
             shell: get_default_shell(),
+            shell_exit_on_error: true,
             tree_branches: true,
             ..std::default::Default::default()
         }
@@ -606,16 +608,18 @@ impl Configuration {
             } else {
                 error!("unable to split '{}'", k_eq_v);
             }
-            // Allow overridding garden.tree-branches using "garden -D garden.tree-branches=false".
-            if name == "garden.tree-branches" {
-                if let Some(value) = syntax::string_to_bool(&expr) {
-                    self.tree_branches = value;
-                } else {
-                    error!("'{}' is not a valid value for \"garden.tree-branches\". Must be true, false, 0 or 1", expr);
+            // Allow overridding garden.<value> using "garden -D garden.<value>=false".
+            match name.as_str() {
+                "garden.shell-errexit" => {
+                    set_bool(name.as_str(), &expr, &mut self.shell_exit_on_error);
                 }
-            } else {
-                self.override_variables
-                    .insert(name, Variable::new(expr, None));
+                "garden.tree-branches" => {
+                    set_bool(name.as_str(), &expr, &mut self.tree_branches);
+                }
+                _ => {
+                    self.override_variables
+                        .insert(name, Variable::new(expr, None));
+                }
             }
         }
 
@@ -910,6 +914,18 @@ impl Configuration {
         self.get_tree(tree_name)
             .map(|tree| tree.canonical_pathbuf())
             .unwrap_or(None)
+    }
+}
+
+/// Parse a named boolean value into a bool warn if the value is not a valid bool value.
+fn set_bool(name: &str, expr: &str, output: &mut bool) {
+    if let Some(value) = syntax::string_to_bool(expr) {
+        *output = value;
+    } else {
+        error!(
+            "'{}' is not a valid value for \"{}\". Must be true, false, 0 or 1",
+            name, expr
+        );
     }
 }
 
@@ -1261,9 +1277,10 @@ impl ApplicationContext {
         let path = path.to_path_buf();
         let config_verbose = self.options.debug_level("config");
         let mut graft_config = Configuration::new();
-        // Propogate the current config's "garden.tree-branches" setting down to child grafts.
-        // The graft's configuration override the parent's "garden.tree-branches" setting.
+        // Propogate the current config's "garden.tree-branches" and "garden.shell_exit_on_error"
+        // settings onto child grafts.
         graft_config.tree_branches = self.get_config(config_id).tree_branches;
+        graft_config.shell_exit_on_error = self.get_config(config_id).shell_exit_on_error;
         // Parse the config file for the graft.
         graft_config.update(self, Some(&path), root, config_verbose, Some(config_id))?;
 

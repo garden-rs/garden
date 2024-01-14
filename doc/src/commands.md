@@ -349,6 +349,7 @@ Use the `-n | --no-errexit` option to inhibit the use of the `-e` "errexit" opti
 The `--no-errexit` option causes commands with multiple statements to run to completion
 even when a non-zero exit code is encountered. This is akin to a regular shell script.
 
+Configure `garden.shell-errexit` to `false` in `garden.yaml` to opt-out of this behavior.
 You can also opt-out of the `errexit` behavior on a per-command basis by adding
 `set +e` as the first line of a multi-line command.
 

@@ -67,7 +67,7 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &CmdOptions) -
         debug!("commands: {:?}", options.commands);
         debug!("arguments: {:?}", options.arguments);
     }
-    let params = CmdParams::from_cmd_options(options);
+    let params = CmdParams::from_cmd_options(options, app_context.get_root_config());
     let exit_status = cmd(app_context, &options.query, &params)?;
 
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
@@ -95,19 +95,19 @@ impl CmdParams {
     }
 
     /// Build CmdParams from a CmdOptions struct
-    pub fn from_cmd_options(options: &CmdOptions) -> Self {
+    pub fn from_cmd_options(options: &CmdOptions, config: &model::Configuration) -> Self {
         let mut params = Self::new();
         params.commands = options.commands.clone();
         params.arguments = options.arguments.clone();
         params.breadth_first = options.breadth_first;
-        params.exit_on_error = !options.no_errexit;
+        params.exit_on_error = !options.no_errexit && config.shell_exit_on_error;
         params.keep_going = options.keep_going;
 
         params
     }
 
     /// Build CmdParams from a CustomOptions struct
-    pub fn from_custom_options(options: &CustomOptions) -> Self {
+    pub fn from_custom_options(options: &CustomOptions, config: &model::Configuration) -> Self {
         let mut params = CmdParams::new();
         // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
         params.arguments = options.arguments.clone();
@@ -123,7 +123,7 @@ impl CmdParams {
         // --breadth-first was added to "garden cmd" and made opt-in.
         params.breadth_first = true;
         params.keep_going = options.keep_going;
-        params.exit_on_error = !options.no_errexit;
+        params.exit_on_error = !options.no_errexit && config.shell_exit_on_error;
 
         params
     }
@@ -151,7 +151,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
         debug!("arguments: {:?}", options.arguments);
     }
 
-    let mut params = CmdParams::from_custom_options(&options);
+    let mut params = CmdParams::from_custom_options(&options, app_context.get_root_config());
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
     params.commands.push(name.to_string());
 

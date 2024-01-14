@@ -14,6 +14,9 @@
 - `garden exec -n` (i.e. `--dry-run`) performs a trial run without executing
   any commands.
 
+- `garden.shell-errexit` can now be configured to `false` in `garden.yaml` to
+  opt-out of using the `-e` exit-on-error shell option when running custom commands.
+
 **Development**:
 
 - Garden is now using

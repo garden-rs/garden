@@ -60,6 +60,17 @@ fn parse_recursive(
     if get_str(&doc["garden"]["shell"], &mut config.shell) && config_verbose > 0 {
         debug!("yaml: garden.shell = {}", config.shell);
     }
+    // garden.shell-errexit
+    if get_bool(
+        &doc["garden"]["shell-errexit"],
+        &mut config.shell_exit_on_error,
+    ) && config_verbose > 0
+    {
+        debug!(
+            "yaml: garden.shell-errexit = {}",
+            config.shell_exit_on_error
+        );
+    }
     // garden.tree-branches
     if get_bool(&doc["garden"]["tree-branches"], &mut config.tree_branches) && config_verbose > 0 {
         debug!("yaml: garden.tree-branches = {}", config.tree_branches);
