@@ -434,6 +434,8 @@ fn get_default_shell() -> String {
         "zsh"
     } else if which("bash").is_ok() {
         "bash"
+    } else if which("dash").is_ok() {
+        "dash"
     } else {
         "sh"
     }

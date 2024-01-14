@@ -336,6 +336,17 @@ fn run_cmd_vec(
     // Get the current executable name
     let current_exe = cmd::current_exe();
     let mut exit_status = errors::EX_OK;
+    let basename = if shell.contains('/') {
+        shell.split('/').last().unwrap_or(shell)
+    } else if shell.contains('\\') {
+        shell.split('\\').last().unwrap_or(shell)
+    } else {
+        shell
+    };
+    // Does the shell understand "-e" for errexit?
+    let is_shell = matches!(basename, "bash" | "dash" | "ksh" | "sh" | "zsh");
+    // Does the shell use "-e <string>" or "-c <string>" to evaluate commands?
+    let use_dash_e = matches!(basename, "bun" | "node" | "nodejs" | "perl");
 
     for cmd_seq in cmd_seq_vec {
         for cmd_str in cmd_seq {
@@ -347,14 +358,19 @@ fn run_cmd_vec(
                 );
             }
             let mut exec = subprocess::Exec::cmd(shell).cwd(path);
-            if exit_on_error {
+            if exit_on_error && is_shell {
                 exec = exec.arg("-e");
             }
-            exec = exec
-                .arg("-c")
-                .arg(cmd_str)
-                .arg(current_exe.as_str())
-                .args(arguments);
+            if use_dash_e {
+                exec = exec.arg("-e");
+            } else {
+                exec = exec.arg("-c");
+            }
+            exec = exec.arg(cmd_str);
+            if is_shell {
+                exec = exec.arg(current_exe.as_str());
+            }
+            exec = exec.args(arguments);
             // Update the command environment
             for (k, v) in env {
                 exec = exec.env(k, v);

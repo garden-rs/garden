@@ -68,8 +68,7 @@ garden:
 
 ## Garden Shell
 
-The shell used by `garden` when running Commands and evaluating Exec Expressions
-can be configured in the `garden.shell` field.
+The shell used by `garden` when running Commands is configured by the `garden.shell` field.
 
 ```yaml
 garden:
@@ -81,7 +80,23 @@ when `garden.shell` is omitted. The first one found is the one that's used.
 
 * `zsh`
 * `bash`
+* `dash`
 * `sh`
+
+The following shell interpreters can also be configured in `garden.shell`
+for running custom commands.
+
+* `bun`
+* `fish`
+* `node`
+* `perl`
+* `python3`
+
+Any command that can run command strings using `-c` can be used as a
+`garden.shell` interpreter.
+
+Exec expressions are always run using the default `/bin/sh` system shell
+irrespective of `garden.shell`.
 
 ## Tree Display
 

@@ -17,6 +17,10 @@
 - `garden.shell-errexit` can now be configured to `false` in `garden.yaml` to
   opt-out of using the `-e` exit-on-error shell option when running custom commands.
 
+- `garden.shell` can now be configured to `bun`, `fish`, `node`, `perl` and `python3`
+  in addition to the traditional `bash`, `zsh`, `dash`, `ksh` and `sh` shells.
+  This allows you to use these interpreters to run custom commands.
+
 **Development**:
 
 - Garden is now using
