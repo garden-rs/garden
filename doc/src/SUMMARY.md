@@ -10,4 +10,6 @@
 - [Examples](examples.md)
   - [Photo Restoration](examples/photo-restoration.md)
   - [Git Cola](examples/git-cola.md)
+  - [Python](examples/python.md)
+  - [Node](examples/node.md)
 - [Changelog](changelog.md)

@@ -394,7 +394,7 @@ trees:
 
 gardens:
   all:
-    trees: *
+    trees: "*"
     commands:
       print-pwd: pwd
 ```
