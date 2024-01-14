@@ -90,7 +90,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html" class="active"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html" class="active"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.3.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.4.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -361,8 +361,7 @@ following configuration can be used:</p>
   root: ~/src
 </code></pre>
 <h2 id="garden-shell"><a class="header" href="#garden-shell">Garden Shell</a></h2>
-<p>The shell used by <code>garden</code> when running Commands and evaluating Exec Expressions
-can be configured in the <code>garden.shell</code> field.</p>
+<p>The shell used by <code>garden</code> when running Commands is configured by the <code>garden.shell</code> field.</p>
 <pre><code class="language-yaml">garden:
   shell: zsh
 </code></pre>
@@ -371,8 +370,22 @@ when <code>garden.shell</code> is omitted. The first one found is the one that's
 <ul>
 <li><code>zsh</code></li>
 <li><code>bash</code></li>
+<li><code>dash</code></li>
 <li><code>sh</code></li>
 </ul>
+<p>The following shell interpreters can also be configured in <code>garden.shell</code>
+for running custom commands.</p>
+<ul>
+<li><code>bun</code></li>
+<li><code>fish</code></li>
+<li><code>node</code></li>
+<li><code>perl</code></li>
+<li><code>python3</code></li>
+</ul>
+<p>Any command that can run command strings using <code>-c</code> can be used as a
+<code>garden.shell</code> interpreter.</p>
+<p>Exec expressions are always run using the default <code>/bin/sh</code> system shell
+irrespective of <code>garden.shell</code>.</p>
 <h2 id="tree-display"><a class="header" href="#tree-display">Tree Display</a></h2>
 <p>Garden will display the tree's current branch when running commands.
 While this has a marginal performance impact, this feature can be disabled by either

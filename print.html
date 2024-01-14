@@ -91,7 +91,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.3.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.4.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -758,7 +758,8 @@ first non-zero exit code is encountered due to the use of the <code>-e</code> sh
 Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> &quot;errexit&quot; option.</p>
 <p>The <code>--no-errexit</code> option causes commands with multiple statements to run to completion
 even when a non-zero exit code is encountered. This is akin to a regular shell script.</p>
-<p>You can also opt-out of the <code>errexit</code> behavior on a per-command basis by adding
+<p>Configure <code>garden.shell-errexit</code> to <code>false</code> in <code>garden.yaml</code> to opt-out of this behavior.
+You can also opt-out of the <code>errexit</code> behavior on a per-command basis by adding
 <code>set +e</code> as the first line of a multi-line command.</p>
 <p>Additional command-line <code>&lt;arguments&gt;</code> specified after a double-dash (<code>--</code>)
 end-of-options marker are forwarded to each command.</p>
@@ -797,7 +798,7 @@ trees:
 
 gardens:
   all:
-    trees: *
+    trees: &quot;*&quot;
     commands:
       print-pwd: pwd
 </code></pre>
@@ -1245,8 +1246,7 @@ following configuration can be used:</p>
   root: ~/src
 </code></pre>
 <h2 id="garden-shell-1"><a class="header" href="#garden-shell-1">Garden Shell</a></h2>
-<p>The shell used by <code>garden</code> when running Commands and evaluating Exec Expressions
-can be configured in the <code>garden.shell</code> field.</p>
+<p>The shell used by <code>garden</code> when running Commands is configured by the <code>garden.shell</code> field.</p>
 <pre><code class="language-yaml">garden:
   shell: zsh
 </code></pre>
@@ -1255,8 +1255,22 @@ when <code>garden.shell</code> is omitted. The first one found is the one that's
 <ul>
 <li><code>zsh</code></li>
 <li><code>bash</code></li>
+<li><code>dash</code></li>
 <li><code>sh</code></li>
 </ul>
+<p>The following shell interpreters can also be configured in <code>garden.shell</code>
+for running custom commands.</p>
+<ul>
+<li><code>bun</code></li>
+<li><code>fish</code></li>
+<li><code>node</code></li>
+<li><code>perl</code></li>
+<li><code>python3</code></li>
+</ul>
+<p>Any command that can run command strings using <code>-c</code> can be used as a
+<code>garden.shell</code> interpreter.</p>
+<p>Exec expressions are always run using the default <code>/bin/sh</code> system shell
+irrespective of <code>garden.shell</code>.</p>
 <h2 id="tree-display"><a class="header" href="#tree-display">Tree Display</a></h2>
 <p>Garden will display the tree's current branch when running commands.
 While this has a marginal performance impact, this feature can be disabled by either
@@ -1899,6 +1913,92 @@ by running the &quot;make install&quot; targets in each repo:</p>
 </code></pre>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="python-commands"><a class="header" href="#python-commands">Python Commands</a></h1>
+<p>This example demonstrates how to configure <code>garden.shell</code> to use <code>python3</code>
+when running custom commands.</p>
+<h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
+<pre><code class="language-bash">garden hello
+garden info
+# Pass additional arguments after the double-dash `--` end-of-options marker.
+garden hello -- cat
+</code></pre>
+<h2 id="gardenyaml-2"><a class="header" href="#gardenyaml-2">garden.yaml</a></h2>
+<pre><code class="language-yaml"># Demo using &quot;python3&quot; as the interpreter for custom commands.
+---
+garden:
+  root: ${GARDEN_CONFIG_DIR}
+  shell: python3
+
+trees:
+  python:
+    description: Demo using &quot;python3&quot; as the interpreter for custom commands
+    path: ${GARDEN_CONFIG_DIR}
+
+    commands:
+      hello: |
+        import sys
+
+        # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
+        args = sys.argv[1:]  # additional arguments specified after '--'
+        if args:
+            world = ' '.join(args)
+        else:
+            world = 'world'
+        print(f'hello {world}')
+
+      info: |
+        import os
+        import sys
+
+        print(f'os.name = {os.name}')
+        print(f'sys.platform = {sys.platform}')
+        print(r'sys.int_info = {sys.int_info}')
+        print('uname = ${uname}')
+
+    # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
+    variables:
+      uname: $ uname -a
+...
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nodejs-commands"><a class="header" href="#nodejs-commands">Node.js Commands</a></h1>
+<p>This example demonstrates how to configure <code>garden.shell</code> to use <code>node</code>
+when running custom commands.</p>
+<h2 id="examples-2"><a class="header" href="#examples-2">Examples</a></h2>
+<pre><code class="language-bash">garden hello
+garden info
+# Pass additional arguments after the double-dash `--` end-of-options marker.
+garden hello -- cat
+</code></pre>
+<h2 id="gardenyaml-3"><a class="header" href="#gardenyaml-3">garden.yaml</a></h2>
+<pre><code class="language-yaml"># Demo using &quot;node&quot; as the interpreter for custom commands.
+---
+garden:
+  root: ${GARDEN_CONFIG_DIR}
+  shell: node
+
+trees:
+  node:
+    description: Demo using &quot;node&quot; as the interpreter for custom commands
+    path: ${GARDEN_CONFIG_DIR}
+
+    commands:
+      hello: |
+        if (process.argv.length &gt; 1) {
+            console.log('hello ' + process.argv.slice(1).join(' '));
+        } else {
+            console.log('hello world')
+        }
+
+      info: |
+        console.log(process)
+        console.log('${uname}')
+
+    # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
+    variables:
+      uname: $ uname -a
+...
+
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="v110"><a class="header" href="#v110">v1.1.0</a></h2>
 <p><strong>Features</strong></p>
@@ -1916,6 +2016,15 @@ after planting the specified trees.</p>
 <li>
 <p><code>garden exec -n</code> (i.e. <code>--dry-run</code>) performs a trial run without executing
 any commands.</p>
+</li>
+<li>
+<p><code>garden.shell-errexit</code> can now be configured to <code>false</code> in <code>garden.yaml</code> to
+opt-out of using the <code>-e</code> exit-on-error shell option when running custom commands.</p>
+</li>
+<li>
+<p><code>garden.shell</code> can now be configured to <code>bun</code>, <code>fish</code>, <code>node</code>, <code>perl</code> and <code>python3</code>
+in addition to the traditional <code>bash</code>, <code>zsh</code>, <code>dash</code>, <code>ksh</code> and <code>sh</code> shells.
+This allows you to use these interpreters to run custom commands.</p>
 </li>
 </ul>
 <p><strong>Development</strong>:</p>
