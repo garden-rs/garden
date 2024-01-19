@@ -1,3 +1,6 @@
+garden:
+  root: ""
+
 # repos/example.git is created by setup.sh during the integration test.
 variables:
   repo_url: file://${GARDEN_ROOT}/repos/example.git

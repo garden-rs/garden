@@ -229,3 +229,16 @@ pub(crate) fn print_gardens(gardens: &model::GardenMap) {
         println!("  {} {}", Color::blue("-"), Color::yellow(garden));
     }
 }
+
+/// Print a command argument list
+pub fn print_command_vec(command: &[&str]) {
+    // Shell quote the list of commands.
+    let cmd_str = shell_words::join(command);
+    println!("{} {}", Color::cyan(":"), Color::green(&cmd_str),);
+}
+
+/// Print a string command argument list
+pub(crate) fn print_command_string_vec(command: &[String]) {
+    let str_vec: Vec<&str> = command.iter().map(String::as_str).collect();
+    print_command_vec(&str_vec);
+}

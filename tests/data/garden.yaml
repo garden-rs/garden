@@ -1,5 +1,6 @@
 ---
 garden:
+  root: ""
   includes:
     # Paths are implicitly relative to ${GARDEN_CONFIG_DIR}.
     - variables.yaml
@@ -14,6 +15,7 @@ garden:
 # The "prebuilt" tree from grafts/graft.yaml is referenced as "graft::prebuilt".
 grafts:
   graft: grafts/graft.yaml
+  graft-no-root: grafts/graft-no-root.yaml
   libs:
     config: grafts/libs.yaml
     root: libs

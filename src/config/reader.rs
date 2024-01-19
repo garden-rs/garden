@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use indexmap::{IndexMap, IndexSet};
 use yaml_rust::{yaml, Yaml, YamlLoader};
 
-use crate::{errors, eval, model, path, syntax};
+use crate::{errors, eval, model, syntax};
 
 // Apply YAML Configuration from a string.
 pub fn parse(
@@ -41,16 +41,18 @@ fn parse_recursive(
     }
 
     // garden.root
-    if config.root.is_empty() {
-        if !get_str(&doc["garden"]["root"], config.root.get_expr_mut()) {
-            // Default to the current directory when garden.root is unspecified
-            // NOTE: this logic must be duplicated here for GARDEN_ROOT.
-            // TODO: move GARDEN_ROOT initialization out of this so that
-            // we can avoid this early initialization and do it in the outer
-            // config::new() call.
-            config.root.set_expr(path::current_dir_string());
+    // Includes can cause parsing to update an object multiple times but only want to special-case
+    // emptiness of `garden.root` on the first pass. `root_is_dynamic` will only be set if
+    // we have already been here and do not need to reset `garden.root`.
+    if config.root.is_empty()
+        && !config.root_is_dynamic
+        && get_raw_str(&doc["garden"]["root"], config.root.get_expr_mut())
+    {
+        if config.root.is_empty() {
+            // The `garden.root` is dynamic and sensitive to the current directory
+            // when configured to the empty "" string.
+            config.root_is_dynamic = true;
         }
-
         if config_verbose > 0 {
             debug!("yaml: garden.root = {}", config.root.get_expr());
         }
@@ -249,14 +251,19 @@ fn dump_node(yaml: &Yaml, indent: usize, prefix: &str) {
 }
 
 /// Yaml -> String
-fn get_str(yaml: &Yaml, string: &mut String) -> bool {
+fn get_raw_str(yaml: &Yaml, string: &mut String) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
             *string = yaml_string.clone();
-            !string.is_empty()
+            true
         }
         _ => false,
     }
+}
+
+/// Yaml ->String reader that false when the retrieved string is empty.
+fn get_str(yaml: &Yaml, string: &mut String) -> bool {
+    get_raw_str(yaml, string) && !string.is_empty()
 }
 
 /// Yaml -> String

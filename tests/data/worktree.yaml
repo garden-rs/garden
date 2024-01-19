@@ -1,4 +1,6 @@
----
+garden:
+  root: ""
+
 variables:
   repos: ${GARDEN_ROOT}/repos
   worktree_parent: default
@@ -8,7 +10,6 @@ templates:
     commands:
       echo: echo ${TREE_NAME} "$@"
 
-
 trees:
   default:
     templates: echo
@@ -16,4 +17,3 @@ trees:
   dev:
     worktree: ${worktree_parent}
     branch: dev
-...

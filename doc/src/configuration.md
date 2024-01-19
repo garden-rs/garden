@@ -38,7 +38,12 @@ The garden root directory is configured in the `garden.root` field.
 This directory is the parent directory in which all trees will be cloned.
 
 Slashes in tree paths will create new directories on disk as needed.
-`garden.root` defaults to the current directory when unspecified.
+
+Configure `garden.root` to `""` (an empty string) to use a dynamic
+`garden.root` that follows your current directory.
+
+`garden.root` defaults to `${GARDEN_CONFIG_DIR}` when unspecified.
+`{GARDEN_CONFIG_DIR}` is the directory that contains the current `garden.yaml` .
 
 The built-in `${GARDEN_CONFIG_DIR}` variable can be used to create relocatable
 setups by defining `garden.root` relative to the garden file itself.
@@ -64,6 +69,15 @@ following configuration can be used:
 ```yaml
 garden:
   root: ~/src
+```
+
+Use an empty string to place trees relative to your current directory.
+This lets you use `garden --config <path>` to interact with the trees
+in your current directory rather than a configuration-defined location.
+
+```yaml
+garden:
+  root: ""
 ```
 
 ## Garden Shell

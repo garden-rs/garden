@@ -454,6 +454,7 @@ pub struct Configuration {
     pub path: Option<std::path::PathBuf>,
     pub dirname: Option<std::path::PathBuf>,
     pub root: Variable,
+    pub root_is_dynamic: bool,
     pub root_path: std::path::PathBuf,
     pub shell: String,
     pub templates: HashMap<String, Template>,
@@ -487,18 +488,40 @@ impl Configuration {
 
     pub(crate) fn initialize(&mut self, app_context: &ApplicationContext) {
         // Evaluate garden.root
-        let expr = String::from(self.root.get_expr());
-        let value = eval::value(app_context, self, &expr);
-        // Store the resolved, canonicalized garden.root
-        self.root_path = std::path::PathBuf::from(&value);
-        if let Ok(root_path_canon) = self.root_path.canonicalize() {
-            self.root_path = root_path_canon;
+        let expr = self.root.get_expr().to_string();
+        let mut value = eval::value(app_context, self, &expr);
+        if expr.is_empty() {
+            if self.root_is_dynamic {
+                // Default to the current directory when garden.root is configured to
+                // the empty string.
+                let current_dir = path::current_dir_string();
+                self.root.set_expr(current_dir.clone());
+                self.root.set_value(current_dir);
+                self.root_path = path::current_dir();
+            } else {
+                // Default garden.root to ${GARDEN_CONFIG_DIR} by default.
+                self.root.set_expr(string!("${GARDEN_CONFIG_DIR}"));
+                if let Some(ref dirname) = self.dirname {
+                    self.root.set_value(dirname.to_string_lossy().to_string());
+                    self.root_path = dirname.to_path_buf();
+                }
+            }
+        } else {
+            // Store the resolved, canonicalized garden.root
+            self.root_path = std::path::PathBuf::from(&value);
+            if let Ok(root_path_canon) = self.root_path.canonicalize() {
+                if root_path_canon != self.root_path {
+                    value = root_path_canon
+                        .to_str()
+                        .unwrap_or(value.as_str())
+                        .to_string();
+                    self.root_path = root_path_canon;
+                }
+            }
+            self.root.set_value(value);
         }
-        self.root.set_value(value);
-
         // Resolve tree paths
         self.update_tree_paths(app_context);
-
         // Reset variables
         self.reset();
     }
@@ -517,7 +540,7 @@ impl Configuration {
         self.verbose = config_verbose;
 
         // Override the configured garden root
-        if let Some(root_path) = root {
+        if let Some(root_path) = root.map(|path| path.canonicalize().unwrap_or(path.clone())) {
             self.root.set_expr(root_path.to_string_lossy().to_string());
         }
 
@@ -562,15 +585,7 @@ impl Configuration {
             let config_path = self.get_path()?;
             if let Ok(config_string) = std::fs::read_to_string(config_path) {
                 config::parse(app_context, &config_string, config_verbose, self)?;
-            } else {
-                // Return a default Configuration If we are unable to read the file.
-                return Ok(());
             }
-        }
-
-        // Default to the current directory when garden.root is unspecified
-        if self.root.get_expr().is_empty() {
-            self.root.set_expr(path::current_dir_string());
         }
 
         Ok(())

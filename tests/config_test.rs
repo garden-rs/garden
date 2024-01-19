@@ -550,7 +550,7 @@ fn test_template_url() -> Result<()> {
 fn read_grafts() -> Result<()> {
     let app = garden::model::ApplicationContext::from_path_string("tests/data/garden.yaml")?;
     let config = app.get_root_config();
-    assert_eq!(2, config.grafts.len());
+    assert_eq!(3, config.grafts.len());
 
     assert_eq!("graft", config.grafts[0].get_name());
     let graft_id = config.grafts[0].get_id();
@@ -559,12 +559,16 @@ fn read_grafts() -> Result<()> {
     let graft_node_id: usize = graft_id.unwrap().into();
     assert_eq!(2usize, graft_node_id);
 
-    assert_eq!("libs", config.grafts[1].get_name());
+    assert_eq!("graft-no-root", config.grafts[1].get_name());
     let graft_id = config.grafts[1].get_id();
     assert!(graft_id.is_some());
 
+    assert_eq!("libs", config.grafts[2].get_name());
+    let graft_id = config.grafts[2].get_id();
+    assert!(graft_id.is_some());
+
     let graft_node_id: usize = graft_id.unwrap().into();
-    assert_eq!(5usize, graft_node_id);
+    assert_eq!(6usize, graft_node_id);
 
     Ok(())
 }

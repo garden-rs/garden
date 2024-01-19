@@ -1,4 +1,6 @@
----
+garden:
+  root: ""
+
 variables:
   repos: ${GARDEN_ROOT}/repos
   dev_branch: dev

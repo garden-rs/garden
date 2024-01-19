@@ -1,4 +1,7 @@
 ---
+garden:
+  root: ""
+
 grafts:
   deps: deps.yaml
   test:

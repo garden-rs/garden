@@ -113,13 +113,7 @@ where
     let env = eval::environment(app_context, config, context);
     let command_vec = resolve_command(command, &env);
     if verbose > 1 || dry_run {
-        // Shell quote the list of commands.
-        let cmd_str = shell_words::join(&command_vec);
-        println!(
-            "{} {}",
-            display::Color::cyan(":"),
-            display::Color::green(&cmd_str),
-        );
+        display::print_command_string_vec(&command_vec);
     }
     if dry_run {
         return Ok(());

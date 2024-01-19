@@ -10,27 +10,23 @@ fn plant_empty_repo() -> Result<()> {
     let fixture = common::BareRepoFixture::new(function_name!());
     // garden plant in test/tmp/plant_empty_repo
     common::exec_garden(&["--chdir", &fixture.root(), "init"])?;
-
     // Empty garden.yaml should be created
     fixture.path("garden.yaml");
 
     // Create tests/tmp/plant_empty_repo/repo{1,2}
     let cmd = ["git", "init", "--quiet", "repo1"];
     common::assert_cmd(&cmd, &fixture.root());
-
     let cmd = ["git", "init", "--quiet", "repo2"];
     common::assert_cmd(&cmd, &fixture.root());
 
     // repo1 has two remotes: "origin" and "remote-1".
+    let worktree_repo1 = fixture.worktree("repo1");
     // git remote add origin repo-1-url
     let cmd = ["git", "remote", "add", "origin", "repo-1-url"];
-    let worktree_repo1 = fixture.worktree("repo1");
     common::assert_cmd(&cmd, &worktree_repo1);
-
     // git remote add remote-1 remote-1-url
     let cmd = ["git", "remote", "add", "remote-1", "remote-1-url"];
     common::assert_cmd(&cmd, &worktree_repo1);
-
     // garden plant repo1
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repo1"])?;
 

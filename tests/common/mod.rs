@@ -1,4 +1,5 @@
 use garden::cmd;
+use garden::display;
 use garden::errors;
 use garden::model;
 use garden::string;
@@ -142,6 +143,10 @@ pub fn garden_context() -> Result<garden::model::ApplicationContext, errors::Gar
 
 /// Execute the "garden" command with the specified arguments.
 pub fn exec_garden(args: &[&str]) -> Result<()> {
+    let mut argv: Vec<&str> = vec!["garden"];
+    argv.extend(args);
+    display::print_command_vec(&argv);
+
     let mut exec = Command::cargo_bin("garden").expect("garden not found");
     exec.args(args);
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.2.0
+
+**Features**:
+
+- When `garden.root` is not configured `garden` will behave as if
+  `garden.root` is configured to `${GARDEN_CONFIG_DIR}`. This allows garden files to
+  omit `garden.root` from their configuration in typical scenarios.
+
+- Configuring `garden.root` to an empty string (`""`) will behave as if `garden.root`
+  is configured to the current directory from which `garden` was run.
+
 ## v1.1.0
 
 *Released 2023-01-15*

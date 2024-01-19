@@ -544,9 +544,8 @@ fn grow_default_remote_url() -> Result<()> {
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
 #[named]
-fn eval_garden_config_dir() -> Result<()> {
+fn eval_garden_config_dir() {
     let fixture = BareRepoFixture::new(function_name!());
-    // garden eval ${GARDEN_CONFIG_DIR}
     let output = garden_capture(&[
         "--chdir",
         &fixture.root(),
@@ -555,12 +554,46 @@ fn eval_garden_config_dir() -> Result<()> {
         "eval",
         "${GARDEN_CONFIG_DIR}",
     ]);
+    let expect = "/tests/data";
     assert!(
-        output.ends_with("/tests/data"),
-        "{output} does not end with /tests/data"
+        output.ends_with(expect),
+        "GARDEN_ROOT ({output}) does not end with {expect}"
     );
+}
 
-    Ok(())
+/// `garden eval` evaluates ${GARDEN_ROOT}
+#[test]
+#[named]
+fn eval_garden_root() {
+    let fixture = BareRepoFixture::new(function_name!());
+    let output = garden_capture(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_ROOT}",
+    ]);
+    let expect = "/tests/tmp/eval_garden_root";
+    assert!(
+        output.ends_with(expect),
+        "GARDEN_ROOT ({output}) does not end with {expect}"
+    );
+    // This garden file does not configure `garden.root`.
+    // The config directory (GARDEN_CONFIG_DIR) is used as the GARDEN_ROOT.
+    let output = garden_capture(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/default.yaml",
+        "eval",
+        "${GARDEN_ROOT}",
+    ]);
+    let expect = "/tests/data";
+    assert!(
+        output.ends_with(expect),
+        "GARDEN_ROOT ({output}) does not end with {expect}"
+    );
 }
 
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
@@ -581,6 +614,31 @@ fn eval_override_variables() -> Result<()> {
         "current",
     ]);
     assert_eq!(output, "test");
+
+    Ok(())
+}
+
+/// `garden eval` evaluates ${GARDEN_ROOT} to the same directory as the
+/// garden config directory when `garden.root` is unspecified.
+#[test]
+fn eval_default_config_dir() -> Result<()> {
+    // garden eval ${tree_variable} current
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/config/garden.yaml",
+        "eval",
+        "${GARDEN_ROOT}",
+    ]);
+    assert!(output.ends_with("/tests/data/config"));
+
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/config/garden.yaml",
+        "exec",
+        "current",
+        "pwd",
+    ]);
+    assert!(output.ends_with("/tests/data/config"));
 
     Ok(())
 }
@@ -817,9 +875,10 @@ fn eval_grafted_builtin_variables() {
         "${GARDEN_CONFIG_DIR}",
         "graft::prebuilt",
     ]);
+    let expect = "/tests/data/grafts";
     assert!(
-        output.ends_with("/tests/data/grafts"),
-        "Grafted GARDEN_CONFIG_DIR ({output}) must use the grafted /tests/data/grafts config path"
+        output.ends_with(expect),
+        "Grafted GARDEN_CONFIG_DIR ({output}) must use the grafted {expect} path"
     );
 
     let output = garden_capture(&[
@@ -829,9 +888,23 @@ fn eval_grafted_builtin_variables() {
         "${TREE_PATH}",
         "graft::prebuilt",
     ]);
+    let expect = "/tests/data/trees/prebuilt";
     assert!(
-        output.ends_with("/tests/data/trees/prebuilt"),
-        "Grafted TREE_PATH ({output}) must be in /tests/data/trees/prebuilt"
+        output.ends_with(expect),
+        "Grafted TREE_PATH ({output}) must be in {expect}"
+    );
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${TREE_PATH}",
+        "graft-no-root::tree",
+    ]);
+    let expect = "/tests/data/grafts/trees/tree";
+    assert!(
+        output.ends_with(expect),
+        "Grafted TREE_PATH ({output}) must be in {expect}"
     );
 
     let output = garden_capture(&[
@@ -841,9 +914,10 @@ fn eval_grafted_builtin_variables() {
         "${GARDEN_ROOT}",
         "graft::prebuilt",
     ]);
+    let expect = "/tests/data";
     assert!(
-        output.ends_with("/tests/data"),
-        "Grafted GARDEN_ROOT ({output}) must use /tests/data from the current directory"
+        output.ends_with(expect),
+        "Grafted GARDEN_ROOT ({output}) must use {expect} from the current directory"
     );
     // This time we --chdir to tests/ instead and see it reflected in GARDEN_ROOT.
     let output = garden_capture(&[
@@ -855,9 +929,10 @@ fn eval_grafted_builtin_variables() {
         "${GARDEN_ROOT}",
         "graft::prebuilt",
     ]);
+    let expect = "/tests";
     assert!(
-        output.ends_with("/tests"),
-        "Grafted GARDEN_ROOT ({output}) must use /tests from the current directory"
+        output.ends_with(expect),
+        "Grafted GARDEN_ROOT ({output}) must use {expect} from the current directory"
     );
 }
 
