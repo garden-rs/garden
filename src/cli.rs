@@ -61,17 +61,17 @@ impl MainOptions {
     pub fn update(&mut self) {
         self.color.update();
 
-        if let Some(config) = &self.config {
+        if let Some(ref config) = self.config {
             if config.exists() {
                 self.config = Some(path::abspath(config));
             }
         }
 
-        if let Some(root) = &self.root {
+        if let Some(ref root) = self.root {
             self.root = Some(path::abspath(root));
         }
 
-        if let Some(chdir) = &self.chdir {
+        if let Some(ref chdir) = self.chdir {
             if let Err(err) = std::env::set_current_dir(chdir) {
                 error!("could not chdir to {:?}: {}", chdir, err);
             }
