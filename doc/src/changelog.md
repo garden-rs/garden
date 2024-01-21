@@ -4,6 +4,13 @@
 
 **Features**:
 
+- If a garden file has no trees defined at all then an implicit tree called
+  `.` will now be synthesized into existence. The presence of this implicit tree
+  allows garden files that define just the current directory as a tree to omit
+  the entire `trees` section altogether. This consequently makes it easier
+  to use garden as a simple command runner because the `commands` section
+  is the only section required in order to run `garden` commands.
+
 - When `garden.root` is not configured `garden` will behave as if
   `garden.root` is configured to `${GARDEN_CONFIG_DIR}`. This allows garden files to
   omit `garden.root` from their configuration in typical scenarios.

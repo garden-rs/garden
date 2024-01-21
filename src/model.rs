@@ -222,6 +222,11 @@ impl Tree {
         &self.name
     }
 
+    /// Set the tree name.
+    pub fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+
     pub(crate) fn get_name_mut(&mut self) -> &mut String {
         &mut self.name
     }
@@ -275,6 +280,20 @@ impl Tree {
                 self.name
             ))),
         }
+    }
+
+    /// Add the builtin TREE_NAME and TREE_PATH variables.
+    pub(crate) fn add_builtin_variables(&mut self) {
+        self.variables.insert(
+            string!("TREE_NAME"),
+            Variable::new(self.get_name().clone(), None),
+        );
+
+        // Register the ${TREE_PATH} variable.
+        self.variables.insert(
+            string!("TREE_PATH"),
+            Variable::new(self.get_path().get_expr().clone(), None),
+        );
     }
 
     pub(crate) fn reset_variables(&self) {
@@ -520,9 +539,9 @@ impl Configuration {
             }
             self.root.set_value(value);
         }
-        // Resolve tree paths
-        self.update_tree_paths(app_context);
-        // Reset variables
+        self.update_tree_paths(app_context); // Resolve tree paths
+        self.synthesize_default_tree(); // Synthesize a tree if no trees exist.
+                                        // Reset variables
         self.reset();
     }
 
@@ -712,6 +731,20 @@ impl Configuration {
         }
     }
 
+    /// Create an implicit "." tree when no trees exist.
+    fn synthesize_default_tree(&mut self) {
+        if !self.commands.is_empty() && self.trees.is_empty() {
+            let dirname_string = self.dirname_string();
+            let mut tree = Tree::default();
+            tree.path.set_expr(dirname_string.clone());
+            tree.path.set_value(dirname_string);
+            tree.description = string!("The default tree for garden commands.");
+            tree.add_builtin_variables();
+            tree.set_name(string!("."));
+            self.trees.insert(string!("."), tree);
+        }
+    }
+
     /// Return a path string relative to the garden root
     pub(crate) fn tree_path(&self, path: &str) -> String {
         if std::path::PathBuf::from(path).is_absolute() {
@@ -802,6 +835,16 @@ impl Configuration {
             path_buf.to_string_lossy().to_string()
         } else {
             self.tree_path(path)
+        }
+    }
+
+    /// Return a directory string for the garden config directory.
+    /// This typically returns GARDEN_CONFIG_DIR but falls back to
+    /// the current directory when unset.
+    fn dirname_string(&self) -> String {
+        match self.dirname {
+            Some(ref dirname) => dirname.to_string_lossy().to_string(),
+            None => path::current_dir_string(),
         }
     }
 
@@ -1191,6 +1234,7 @@ impl ApplicationContext {
     pub fn from_options(options: &cli::MainOptions) -> Result<Self, errors::GardenError> {
         let app_context = Self::new(options.clone());
         let config_verbose = options.debug_level("config");
+
         app_context.get_root_config_mut().update(
             &app_context,
             options.config.as_ref(),
@@ -1198,9 +1242,7 @@ impl ApplicationContext {
             config_verbose,
             None,
         )?;
-
         app_context.get_root_config_mut().update_options(options)?;
-
         config::read_grafts(&app_context)?;
 
         Ok(app_context)

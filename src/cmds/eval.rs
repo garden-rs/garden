@@ -22,14 +22,14 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
         garden_opt = Some(garden.as_str());
     }
 
-    match &eval.tree {
+    match eval.tree {
         None => {
             // Evaluate and print the expression in global scope. No trees or gardens
             // were provided so only the top-level variables are included.
             let config = app_context.get_root_config();
             println!("{}", eval::value(app_context, config, &eval.expr));
         }
-        Some(tree) => {
+        Some(ref tree) => {
             // Evaluate and print the garden expression.
             let ctx = query::find_tree(app_context, app_context.get_root_id(), tree, garden_opt)?;
             let config = match ctx.config {

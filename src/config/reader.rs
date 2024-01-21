@@ -637,28 +637,14 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 
     // Tree name
     get_str(name, tree.get_name_mut());
-
     // Default to the name when "path" is unspecified.
     let tree_name = tree.get_name().to_string();
     tree.get_path_mut().set_expr(tree_name.to_string());
     tree.get_path().set_value(tree_name);
-
+    tree.add_builtin_variables();
     if syntax::is_git_dir(tree.get_path().get_expr()) {
         tree.is_bare_repository = true;
     }
-
-    // Register the ${TREE_NAME} variable.
-    tree.variables.insert(
-        string!("TREE_NAME"),
-        model::Variable::new(tree.get_name().clone(), None),
-    );
-
-    // Register the ${TREE_PATH} variable.
-    tree.variables.insert(
-        string!("TREE_PATH"),
-        model::Variable::new(tree.get_path().get_expr().clone(), None),
-    );
-
     tree.remotes.insert(
         string!("origin"),
         model::Variable::new(url.to_string(), None),
@@ -773,18 +759,8 @@ fn get_tree(
         tree.is_bare_repository = true;
     }
 
-    // Add the TREE_NAME and TREE_PATH variables
     if variables {
-        // Register the ${TREE_NAME} variable.
-        tree.variables.insert(
-            string!("TREE_NAME"),
-            model::Variable::new(tree.get_name().clone(), None),
-        );
-        // Register the ${TREE_PATH} variable.
-        tree.variables.insert(
-            string!("TREE_PATH"),
-            model::Variable::new(tree.get_path().get_expr().clone(), None),
-        );
+        tree.add_builtin_variables();
     }
 
     get_tree_fields(value, &mut tree);

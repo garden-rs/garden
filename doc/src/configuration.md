@@ -378,6 +378,16 @@ trees:
   git-scm: git://git.kernel.org/pub/scm/git/git.git
 ```
 
+### Default Tree
+
+The `trees` block is optional when a `commands` block exists.
+
+An implicit default tree called `.` will be synthesized into existence when the `trees`
+block is empty.
+
+The default tree's `path` is set to the `${GARDEN_CONFIG_DIR}`.
+Omitting the `trees` block lets you use `garden` as a simple command runner.
+
 ### Remotes
 
 The `remotes` field defines named

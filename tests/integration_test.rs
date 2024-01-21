@@ -813,36 +813,6 @@ fn eval_graft_variable_at_tree_scope() {
     assert_eq!(output, "prebuilt graft value");
 }
 
-/// Test dash-dash arguments in custom commands via "garden cmd ..."
-#[test]
-fn cmd_dash_dash_arguments() {
-    let output = garden_capture(&[
-        "--chdir",
-        "tests/data",
-        "--quiet",
-        "cmd",
-        ".",
-        "echo-dir",
-        "echo-args",
-        "echo-dir",
-        "echo-args",
-        "--",
-        "d",
-        "e",
-        "f",
-        "--",
-        "g",
-        "h",
-        "i",
-    ]);
-    // Repeated command names were used to operate on the tree twice.
-    let msg = format!(
-        "data\ngarden\n{}",
-        "arguments -- a b c -- d e f -- g h i -- x y z"
-    );
-    assert_eq!(output, format!("{msg}\n{msg}"));
-}
-
 /// `garden grow` creates symlinks
 #[test]
 #[named]
@@ -936,6 +906,36 @@ fn eval_grafted_builtin_variables() {
     );
 }
 
+/// Test dash-dash arguments in custom commands via "garden cmd ..."
+#[test]
+fn cmd_dash_dash_arguments() {
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--quiet",
+        "cmd",
+        ".",
+        "echo-dir",
+        "echo-args",
+        "echo-dir",
+        "echo-args",
+        "--",
+        "d",
+        "e",
+        "f",
+        "--",
+        "g",
+        "h",
+        "i",
+    ]);
+    // Repeated command names were used to operate on the tree twice.
+    let msg = format!(
+        "data\ngarden\n{}",
+        "arguments -- a b c -- d e f -- g h i -- x y z"
+    );
+    assert_eq!(output, format!("{msg}\n{msg}"));
+}
+
 /// Test dash-dash arguments in custom commands via "garden <custom> ..."
 #[test]
 fn cmd_dash_dash_arguments_custom() {
@@ -958,6 +958,75 @@ fn cmd_dash_dash_arguments_custom() {
     // `. .` was used to operate on the tree twice.
     let msg = "garden\narguments -- a b c -- d e f -- g h i -- x y z";
     assert_eq!(format!("{msg}\n{msg}"), output);
+}
+
+/// Test the creation of an implicit tree for the current directory.
+#[test]
+fn cmd_default_tree() {
+    let expect = "hello world";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/commands/garden.yaml",
+        "echo",
+        "--",
+        "hello",
+        "world",
+    ]);
+    assert_eq!(expect, actual);
+
+    let expect = "/tests/data/commands";
+    let actual = garden_capture(&["--config", "tests/data/commands/garden.yaml", "pwd"]);
+    assert!(
+        actual.ends_with(expect),
+        "pwd output ({actual}) must be in {expect}"
+    );
+
+    let expect = "/tests/data/commands";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/commands/garden.yaml",
+        "eval",
+        "${GARDEN_ROOT}",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "GARDEN_ROOT ({actual}) must be in {expect}"
+    );
+
+    let expect = "/tests/data/commands";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/commands/garden.yaml",
+        "eval",
+        "${GARDEN_CONFIG_DIR}",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "GARDEN_CONFIG_DIR ({actual}) must be in {expect}"
+    );
+
+    let expect = "/tests/data/commands";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/commands/garden.yaml",
+        "eval",
+        "${TREE_PATH}",
+        ".",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "TREE_PATH ({actual}) must be in {expect}"
+    );
+
+    let expect = ".";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/commands/garden.yaml",
+        "eval",
+        "${TREE_NAME}",
+        ".",
+    ]);
+    assert_eq!(expect, actual);
 }
 
 /// Test "." default for custom "garden <command>" with no arguments
