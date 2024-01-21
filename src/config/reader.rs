@@ -12,7 +12,7 @@ pub fn parse(
     config_verbose: u8,
     config: &mut model::Configuration,
 ) -> Result<(), errors::GardenError> {
-    parse_recursive(app_context, string, config_verbose, config, None, true)
+    parse_recursive(app_context, string, config_verbose, config, None)
 }
 
 fn parse_recursive(
@@ -21,7 +21,6 @@ fn parse_recursive(
     config_verbose: u8,
     config: &mut model::Configuration,
     current_include: Option<&std::path::Path>,
-    is_root_config: bool,
 ) -> Result<(), errors::GardenError> {
     let docs =
         YamlLoader::load_from_str(string).map_err(|scan_err| errors::GardenError::ReadConfig {
@@ -84,21 +83,19 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: built-in variables");
     }
-    if is_root_config {
-        // Provide GARDEN_ROOT.
-        config.variables.insert(
-            string!("GARDEN_ROOT"),
-            model::Variable::new(config.root.get_expr().to_string(), None),
-        );
+    // Provide GARDEN_ROOT.
+    config.variables.insert(
+        string!("GARDEN_ROOT"),
+        model::Variable::new(config.root.get_expr().to_string(), None),
+    );
 
-        if let Some(config_path_raw) = config.dirname.as_ref() {
-            // Calculate an absolute path for GARDEN_CONFIG_DIR.
-            if let Ok(config_path) = config_path_raw.canonicalize() {
-                config.variables.insert(
-                    string!("GARDEN_CONFIG_DIR"),
-                    model::Variable::new(config_path.to_string_lossy().to_string(), None),
-                );
-            }
+    if let Some(config_path_raw) = config.dirname.as_ref() {
+        // Calculate an absolute path for GARDEN_CONFIG_DIR.
+        if let Ok(config_path) = config_path_raw.canonicalize() {
+            config.variables.insert(
+                string!("GARDEN_CONFIG_DIR"),
+                model::Variable::new(config_path.to_string_lossy().to_string(), None),
+            );
         }
     }
 
@@ -140,7 +137,6 @@ fn parse_recursive(
                         config_verbose,
                         config,
                         Some(&pathbuf),
-                        false,
                     )
                     .unwrap_or(());
                 }
