@@ -199,8 +199,20 @@ following locations. The first one found is used.</p>
 # Global configuration
 /etc/garden/garden.yaml
 </code></pre>
+<p>If <code>garden.yaml</code> is not found in these directories then <code>garden</code> will walk up the
+file system searching for config files.</p>
+<p>You can prevent <code>garden</code> from traversing into directories higher in the file system
+tree by setting either the <code>GARDEN_CEILING_DIRS</code> or <code>GIT_CEILING_DIRS</code> environment
+variables. Multiple directories can be specified by using a colon(<code>:</code>)-delimited
+list of ceiling directories.</p>
+<p><code>garden</code> uses the <a href="https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables">GIT_CEILING_DIRS</a>
+environment variable from core Git as a fallback when <code>GARDEN_CEILING_DIRS</code> it is not set.</p>
+<p><code>GARDEN_CEILING_DIRS</code> has higher precedence and overrides values configured in
+<code>GIT_CEILING_DIRS</code>.</p>
 <p>Use <code>garden -c|--config &lt;filename&gt;</code> to specify a garden file and override
-garden's file discovery.</p>
+<code>garden</code>'s file discovery.</p>
+<p>If a basename is specified, e.g. <code>garden --config custom.yaml</code>, then <code>garden</code> will search
+these same locations for <code>custom.yaml</code> instead of <code>garden.yaml</code>.</p>
 <p>The following example <code>garden.yaml</code> is referred to by the documentation
 when showing examples.</p>
 <pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
@@ -341,8 +353,11 @@ gardens:
 <h2 id="garden-root"><a class="header" href="#garden-root">Garden Root</a></h2>
 <p>The garden root directory is configured in the <code>garden.root</code> field.
 This directory is the parent directory in which all trees will be cloned.</p>
-<p>Slashes in tree paths will create new directories on disk as needed.
-<code>garden.root</code> defaults to the current directory when unspecified.</p>
+<p>Slashes in tree paths will create new directories on disk as needed.</p>
+<p>Configure <code>garden.root</code> to <code>&quot;&quot;</code> (an empty string) to use a dynamic
+<code>garden.root</code> that follows your current directory.</p>
+<p><code>garden.root</code> defaults to <code>${GARDEN_CONFIG_DIR}</code> when unspecified.
+<code>{GARDEN_CONFIG_DIR}</code> is the directory that contains the current <code>garden.yaml</code> .</p>
 <p>The built-in <code>${GARDEN_CONFIG_DIR}</code> variable can be used to create relocatable
 setups by defining <code>garden.root</code> relative to the garden file itself.</p>
 <pre><code class="language-yaml"># By default, &quot;garden init&quot; generates a &quot;garden.yaml&quot; that uses the
@@ -359,6 +374,12 @@ following configuration can be used:</p>
 following configuration can be used:</p>
 <pre><code class="language-yaml">garden:
   root: ~/src
+</code></pre>
+<p>Use an empty string to place trees relative to your current directory.
+This lets you use <code>garden --config &lt;path&gt;</code> to interact with the trees
+in your current directory rather than a configuration-defined location.</p>
+<pre><code class="language-yaml">garden:
+  root: &quot;&quot;
 </code></pre>
 <h2 id="garden-shell"><a class="header" href="#garden-shell">Garden Shell</a></h2>
 <p>The shell used by <code>garden</code> when running Commands is configured by the <code>garden.shell</code> field.</p>
@@ -578,6 +599,12 @@ remote pointing to the configured URL.</p>
 <pre><code class="language-yaml">trees:
   git-scm: git://git.kernel.org/pub/scm/git/git.git
 </code></pre>
+<h3 id="default-tree"><a class="header" href="#default-tree">Default Tree</a></h3>
+<p>The <code>trees</code> block is optional when a <code>commands</code> block exists.</p>
+<p>An implicit default tree called <code>.</code> will be synthesized into existence when the <code>trees</code>
+block is empty.</p>
+<p>The default tree's <code>path</code> is set to the <code>${GARDEN_CONFIG_DIR}</code>.
+Omitting the <code>trees</code> block lets you use <code>garden</code> as a simple command runner.</p>
 <h3 id="remotes"><a class="header" href="#remotes">Remotes</a></h3>
 <p>The <code>remotes</code> field defines named
 <a href="https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes">Git remotes</a>

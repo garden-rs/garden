@@ -182,8 +182,41 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v120"><a class="header" href="#v120">v1.2.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>
+<p>If a garden file has no trees defined at all then an implicit tree called
+<code>.</code> will now be synthesized into existence. The presence of this implicit tree
+allows garden files that define just the current directory as a tree to omit
+the entire <code>trees</code> section altogether. This consequently makes it easier
+to use garden as a simple command runner because the <code>commands</code> section
+is the only section required in order to run <code>garden</code> commands.</p>
+</li>
+<li>
+<p>When <code>garden.root</code> is not configured <code>garden</code> will behave as if
+<code>garden.root</code> is configured to <code>${GARDEN_CONFIG_DIR}</code>. This allows garden files to
+omit <code>garden.root</code> from their configuration in typical scenarios.</p>
+</li>
+<li>
+<p>Configuring <code>garden.root</code> to an empty string (<code>&quot;&quot;</code>) will behave as if <code>garden.root</code>
+is configured to the current directory from which <code>garden</code> was run.</p>
+</li>
+<li>
+<p>When a <code>garden.yaml</code> file does not exist in the current directory then garden
+will walk up the file system searching for <code>garden.yaml</code> or the name specified using
+<code>garden -c &lt;name&gt;</code>. Garden will behave as if it were launched from the directory
+containing the garden file when a configuration file is found.</p>
+</li>
+<li>
+<p>The <code>GARDEN_CEILING_DIRS</code> and <code>GIT_CEILING_DIRS</code> environment variables can be
+used to limit the <code>garden.yaml</code> discovery by preventing <code>garden</code> from traversing
+into and beyond the specified directories when discovering garden files.</p>
+</li>
+</ul>
 <h2 id="v110"><a class="header" href="#v110">v1.1.0</a></h2>
-<p><strong>Features</strong></p>
+<p><em>Released 2023-01-15</em></p>
+<p><strong>Features</strong>:</p>
 <ul>
 <li>
 <p><code>garden ls</code> now displays information about trees, groups, gardens and commands.</p>
@@ -215,6 +248,7 @@ This allows you to use these interpreters to run custom commands.</p>
 <a href="https://gitlab.com/ijackson/rust-shellexpand#version-300-2022-12-01">shellexpand v3</a>.</li>
 </ul>
 <h2 id="v100"><a class="header" href="#v100">v1.0.0</a></h2>
+<p><em>Released 2023-12-23</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
@@ -242,6 +276,7 @@ A <code>flake.nix</code> file is now provided.
 (<a href="https://github.com/davvid/garden/issues/16">#16</a>)</li>
 </ul>
 <h2 id="v091"><a class="header" href="#v091">v0.9.1</a></h2>
+<p><em>Released 2023-11-19</em></p>
 <p><strong>Fixes</strong>:</p>
 <ul>
 <li><code>garden -D name=value</code> now overrides variables in all scopes.
@@ -250,6 +285,7 @@ will now get properly overridden by the <code>--define</code> / <code>-D</code>
 command-line options.</li>
 </ul>
 <h2 id="v090"><a class="header" href="#v090">v0.9.0</a></h2>
+<p><em>Released 2023-11-02</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li><code>garden grow</code> now sets <code>git config remote.$name.tagopt --no-tags</code>
@@ -257,6 +293,7 @@ when adding additional remotes. This prevents accidentally fetching tags
 when interacting with remotes.</li>
 </ul>
 <h2 id="v081"><a class="header" href="#v081">v0.8.1</a></h2>
+<p><em>Released 2023-07-18</em></p>
 <p><strong>Fixes</strong>:</p>
 <ul>
 <li><code>garden grow</code> was fixed to detect existing branches when growing
@@ -273,6 +310,7 @@ the unmaintained <code>atty</code> crate.</p>
 </li>
 </ul>
 <h2 id="v080"><a class="header" href="#v080">v0.8.0</a></h2>
+<p><em>Released 2023-07-16</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
@@ -290,6 +328,7 @@ using <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt-
 </li>
 </ul>
 <h2 id="v070"><a class="header" href="#v070">v0.7.0</a></h2>
+<p><em>Released 2023-02-12</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
@@ -353,7 +392,7 @@ files are added to the current configuration.
 (<a href="https://github.com/davvid/garden/pull/7">#7</a>)</p>
 </li>
 <li>
-<p><a href="https://garden-rs.gitlab.io/commands.html#shell-syntax">Garden commands can now reference $shell variables</a>
+<p><a href="https://garden-rs.gitlab.io/commands.html#shell-syntax">Garden commands can now use shell variables</a>
 using the standard (brace-less) shell <code>$variable</code> syntax. The braced <code>${garden}</code>
 variable syntax remains reserved for resolving Garden Variables.
 Double-<code>$</code> braces (ex: <code>$${...}</code>) can be used to escape a <code>$${variable}</code> from
