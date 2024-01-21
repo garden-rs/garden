@@ -217,13 +217,12 @@ pub fn trees_from_pattern(
         }
     }
 
+    // Collect tree indexes for the configured trees
     let mut result = Vec::new();
     let pattern = match glob::Pattern::new(tree) {
         Ok(value) => value,
         Err(_) => return result,
     };
-
-    // Collect tree indexes for the configured trees
     for (tree_name, cfg_tree) in &config.trees {
         if pattern.matches(tree_name) {
             // Tree found
@@ -261,23 +260,45 @@ fn tree_from_pathbuf(
     config: &model::Configuration,
     path: &std::path::Path,
 ) -> Option<model::TreeContext> {
+    // First check whether the specified path (including ".") is a configured tree.
     let pathbuf = match path.canonicalize() {
         Ok(canon) => canon,
         Err(_) => return None,
     };
-
     for (name, tree) in &config.trees {
         let tree_path = match tree.path_as_ref() {
             Ok(value) => value,
             Err(_) => continue,
         };
-
         let tree_canon = match std::path::PathBuf::from(tree_path).canonicalize() {
             Ok(value) => value,
             Err(_) => continue,
         };
         if pathbuf == tree_canon {
             return Some(model::TreeContext::new(name, config.get_id(), None, None));
+        }
+    }
+
+    // Nothing was found. If "." was specified (or implicitly used) then the
+    // current directory is not a configured tree. Fallback to treating "." as
+    // the garden config directory to find either configured trees at the root
+    // or the implicit default tree when "trees" is omitted.
+    let is_dot = path.to_str().map(|value| value == ".").unwrap_or_default();
+    if is_dot {
+        if let Some(ref dirname) = config.dirname {
+            for (name, tree) in &config.trees {
+                let tree_path = match tree.path_as_ref() {
+                    Ok(value) => value,
+                    Err(_) => continue,
+                };
+                let tree_canon = match std::path::PathBuf::from(tree_path).canonicalize() {
+                    Ok(value) => value,
+                    Err(_) => continue,
+                };
+                if dirname == &tree_canon {
+                    return Some(model::TreeContext::new(name, config.get_id(), None, None));
+                }
+            }
         }
     }
 

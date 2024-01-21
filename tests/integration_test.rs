@@ -1402,6 +1402,119 @@ fn cmd_exec_grafted_group() {
     }
 }
 
+/// Test garden file discovery when run from a subdirectory.
+#[test]
+fn cmd_garden_discovery() {
+    let expect = "/tests/data";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/trees/prebuilt",
+        "--config",
+        "default.yaml",
+        "eval",
+        "${GARDEN_CONFIG_DIR}",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "GARDEN_CONFIG_DIR ({actual}) should be in {expect}"
+    );
+
+    let expect = "/tests/data";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/trees/prebuilt",
+        "--config",
+        "default.yaml",
+        "eval",
+        "${GARDEN_ROOT}",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "GARDEN_ROOT ({actual}) should be in {expect}"
+    );
+
+    let expect = "/tests/data/trees/prebuilt";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/trees/prebuilt",
+        "eval",
+        "${GARDEN_ROOT}",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "GARDEN_ROOT ({actual}) should be in {expect}"
+    );
+
+    let expect = "/tests/data/trees/prebuilt";
+    let actual = garden_capture(&[
+        "--root",
+        "${GARDEN_CONFIG_DIR}",
+        "--chdir",
+        "tests/data/trees/prebuilt",
+        "eval",
+        "${TREE_PATH}",
+        ".",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "TREE_PATH ({actual}) should be in {expect}"
+    );
+
+    let expect = "/tests/data/trees/prebuilt";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/trees/prebuilt",
+        "--config",
+        "default.yaml",
+        "eval",
+        "${TREE_PATH}",
+        ".",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "TREE_PATH ({actual}) should be in {expect}"
+    );
+
+    let expect = "prebuilt";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/trees/prebuilt",
+        "--config",
+        "default.yaml",
+        "eval",
+        "${TREE_NAME}",
+        ".",
+    ]);
+    assert_eq!(expect, actual);
+
+    let expect = "/tests/data";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/trees",
+        "--config",
+        "default.yaml",
+        "eval",
+        "${TREE_PATH}",
+        ".",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "TREE_PATH ({actual}) should be in {expect}"
+    );
+
+    let expect = "current";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/trees",
+        "--config",
+        "default.yaml",
+        "eval",
+        "${TREE_NAME}",
+        ".",
+    ]);
+    assert_eq!(expect, actual);
+}
+
 /// Test the use of $shell variables in commands.
 /// $shell variables are not expanded by garden.
 /// ${garden} variables are expanded.

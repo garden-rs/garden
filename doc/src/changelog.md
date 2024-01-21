@@ -18,6 +18,15 @@
 - Configuring `garden.root` to an empty string (`""`) will behave as if `garden.root`
   is configured to the current directory from which `garden` was run.
 
+- When a `garden.yaml` file does not exist in the current directory then garden
+  will walk up the file system searching for `garden.yaml` or the name specified using
+  `garden -c <name>`. Garden will behave as if it were launched from the directory
+  containing the garden file when a configuration file is found.
+
+- The `GARDEN_CEILING_DIRS` and `GIT_CEILING_DIRS` environment variables can be
+  used to limit the `garden.yaml` discovery by preventing `garden` from traversing
+  into and beyond the specified directories when discovering garden files.
+
 ## v1.1.0
 
 *Released 2023-01-15*

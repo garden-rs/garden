@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 /// YAML reader
 pub mod reader;
 
@@ -13,8 +15,13 @@ use crate::{errors, model, path};
 ///  ~/.config/garden
 ///  ~/etc/garden
 ///  /etc/garden
+///  ..
+///
+///  Traversal continues up file system until the root is reached.
+///  GARDEN_CEILING_DIRS and GIT_CEILING_DIRS can be used to define
+///  directories into which garden should not travrse.
 
-pub fn search_path() -> Vec<std::path::PathBuf> {
+pub(crate) fn search_path() -> Vec<std::path::PathBuf> {
     // Result: Vec<PathBufs> in priority order
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
 
@@ -32,7 +39,7 @@ pub fn search_path() -> Vec<std::path::PathBuf> {
     }
 
     // ./etc/garden
-    let mut current_etc_garden_dir = current_dir;
+    let mut current_etc_garden_dir = current_dir.clone();
     current_etc_garden_dir.push("etc");
     current_etc_garden_dir.push("garden");
     if current_etc_garden_dir.exists() {
@@ -55,6 +62,26 @@ pub fn search_path() -> Vec<std::path::PathBuf> {
     if etc_garden.exists() {
         paths.push(etc_garden);
     }
+
+    // Calculate ceiling directories above which no commands should be run.
+    let mut ceiling_dirs: HashSet<String> = HashSet::new();
+    // GARDEN_CEILING_DIRS completely overrides GIT_CEILING_DIRS.
+    if let Ok(garden_ceiling_dirs) = std::env::var("GARDEN_CEILING_DIRS") {
+        for dirname in garden_ceiling_dirs.split(':') {
+            ceiling_dirs.insert(dirname.to_string());
+        }
+    } else if let Ok(git_ceiling_dirs) = std::env::var("GIT_CEILING_DIRS") {
+        for dirname in git_ceiling_dirs.split(':') {
+            ceiling_dirs.insert(dirname.to_string());
+        }
+    }
+    current_dir.ancestors().for_each(|ancestor| {
+        let ancestor_str = ancestor.to_string_lossy().to_string();
+        if ceiling_dirs.contains(&ancestor_str) {
+            return;
+        }
+        paths.push(ancestor.to_path_buf());
+    });
 
     paths
 }

@@ -21,8 +21,25 @@ following locations. The first one found is used.
 /etc/garden/garden.yaml
 ```
 
+If `garden.yaml` is not found in these directories then `garden` will walk up the
+file system searching for config files.
+
+You can prevent `garden` from traversing into directories higher in the file system
+tree by setting either the `GARDEN_CEILING_DIRS` or `GIT_CEILING_DIRS` environment
+variables. Multiple directories can be specified by using a colon(`:`)-delimited
+list of ceiling directories.
+
+`garden` uses the [GIT_CEILING_DIRS](https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables)
+environment variable from core Git as a fallback when `GARDEN_CEILING_DIRS` it is not set.
+
+`GARDEN_CEILING_DIRS` has higher precedence and overrides values configured in
+`GIT_CEILING_DIRS`.
+
 Use `garden -c|--config <filename>` to specify a garden file and override
-garden's file discovery.
+`garden`'s file discovery.
+
+If a basename is specified, e.g. `garden --config custom.yaml`, then `garden` will search
+these same locations for `custom.yaml` instead of `garden.yaml`.
 
 The following example `garden.yaml` is referred to by the documentation
 when showing examples.
