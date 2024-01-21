@@ -2,7 +2,9 @@
 
 ## v1.1.0
 
-**Features**
+*Released 2023-01-15*
+
+**Features**:
 
 - `garden ls` now displays information about trees, groups, gardens and commands.
 
@@ -28,6 +30,8 @@
 
 ## v1.0.0
 
+*Released 2023-12-23*
+
 **Features**:
 
 - Commands can now specify pre-commands and post-commands that are run before/after
@@ -51,6 +55,8 @@
 
 ## v0.9.1
 
+*Released 2023-11-19*
+
 **Fixes**:
 
 - `garden -D name=value` now overrides variables in all scopes.
@@ -60,6 +66,8 @@
 
 ## v0.9.0
 
+*Released 2023-11-02*
+
 **Features**:
 
 - `garden grow` now sets `git config remote.$name.tagopt --no-tags`
@@ -67,6 +75,8 @@
   when interacting with remotes.
 
 ## v0.8.1
+
+*Released 2023-07-18*
 
 **Fixes**:
 
@@ -82,6 +92,8 @@
 
 ## v0.8.0
 
+*Released 2023-07-16*
+
 **Features**:
 
 - `garden` now supports a `grafts` feature that allows you to
@@ -95,6 +107,8 @@ referenced using `graft::` namespace qualifiers.
   using [`git config --add <name> <value>`](https://git-scm.com/docs/git-config#Documentation/git-config.txt---add).
 
 ## v0.7.0
+
+*Released 2023-02-12*
 
 **Features**:
 
@@ -159,7 +173,7 @@ referenced using `graft::` namespace qualifiers.
   files are added to the current configuration.
   ([#7](https://github.com/davvid/garden/pull/7))
 
-- [Garden commands can now reference \$shell variables](https://garden-rs.gitlab.io/commands.html#shell-syntax)
+- [Garden commands can now use shell variables](https://garden-rs.gitlab.io/commands.html#shell-syntax)
   using the standard (brace-less) shell `$variable` syntax. The braced `${garden}`
   variable syntax remains reserved for resolving Garden Variables.
   Double-`$` braces (ex: `$${...}`) can be used to escape a `$${variable}` from
