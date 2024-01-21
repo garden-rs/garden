@@ -5,7 +5,7 @@ use crate::{cmd, model, path, query, syntax};
 /// Expand variables across all scopes (garden, tree, and global).
 /// - `app_context`: reference to the top-level ApplicationContext.
 /// - `config`: reference to Configuration to use for evaluation
-/// - `tree_idx`: index into the tree being evaluated
+/// - `tree_name`: name of the tree being evaluated.
 /// - `garden_name`: optional garden name being evaluated.
 /// - `name`: the name of the variable being expanded.
 fn expand_tree_vars(

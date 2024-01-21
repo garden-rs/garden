@@ -112,7 +112,7 @@ pub(crate) fn print_tree_details(
     }
 }
 
-/// Print an ungrown / missing tree.
+/// Print non-grown / missing tree.
 pub(crate) fn print_missing_tree(tree: &model::Tree, path: &str, verbose: u8) {
     if verbose > 0 {
         println!(

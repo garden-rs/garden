@@ -275,7 +275,7 @@ impl RemovePaths {
     }
 }
 
-/// Repsonses from the prompt_for_deletion() return this enum.
+/// Responses from the prompt_for_deletion() return this enum.
 enum PromptResponse {
     All,    // Delete all subsequent entries.
     Delete, // Delete the current entry.
@@ -476,7 +476,7 @@ pub fn prune(
     // Channels are used to exchange PathBufMessage messages.
     // These channels are used to emit repositories that are discovered through a
     // filesystem traversal, filter paths through user interaction, remove selected
-    // paths from the filesytem and report removed paths to the user.
+    // paths from the filesystem and report removed paths to the user.
     //
     // The TraverseFilesystem task traverses the filesystem and sends paths to the
     // PromptUser task through the send_repo_path channels.
@@ -485,8 +485,8 @@ pub fn prune(
     // the user for each path. Paths that are marked for deletion are sent to the
     // send_remove_path channel.
     //
-    // The RemovePaths task receives from te recv_remove_path and performs removals
-    // from the filesystem. Paths that have finished deleting are sent to the
+    // The RemovePaths task receives from the recv_remove_path channel and performs
+    // removals from the filesystem. Paths that have finished deleting are sent to the
     // PromptUser task via the send_finished_path channel.
     //
     // The PromptUser task drains the recv_finished_path channel to report paths that
@@ -498,7 +498,7 @@ pub fn prune(
     // -> PromptUser.send_remove_path
     // -> RemovePaths.recv_remove_path -> removes paths
     // -> RemovePaths.send_finished_path
-    // -> PromptUser.recv_finished_path -> prints deletion mssages.
+    // -> PromptUser.recv_finished_path -> prints deletion messages.
     let (send_repo_path, recv_repo_path) = crossbeam::channel::unbounded();
     let (send_remove_path, recv_remove_path) = crossbeam::channel::unbounded();
     let (send_finished_path, recv_finished_path) = crossbeam::channel::unbounded();

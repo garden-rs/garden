@@ -58,7 +58,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
                 Ok(path) => path,
                 Err(_) => continue,
             };
-            // Sparse gardens/missing trees are ok -> skip these entries.
+            // Sparse gardens/missing trees are okay -> skip these entries.
             if !std::path::PathBuf::from(path).exists() {
                 if needs_newline {
                     println!();

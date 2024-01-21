@@ -825,7 +825,7 @@ impl Configuration {
             }
         }
 
-        // Make path relative to the configuration's dirname
+        // Make path relative to the configuration's dirname.
         self.config_pathbuf(path)
     }
 
@@ -1336,14 +1336,14 @@ impl ApplicationContext {
         let path = path.to_path_buf();
         let config_verbose = self.options.debug_level("config");
         let mut graft_config = Configuration::new();
-        // Propogate the current config's "garden.tree-branches" and "garden.shell_exit_on_error"
+        // Propagate the current config's "garden.tree-branches" and "garden.shell_exit_on_error"
         // settings onto child grafts.
         graft_config.tree_branches = self.get_config(config_id).tree_branches;
         graft_config.shell_exit_on_error = self.get_config(config_id).shell_exit_on_error;
         // Parse the config file for the graft.
         graft_config.update(self, Some(&path), root, config_verbose, Some(config_id))?;
 
-        // The app Arena takes ownershp of the Configuration.
+        // The app Arena takes ownership of the Configuration.
         let graft_id = self.add_graft(config_id, graft_config);
         // Record the graft's config ID in the graft.
         if let Some(graft_config) = self.get_config_mut(config_id).grafts.get_mut(graft_name) {

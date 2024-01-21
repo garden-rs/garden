@@ -102,7 +102,7 @@ where
     if let Some(tree) = config.trees.get(&context.tree) {
         path = tree.path_as_ref()?;
 
-        // Sparse gardens/missing trees are ok -> skip these entries.
+        // Sparse gardens/missing trees are okay -> skip these entries.
         if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
             return Ok(());
         }

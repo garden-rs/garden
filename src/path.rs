@@ -1,6 +1,6 @@
 use crate::errors;
 
-/// Return the current directoy as a PathBuf.
+/// Return the current directory as a PathBuf.
 pub(crate) fn current_dir() -> std::path::PathBuf {
     std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."))
 }

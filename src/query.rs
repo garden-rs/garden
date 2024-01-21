@@ -163,13 +163,14 @@ pub fn trees_from_group(
 /// Parameters:
 /// - config: `&garden::model::Configuration`
 /// - tree: Tree name `&str`
-/// - garden_idx: `Option<garden::model::GardenName>`
+/// - garden_name: optional name of the garden in which to operate.
+/// - group: optional name of the group in which to operate.
 
 pub fn tree_from_name(
     config: &model::Configuration,
     tree_name: &str,
     garden_name: Option<&model::GardenName>,
-    group: Option<&model::GardenName>,
+    group: Option<&model::GroupName>,
 ) -> Option<model::TreeContext> {
     // Collect tree indexes for the configured trees
     if let Some(tree) = config.trees.get(tree_name) {

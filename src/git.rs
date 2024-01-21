@@ -10,11 +10,9 @@ pub fn worktree_details(
     let path = path::abspath(pathbuf);
     let exec = cmd::exec_in_dir(&cmd, &path);
     let output = cmd::stdout_to_string(exec)?;
-
     let worktree_token = "worktree ";
     let branch_token = "branch refs/heads/";
     let bare_token = "bare";
-
     let mut parent_path = std::path::PathBuf::new();
     let mut branch = String::new();
     let mut is_current = false;
@@ -49,7 +47,6 @@ pub fn worktree_details(
             },
         });
     }
-
     if path == parent_path {
         return Ok(model::GitTreeDetails {
             branch,

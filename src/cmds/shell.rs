@@ -19,7 +19,6 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
     if contexts.is_empty() {
         return Err(errors::GardenError::EmptyTreeQueryResult(options.query.clone()).into());
     }
-
     let mut context = contexts[0].clone();
 
     // If a tree's name in the returned contexts exactly matches the tree

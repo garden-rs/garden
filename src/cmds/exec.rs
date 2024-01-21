@@ -20,7 +20,6 @@ pub struct ExecOptions {
 
 /// Main entry point for the "garden exec" command
 pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
-    // parse_args(&mut app.options, &mut query, &mut command);
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose;
     if app_context.options.debug_level("exec") > 0 {
@@ -50,7 +49,7 @@ fn exec(
     query: &str,
     command: &[String],
 ) -> Result<()> {
-    // Strategy: resolve the trees down to a set of tree indexes paired with an
+    // Strategy: resolve the trees down to a set of tree indexes paired with
     // an optional garden context.
     //
     // If the names resolve to gardens, each garden is processed independently.

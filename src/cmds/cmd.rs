@@ -158,7 +158,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
     cmds(app_context, &params)
 }
 
-/// Strategy: resolve the trees down to a set of tree indexes paired with an
+/// Strategy: resolve the trees down to a set of tree indexes paired with
 /// an optional garden context.
 ///
 /// If the names resolve to gardens, each garden is processed independently.
