@@ -219,10 +219,7 @@ in order to use the photo restoration tool. See the <code>--help</code> output f
 <p>The <code>run</code> command defines when happens during <code>garden run old-photos</code>.</p>
 <p>Additional command-line arguments specified after the double-dash <code>--</code> marker are
 available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$N</code>, ... <code>&quot;$@&quot;</code> shell variables.</p>
-<pre><code class="language-yaml">---
-garden:
-  root: ${GARDEN_CONFIG_DIR}
-variables:
+<pre><code class="language-yaml">variables:
   env_py3: $ python3 -c 'import sys; print(&quot;env%s%s&quot; % sys.version_info[:2])'
 trees:
   old-photos:
@@ -267,7 +264,6 @@ trees:
           ${env_py3}/bin/pip install -r requirements.txt
         )
       run: ${env_py3}/bin/python3 run.py &quot;$@&quot;
-...
 </code></pre>
 
                     </main>

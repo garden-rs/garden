@@ -1,14 +1,11 @@
 # Demo using "node" as the interpreter for custom commands.
----
 garden:
-  root: ${GARDEN_CONFIG_DIR}
   shell: node
 
 trees:
   node:
     description: Demo using "node" as the interpreter for custom commands
     path: ${GARDEN_CONFIG_DIR}
-
     commands:
       hello: |
         if (process.argv.length > 1) {
@@ -16,13 +13,9 @@ trees:
         } else {
             console.log('hello world')
         }
-
       info: |
         console.log(process)
         console.log('${uname}')
-
     # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
     variables:
       uname: $ uname -a
-...
-

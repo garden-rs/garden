@@ -1135,9 +1135,6 @@ when showing examples.</p>
 #   garden run cola-main
 #   garden run cola-next
 
-garden:
-  root: ${GARDEN_CONFIG_DIR}
-
 # The following variables are used in the custom commands below.
 variables:
   # A virtualenv is created in the ./dist directory.
@@ -1687,10 +1684,7 @@ in order to use the photo restoration tool. See the <code>--help</code> output f
 <p>The <code>run</code> command defines when happens during <code>garden run old-photos</code>.</p>
 <p>Additional command-line arguments specified after the double-dash <code>--</code> marker are
 available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$N</code>, ... <code>&quot;$@&quot;</code> shell variables.</p>
-<pre><code class="language-yaml">---
-garden:
-  root: ${GARDEN_CONFIG_DIR}
-variables:
+<pre><code class="language-yaml">variables:
   env_py3: $ python3 -c 'import sys; print(&quot;env%s%s&quot; % sys.version_info[:2])'
 trees:
   old-photos:
@@ -1735,7 +1729,6 @@ trees:
           ${env_py3}/bin/pip install -r requirements.txt
         )
       run: ${env_py3}/bin/python3 run.py &quot;$@&quot;
-...
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="git-cola-development-1"><a class="header" href="#git-cola-development-1">Git Cola Development</a></h1>
 <p>This garden file sets up a development garden with the latest version of Git, Git Cola,
@@ -1808,9 +1801,6 @@ development virtualenv is present in the <code>./dist</code> directory.</p>
 #   garden run cola
 #   garden run cola-main
 #   garden run cola-next
-
-garden:
-  root: ${GARDEN_CONFIG_DIR}
 
 # The following variables are used in the custom commands below.
 variables:
@@ -1951,20 +1941,16 @@ garden hello -- cat
 </code></pre>
 <h2 id="gardenyaml-2"><a class="header" href="#gardenyaml-2">garden.yaml</a></h2>
 <pre><code class="language-yaml"># Demo using &quot;python3&quot; as the interpreter for custom commands.
----
 garden:
-  root: ${GARDEN_CONFIG_DIR}
   shell: python3
 
 trees:
   python:
     description: Demo using &quot;python3&quot; as the interpreter for custom commands
     path: ${GARDEN_CONFIG_DIR}
-
     commands:
       hello: |
         import sys
-
         # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
         args = sys.argv[1:]  # additional arguments specified after '--'
         if args:
@@ -1972,20 +1958,16 @@ trees:
         else:
             world = 'world'
         print(f'hello {world}')
-
       info: |
         import os
         import sys
-
         print(f'os.name = {os.name}')
         print(f'sys.platform = {sys.platform}')
         print(r'sys.int_info = {sys.int_info}')
         print('uname = ${uname}')
-
     # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
     variables:
       uname: $ uname -a
-...
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="nodejs-commands"><a class="header" href="#nodejs-commands">Node.js Commands</a></h1>
 <p>This example demonstrates how to configure <code>garden.shell</code> to use <code>node</code>
@@ -1998,16 +1980,13 @@ garden hello -- cat
 </code></pre>
 <h2 id="gardenyaml-3"><a class="header" href="#gardenyaml-3">garden.yaml</a></h2>
 <pre><code class="language-yaml"># Demo using &quot;node&quot; as the interpreter for custom commands.
----
 garden:
-  root: ${GARDEN_CONFIG_DIR}
   shell: node
 
 trees:
   node:
     description: Demo using &quot;node&quot; as the interpreter for custom commands
     path: ${GARDEN_CONFIG_DIR}
-
     commands:
       hello: |
         if (process.argv.length &gt; 1) {
@@ -2015,16 +1994,12 @@ trees:
         } else {
             console.log('hello world')
         }
-
       info: |
         console.log(process)
         console.log('${uname}')
-
     # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
     variables:
       uname: $ uname -a
-...
-
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="v120"><a class="header" href="#v120">v1.2.0</a></h2>
