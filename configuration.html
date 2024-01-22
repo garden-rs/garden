@@ -350,18 +350,17 @@ gardens:
 <h2 id="garden-root"><a class="header" href="#garden-root">Garden Root</a></h2>
 <p>The garden root directory is configured in the <code>garden.root</code> field.
 This directory is the parent directory in which all trees will be cloned.</p>
-<p>Slashes in tree paths will create new directories on disk as needed.</p>
-<p>Configure <code>garden.root</code> to <code>&quot;&quot;</code> (an empty string) to use a dynamic
-<code>garden.root</code> that follows your current directory.</p>
 <p><code>garden.root</code> defaults to <code>${GARDEN_CONFIG_DIR}</code> when unspecified.
 <code>{GARDEN_CONFIG_DIR}</code> is the directory that contains the current <code>garden.yaml</code> .</p>
-<p>The built-in <code>${GARDEN_CONFIG_DIR}</code> variable can be used to create relocatable
-setups by defining <code>garden.root</code> relative to the garden file itself.</p>
+<p>The default <code>${GARDEN_CONFIG_DIR}</code> value lets you create relocatable setups
+with trees that are located relative to the <code>garden.yaml</code> config file.</p>
+<p>Slashes in tree paths will create new directories on disk as needed.</p>
 <pre><code class="language-yaml"># By default, &quot;garden init&quot; generates a &quot;garden.yaml&quot; that uses the
 # ${GARDEN_CONFIG_DIR} for its &quot;garden.root&quot; location.
 garden:
   root: ${GARDEN_CONFIG_DIR}
 </code></pre>
+<p>Omitting <code>garden.root</code> is equivalent to the configuration above.</p>
 <p>To place all trees in a <code>src</code> directory sibling to the <code>garden.yaml</code> file, the
 following configuration can be used:</p>
 <pre><code class="language-yaml">garden:
@@ -372,9 +371,10 @@ following configuration can be used:</p>
 <pre><code class="language-yaml">garden:
   root: ~/src
 </code></pre>
-<p>Use an empty string to place trees relative to your current directory.
-This lets you use <code>garden --config &lt;path&gt;</code> to interact with the trees
-in your current directory rather than a configuration-defined location.</p>
+<p>Configure <code>garden.root</code> to <code>&quot;&quot;</code> (an empty string) to use a dynamic
+<code>garden.root</code> that follows your current directory. This lets you use
+<code>garden --config &lt;path&gt;</code> to create and interact with trees in your
+current directory instead of a fixed configuration-defined location.</p>
 <pre><code class="language-yaml">garden:
   root: &quot;&quot;
 </code></pre>
