@@ -27,6 +27,12 @@
   used to limit the `garden.yaml` discovery by preventing `garden` from traversing
   into and beyond the specified directories when discovering garden files.
 
+**Development**:
+
+- The `shlex` dependency was upgraded to `1.3.0`, which includes fixes for
+  [RUSTSEC-2024-0006](https://rustsec.org/advisories/RUSTSEC-2024-0006.html) a.k.a.
+  [GHSA-r7qv-8r2h-pg27](https://github.com/comex/rust-shlex/security/advisories/GHSA-r7qv-8r2h-pg27).
+
 ## v1.1.0
 
 *Released 2023-01-15*
