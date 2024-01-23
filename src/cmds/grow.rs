@@ -12,6 +12,9 @@ type GitConfigMap = HashMap<String, HashSet<String>>;
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct GrowOptions {
+    /// Filter trees by name post-query using a glob pattern
+    #[arg(long, short, default_value = "*")]
+    trees: String,
     /// Tree query for the gardens, groups or trees to grow
     #[arg(required = true)]
     queries: Vec<String>,
@@ -25,7 +28,14 @@ pub fn main(app: &model::ApplicationContext, options: &GrowOptions) -> Result<()
     let mut exit_status = errors::EX_OK;
     let mut configured_worktrees: HashSet<String> = HashSet::new();
     for query in &options.queries {
-        let status = grow(app, &mut configured_worktrees, quiet, verbose, query)?;
+        let status = grow(
+            app,
+            &mut configured_worktrees,
+            quiet,
+            verbose,
+            query,
+            &options.trees,
+        )?;
         if status != errors::EX_OK {
             exit_status = status;
         }
@@ -42,9 +52,10 @@ fn grow(
     quiet: bool,
     verbose: u8,
     query: &str,
+    tree_pattern: &str,
 ) -> Result<i32> {
     let config = app_context.get_root_config();
-    let contexts = query::resolve_trees(app_context, config, query);
+    let contexts = query::resolve_and_filter_trees(app_context, config, query, tree_pattern);
     let mut exit_status = errors::EX_OK;
 
     for ctx in &contexts {

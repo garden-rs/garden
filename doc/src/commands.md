@@ -119,6 +119,10 @@ into existence.
 The `grow` sub-command updates or creates the trees matched by the `<tree-query>`
 and places them into the paths defined by the garden file.
 
+Use the `-t | --trees` option to specify a glob pattern for filtering trees by
+name post-query. This lets you filter a tree query so that only a subset of the
+trees in the query are grown.
+
 It is safe to re-run the `grow` command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
 repositories are created by cloning the configured tree URL.
@@ -613,11 +617,15 @@ creating the shell.
 
 Display configured information about trees and commands.
 Tree details are not displayed for missing / ungrown trees.
-Use the `-a` option to display details for missing trees.
+
+Use the `-a | --all` option to display details for missing trees.
 
 If no tree-queries are specified then `garden ls` behaves as if
 `garden ls '@*'` were specified, which displays all trees.
 
+Use the `-t | --trees` option to specify a glob pattern that can be used to
+filter trees by name post-query. This is useful when you want to list details
+about a group or garden while only listing details about a subset of the trees.
 
 ## garden prune
 

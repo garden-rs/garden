@@ -70,6 +70,32 @@ pub fn resolve_trees(
     result
 }
 
+/// Resolve a tree query into a filtered `Vec<garden::model::TreeContext>`.
+///
+/// Parameters:
+/// - `config`: `&garden::model::Configuration`.
+/// - `query`: Tree query `&str`.
+/// - `pattern`: Tree name glob pattern used to filter the results.
+/// Returns:
+/// - `Vec<garden::model::TreeContext>`
+pub(crate) fn resolve_and_filter_trees(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    query: &str,
+    pattern: &str,
+) -> Vec<model::TreeContext> {
+    let contexts = resolve_trees(app_context, config, query);
+    let tree_pattern = glob::Pattern::new(pattern).unwrap_or_default();
+    let mut result = Vec::with_capacity(contexts.len());
+    for context in contexts {
+        if tree_pattern.matches(&context.tree) {
+            result.push(context);
+        }
+    }
+
+    result
+}
+
 /// Return tree contexts for every garden matching the specified pattern.
 /// Parameters:
 /// - config: `&garden::model::Configuration`

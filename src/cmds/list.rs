@@ -16,6 +16,9 @@ pub struct ListOptions {
     /// Display worktrees
     #[arg(short, long, default_value_t = false)]
     worktrees: bool,
+    /// Filter trees by name post-query using a glob pattern
+    #[arg(long, short, default_value = "*")]
+    trees: String,
     /// Tree query for the gardens, groups or trees to display
     queries: Vec<String>,
 }
@@ -43,7 +46,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
 
     for query in &options.queries {
         // Resolve the tree query into a vector of tree contexts.
-        let contexts = query::resolve_trees(app_context, config, query);
+        let contexts = query::resolve_and_filter_trees(app_context, config, query, &options.trees);
         // Loop over each context and display the tree.
         for (idx, context) in contexts.iter().enumerate() {
             let config = match context.config {

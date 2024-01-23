@@ -27,12 +27,12 @@
   used to limit the `garden.yaml` discovery by preventing `garden` from traversing
   into and beyond the specified directories when discovering garden files.
 
-- `garden exec`, `garden cmd` and custom garden commands can now filter
-  the trees to operate over by passing a glob pattern using `-t <pattern>`
-  or `--trees=<pattern>`. These commands will only execute commands inside the trees
-  whose names match the specified pattern. This allows you to specify a garden as the
-  tree query and use the full set of environment variables from all trees in that query
-  to execute a commands over a subset of the trees in that garden.
+- `garden exec`, `garden cmd` `garden grow`, `garden ls` and custom garden commands
+  can now filter the trees they operate over by passing a glob pattern using
+  `-t | --trees` option. These commands will only operate on the trees whose names
+  match the pattern. This allows you to specify a garden as the tree query and use
+  the full set of environment variables from all trees in the query while
+  executing commands over a subset of the trees in that garden.
 
 **Development**:
 
