@@ -7,6 +7,9 @@ use crate::{cmd, errors, model, query};
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct ExecOptions {
+    /// Filter trees by name post-query using a glob pattern
+    #[arg(long, short, default_value = "*")]
+    trees: String,
     /// Perform a trial run without executing any commands
     #[arg(long, short = 'n')]
     dry_run: bool,
@@ -20,35 +23,27 @@ pub struct ExecOptions {
 
 /// Main entry point for the "garden exec" command
 pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
-    let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose;
     if app_context.options.debug_level("exec") > 0 {
         debug!("query: {}", exec_options.query);
         debug!("command: {:?}", exec_options.command);
     }
 
     let config = app_context.get_root_config_mut();
-    exec(
-        app_context,
-        config,
-        quiet,
-        verbose,
-        exec_options.dry_run,
-        &exec_options.query,
-        &exec_options.command,
-    )
+    exec(app_context, config, exec_options)
 }
 
 /// Execute a command over every tree in the evaluated tree query.
 fn exec(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
-    quiet: bool,
-    verbose: u8,
-    dry_run: bool,
-    query: &str,
-    command: &[String],
+    exec_options: &ExecOptions,
 ) -> Result<()> {
+    let quiet = app_context.options.quiet;
+    let verbose = app_context.options.verbose;
+    let dry_run = exec_options.dry_run;
+    let query = &exec_options.query;
+    let tree_pattern = &exec_options.trees;
+    let command = &exec_options.command;
     // Strategy: resolve the trees down to a set of tree indexes paired with
     // an optional garden context.
     //
@@ -61,11 +56,15 @@ fn exec(
 
     // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(app_context, config, query);
+    let pattern = glob::Pattern::new(tree_pattern).unwrap_or_default();
     let mut exit_status: i32 = 0;
 
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in &contexts {
+        if !pattern.matches(&context.tree) {
+            continue;
+        }
         let config = match context.config {
             Some(config_id) => app_context.get_config(config_id),
             None => config,

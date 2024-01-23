@@ -27,6 +27,10 @@
 # * Run Git Cola
 #   garden run
 #
+# * Run Git Cola on the git/next and git-cola trees using the cola/next garden environment:
+#   garden run --trees git/next cola/next
+#   garden run -t git-cola cola/next
+#
 # * Open a shell for running Git Cola in different enviornments
 #   garden shell cola/main
 #   garden shell cola/next

@@ -1515,6 +1515,97 @@ fn cmd_garden_discovery() {
     assert_eq!(expect, actual);
 }
 
+/// Test tree filtering using custom commands
+#[test]
+fn cmd_custom_filtered_trees() {
+    let expect = "current\nprebuilt";
+    let actual = garden_capture(&["--config", "tests/data/default.yaml", "name", "*"]);
+    assert_eq!(expect, actual);
+
+    let expect = "current";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/default.yaml",
+        "name",
+        "--trees",
+        "cur*",
+        "*",
+    ]);
+    assert_eq!(expect, actual);
+
+    let expect = "prebuilt";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/default.yaml",
+        "name",
+        "--trees",
+        "pre*",
+        "*",
+    ]);
+    assert_eq!(expect, actual);
+
+    let expect = "current\nprebuilt";
+    let actual = garden_capture(&["--config", "tests/data/default.yaml", "cmd", "*", "name"]);
+    assert_eq!(expect, actual);
+
+    let expect = "current";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/default.yaml",
+        "cmd",
+        "--trees",
+        "cur*",
+        "*",
+        "name",
+    ]);
+    assert_eq!(expect, actual);
+
+    let expect = "prebuilt";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/default.yaml",
+        "cmd",
+        "--trees",
+        "pre*",
+        "*",
+        "name",
+    ]);
+    assert_eq!(expect, actual);
+}
+
+/// Test tree filtering using exec.
+#[test]
+fn cmd_exec_filtered_trees() {
+    let actual = garden_capture(&["--config", "tests/data/default.yaml", "exec", "*", "pwd"]);
+    assert_eq!(actual.lines().count(), 2);
+
+    let expect = "/tests/data";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/default.yaml",
+        "exec",
+        "--trees",
+        "cur*",
+        "*",
+        "pwd",
+    ]);
+    assert_eq!(actual.lines().count(), 1);
+    assert!(actual.ends_with(expect));
+
+    let expect = "/tests/data/trees/prebuilt";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/default.yaml",
+        "exec",
+        "--trees",
+        "pre*",
+        "*",
+        "pwd",
+    ]);
+    assert_eq!(actual.lines().count(), 1);
+    assert!(actual.ends_with(expect));
+}
+
 /// Test the use of $shell variables in commands.
 /// $shell variables are not expanded by garden.
 /// ${garden} variables are expanded.

@@ -14,6 +14,9 @@ pub struct CmdOptions {
     /// Continue to the next tree when errors occur
     #[arg(long, short)]
     keep_going: bool,
+    /// Filter trees by name post-query using a glob pattern
+    #[arg(long, short, default_value = "*")]
+    trees: String,
     /// Do not pass "-e" to the shell.
     /// Prevent the "errexit" shell option from being set. By default, the "-e" option
     /// is passed to the configured shell so that multi-line and multi-statement
@@ -42,6 +45,9 @@ pub struct CustomOptions {
     /// Continue to the next tree when errors occur
     #[arg(long, short)]
     keep_going: bool,
+    /// Filter trees by name post-query using a glob pattern
+    #[arg(long, short, default_value = "*")]
+    trees: String,
     /// Do not pass "-e" to the shell.
     /// Prevent the "errexit" shell option from being set. By default, the "-e" option
     /// is passed to the configured shell so that multi-line and multi-statement
@@ -67,6 +73,7 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
         debug!("arguments: {:?}", options.arguments);
+        debug!("trees: {:?}", options.trees);
     }
     if !app_context.get_root_config().shell_exit_on_error {
         options.no_errexit = true;
@@ -86,6 +93,7 @@ pub struct CmdParams {
     commands: Vec<String>,
     arguments: Vec<String>,
     queries: Vec<String>,
+    tree_pattern: glob::Pattern,
     breadth_first: bool,
     keep_going: bool,
     #[derivative(Default(value = "true"))]
@@ -101,6 +109,7 @@ impl From<CmdOptions> for CmdParams {
             breadth_first: options.breadth_first,
             exit_on_error: !options.no_errexit,
             keep_going: options.keep_going,
+            tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             ..Default::default()
         }
     }
@@ -120,6 +129,7 @@ impl From<CustomOptions> for CmdParams {
             breadth_first: true,
             keep_going: options.keep_going,
             exit_on_error: !options.no_errexit,
+            tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             ..Default::default()
         };
 
@@ -156,6 +166,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
         debug!("command: {}", name);
         debug!("queries: {:?}", options.queries);
         debug!("arguments: {:?}", options.arguments);
+        debug!("trees: {:?}", options.trees);
     }
 
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
@@ -200,6 +211,10 @@ fn run_cmd_breadth_first(
     for name in &params.commands {
         // One invocation runs multiple commands
         for context in contexts {
+            // Skip filtered trees.
+            if !params.tree_pattern.matches(&context.tree) {
+                continue;
+            }
             // Skip symlink trees.
             let config = match context.config {
                 Some(config_id) => app_context.get_config(config_id),
@@ -266,6 +281,10 @@ fn run_cmd_depth_first(
 
     // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
+        // Skip filtered trees.
+        if !params.tree_pattern.matches(&context.tree) {
+            continue;
+        }
         // Skip symlink trees.
         let config = match context.config {
             Some(config_id) => app_context.get_config(config_id),

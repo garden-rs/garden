@@ -319,10 +319,10 @@ and the top-level scope.
 # Example usage
 
 # Run the test" command in the cola and vx trees
-garden test cola vx
+garden test git-cola vx
 
 # Use "--" to forward arguments to the custom commands
-garden test cola vx -- V=1
+garden test git-cola -- --verbose
 ```
 
 Custom commands can be defined at either the tree or garden scope.
@@ -468,7 +468,7 @@ garden <command> <query> [<query>]* [-- <arguments>...]
 
 # Example usage
 garden status @git-cola .
-garden build cola -- V=1
+garden build cola/next
 ```
 
 `garden <command>` is another way to execute a user-defined `<command>`.
@@ -488,6 +488,11 @@ For example, `garden build treesitters catsitters` will run a user-defined `buil
 command over both the `treesitters`  and `catsitters` groups.
 
 Use the `garden -vv` extra-verbose option to display the commands being run.
+
+Use the `-t | --trees` option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+a commands against a subset of trees in that garden.
 
 ### Pre and Post Commands
 
@@ -552,6 +557,11 @@ custom commands from both the tree and the garden.
 Use the `garden -vv` extra-verbose option to display the command being run.
 
 Use the `--dry-run` / `-n` option to perform a trial run without running any commands.
+
+Use the `-t | --trees` option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+the `<command>` against a subset of trees in that garden.
 
 
 ## garden eval
