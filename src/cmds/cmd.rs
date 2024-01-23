@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
+use derivative::Derivative;
 
 use crate::{cli, cmd, display, errors, eval, model, query};
 
@@ -61,13 +62,16 @@ pub struct CustomOptions {
 }
 
 /// Main entry point for `garden cmd <query> <command>...`.
-pub fn main_cmd(app_context: &model::ApplicationContext, options: &CmdOptions) -> Result<()> {
+pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOptions) -> Result<()> {
     if app_context.options.debug_level("cmd") > 0 {
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
         debug!("arguments: {:?}", options.arguments);
     }
-    let params = CmdParams::from_cmd_options(options, app_context.get_root_config());
+    if !app_context.get_root_config().shell_exit_on_error {
+        options.no_errexit = true;
+    }
+    let params: CmdParams = options.clone().into();
     let exit_status = cmd(app_context, &options.query, &params)?;
 
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
@@ -76,54 +80,53 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &CmdOptions) -
 /// CmdParams are used to control the execution of run_cmd_vec().
 ///
 /// `garden cmd` and `garden <custom-cmd>` parse command line arguments into CmdParams.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Derivative)]
+#[derivative(Default)]
 pub struct CmdParams {
     commands: Vec<String>,
     arguments: Vec<String>,
     queries: Vec<String>,
     breadth_first: bool,
     keep_going: bool,
+    #[derivative(Default(value = "true"))]
     exit_on_error: bool,
 }
 
-impl CmdParams {
-    pub fn new() -> Self {
+/// Build CmdParams from a CmdOptions struct.
+impl From<CmdOptions> for CmdParams {
+    fn from(options: CmdOptions) -> Self {
         Self {
-            exit_on_error: true,
-            ..CmdParams::default()
+            commands: options.commands.clone(),
+            arguments: options.arguments.clone(),
+            breadth_first: options.breadth_first,
+            exit_on_error: !options.no_errexit,
+            keep_going: options.keep_going,
+            ..Default::default()
         }
     }
+}
 
-    /// Build CmdParams from a CmdOptions struct
-    pub fn from_cmd_options(options: &CmdOptions, config: &model::Configuration) -> Self {
-        let mut params = Self::new();
-        params.commands = options.commands.clone();
-        params.arguments = options.arguments.clone();
-        params.breadth_first = options.breadth_first;
-        params.exit_on_error = !options.no_errexit && config.shell_exit_on_error;
-        params.keep_going = options.keep_going;
+/// Build CmdParams from a CustomOptions struct
+impl From<CustomOptions> for CmdParams {
+    fn from(options: CustomOptions) -> Self {
+        let mut params = Self {
+            // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
+            arguments: options.arguments.clone(),
+            queries: options.queries.clone(),
+            // Custom commands run breadth-first. The distinction shouldn't make a difference in
+            // practice because "garden <custom-cmd> ..." is only able to run a single command, but we
+            // use breadth-first because it retains the original implementation/behavior from before
+            // --breadth-first was added to "garden cmd" and made opt-in.
+            breadth_first: true,
+            keep_going: options.keep_going,
+            exit_on_error: !options.no_errexit,
+            ..Default::default()
+        };
 
-        params
-    }
-
-    /// Build CmdParams from a CustomOptions struct
-    pub fn from_custom_options(options: &CustomOptions, config: &model::Configuration) -> Self {
-        let mut params = CmdParams::new();
-        // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
-        params.arguments = options.arguments.clone();
-        params.queries = options.queries.clone();
         // Default to "." when no queries have been specified.
         if params.queries.is_empty() {
             params.queries.push(".".into());
         }
-
-        // Custom commands run breadth-first. The distinction shouldn't make a difference in
-        // practice because "garden <custom-cmd> ..." is only able to run a single command, but we
-        // use breadth-first because it retains the original implementation/behavior from before
-        // --breadth-first was added to "garden cmd" and made opt-in.
-        params.breadth_first = true;
-        params.keep_going = options.keep_going;
-        params.exit_on_error = !options.no_errexit && config.shell_exit_on_error;
 
         params
     }
@@ -142,8 +145,12 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
     let garden_custom = format!("garden {name}");
     let cli = CustomOptions::command().bin_name(garden_custom);
     let matches = cli.get_matches_from(arguments);
-    let options = <CustomOptions as FromArgMatches>::from_arg_matches(&matches)
+
+    let mut options = <CustomOptions as FromArgMatches>::from_arg_matches(&matches)
         .map_err(format_error::<CustomOptions>)?;
+    if !app_context.get_root_config().shell_exit_on_error {
+        options.no_errexit = true;
+    }
 
     if app_context.options.debug_level("cmd") > 0 {
         debug!("command: {}", name);
@@ -151,8 +158,8 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
         debug!("arguments: {:?}", options.arguments);
     }
 
-    let mut params = CmdParams::from_custom_options(&options, app_context.get_root_config());
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
+    let mut params: CmdParams = options.clone().into();
     params.commands.push(name.to_string());
 
     cmds(app_context, &params)
@@ -169,11 +176,8 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
 /// with no garden context.
 
 fn cmd(app_context: &model::ApplicationContext, query: &str, params: &CmdParams) -> Result<i32> {
-    // Mutable scope for app.get_root_config_mut()
     let config = app_context.get_root_config_mut();
-    // Resolve the tree query into a vector of tree contexts.
     let contexts = query::resolve_trees(app_context, config, query);
-
     if params.breadth_first {
         run_cmd_breadth_first(app_context, &contexts, params)
     } else {

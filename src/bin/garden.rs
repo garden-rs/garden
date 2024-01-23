@@ -32,7 +32,7 @@ fn cmd_main() -> Result<()> {
 
     let app = model::ApplicationContext::from_options(&options)?;
     match options.command {
-        cli::Command::Cmd(cmd) => cmds::cmd::main_cmd(&app, &cmd),
+        cli::Command::Cmd(mut cmd) => cmds::cmd::main_cmd(&app, &mut cmd),
         cli::Command::Completion(_) => Ok(()), // Handled above
         cli::Command::Custom(args) => cmds::cmd::main_custom(&app, &args),
         cli::Command::Eval(eval) => cmds::eval::main(&app, &eval),
