@@ -206,18 +206,16 @@ fn grow_tree_from_context(
     Ok(exit_status)
 }
 
-/// Print a command that will be executed.
+/// Print a command from a list of arguments.
 fn print_quoted_command(command: &[&str]) {
-    let mut quoted_args: Vec<String> = Vec::new();
-    for cmd in command {
-        let quoted = shlex::quote(cmd);
-        quoted_args.push(quoted.as_ref().to_string());
-    }
-
+    let quoted_args = command
+        .iter()
+        .map(|arg| cmd::shell_quote(arg))
+        .collect::<Vec<String>>();
     print_command_str(&quoted_args.join(" "));
 }
 
-/// Print a command that will be executed from a string.
+/// Print a single command from a string.
 fn print_command_str(cmd: &str) {
     println!(
         "{} {}",

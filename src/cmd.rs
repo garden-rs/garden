@@ -261,3 +261,11 @@ pub(crate) fn expand_command_names(
 
     command_names
 }
+
+/// Shell quote a single command argument. Intended for or display purposes only.
+/// Failure to quote will pass the argument through as-is.
+pub(crate) fn shell_quote(arg: &str) -> String {
+    shlex::try_quote(arg)
+        .map(|quoted_arg| quoted_arg.to_string())
+        .unwrap_or_else(|_| arg.to_string())
+}
