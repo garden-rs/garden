@@ -51,7 +51,7 @@ flag multiple times.
 garden init [options] [<filename>]
 
 # create a local garden config rooted at the current directory
-garden init --root '${GARDEN_CONFIG_DIR}'
+garden init
 
 # create a global garden config rooted at ~/src
 garden init --global --root '~/src'
@@ -65,12 +65,15 @@ The Garden file is written to the user's `~/.config/garden/` global configuratio
 directory when `--global` is specified.
 
 This command is typically run without specifying a filename.
-After `garden init` the following files are created.
+`garden init` typically creates a `garden.yaml` in the current directory:
 
 ```
 current-directory/
 └── garden.yaml
 ```
+
+If the current directory contains a Git repository then it will be added to
+the `trees` block automatically. Use `garden init --empty` to disable this behavior.
 
 
 ## garden plant

@@ -10,6 +10,24 @@ use garden::model;
 use anyhow::Result;
 use function_name::named;
 
+/// `garden init` adds the current repository
+#[test]
+#[named]
+fn init_adds_repository() -> Result<()> {
+    let fixture = common::BareRepoFixture::new(function_name!());
+    // garden init in test/tmp/init_adds_repository
+    exec_garden(&["--chdir", &fixture.root(), "init"])?;
+    // Non-empty garden.yaml should be created
+    fixture.path("garden.yaml");
+    let pathbuf = fixture.pathbuf("garden.yaml");
+    let app_context = garden::model::ApplicationContext::from_path(pathbuf)?;
+    let cfg = app_context.get_root_config();
+    assert_eq!(1, cfg.trees.len());
+    assert_eq!(function_name!(), cfg.trees[0].get_name());
+
+    Ok(())
+}
+
 /// `garden grow` clones repositories
 #[test]
 #[named]

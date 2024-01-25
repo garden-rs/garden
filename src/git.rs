@@ -103,3 +103,29 @@ pub(crate) fn branch(path: &std::path::Path) -> Option<String> {
     // Unknown branch is an empty string.
     None
 }
+
+/// Return the root of the current repository when inside a Git repository.
+pub(crate) fn current_worktree_path(
+    path: &std::path::Path,
+) -> Result<String, errors::CommandError> {
+    let cmd = ["git", "rev-parse", "--show-toplevel"];
+    let exec = cmd::exec_in_dir(&cmd, &path);
+
+    cmd::stdout_to_string(exec)
+}
+
+/// Return a sensible default name for a tree. Parse the URL or use the path basename.
+pub(crate) fn name_from_url_or_path(url: &str, path: &std::path::Path) -> String {
+    if !url.is_empty() {
+        if let Some(name) = url
+            .rsplit('/')
+            .next()
+            .map(|name| name.trim_end_matches(".git"))
+        {
+            return name.to_string();
+        }
+    }
+    path.file_name()
+        .map(|basename| basename.to_string_lossy().to_string())
+        .unwrap_or(string!("."))
+}

@@ -9,7 +9,7 @@ use function_name::named;
 fn plant_empty_repo() -> Result<()> {
     let fixture = common::BareRepoFixture::new(function_name!());
     // garden plant in test/tmp/plant_empty_repo
-    common::exec_garden(&["--chdir", &fixture.root(), "init"])?;
+    common::exec_garden(&["--chdir", &fixture.root(), "init", "--empty"])?;
     // Empty garden.yaml should be created
     fixture.path("garden.yaml");
 
@@ -117,7 +117,7 @@ fn plant_empty_repo() -> Result<()> {
 fn plant_bare_repo() -> Result<()> {
     let fixture = common::BareRepoFixture::new(function_name!());
     // Create an empty garden.yaml using "garden init".
-    common::exec_garden(&["--chdir", &fixture.root(), "init"])?;
+    common::exec_garden(&["--chdir", &fixture.root(), "init", "--empty"])?;
 
     // garden plant repo.git
     common::exec_garden(&["--chdir", &fixture.root(), "plant", "repos/example.git"])?;
@@ -141,7 +141,7 @@ fn plant_bare_repo() -> Result<()> {
 fn plant_git_worktree() -> Result<()> {
     let fixture = common::BareRepoFixture::new(function_name!());
     // Create an empty garden.yaml using "garden init".
-    common::exec_garden(&["--chdir", &fixture.root(), "init"])?;
+    common::exec_garden(&["--chdir", &fixture.root(), "init", "--empty"])?;
 
     // Create a parent worktree called "parent" branched off of "default".
     let cmd = ["git", "clone", "--quiet", "repos/example.git", "parent"];

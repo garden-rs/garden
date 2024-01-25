@@ -863,29 +863,32 @@ where
             err: io_err,
         })?;
 
-    let mut docs =
+    let docs =
         YamlLoader::load_from_str(&string).map_err(|err| errors::GardenError::ReadConfig {
             err,
             path: path.as_ref().display().to_string(),
         })?;
-
     if docs.is_empty() {
         return Err(errors::GardenError::EmptyConfiguration {
             path: path.as_ref().into(),
         });
     }
 
-    add_missing_sections(&mut docs[0])?;
-
     Ok(docs[0].clone())
 }
 
-fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
+/// Return an empty hash table as a Yaml document.
+pub fn empty_doc() -> Yaml {
+    Yaml::Hash(yaml::Hash::new())
+}
+
+/// Add a top-level section to a Yaml configuration.
+pub(crate) fn add_section(key: &str, doc: &mut Yaml) -> Result<(), errors::GardenError> {
     // Garden core
-    let mut good = doc["garden"].as_hash().is_some();
-    if !good {
+    let exists = doc[key].as_hash().is_some();
+    if !exists {
         if let Yaml::Hash(doc_hash) = doc {
-            let key = Yaml::String("garden".into());
+            let key = Yaml::String(key.to_string());
             doc_hash.insert(key, Yaml::Hash(yaml::Hash::new()));
         } else {
             return Err(errors::GardenError::InvalidConfiguration {
@@ -894,54 +897,5 @@ fn add_missing_sections(doc: &mut Yaml) -> Result<(), errors::GardenError> {
         }
     }
 
-    // Trees
-    good = doc["trees"].as_hash().is_some();
-    if !good {
-        if let Yaml::Hash(doc_hash) = doc {
-            let key = Yaml::String("trees".into());
-            doc_hash.remove(&key);
-            doc_hash.insert(key, Yaml::Hash(yaml::Hash::new()));
-        } else {
-            return Err(errors::GardenError::InvalidConfiguration {
-                msg: "'trees' is not a hash".into(),
-            });
-        }
-    }
-
-    // Groups
-    good = doc["groups"].as_hash().is_some();
-    if !good {
-        if let Yaml::Hash(doc_hash) = doc {
-            let key = Yaml::String("groups".into());
-            doc_hash.remove(&key);
-            doc_hash.insert(key, Yaml::Hash(yaml::Hash::new()));
-        } else {
-            return Err(errors::GardenError::InvalidConfiguration {
-                msg: "'groups' is not a hash".into(),
-            });
-        }
-    }
-
-    // Gardens
-    good = doc["gardens"].as_hash().is_some();
-    if !good {
-        if let Yaml::Hash(doc_hash) = doc {
-            let key = Yaml::String("gardens".into());
-            doc_hash.remove(&key);
-            doc_hash.insert(key, Yaml::Hash(yaml::Hash::new()));
-        } else {
-            return Err(errors::GardenError::InvalidConfiguration {
-                msg: "'gardens' is not a hash".into(),
-            });
-        }
-    }
-
     Ok(())
-}
-
-pub fn empty_doc() -> Yaml {
-    let mut doc = Yaml::Hash(yaml::Hash::new());
-    add_missing_sections(&mut doc).unwrap_or(());
-
-    doc
 }

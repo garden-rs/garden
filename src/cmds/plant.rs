@@ -31,6 +31,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
         None => config.get_path()?.to_string_lossy().to_string(),
     };
     let trees_key = Yaml::String("trees".to_string());
+    config::reader::add_section("trees", &mut doc)?;
 
     // Mutable YAML scope.
     {
@@ -94,7 +95,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
     Ok(config::writer::write_yaml(&doc, output)?)
 }
 
-fn plant_path(
+pub(crate) fn plant_path(
     config: &model::Configuration,
     verbose: u8,
     raw_path: &str,
@@ -153,7 +154,7 @@ fn plant_path(
     };
 
     // Key for the tree entry
-    let key = Yaml::String(tree_name.clone());
+    let mut key = Yaml::String(tree_name.clone());
 
     // Update an existing tree entry if it already exists.
     // Add a new entry otherwise.
@@ -274,11 +275,13 @@ fn plant_path(
     }
 
     // Update the "url" field.
+    let mut url = String::new();
     {
         let remote_url = format!("remote.{default_remote}.url");
         let command = ["git", "config", remote_url.as_str()];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(remote_url) = cmd::stdout_to_string(exec) {
+            url = remote_url.clone();
             entry.insert(url_key, Yaml::String(remote_url));
         }
     }
@@ -301,6 +304,12 @@ fn plant_path(
                 entry.insert(bare_key, Yaml::Boolean(true));
             }
         }
+    }
+
+    // Parse the tree name from the URL.
+    if tree_name.is_empty() {
+        let tree_name = git::name_from_url_or_path(&url, &path);
+        key = Yaml::String(tree_name);
     }
 
     // Move the entry into the trees container

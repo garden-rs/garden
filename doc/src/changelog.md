@@ -34,6 +34,10 @@
   the full set of environment variables from all trees in the query while
   executing commands over a subset of the trees in that garden.
 
+- `garden init` will now add the current directory to the `trees` block
+  when the current directory contains a Git repository. Use `garden init --empty`
+  to disable this behavior.
+
 **Development**:
 
 - The `shlex` dependency was upgraded to `1.3.0`, which includes fixes for

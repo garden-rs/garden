@@ -2,11 +2,14 @@ use anyhow::Result;
 use clap::{Parser, ValueHint};
 use yaml_rust::{yaml, Yaml};
 
-use crate::{cli, config, errors, path};
+use crate::{cli, cmds::plant, config, errors, git, model, path};
 
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct InitOptions {
+    /// Do not add any trees when initializing
+    #[arg(long)]
+    pub empty: bool,
     /// Overwrite existing config files
     #[arg(long, short)]
     pub force: bool,
@@ -52,7 +55,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
         dirname = config::xdg_dir();
     }
 
-    let mut config_path = dirname;
+    let mut config_path = dirname.clone();
     config_path.push(&init_options.filename);
 
     if !init_options.force && config_path.exists() {
@@ -88,8 +91,28 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
         config::reader::empty_doc()
     };
 
+    let mut config = model::Configuration::new();
+    config.root = model::Variable::new(init_options.root.clone(), None);
+    config.root_path = dirname.clone();
+    config.path = Some(config_path.clone());
+
+    let mut done = false;
+    if !init_options.empty && init_options.root == "${GARDEN_CONFIG_DIR}" {
+        let git_worktree = git::current_worktree_path(&dirname);
+        if let Ok(worktree) = git_worktree {
+            config::reader::add_section("trees", &mut doc)?;
+            if let Yaml::Hash(ref mut doc_hash) = doc {
+                let trees_key = Yaml::String("trees".into());
+                if let Some(Yaml::Hash(trees)) = doc_hash.get_mut(&trees_key) {
+                    done = plant::plant_path(&config, options.verbose, &worktree, trees).is_ok();
+                }
+            }
+        }
+    }
+
     // Mutable scope
-    {
+    if !done || init_options.root != "${GARDEN_CONFIG_DIR}" {
+        config::reader::add_section("garden", &mut doc)?;
         if let Yaml::Hash(ref mut doc_hash) = doc {
             let garden_key = Yaml::String("garden".into());
             let garden: &mut yaml::Hash = match doc_hash.get_mut(&garden_key) {
@@ -113,7 +136,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
         if exists {
             eprintln!("Reinitialized Garden configuration in {config_path:?}");
         } else {
-            eprintln!("Initialized empty Garden configuration in {config_path:?}");
+            eprintln!("Initialized Garden configuration in {config_path:?}");
         }
     }
 
