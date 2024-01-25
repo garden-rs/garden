@@ -46,10 +46,32 @@ pub(crate) fn capture_stdout(
     exec: subprocess::Exec,
 ) -> Result<subprocess::CaptureData, errors::CommandError> {
     let command = exec.to_cmdline_lossy();
-    exec.stdout(subprocess::Redirection::Pipe)
+    let capture = exec
+        .stdout(subprocess::Redirection::Pipe)
         .stderr(subprocess::NullFile {}) // Redirect stderr to /dev/null
-        .capture()
-        .map_err(|popen_err| command_error_from_popen_error(command, popen_err))
+        .capture();
+
+    match capture {
+        Ok(result) => {
+            let status = exit_status(result.exit_status);
+            if status == 0 {
+                Ok(result)
+            } else {
+                Err(errors::CommandError::ExitStatus { command, status })
+            }
+        }
+        Err(err) => Err(command_error_from_popen_error(command, err)),
+    }
+}
+
+/// Convert subprocess::ExitStatus into a CommandError
+pub(crate) fn exit_status(status: subprocess::ExitStatus) -> i32 {
+    match status {
+        subprocess::ExitStatus::Exited(status) => status as i32,
+        subprocess::ExitStatus::Signaled(status) => status as i32,
+        subprocess::ExitStatus::Other(status) => status,
+        subprocess::ExitStatus::Undetermined => errors::EX_ERROR,
+    }
 }
 
 /// Return a trimmed stdout string for an subprocess::Exec instance.
