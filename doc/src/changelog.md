@@ -1,5 +1,7 @@
 # Changelog
 
+*Released 2023-01-27*
+
 ## v1.2.0
 
 **Features**:
