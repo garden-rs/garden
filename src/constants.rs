@@ -1,7 +1,14 @@
 /// The "cmd" debug level
 pub const DEBUG_LEVEL_CMD: &str = "cmd";
 
+/// THe default tree query argument.
 pub(crate) const DOT: &str = ".";
+
+/// The "PATH" environment variable name.
+pub(crate) const ENV_PATH: &str = "PATH";
+
+// THe "PWD" environment variable name.
+pub(crate) const ENV_PWD: &str = "PWD";
 
 /// The "garden" command
 pub const GARDEN: &str = "garden";

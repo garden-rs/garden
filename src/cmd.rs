@@ -1,4 +1,4 @@
-use crate::{display, errors, eval, model, syntax};
+use crate::{constants, display, errors, eval, model, syntax};
 
 /// Convert an exit status to Result<(), GardenError>.
 pub(crate) fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
@@ -97,7 +97,7 @@ where
     P: AsRef<std::path::Path> + std::convert::AsRef<std::ffi::OsStr> + ?Sized,
     S: AsRef<std::ffi::OsStr>,
 {
-    exec_cmd(command).cwd(path).env("PWD", path)
+    exec_cmd(command).cwd(path).env(constants::ENV_PWD, path)
 }
 
 /// Run a command in the specified tree context.
@@ -165,7 +165,7 @@ where
     if !cmd_path.is_absolute() {
         for (name, value) in env {
             // Loop until we find PATH.
-            if name == "PATH" {
+            if name == constants::ENV_PATH {
                 if let Some(path_buf) = std::env::split_paths(&value).find_map(|dir| {
                     let full_path = dir.join(&cmd_path);
                     if full_path.is_file() {
@@ -197,7 +197,7 @@ where
 /// Return the current executable path.
 pub(crate) fn current_exe() -> String {
     match std::env::current_exe() {
-        Err(_) => "garden".into(),
+        Err(_) => constants::GARDEN.into(),
         Ok(path) => path.to_string_lossy().into(),
     }
 }
