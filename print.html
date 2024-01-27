@@ -556,7 +556,7 @@ flag multiple times.</p>
 <pre><code class="language-bash">garden init [options] [&lt;filename&gt;]
 
 # create a local garden config rooted at the current directory
-garden init --root '${GARDEN_CONFIG_DIR}'
+garden init
 
 # create a global garden config rooted at ~/src
 garden init --global --root '~/src'
@@ -567,10 +567,12 @@ boilerplate to start using garden. If no <code>&lt;filename&gt;</code> is specif
 <p>The Garden file is written to the user's <code>~/.config/garden/</code> global configuration
 directory when <code>--global</code> is specified.</p>
 <p>This command is typically run without specifying a filename.
-After <code>garden init</code> the following files are created.</p>
+<code>garden init</code> typically creates a <code>garden.yaml</code> in the current directory:</p>
 <pre><code>current-directory/
 └── garden.yaml
 </code></pre>
+<p>If the current directory contains a Git repository then it will be added to
+the <code>trees</code> block automatically. Use <code>garden init --empty</code> to disable this behavior.</p>
 <h2 id="garden-plant"><a class="header" href="#garden-plant">garden plant</a></h2>
 <pre><code class="language-bash">garden plant &lt;tree&gt;
 </code></pre>
@@ -599,6 +601,9 @@ one that was provided to you, then you will need to grow the Git trees
 into existence.</p>
 <p>The <code>grow</code> sub-command updates or creates the trees matched by the <code>&lt;tree-query&gt;</code>
 and places them into the paths defined by the garden file.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern for filtering trees by
+name post-query. This lets you filter a tree query so that only a subset of the
+trees in the query are grown.</p>
 <p>It is safe to re-run the <code>grow</code> command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
 repositories are created by cloning the configured tree URL.</p>
@@ -735,10 +740,10 @@ and the top-level scope.</p>
 <pre><code class="language-bash"># Example usage
 
 # Run the test&quot; command in the cola and vx trees
-garden test cola vx
+garden test git-cola vx
 
 # Use &quot;--&quot; to forward arguments to the custom commands
-garden test cola vx -- V=1
+garden test git-cola -- --verbose
 </code></pre>
 <p>Custom commands can be defined at either the tree or garden scope.
 Commands defined at the garden scope extend commands defined on a tree.
@@ -850,7 +855,7 @@ traversal runs the <code>build</code> command over <em>all</em> of the trees in 
 
 # Example usage
 garden status @git-cola .
-garden build cola -- V=1
+garden build cola/next
 </code></pre>
 <p><code>garden &lt;command&gt;</code> is another way to execute a user-defined <code>&lt;command&gt;</code>.
 This form allows you to specify multiple queries rather than multiple commands.</p>
@@ -863,6 +868,10 @@ garden or tree scope.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+a commands against a subset of trees in that garden.</p>
 <h3 id="pre-and-post-commands"><a class="header" href="#pre-and-post-commands">Pre and Post Commands</a></h3>
 <p>Commands can specify references to other commands that should be run before and/or after
 a command.</p>
@@ -920,6 +929,10 @@ is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
 <p>Use the <code>--dry-run</code> / <code>-n</code> option to perform a trial run without running any commands.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+the <code>&lt;command&gt;</code> against a subset of trees in that garden.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
 <pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 
@@ -954,10 +967,13 @@ creating the shell.</p>
 <pre><code>garden ls [options] [&lt;tree-query&gt;...]
 </code></pre>
 <p>Display configured information about trees and commands.
-Tree details are not displayed for missing / ungrown trees.
-Use the <code>-a</code> option to display details for missing trees.</p>
+Tree details are not displayed for missing / ungrown trees.</p>
+<p>Use the <code>-a | --all</code> option to display details for missing trees.</p>
 <p>If no tree-queries are specified then <code>garden ls</code> behaves as if
 <code>garden ls '@*'</code> were specified, which displays all trees.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern that can be used to
+filter trees by name post-query. This is useful when you want to list details
+about a group or garden while only listing details about a subset of the trees.</p>
 <h2 id="garden-prune"><a class="header" href="#garden-prune">garden prune</a></h2>
 <pre><code>garden prune [options] [&lt;subdirs&gt;...]
 </code></pre>
@@ -1102,45 +1118,56 @@ these same locations for <code>custom.yaml</code> instead of <code>garden.yaml</
 when showing examples.</p>
 <pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
 #
-# The following gardens are defined: &quot;cola&quot;, &quot;cola-main&quot; and &quot;cola-next&quot;.
+# The following gardens are defined: &quot;cola&quot;, &quot;cola/main&quot; and &quot;cola/next&quot;.
 #
 # The &quot;cola&quot; garden runs git-cola using the &quot;git&quot; command from your $PATH.
-# The &quot;cola-main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
-# The &quot;cola-next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
+# The &quot;cola/main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
+# The &quot;cola/next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
 #
 # One-time Setup:
 #
 # * Clone repositories and create worktrees:
 #
-#   garden grow cola-main cola-next
+#   garden grow cola/main cola/next
 #
 # * Initialize git-cola's Python virtualenv environment.
+#
 #   garden setup cola
 #
 # Development workflows:
 #
-# * Build the &quot;cola-main&quot; garden using git.git's &quot;main&quot; branch:
-#   garden build cola-main
+# * Build the &quot;cola/main&quot; garden using git.git's &quot;main&quot; branch:
+#   garden build cola/main
 #
-# * Build the &quot;cola-next&quot; garden using git.git's &quot;next&quot; branch:
-#   garden build cola-next
+# * Build the &quot;cola/next&quot; garden using git.git's &quot;next&quot; branch:
+#   garden build cola/next
 #
-# * Run Git Cola's tests in each environment.
-#   garden test/git-cola cola
-#   garden test/git-cola cola-main
-#   garden test/git-cola cola-next
+# * Run Git Cola
+#   garden run
 #
-# * Run Git Cola in each environment.
-#   garden run cola
-#   garden run cola-main
-#   garden run cola-next
+# * Run Git Cola on the git/next and git-cola trees using the cola/next garden environment:
+#   garden run --trees git/next cola/next
+#   garden run -t git-cola cola/next
+#
+# * Open a shell for running Git Cola in different enviornments
+#   garden shell cola/main
+#   garden shell cola/next
+#
+# * Run just Git Cola's tests in each environment.
+#   garden test/cola cola
+#   garden test/cola cola/main
+#   garden test/cola cola/next
+#
+# * Run tests for all projects in each environment. Also runs Git's testsuite.
+#   garden test cola
+#   garden test cola/main
+#   garden test cola/next
 
 # The following variables are used in the custom commands below.
 variables:
-  # A virtualenv is created in the ./dist directory.
-  prefix: ${GARDEN_ROOT}/dist
-  num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
-  python: python3
+  # A virtualenv is created in the ./dist/git-cola/env3 directory.
+  prefix: ${GARDEN_ROOT}/git-cola/env3
+  jobs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
 
 commands:
   add-all: git add --update
@@ -1160,10 +1187,10 @@ templates:
       PYTHONPATH: ${TREE_PATH}
   makefile:
     commands:
-      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
-      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
-      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
+      build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+      install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+      doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
   # git/main is the parent worktree that shares its .git storage with the child
@@ -1180,16 +1207,14 @@ trees:
 
   # git-cola's worktree can be reused alongside any of the git/* trees defined above.
   git-cola:
-    url: https://github.com/git-cola/git-cola.git
-    templates: [bin, makefile, python]
+    url: https://gitlab.com/git-cola/git-cola.git
+    templates: [bin, python]
     commands:
-      setup: |
-        ${python} -m venv ${prefix}
-        vx ${prefix} make requirements
-        vx ${prefix} make requirements-dev
-        vx ${prefix} make requirements-optional
-      # Run just git-cola's tests
-      test/git-cola: make test &quot;$@&quot;
+      setup: garden dev
+      test/cola: garden test &quot;$@&quot;
+      install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: garden test &quot;$@&quot;
+      doc: garden doc &quot;$@&quot;
 
   qtpy:
     description: Qt abstraction library used by git-cola
@@ -1221,12 +1246,12 @@ gardens:
     groups: cola-repos-grp
     environment:
       PATH: ${prefix}/bin
-  cola-main:
+  cola/main:
     groups: cola-repos-grp
     trees: git/main
     environment:
       PATH: ${prefix}/bin
-  cola-next:
+  cola/next:
     groups: cola-repos-grp
     trees: git/next
     environment:
@@ -1769,45 +1794,56 @@ development virtualenv is present in the <code>./dist</code> directory.</p>
 <p>The following is the contents of the <code>garden.yaml</code> file used in this example.</p>
 <pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
 #
-# The following gardens are defined: &quot;cola&quot;, &quot;cola-main&quot; and &quot;cola-next&quot;.
+# The following gardens are defined: &quot;cola&quot;, &quot;cola/main&quot; and &quot;cola/next&quot;.
 #
 # The &quot;cola&quot; garden runs git-cola using the &quot;git&quot; command from your $PATH.
-# The &quot;cola-main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
-# The &quot;cola-next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
+# The &quot;cola/main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
+# The &quot;cola/next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
 #
 # One-time Setup:
 #
 # * Clone repositories and create worktrees:
 #
-#   garden grow cola-main cola-next
+#   garden grow cola/main cola/next
 #
 # * Initialize git-cola's Python virtualenv environment.
+#
 #   garden setup cola
 #
 # Development workflows:
 #
-# * Build the &quot;cola-main&quot; garden using git.git's &quot;main&quot; branch:
-#   garden build cola-main
+# * Build the &quot;cola/main&quot; garden using git.git's &quot;main&quot; branch:
+#   garden build cola/main
 #
-# * Build the &quot;cola-next&quot; garden using git.git's &quot;next&quot; branch:
-#   garden build cola-next
+# * Build the &quot;cola/next&quot; garden using git.git's &quot;next&quot; branch:
+#   garden build cola/next
 #
-# * Run Git Cola's tests in each environment.
-#   garden test/git-cola cola
-#   garden test/git-cola cola-main
-#   garden test/git-cola cola-next
+# * Run Git Cola
+#   garden run
 #
-# * Run Git Cola in each environment.
-#   garden run cola
-#   garden run cola-main
-#   garden run cola-next
+# * Run Git Cola on the git/next and git-cola trees using the cola/next garden environment:
+#   garden run --trees git/next cola/next
+#   garden run -t git-cola cola/next
+#
+# * Open a shell for running Git Cola in different enviornments
+#   garden shell cola/main
+#   garden shell cola/next
+#
+# * Run just Git Cola's tests in each environment.
+#   garden test/cola cola
+#   garden test/cola cola/main
+#   garden test/cola cola/next
+#
+# * Run tests for all projects in each environment. Also runs Git's testsuite.
+#   garden test cola
+#   garden test cola/main
+#   garden test cola/next
 
 # The following variables are used in the custom commands below.
 variables:
-  # A virtualenv is created in the ./dist directory.
-  prefix: ${GARDEN_ROOT}/dist
-  num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
-  python: python3
+  # A virtualenv is created in the ./dist/git-cola/env3 directory.
+  prefix: ${GARDEN_ROOT}/git-cola/env3
+  jobs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
 
 commands:
   add-all: git add --update
@@ -1827,10 +1863,10 @@ templates:
       PYTHONPATH: ${TREE_PATH}
   makefile:
     commands:
-      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
-      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
-      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
+      build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+      install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+      doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
   # git/main is the parent worktree that shares its .git storage with the child
@@ -1847,16 +1883,14 @@ trees:
 
   # git-cola's worktree can be reused alongside any of the git/* trees defined above.
   git-cola:
-    url: https://github.com/git-cola/git-cola.git
-    templates: [bin, makefile, python]
+    url: https://gitlab.com/git-cola/git-cola.git
+    templates: [bin, python]
     commands:
-      setup: |
-        ${python} -m venv ${prefix}
-        vx ${prefix} make requirements
-        vx ${prefix} make requirements-dev
-        vx ${prefix} make requirements-optional
-      # Run just git-cola's tests
-      test/git-cola: make test &quot;$@&quot;
+      setup: garden dev
+      test/cola: garden test &quot;$@&quot;
+      install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: garden test &quot;$@&quot;
+      doc: garden doc &quot;$@&quot;
 
   qtpy:
     description: Qt abstraction library used by git-cola
@@ -1888,12 +1922,12 @@ gardens:
     groups: cola-repos-grp
     environment:
       PATH: ${prefix}/bin
-  cola-main:
+  cola/main:
     groups: cola-repos-grp
     trees: git/main
     environment:
       PATH: ${prefix}/bin
-  cola-next:
+  cola/next:
     groups: cola-repos-grp
     trees: git/next
     environment:
@@ -2002,6 +2036,7 @@ trees:
       uname: $ uname -a
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<p><em>Released 2023-01-27</em></p>
 <h2 id="v120"><a class="header" href="#v120">v1.2.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
@@ -2033,6 +2068,25 @@ containing the garden file when a configuration file is found.</p>
 used to limit the <code>garden.yaml</code> discovery by preventing <code>garden</code> from traversing
 into and beyond the specified directories when discovering garden files.</p>
 </li>
+<li>
+<p><code>garden exec</code>, <code>garden cmd</code> <code>garden grow</code>, <code>garden ls</code> and custom garden commands
+can now filter the trees they operate over by passing a glob pattern using
+<code>-t | --trees</code> option. These commands will only operate on the trees whose names
+match the pattern. This allows you to specify a garden as the tree query and use
+the full set of environment variables from all trees in the query while
+executing commands over a subset of the trees in that garden.</p>
+</li>
+<li>
+<p><code>garden init</code> will now add the current directory to the <code>trees</code> block
+when the current directory contains a Git repository. Use <code>garden init --empty</code>
+to disable this behavior.</p>
+</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>The <code>shlex</code> dependency was upgraded to <code>1.3.0</code>, which includes fixes for
+<a href="https://rustsec.org/advisories/RUSTSEC-2024-0006.html">RUSTSEC-2024-0006</a> a.k.a.
+<a href="https://github.com/comex/rust-shlex/security/advisories/GHSA-r7qv-8r2h-pg27">GHSA-r7qv-8r2h-pg27</a>.</li>
 </ul>
 <h2 id="v110"><a class="header" href="#v110">v1.1.0</a></h2>
 <p><em>Released 2023-01-15</em></p>

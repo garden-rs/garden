@@ -218,7 +218,7 @@ flag multiple times.</p>
 <pre><code class="language-bash">garden init [options] [&lt;filename&gt;]
 
 # create a local garden config rooted at the current directory
-garden init --root '${GARDEN_CONFIG_DIR}'
+garden init
 
 # create a global garden config rooted at ~/src
 garden init --global --root '~/src'
@@ -229,10 +229,12 @@ boilerplate to start using garden. If no <code>&lt;filename&gt;</code> is specif
 <p>The Garden file is written to the user's <code>~/.config/garden/</code> global configuration
 directory when <code>--global</code> is specified.</p>
 <p>This command is typically run without specifying a filename.
-After <code>garden init</code> the following files are created.</p>
+<code>garden init</code> typically creates a <code>garden.yaml</code> in the current directory:</p>
 <pre><code>current-directory/
 └── garden.yaml
 </code></pre>
+<p>If the current directory contains a Git repository then it will be added to
+the <code>trees</code> block automatically. Use <code>garden init --empty</code> to disable this behavior.</p>
 <h2 id="garden-plant"><a class="header" href="#garden-plant">garden plant</a></h2>
 <pre><code class="language-bash">garden plant &lt;tree&gt;
 </code></pre>
@@ -261,6 +263,9 @@ one that was provided to you, then you will need to grow the Git trees
 into existence.</p>
 <p>The <code>grow</code> sub-command updates or creates the trees matched by the <code>&lt;tree-query&gt;</code>
 and places them into the paths defined by the garden file.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern for filtering trees by
+name post-query. This lets you filter a tree query so that only a subset of the
+trees in the query are grown.</p>
 <p>It is safe to re-run the <code>grow</code> command and re-grow a tree.  Existing trees will
 have their git configuration updated to match the configured remotes.  Missing
 repositories are created by cloning the configured tree URL.</p>
@@ -397,10 +402,10 @@ and the top-level scope.</p>
 <pre><code class="language-bash"># Example usage
 
 # Run the test&quot; command in the cola and vx trees
-garden test cola vx
+garden test git-cola vx
 
 # Use &quot;--&quot; to forward arguments to the custom commands
-garden test cola vx -- V=1
+garden test git-cola -- --verbose
 </code></pre>
 <p>Custom commands can be defined at either the tree or garden scope.
 Commands defined at the garden scope extend commands defined on a tree.
@@ -512,7 +517,7 @@ traversal runs the <code>build</code> command over <em>all</em> of the trees in 
 
 # Example usage
 garden status @git-cola .
-garden build cola -- V=1
+garden build cola/next
 </code></pre>
 <p><code>garden &lt;command&gt;</code> is another way to execute a user-defined <code>&lt;command&gt;</code>.
 This form allows you to specify multiple queries rather than multiple commands.</p>
@@ -525,6 +530,10 @@ garden or tree scope.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+a commands against a subset of trees in that garden.</p>
 <h3 id="pre-and-post-commands"><a class="header" href="#pre-and-post-commands">Pre and Post Commands</a></h3>
 <p>Commands can specify references to other commands that should be run before and/or after
 a command.</p>
@@ -582,6 +591,10 @@ is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
 <p>Use the <code>--dry-run</code> / <code>-n</code> option to perform a trial run without running any commands.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+the <code>&lt;command&gt;</code> against a subset of trees in that garden.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
 <pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 
@@ -616,10 +629,13 @@ creating the shell.</p>
 <pre><code>garden ls [options] [&lt;tree-query&gt;...]
 </code></pre>
 <p>Display configured information about trees and commands.
-Tree details are not displayed for missing / ungrown trees.
-Use the <code>-a</code> option to display details for missing trees.</p>
+Tree details are not displayed for missing / ungrown trees.</p>
+<p>Use the <code>-a | --all</code> option to display details for missing trees.</p>
 <p>If no tree-queries are specified then <code>garden ls</code> behaves as if
 <code>garden ls '@*'</code> were specified, which displays all trees.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern that can be used to
+filter trees by name post-query. This is useful when you want to list details
+about a group or garden while only listing details about a subset of the trees.</p>
 <h2 id="garden-prune"><a class="header" href="#garden-prune">garden prune</a></h2>
 <pre><code>garden prune [options] [&lt;subdirs&gt;...]
 </code></pre>

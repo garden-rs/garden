@@ -217,45 +217,56 @@ these same locations for <code>custom.yaml</code> instead of <code>garden.yaml</
 when showing examples.</p>
 <pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
 #
-# The following gardens are defined: &quot;cola&quot;, &quot;cola-main&quot; and &quot;cola-next&quot;.
+# The following gardens are defined: &quot;cola&quot;, &quot;cola/main&quot; and &quot;cola/next&quot;.
 #
 # The &quot;cola&quot; garden runs git-cola using the &quot;git&quot; command from your $PATH.
-# The &quot;cola-main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
-# The &quot;cola-next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
+# The &quot;cola/main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
+# The &quot;cola/next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
 #
 # One-time Setup:
 #
 # * Clone repositories and create worktrees:
 #
-#   garden grow cola-main cola-next
+#   garden grow cola/main cola/next
 #
 # * Initialize git-cola's Python virtualenv environment.
+#
 #   garden setup cola
 #
 # Development workflows:
 #
-# * Build the &quot;cola-main&quot; garden using git.git's &quot;main&quot; branch:
-#   garden build cola-main
+# * Build the &quot;cola/main&quot; garden using git.git's &quot;main&quot; branch:
+#   garden build cola/main
 #
-# * Build the &quot;cola-next&quot; garden using git.git's &quot;next&quot; branch:
-#   garden build cola-next
+# * Build the &quot;cola/next&quot; garden using git.git's &quot;next&quot; branch:
+#   garden build cola/next
 #
-# * Run Git Cola's tests in each environment.
-#   garden test/git-cola cola
-#   garden test/git-cola cola-main
-#   garden test/git-cola cola-next
+# * Run Git Cola
+#   garden run
 #
-# * Run Git Cola in each environment.
-#   garden run cola
-#   garden run cola-main
-#   garden run cola-next
+# * Run Git Cola on the git/next and git-cola trees using the cola/next garden environment:
+#   garden run --trees git/next cola/next
+#   garden run -t git-cola cola/next
+#
+# * Open a shell for running Git Cola in different enviornments
+#   garden shell cola/main
+#   garden shell cola/next
+#
+# * Run just Git Cola's tests in each environment.
+#   garden test/cola cola
+#   garden test/cola cola/main
+#   garden test/cola cola/next
+#
+# * Run tests for all projects in each environment. Also runs Git's testsuite.
+#   garden test cola
+#   garden test cola/main
+#   garden test cola/next
 
 # The following variables are used in the custom commands below.
 variables:
-  # A virtualenv is created in the ./dist directory.
-  prefix: ${GARDEN_ROOT}/dist
-  num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
-  python: python3
+  # A virtualenv is created in the ./dist/git-cola/env3 directory.
+  prefix: ${GARDEN_ROOT}/git-cola/env3
+  jobs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
 
 commands:
   add-all: git add --update
@@ -275,10 +286,10 @@ templates:
       PYTHONPATH: ${TREE_PATH}
   makefile:
     commands:
-      build: make -j ${num_procs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
-      install: make -j ${num_procs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-      test: make -j ${num_procs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
-      doc: make -j ${num_procs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
+      build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+      install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+      doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
   # git/main is the parent worktree that shares its .git storage with the child
@@ -295,16 +306,14 @@ trees:
 
   # git-cola's worktree can be reused alongside any of the git/* trees defined above.
   git-cola:
-    url: https://github.com/git-cola/git-cola.git
-    templates: [bin, makefile, python]
+    url: https://gitlab.com/git-cola/git-cola.git
+    templates: [bin, python]
     commands:
-      setup: |
-        ${python} -m venv ${prefix}
-        vx ${prefix} make requirements
-        vx ${prefix} make requirements-dev
-        vx ${prefix} make requirements-optional
-      # Run just git-cola's tests
-      test/git-cola: make test &quot;$@&quot;
+      setup: garden dev
+      test/cola: garden test &quot;$@&quot;
+      install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+      test: garden test &quot;$@&quot;
+      doc: garden doc &quot;$@&quot;
 
   qtpy:
     description: Qt abstraction library used by git-cola
@@ -336,12 +345,12 @@ gardens:
     groups: cola-repos-grp
     environment:
       PATH: ${prefix}/bin
-  cola-main:
+  cola/main:
     groups: cola-repos-grp
     trees: git/main
     environment:
       PATH: ${prefix}/bin
-  cola-next:
+  cola/next:
     groups: cola-repos-grp
     trees: git/next
     environment:
