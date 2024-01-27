@@ -1,4 +1,4 @@
-use crate::{cmd, errors, model, path};
+use crate::{cmd, constants, errors, model, path};
 
 /// Return Ok(garden::model::GitTreeDetails) for the specified path on success
 /// or Err(garden::errors::CommandError) when Git commands error out.
@@ -127,5 +127,5 @@ pub(crate) fn name_from_url_or_path(url: &str, path: &std::path::Path) -> String
     }
     path.file_name()
         .map(|basename| basename.to_string_lossy().to_string())
-        .unwrap_or(string!("."))
+        .unwrap_or(string!(constants::DOT))
 }

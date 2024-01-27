@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{display, model, query};
+use crate::{constants, display, model, query};
 
 /// Query tree status
 #[derive(Parser, Clone, Debug)]
@@ -40,7 +40,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let verbose = app_context.options.verbose;
     let mut needs_newline = false;
 
-    if app_context.options.debug_level("list") > 0 {
+    if app_context.options.debug_level(constants::DEBUG_LEVEL_LIST) > 0 {
         debug!("queries: {:?}", options.queries);
     }
 

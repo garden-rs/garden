@@ -1,4 +1,4 @@
-use crate::{errors, eval, model, path, query, syntax};
+use crate::{constants, errors, eval, model, path, query, syntax};
 
 /// Resolve a tree query into a `Vec<garden::model::TreeContext>`.
 ///
@@ -310,7 +310,10 @@ fn tree_from_pathbuf(
     // current directory is not a configured tree. Fallback to treating "." as
     // the garden config directory to find either configured trees at the root
     // or the implicit default tree when "trees" is omitted.
-    let is_dot = path.to_str().map(|value| value == ".").unwrap_or_default();
+    let is_dot = path
+        .to_str()
+        .map(|value| value == constants::DOT)
+        .unwrap_or_default();
     if is_dot {
         if let Some(ref dirname) = config.dirname {
             for (name, tree) in &config.trees {

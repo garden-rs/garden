@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{cmd, display, errors, eval, git, model, query};
+use crate::{cmd, constants, display, errors, eval, git, model, query};
 
 type GitConfigMap = HashMap<String, HashSet<String>>;
 
@@ -152,7 +152,7 @@ fn grow_tree_from_context(
     }
 
     // "git clone --remote <name>" uses an alternatively-named remote instead of "origin".
-    if tree.default_remote != "origin" {
+    if tree.default_remote != constants::ORIGIN {
         cmd.push("--origin");
         cmd.push(&tree.default_remote);
     }
@@ -281,7 +281,7 @@ fn update_tree_from_context(
     }
 
     // The "default-remote" field is used to change the name of the default "origin" remote.
-    if tree.default_remote != "origin" {
+    if tree.default_remote != constants::ORIGIN {
         set_gitconfig_value("checkout.defaultRemoteName", &tree.default_remote, path);
     }
 

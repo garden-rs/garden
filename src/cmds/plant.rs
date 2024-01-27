@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Parser, ValueHint};
 use yaml_rust::{yaml, Yaml};
 
-use crate::{cmd, config, errors, git, model, path, query};
+use crate::{cmd, config, constants, errors, git, model, path, query};
 
 // Add pre-existing worktrees to a garden configuration file
 #[derive(Parser, Clone, Debug)]
@@ -30,8 +30,8 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
         Some(output) => output.to_string(),
         None => config.get_path()?.to_string_lossy().to_string(),
     };
-    let trees_key = Yaml::String("trees".to_string());
-    config::reader::add_section("trees", &mut doc)?;
+    let trees_key = Yaml::String(constants::TREES.to_string());
+    config::reader::add_section(constants::TREES, &mut doc)?;
 
     // Mutable YAML scope.
     {
@@ -171,11 +171,11 @@ pub(crate) fn plant_path(
     // If this is a child worktree then record a "worktree" entry only.
     if is_worktree {
         entry.insert(
-            Yaml::String("worktree".to_string()),
+            Yaml::String(constants::WORKTREE.to_string()),
             Yaml::String(parent_tree_name),
         );
         entry.insert(
-            Yaml::String("branch".to_string()),
+            Yaml::String(constants::BRANCH.to_string()),
             Yaml::String(worktree_details.branch.to_string()),
         );
 
@@ -189,7 +189,7 @@ pub(crate) fn plant_path(
         return Ok(());
     }
 
-    let remotes_key = Yaml::String("remotes".into());
+    let remotes_key = Yaml::String(constants::REMOTES.into());
     let has_remotes = match entry.get(&remotes_key) {
         Some(remotes_yaml) => remotes_yaml.as_hash().is_some(),
         None => false,
@@ -197,7 +197,7 @@ pub(crate) fn plant_path(
 
     // Attempt to get the default remote from "checkout.defaultRemoteName".
     // This can be used to set the default remote name when multiple remotes exist.
-    let mut default_remote = "origin".to_string();
+    let mut default_remote = constants::ORIGIN.to_string();
     let command = ["git", "config", "checkout.defaultRemoteName"];
     let exec = cmd::exec_in_dir(&command, &path);
     if let Ok(output) = cmd::stdout_to_string(exec) {
@@ -269,7 +269,7 @@ pub(crate) fn plant_path(
         }
     }
 
-    let url_key = Yaml::String("url".into());
+    let url_key = Yaml::String(constants::URL.into());
     if verbose > 0 && entry.contains_key(&url_key) {
         eprintln!("{tree_name}: no url");
     }
@@ -287,16 +287,16 @@ pub(crate) fn plant_path(
     }
 
     // Update the "default-remote" field.
-    if default_remote != "origin" {
+    if default_remote != constants::ORIGIN {
         entry.insert(
-            Yaml::String("default-remote".into()),
+            Yaml::String(constants::DEFAULT_REMOTE.into()),
             Yaml::String(default_remote),
         );
     }
 
     // Update the "bare" field.
     {
-        let bare_key = Yaml::String("bare".into());
+        let bare_key = Yaml::String(constants::BARE.into());
         let command = ["git", "config", "--bool", "core.bare"];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(is_bare) = cmd::stdout_to_string(exec) {

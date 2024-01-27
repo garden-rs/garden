@@ -10,7 +10,7 @@ use strum::VariantNames;
 use strum_macros;
 use which::which;
 
-use crate::{cli, collections, config, errors, eval, path, syntax};
+use crate::{cli, collections, config, constants, errors, eval, path, syntax};
 
 /// TreeName keys into config.trees
 pub type TreeName = String;
@@ -285,13 +285,13 @@ impl Tree {
     /// Add the builtin TREE_NAME and TREE_PATH variables.
     pub(crate) fn add_builtin_variables(&mut self) {
         self.variables.insert(
-            string!("TREE_NAME"),
+            string!(constants::TREE_NAME),
             Variable::new(self.get_name().clone(), None),
         );
 
         // Register the ${TREE_PATH} variable.
         self.variables.insert(
-            string!("TREE_PATH"),
+            string!(constants::TREE_PATH),
             Variable::new(self.get_path().get_expr().clone(), None),
         );
     }
@@ -449,14 +449,14 @@ pub type GardenMap = IndexMap<GardenName, Garden>;
 
 /// Return the default shell to use for custom commands and "garden shell".
 fn get_default_shell() -> String {
-    if which("zsh").is_ok() {
-        "zsh"
-    } else if which("bash").is_ok() {
-        "bash"
-    } else if which("dash").is_ok() {
-        "dash"
+    if which(constants::SHELL_ZSH).is_ok() {
+        constants::SHELL_ZSH
+    } else if which(constants::SHELL_BASH).is_ok() {
+        constants::SHELL_BASH
+    } else if which(constants::SHELL_DASH).is_ok() {
+        constants::SHELL_DASH
     } else {
-        "sh"
+        constants::SHELL_SH
     }
     .to_string()
 }
@@ -519,7 +519,8 @@ impl Configuration {
                 self.root_path = path::current_dir();
             } else {
                 // Default garden.root to ${GARDEN_CONFIG_DIR} by default.
-                self.root.set_expr(string!("${GARDEN_CONFIG_DIR}"));
+                self.root
+                    .set_expr(string!(constants::GARDEN_CONFIG_DIR_EXPR));
                 if let Some(ref dirname) = self.dirname {
                     self.root.set_value(dirname.to_string_lossy().to_string());
                     self.root_path = dirname.to_path_buf();
@@ -563,7 +564,7 @@ impl Configuration {
             self.root.set_expr(root_path.to_string_lossy().to_string());
         }
 
-        let mut basename: String = "garden.yaml".into();
+        let mut basename = string!(constants::GARDEN_CONFIG);
 
         // Find garden.yaml in the search path
         let mut found = false;
@@ -615,7 +616,7 @@ impl Configuration {
         &mut self,
         options: &cli::MainOptions,
     ) -> Result<(), errors::GardenError> {
-        let config_verbose = options.debug_level("config");
+        let config_verbose = options.debug_level(constants::DEBUG_LEVEL_CONFIG);
         if self.path.is_none() {
             error!("unable to find a configuration file -- use --config <path>");
         }
@@ -672,7 +673,7 @@ impl Configuration {
 
     fn reset_builtin_variables(&mut self) {
         // Update GARDEN_ROOT.
-        if let Some(var) = self.variables.get_mut("GARDEN_ROOT") {
+        if let Some(var) = self.variables.get_mut(constants::GARDEN_ROOT) {
             if let Some(value) = self.root.get_value() {
                 var.set_expr(value.into());
                 var.set_value(value.into());
@@ -682,7 +683,7 @@ impl Configuration {
         for tree in self.trees.values_mut() {
             // Update TREE_NAME.
             let tree_name = String::from(tree.get_name());
-            if let Some(var) = tree.variables.get_mut("TREE_NAME") {
+            if let Some(var) = tree.variables.get_mut(constants::TREE_NAME) {
                 var.set_expr(tree_name.to_string());
                 var.set_value(tree_name);
             }
@@ -692,7 +693,7 @@ impl Configuration {
                 Err(_) => continue,
             };
             // Update TREE_PATH.
-            if let Some(var) = tree.variables.get_mut("TREE_PATH") {
+            if let Some(var) = tree.variables.get_mut(constants::TREE_PATH) {
                 var.set_expr(tree_path.to_string());
                 var.set_value(tree_path);
             }
@@ -740,8 +741,8 @@ impl Configuration {
             tree.path.set_value(dirname_string);
             tree.description = string!("The default tree for garden commands.");
             tree.add_builtin_variables();
-            tree.set_name(string!("."));
-            self.trees.insert(string!("."), tree);
+            tree.set_name(string!(constants::DOT));
+            self.trees.insert(string!(constants::DOT), tree);
         }
     }
 
@@ -912,15 +913,15 @@ impl Configuration {
 
     /// Get the config path if it is defined.
     pub(crate) fn get_path(&self) -> Result<&std::path::PathBuf, errors::GardenError> {
-        self.path
-            .as_ref()
-            .ok_or_else(|| errors::GardenError::AssertionError("cfg.path is unset".into()))
+        self.path.as_ref().ok_or_else(|| {
+            errors::GardenError::AssertionError("Configuration path is unset".into())
+        })
     }
 
     /// Get a path string for this configuration.
     /// Returns the current directory when the configuration does not have a valid path.
     pub(crate) fn get_path_for_display(&self) -> String {
-        let default_pathbuf = std::path::PathBuf::from(".");
+        let default_pathbuf = std::path::PathBuf::from(constants::DOT);
         self.path
             .as_ref()
             .unwrap_or(&default_pathbuf)
@@ -1233,7 +1234,7 @@ impl ApplicationContext {
     /// Initialize an ApplicationContext and Configuration from cli::MainOptions.
     pub fn from_options(options: &cli::MainOptions) -> Result<Self, errors::GardenError> {
         let app_context = Self::new(options.clone());
-        let config_verbose = options.debug_level("config");
+        let config_verbose = options.debug_level(constants::DEBUG_LEVEL_CONFIG);
 
         app_context.get_root_config_mut().update(
             &app_context,
@@ -1255,7 +1256,7 @@ impl ApplicationContext {
     ) -> Result<Self, errors::GardenError> {
         let options = cli::MainOptions::new();
         let app_context = Self::new(options.clone());
-        let config_verbose = options.debug_level("config");
+        let config_verbose = options.debug_level(constants::DEBUG_LEVEL_CONFIG);
         app_context.get_root_config_mut().update(
             &app_context,
             Some(&pathbuf),
@@ -1334,7 +1335,7 @@ impl ApplicationContext {
         root: Option<&std::path::PathBuf>,
     ) -> Result<(), errors::GardenError> {
         let path = path.to_path_buf();
-        let config_verbose = self.options.debug_level("config");
+        let config_verbose = self.options.debug_level(constants::DEBUG_LEVEL_CONFIG);
         let mut graft_config = Configuration::new();
         // Propagate the current config's "garden.tree-branches" and "garden.shell_exit_on_error"
         // settings onto child grafts.

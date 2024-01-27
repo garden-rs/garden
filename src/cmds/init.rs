@@ -17,7 +17,7 @@ pub struct InitOptions {
     #[arg(long)]
     pub global: bool,
     /// Set the garden root path
-    #[arg(long, default_value_t = string!(constants::GARDEN_CONFIG_DIR), value_hint = ValueHint::DirPath)]
+    #[arg(long, default_value_t = string!(constants::GARDEN_CONFIG_DIR_EXPR), value_hint = ValueHint::DirPath)]
     pub root: String,
     /// Config filename to write
     #[arg(default_value = constants::GARDEN_CONFIG, value_hint = ValueHint::FilePath)]
@@ -97,7 +97,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     config.path = Some(config_path.clone());
 
     let mut done = false;
-    if !init_options.empty && init_options.root == constants::GARDEN_CONFIG_DIR {
+    if !init_options.empty && init_options.root == constants::GARDEN_CONFIG_DIR_EXPR {
         let git_worktree = git::current_worktree_path(&dirname);
         if let Ok(worktree) = git_worktree {
             config::reader::add_section(constants::TREES, &mut doc)?;
@@ -111,7 +111,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     }
 
     // Mutable scope
-    if !done || init_options.root != constants::GARDEN_CONFIG_DIR {
+    if !done || init_options.root != constants::GARDEN_CONFIG_DIR_EXPR {
         config::reader::add_section(constants::GARDEN, &mut doc)?;
         if let Yaml::Hash(ref mut doc_hash) = doc {
             let garden_key = Yaml::String(constants::GARDEN.into());

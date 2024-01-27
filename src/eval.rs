@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{cmd, model, path, query, syntax};
+use crate::{cmd, constants, model, path, query, syntax};
 
 /// Expand variables across all scopes (garden, tree, and global).
 /// - `app_context`: reference to the top-level ApplicationContext.
@@ -183,7 +183,7 @@ fn expand_graft_vars(
 /// Resolve ~ to the current user's home directory
 fn home_dir() -> Option<String> {
     // Honor $HOME when set in the environment.
-    if let Ok(home) = std::env::var("HOME") {
+    if let Ok(home) = std::env::var(constants::ENV_HOME) {
         return Some(home);
     }
     dirs::home_dir().map(|x| x.to_string_lossy().to_string())
@@ -287,7 +287,7 @@ fn exec_expression(string: &str, pathbuf: Option<std::path::PathBuf>) -> String 
         let current_dir = path::current_dir_string();
         proc = proc.cwd(pathbuf.clone());
         // Set $PWD to ensure that commands that are sensitive to it see the right value.
-        proc = proc.env("PWD", pathbuf.to_str().unwrap_or(&current_dir));
+        proc = proc.env(constants::ENV_PWD, pathbuf.to_str().unwrap_or(&current_dir));
     }
 
     cmd::stdout_to_string(proc).unwrap_or_default()

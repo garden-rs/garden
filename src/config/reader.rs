@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use indexmap::{IndexMap, IndexSet};
 use yaml_rust::{yaml, Yaml, YamlLoader};
 
-use crate::{errors, eval, model, syntax};
+use crate::{constants, errors, eval, model, syntax};
 
 // Apply YAML Configuration from a string.
 pub fn parse(
@@ -45,7 +45,10 @@ fn parse_recursive(
     // we have already been here and do not need to reset `garden.root`.
     if config.root.is_empty()
         && !config.root_is_dynamic
-        && get_raw_str(&doc["garden"]["root"], config.root.get_expr_mut())
+        && get_raw_str(
+            &doc[constants::GARDEN][constants::ROOT],
+            config.root.get_expr_mut(),
+        )
     {
         if config.root.is_empty() {
             // The `garden.root` is dynamic and sensitive to the current directory
@@ -58,12 +61,12 @@ fn parse_recursive(
     }
 
     // garden.shell
-    if get_str(&doc["garden"]["shell"], &mut config.shell) && config_verbose > 0 {
+    if get_str(&doc[constants::GARDEN][constants::SHELL], &mut config.shell) && config_verbose > 0 {
         debug!("yaml: garden.shell = {}", config.shell);
     }
     // garden.shell-errexit
     if get_bool(
-        &doc["garden"]["shell-errexit"],
+        &doc[constants::GARDEN][constants::SHELL_ERREXIT],
         &mut config.shell_exit_on_error,
     ) && config_verbose > 0
     {
@@ -73,7 +76,11 @@ fn parse_recursive(
         );
     }
     // garden.tree-branches
-    if get_bool(&doc["garden"]["tree-branches"], &mut config.tree_branches) && config_verbose > 0 {
+    if get_bool(
+        &doc[constants::GARDEN][constants::TREE_BRANCHES],
+        &mut config.tree_branches,
+    ) && config_verbose > 0
+    {
         debug!("yaml: garden.tree-branches = {}", config.tree_branches);
     }
 
@@ -85,7 +92,7 @@ fn parse_recursive(
     }
     // Provide GARDEN_ROOT.
     config.variables.insert(
-        string!("GARDEN_ROOT"),
+        string!(constants::GARDEN_ROOT),
         model::Variable::new(config.root.get_expr().to_string(), None),
     );
 
@@ -93,7 +100,7 @@ fn parse_recursive(
         // Calculate an absolute path for GARDEN_CONFIG_DIR.
         if let Ok(config_path) = config_path_raw.canonicalize() {
             config.variables.insert(
-                string!("GARDEN_CONFIG_DIR"),
+                string!(constants::GARDEN_CONFIG_DIR),
                 model::Variable::new(config_path.to_string_lossy().to_string(), None),
             );
         }
@@ -101,7 +108,9 @@ fn parse_recursive(
 
     // Variables are read early to make them available to config.eval_config_pathbuf_from_include().
     // Variables are reloaded after "includes" to give the current garden file the highest priority.
-    if !get_variables_hashmap(&doc["variables"], &mut config.variables) && config_verbose > 1 {
+    if !get_variables_hashmap(&doc[constants::VARIABLES], &mut config.variables)
+        && config_verbose > 1
+    {
         debug!("yaml: no variables");
     }
 
@@ -110,7 +119,10 @@ fn parse_recursive(
     // This also means that variables defined by the outer-most garden config
     // override the same variables when also defined in an included garden file.
     let mut config_includes = Vec::new();
-    if get_vec_variables(&doc["garden"]["includes"], &mut config_includes) {
+    if get_vec_variables(
+        &doc[constants::GARDEN][constants::INCLUDES],
+        &mut config_includes,
+    ) {
         for garden_include in &config_includes {
             let pathbuf = match config.eval_config_pathbuf_from_include(
                 app_context,
@@ -145,7 +157,9 @@ fn parse_recursive(
 
         // Reload variables after processing includes. This gives the local garden file the highest priority
         // when defining variables while also making variables available to the "includes" lines.
-        if !get_variables_hashmap(&doc["variables"], &mut config.variables) && config_verbose > 1 {
+        if !get_variables_hashmap(&doc[constants::VARIABLES], &mut config.variables)
+            && config_verbose > 1
+        {
             debug!("yaml: no reloaded variables");
         }
     }
@@ -154,17 +168,19 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: grafts");
     }
-    if !get_grafts(&doc["grafts"], &mut config.grafts) && config_verbose > 1 {
+    if !get_grafts(&doc[constants::GRAFTS], &mut config.grafts) && config_verbose > 1 {
         debug!("yaml: no grafts");
     }
 
-    get_multivariables(&doc["environment"], &mut config.environment);
+    get_multivariables(&doc[constants::ENVIRONMENT], &mut config.environment);
 
     // commands
     if config_verbose > 1 {
         debug!("yaml: commands");
     }
-    if !get_multivariables_hashmap(&doc["commands"], &mut config.commands) && config_verbose > 1 {
+    if !get_multivariables_hashmap(&doc[constants::COMMANDS], &mut config.commands)
+        && config_verbose > 1
+    {
         debug!("yaml: no commands");
     }
 
@@ -185,7 +201,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: trees");
     }
-    if !get_trees(app_context, config, &doc["trees"]) && config_verbose > 1 {
+    if !get_trees(app_context, config, &doc[constants::TREES]) && config_verbose > 1 {
         debug!("yaml: no trees");
     }
 
@@ -193,7 +209,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: groups");
     }
-    if !get_groups(&doc["groups"], &mut config.groups) && config_verbose > 1 {
+    if !get_groups(&doc[constants::GROUPS], &mut config.groups) && config_verbose > 1 {
         debug!("yaml: no groups");
     }
 
@@ -201,7 +217,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("yaml: gardens");
     }
-    if !get_gardens(&doc["gardens"], &mut config.gardens) && config_verbose > 1 {
+    if !get_gardens(&doc[constants::GARDENS], &mut config.gardens) && config_verbose > 1 {
         debug!("yaml: no gardens");
     }
 
@@ -471,7 +487,7 @@ fn get_multivariables_hashmap(
                         multivariables.insert(key, variables);
                     }
                     Yaml::Integer(yaml_int) => {
-                        // Ints are already resolved.
+                        // Integers are already resolved.
                         let value = yaml_int.to_string();
                         let variables = vec![model::Variable::new(value.clone(), Some(value))];
                         multivariables.insert(key, variables);
@@ -539,16 +555,16 @@ fn get_template(
             template
                 .tree
                 .remotes
-                .insert(string!("origin"), model::Variable::new(url, None));
+                .insert(string!(constants::ORIGIN), model::Variable::new(url, None));
             return template;
         }
         // If a <url> is configured then populate the "origin" remote.
         // The first remote is "origin" by convention.
-        if get_str(&value["url"], &mut url) {
+        if get_str(&value[constants::URL], &mut url) {
             template
                 .tree
                 .remotes
-                .insert(string!("origin"), model::Variable::new(url, None));
+                .insert(string!(constants::ORIGIN), model::Variable::new(url, None));
         }
     }
 
@@ -556,7 +572,7 @@ fn get_template(
     // the template itself. Any "VAR=" variables will be overridden
     // by the tree entry itself, or the last template processed.
     // "environment" follow last-set-wins semantics.
-    get_indexset_str(&value["extend"], &mut template.extend);
+    get_indexset_str(&value[constants::EXTEND], &mut template.extend);
     for template_name in &template.extend {
         // First check if we have this template in the local YAML data.
         // We check here first so that parsing is not order-dependent.
@@ -609,7 +625,7 @@ fn get_trees(
 
                     // Should we replace the current entry or sparsely override it?
                     // We sparsely override by default.
-                    let replace = match value["replace"] {
+                    let replace = match value[constants::REPLACE] {
                         Yaml::Boolean(value) => value,
                         _ => false,
                     };
@@ -646,7 +662,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
         tree.is_bare_repository = true;
     }
     tree.remotes.insert(
-        string!("origin"),
+        string!(constants::ORIGIN),
         model::Variable::new(url.to_string(), None),
     );
 
@@ -656,29 +672,29 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 /// Read fields common to trees and templates.
 #[inline]
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
-    get_variables_hashmap(&value["variables"], &mut tree.variables);
-    get_multivariables_hashmap(&value["gitconfig"], &mut tree.gitconfig);
-    get_str(&value["default-remote"], &mut tree.default_remote);
-    get_str_trimmed(&value["description"], &mut tree.description);
-    get_str_variables_hashmap(&value["remotes"], &mut tree.remotes);
-    get_vec_variables(&value["links"], &mut tree.links);
+    get_variables_hashmap(&value[constants::VARIABLES], &mut tree.variables);
+    get_multivariables_hashmap(&value[constants::GITCONFIG], &mut tree.gitconfig);
+    get_str(&value[constants::DEFAULT_REMOTE], &mut tree.default_remote);
+    get_str_trimmed(&value[constants::DESCRIPTION], &mut tree.description);
+    get_str_variables_hashmap(&value[constants::REMOTES], &mut tree.remotes);
+    get_vec_variables(&value[constants::LINKS], &mut tree.links);
 
-    get_multivariables(&value["environment"], &mut tree.environment);
-    get_multivariables_hashmap(&value["commands"], &mut tree.commands);
+    get_multivariables(&value[constants::ENVIRONMENT], &mut tree.environment);
+    get_multivariables_hashmap(&value[constants::COMMANDS], &mut tree.commands);
 
-    get_variable(&value["branch"], &mut tree.branch);
-    get_variables_hashmap(&value["branches"], &mut tree.branches);
-    get_variable(&value["symlink"], &mut tree.symlink);
-    get_variable(&value["worktree"], &mut tree.worktree);
+    get_variable(&value[constants::BRANCH], &mut tree.branch);
+    get_variables_hashmap(&value[constants::BRANCHES], &mut tree.branches);
+    get_variable(&value[constants::SYMLINK], &mut tree.symlink);
+    get_variable(&value[constants::WORKTREE], &mut tree.worktree);
 
-    get_i64(&value["depth"], &mut tree.clone_depth);
-    get_bool(&value["bare"], &mut tree.is_bare_repository);
-    get_bool(&value["single-branch"], &mut tree.is_single_branch);
+    get_i64(&value[constants::DEPTH], &mut tree.clone_depth);
+    get_bool(&value[constants::BARE], &mut tree.is_bare_repository);
+    get_bool(&value[constants::SINGLE_BRANCH], &mut tree.is_single_branch);
 
     // Load the URL and store it in the "origin" remote.
     {
         let mut url = String::new();
-        if get_str(&value["url"], &mut url) {
+        if get_str(&value[constants::URL], &mut url) {
             tree.remotes.insert(
                 tree.default_remote.to_string(),
                 model::Variable::new(url, None),
@@ -703,7 +719,7 @@ fn get_tree(
 
     // Allow extending an existing tree by specifying "extend".
     let mut extend = String::new();
-    if get_str(&value["extend"], &mut extend) {
+    if get_str(&value[constants::EXTEND], &mut extend) {
         // Holds a base tree specified using "extend: <tree>".
         let tree_name = Yaml::String(extend.clone());
         if let Some(tree_values) = trees.get(&tree_name) {
@@ -720,7 +736,7 @@ fn get_tree(
 
     // Load values from the parent tree when using "worktree: <parent>".
     let mut parent_expr = String::new();
-    if get_str(&value["worktree"], &mut parent_expr) {
+    if get_str(&value[constants::WORKTREE], &mut parent_expr) {
         let parent_name = eval::value(app_context, config, &parent_expr);
         if !parent_expr.is_empty() {
             let tree_name = Yaml::String(parent_name);
@@ -735,7 +751,7 @@ fn get_tree(
     // Templates
     // Process the base templates in the specified order before processing
     // the template itself.
-    get_indexset_str(&value["templates"], &mut tree.templates);
+    get_indexset_str(&value[constants::TEMPLATES], &mut tree.templates);
     for template_name in &tree.templates.clone() {
         // Do we have a template by this name? If so, apply the template.
         if let Some(template) = config.templates.get(template_name) {
@@ -747,7 +763,7 @@ fn get_tree(
     get_str(name, tree.get_name_mut());
 
     // Tree path
-    if !get_str(&value["path"], tree.get_path_mut().get_expr_mut()) {
+    if !get_str(&value[constants::PATH], tree.get_path_mut().get_expr_mut()) {
         // Default to the name when "path" is unspecified.
         let tree_name = tree.get_name().to_string();
         tree.get_path_mut().set_expr(tree_name.to_string());
@@ -807,12 +823,12 @@ fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bo
             for (name, value) in hash {
                 let mut garden = model::Garden::default();
                 get_str(name, garden.get_name_mut());
-                get_indexset_str(&value["groups"], &mut garden.groups);
-                get_indexset_str(&value["trees"], &mut garden.trees);
-                get_multivariables_hashmap(&value["gitconfig"], &mut garden.gitconfig);
-                get_variables_hashmap(&value["variables"], &mut garden.variables);
-                get_multivariables(&value["environment"], &mut garden.environment);
-                get_multivariables_hashmap(&value["commands"], &mut garden.commands);
+                get_indexset_str(&value[constants::GROUPS], &mut garden.groups);
+                get_indexset_str(&value[constants::TREES], &mut garden.trees);
+                get_multivariables_hashmap(&value[constants::GITCONFIG], &mut garden.gitconfig);
+                get_variables_hashmap(&value[constants::VARIABLES], &mut garden.variables);
+                get_multivariables(&value[constants::ENVIRONMENT], &mut garden.environment);
+                get_multivariables_hashmap(&value[constants::COMMANDS], &mut garden.commands);
                 gardens.insert(garden.get_name().to_string(), garden);
             }
             true
@@ -846,8 +862,8 @@ fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
         // The root was not specified.
         if let Yaml::Hash(_hash) = graft {
             // A config expression and root might be specified.
-            get_str(&graft["config"], &mut config);
-            get_str(&graft["root"], &mut root);
+            get_str(&graft[constants::CONFIG], &mut config);
+            get_str(&graft[constants::ROOT], &mut root);
         }
     }
 

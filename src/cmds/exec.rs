@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::{Parser, ValueHint};
 
-use crate::{cmd, errors, model, query};
+use crate::{cmd, constants, errors, model, query};
 
 /// Evaluate garden expressions
 #[derive(Parser, Clone, Debug)]
@@ -23,7 +23,7 @@ pub struct ExecOptions {
 
 /// Main entry point for the "garden exec" command
 pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
-    if app_context.options.debug_level("exec") > 0 {
+    if app_context.options.debug_level(constants::DEBUG_LEVEL_EXEC) > 0 {
         debug!("query: {}", exec_options.query);
         debug!("command: {:?}", exec_options.command);
     }

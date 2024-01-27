@@ -92,7 +92,7 @@ pub(crate) fn print_tree(
         print_tree_details(tree, tree_branches, verbose, quiet);
         return true;
     } else if !quiet {
-        eprintln!("{}", display_missing_tree(tree, "[invalid-path]", verbose));
+        eprintln!("{}", display_missing_tree(tree, "(invalid-path)", verbose));
     }
 
     false
