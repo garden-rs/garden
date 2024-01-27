@@ -17,6 +17,9 @@ pub mod collections;
 /// Configuration
 pub mod config;
 
+/// Constants
+pub mod constants;
+
 /// Display subsystem
 pub mod display;
 
