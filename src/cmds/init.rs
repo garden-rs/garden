@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Parser, ValueHint};
 use yaml_rust::{yaml, Yaml};
 
-use crate::{cli, cmds::plant, config, errors, git, model, path};
+use crate::{cli, cmds::plant, config, constants, errors, git, model, path};
 
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
@@ -17,10 +17,10 @@ pub struct InitOptions {
     #[arg(long)]
     pub global: bool,
     /// Set the garden root path
-    #[arg(long, default_value_t = String::from("${GARDEN_CONFIG_DIR}"), value_hint = ValueHint::DirPath)]
+    #[arg(long, default_value_t = string!(constants::GARDEN_CONFIG_DIR), value_hint = ValueHint::DirPath)]
     pub root: String,
     /// Config filename to write
-    #[arg(default_value = "garden.yaml", value_hint = ValueHint::FilePath)]
+    #[arg(default_value = constants::GARDEN_CONFIG, value_hint = ValueHint::FilePath)]
     pub filename: std::path::PathBuf,
 }
 
@@ -97,12 +97,12 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     config.path = Some(config_path.clone());
 
     let mut done = false;
-    if !init_options.empty && init_options.root == "${GARDEN_CONFIG_DIR}" {
+    if !init_options.empty && init_options.root == constants::GARDEN_CONFIG_DIR {
         let git_worktree = git::current_worktree_path(&dirname);
         if let Ok(worktree) = git_worktree {
-            config::reader::add_section("trees", &mut doc)?;
+            config::reader::add_section(constants::TREES, &mut doc)?;
             if let Yaml::Hash(ref mut doc_hash) = doc {
-                let trees_key = Yaml::String("trees".into());
+                let trees_key = Yaml::String(constants::TREES.into());
                 if let Some(Yaml::Hash(trees)) = doc_hash.get_mut(&trees_key) {
                     done = plant::plant_path(&config, options.verbose, &worktree, trees).is_ok();
                 }
@@ -111,10 +111,10 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     }
 
     // Mutable scope
-    if !done || init_options.root != "${GARDEN_CONFIG_DIR}" {
-        config::reader::add_section("garden", &mut doc)?;
+    if !done || init_options.root != constants::GARDEN_CONFIG_DIR {
+        config::reader::add_section(constants::GARDEN, &mut doc)?;
         if let Yaml::Hash(ref mut doc_hash) = doc {
-            let garden_key = Yaml::String("garden".into());
+            let garden_key = Yaml::String(constants::GARDEN.into());
             let garden: &mut yaml::Hash = match doc_hash.get_mut(&garden_key) {
                 Some(Yaml::Hash(ref mut hash)) => hash,
                 _ => {
@@ -125,7 +125,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
                 }
             };
 
-            let root_key = Yaml::String("root".into());
+            let root_key = Yaml::String(constants::ROOT.into());
             garden.insert(root_key, Yaml::String(init_options.root.clone()));
         }
     }
