@@ -105,10 +105,11 @@ pub(crate) fn print_tree_details(
     verbose: u8,
     quiet: bool,
 ) {
-    if !quiet {
-        if let Ok(path) = tree.path_as_ref() {
-            eprintln!("{}", display_tree(tree, path, tree_branches, verbose));
-        }
+    if quiet {
+        return;
+    }
+    if let Ok(path) = tree.path_as_ref() {
+        eprintln!("{}", display_tree(tree, path, tree_branches, verbose));
     }
 }
 
