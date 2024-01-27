@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand, ValueHint};
 
-use crate::{cmds, model, path};
+use crate::{cmds, constants, model, path};
 
 #[derive(Clone, Debug, Default, Parser)]
-#[command(name = "garden")]
+#[command(name = constants::GARDEN)]
 #[command(author, version, about, long_about = None)]
 pub struct MainOptions {
     /// Use ANSI colors [auto, true, false, on, off, always, never, 1, 0]
