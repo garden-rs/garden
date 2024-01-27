@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
 use derivative::Derivative;
 
-use crate::{cli, cmd, display, errors, eval, model, query};
+use crate::{cli, cmd, constants, display, errors, eval, model, query};
 
 /// Run one or more custom commands over a tree query
 #[derive(Parser, Clone, Debug)]
@@ -40,7 +40,7 @@ pub struct CmdOptions {
 
 /// Run custom garden commands
 #[derive(Parser, Clone, Debug)]
-#[command(bin_name = "garden")]
+#[command(bin_name = constants::GARDEN)]
 pub struct CustomOptions {
     /// Continue to the next tree when errors occur
     #[arg(long, short)]
@@ -69,7 +69,7 @@ pub struct CustomOptions {
 
 /// Main entry point for `garden cmd <query> <command>...`.
 pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOptions) -> Result<()> {
-    if app_context.options.debug_level("cmd") > 0 {
+    if app_context.options.debug_level(constants::DEBUG_LEVEL_CMD) > 0 {
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
         debug!("arguments: {:?}", options.arguments);
@@ -135,7 +135,7 @@ impl From<CustomOptions> for CmdParams {
 
         // Default to "." when no queries have been specified.
         if params.queries.is_empty() {
-            params.queries.push(".".into());
+            params.queries.push(constants::DOT.into());
         }
 
         params
@@ -162,7 +162,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
         options.no_errexit = true;
     }
 
-    if app_context.options.debug_level("cmd") > 0 {
+    if app_context.options.debug_level(constants::DEBUG_LEVEL_CMD) > 0 {
         debug!("command: {}", name);
         debug!("queries: {:?}", options.queries);
         debug!("arguments: {:?}", options.arguments);
@@ -367,9 +367,22 @@ fn run_cmd_vec(
         shell
     };
     // Does the shell understand "-e" for errexit?
-    let is_shell = matches!(basename, "bash" | "dash" | "ksh" | "sh" | "zsh");
+    let is_shell = matches!(
+        basename,
+        constants::SHELL_BASH
+            | constants::SHELL_DASH
+            | constants::SHELL_KSH
+            | constants::SHELL_SH
+            | constants::SHELL_ZSH
+    );
     // Does the shell use "-e <string>" or "-c <string>" to evaluate commands?
-    let use_dash_e = matches!(basename, "bun" | "node" | "nodejs" | "perl");
+    let use_dash_e = matches!(
+        basename,
+        constants::SHELL_BUN
+            | constants::SHELL_NODE
+            | constants::SHELL_NODEJS
+            | constants::SHELL_PERL
+    );
 
     for cmd_seq in cmd_seq_vec {
         for cmd_str in cmd_seq {
