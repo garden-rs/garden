@@ -770,14 +770,16 @@ fn get_tree(
 
 /// Read simple string values into a garden::model::VariableHashMap.
 fn get_str_variables_hashmap(yaml: &Yaml, remotes: &mut model::VariableHashMap) {
-    if let Yaml::Hash(hash) = yaml {
-        for (name, value) in hash {
-            if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
-                remotes.insert(
-                    name_str.to_string(),
-                    model::Variable::new(value_str.to_string(), None),
-                );
-            }
+    let hash = match yaml {
+        Yaml::Hash(hash) => hash,
+        _ => return,
+    };
+    for (name, value) in hash {
+        if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
+            remotes.insert(
+                name_str.to_string(),
+                model::Variable::new(value_str.to_string(), None),
+            );
         }
     }
 }
