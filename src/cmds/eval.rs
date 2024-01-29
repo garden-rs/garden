@@ -17,11 +17,6 @@ pub struct EvalOptions {
 
 /// Evaluate a garden expression using the Eval parameters
 pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Result<()> {
-    let mut garden_opt: Option<&str> = None;
-    if let Some(garden) = &eval.garden {
-        garden_opt = Some(garden.as_str());
-    }
-
     match eval.tree {
         None => {
             // Evaluate and print the expression in global scope. No trees or gardens
@@ -31,7 +26,8 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
         }
         Some(ref tree) => {
             // Evaluate and print the garden expression.
-            let ctx = query::find_tree(app_context, app_context.get_root_id(), tree, garden_opt)?;
+            let garden = eval.garden.as_deref();
+            let ctx = query::find_tree(app_context, app_context.get_root_id(), tree, garden)?;
             let config = match ctx.config {
                 Some(config_id) => app_context.get_config(config_id),
                 None => app_context.get_root_config(),
@@ -39,8 +35,8 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
             let value = eval::tree_value(
                 app_context,
                 config,
-                &eval.expr,
-                &ctx.tree,
+                eval.expr.as_str(),
+                ctx.tree.as_str(),
                 ctx.garden.as_ref(),
             );
             println!("{value}");
