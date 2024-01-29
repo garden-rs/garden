@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.1
+
+**Development**:
+
+- The `yaml-rust-davvid` dependency was upgraded to `v0.6.0`.
+
+
 *Released 2023-01-27*
 
 ## v1.2.0
