@@ -639,7 +639,7 @@ fn eval_override_variables() -> Result<()> {
 /// `garden eval` evaluates ${GARDEN_ROOT} to the same directory as the
 /// garden config directory when `garden.root` is unspecified.
 #[test]
-fn eval_default_config_dir() -> Result<()> {
+fn eval_default_config_dir() {
     // garden eval ${tree_variable} current
     let output = garden_capture(&[
         "--config",
@@ -657,8 +657,6 @@ fn eval_default_config_dir() -> Result<()> {
         "pwd",
     ]);
     assert!(output.ends_with("/tests/data/config"));
-
-    Ok(())
 }
 
 /// `garden::git::worktree_details(path)` returns a struct with branches and a
@@ -733,7 +731,6 @@ fn eval_root_with_root() {
         "${GARDEN_ROOT}",
     ]);
     assert!(output.ends_with("/tests/tmp"));
-
     let path = std::path::PathBuf::from(&output);
     assert!(path.exists());
     assert!(path.is_absolute());
@@ -753,7 +750,6 @@ fn eval_config_dir_with_chdir_and_root() {
         "${GARDEN_CONFIG_DIR}",
     ]);
     assert!(output.ends_with("/tests/data"));
-
     let path = std::path::PathBuf::from(&output);
     assert!(path.exists());
     assert!(path.is_absolute());
