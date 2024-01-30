@@ -148,7 +148,7 @@ pub fn trees_from_garden(
         }
     }
 
-    // Collect indexes for each tree in this garden
+    // Collect tree contexts for each tree in this garden
     for tree in &garden.trees {
         result.append(&mut trees_from_pattern(
             app_context,
@@ -252,7 +252,7 @@ pub fn trees_from_pattern(
     };
     for (tree_name, cfg_tree) in &config.trees {
         if pattern.matches(tree_name) {
-            // Tree found
+            // Tree found in a grafted configuration.
             result.push(model::TreeContext::new(
                 cfg_tree.get_name(),
                 config.get_id(),
@@ -417,7 +417,7 @@ pub fn tree_context(
 
         if contexts.is_empty() {
             return Err(errors::GardenError::GardenNotFound {
-                garden: garden_name.into(),
+                garden: garden_name.to_string(),
             });
         }
 
@@ -432,8 +432,8 @@ pub fn tree_context(
 
         if !found {
             return Err(errors::GardenError::InvalidGardenArgument {
-                tree: tree.into(),
-                garden: garden_name.into(),
+                tree: tree.to_string(),
+                garden: garden_name.to_string(),
             });
         }
     }
