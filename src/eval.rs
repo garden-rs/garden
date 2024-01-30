@@ -107,7 +107,7 @@ fn expand_tree_vars(
         return Some(result);
     }
 
-    // If nothing was found then check for environment variables.
+    // If nothing was found then check for OS environment variables.
     if let Ok(env_value) = std::env::var(name) {
         return Some(env_value);
     }
