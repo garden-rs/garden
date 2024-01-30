@@ -301,22 +301,19 @@ pub fn multi_variable(
     context: &model::TreeContext,
 ) -> Vec<String> {
     let mut result = Vec::new();
-
     for var in multi_var.iter() {
         if let Some(value) = var.get_value() {
             result.push(value.to_string());
             continue;
         }
-
         let value = tree_value(
             app_context,
             config,
             var.get_expr(),
-            &context.tree,
+            context.tree.as_str(),
             context.garden.as_ref(),
         );
         result.push(value.clone());
-
         var.set_value(value);
     }
 
