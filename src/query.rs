@@ -400,12 +400,11 @@ pub fn tree_context(
     tree: &str,
     garden: Option<&str>,
 ) -> Result<model::TreeContext, errors::GardenError> {
-    let mut ctx = model::TreeContext::new("", config.get_id(), None, None);
-    if let Some(context) = tree_from_name(config, tree, None, None) {
-        ctx.tree = context.tree;
-    } else {
-        return Err(errors::GardenError::TreeNotFound { tree: tree.into() });
-    }
+    let mut ctx = tree_from_name(config, tree, None, None).ok_or_else(|| {
+        errors::GardenError::TreeNotFound {
+            tree: tree.to_string(),
+        }
+    })?;
 
     if let Some(garden_name) = garden {
         let pattern = glob::Pattern::new(garden_name).map_err(|_| {
