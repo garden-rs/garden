@@ -17,14 +17,14 @@ pub struct EvalOptions {
 
 /// Evaluate a garden expression using the Eval parameters
 pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Result<()> {
-    match eval.tree {
+    match eval.tree.as_ref() {
         None => {
             // Evaluate and print the expression in global scope. No trees or gardens
             // were provided so only the top-level variables are included.
             let config = app_context.get_root_config();
             println!("{}", eval::value(app_context, config, &eval.expr));
         }
-        Some(ref tree) => {
+        Some(tree) => {
             // Evaluate and print the garden expression.
             let garden = eval.garden.as_deref();
             let ctx = query::find_tree(app_context, app_context.get_root_id(), tree, garden)?;
