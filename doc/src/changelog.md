@@ -1,6 +1,24 @@
 # Changelog
 
+## v1.3.0
+
+**Features**:
+
+- `garden eval` and garden expressions in general will now resolve variables defined
+  within `environment` blocks. Environment blocks were previously not considered when
+  resolving variables. Environment blocks are now resolved and checked for variables
+  when `${variable}` expressions do not find the variable in scopes with higher
+  precedence. The precedence order, from strongest to weakest, is the `variables`
+  block in a garden's scope, the `variables` block in a tree's scope, the
+  `variables` block in global configuration scope, the `environments` block in
+  a garden's scope, the `environments` block in a tree's scope, the
+  `environments` block in global configuration scope and, lastly, OS environment
+  variables. The first entry found is used when expanding variable expressions.
+
+
 ## v1.2.1
+
+*Released 2023-02-05*
 
 **Development**:
 
