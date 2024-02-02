@@ -11,6 +11,7 @@ use crate::{cmd, constants, model, path, query, syntax};
 fn expand_tree_vars(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
+    graft_config: Option<&model::Configuration>,
     tree_name: &str,
     garden_name: Option<&model::GardenName>,
     name: &str,
@@ -22,7 +23,14 @@ fn expand_tree_vars(
     // Check for the variable in override scope defined by "garden -D name=value".
     if let Some(var) = config.override_variables.get(name) {
         let expr = var.get_expr();
-        let result = tree_value(app_context, config, expr, tree_name, garden_name);
+        let result = tree_value(
+            app_context,
+            config,
+            graft_config,
+            expr,
+            tree_name,
+            garden_name,
+        );
         var.set_value(result.clone());
         return Some(result);
     }
@@ -33,7 +41,8 @@ fn expand_tree_vars(
         if let Ok((graft_id, remainder)) = config.get_graft_id(name) {
             return expand_tree_vars(
                 app_context,
-                app_context.get_config(graft_id),
+                config,
+                Some(app_context.get_config(graft_id)),
                 tree_name,
                 garden_name,
                 remainder,
@@ -46,7 +55,8 @@ fn expand_tree_vars(
             if let Ok((graft_id, remainder)) = parent_config.get_graft_id(name) {
                 return expand_tree_vars(
                     app_context,
-                    app_context.get_config(graft_id),
+                    config,
+                    Some(app_context.get_config(graft_id)),
                     tree_name,
                     garden_name,
                     remainder,
@@ -57,7 +67,8 @@ fn expand_tree_vars(
         if let Ok((graft_id, remainder)) = app_context.get_root_config().get_graft_id(name) {
             return expand_tree_vars(
                 app_context,
-                app_context.get_config(graft_id),
+                config,
+                Some(app_context.get_config(graft_id)),
                 tree_name,
                 garden_name,
                 remainder,
@@ -65,9 +76,30 @@ fn expand_tree_vars(
         }
     }
 
-    // Check for the variable at the garden scope.
+    // Check for the variable at the grafted garden scope.
     // Garden scope overrides tree and global scope.
     if let Some(garden_name) = garden_name {
+        if let Some(var) = graft_config
+            .and_then(|cfg| cfg.gardens.get(garden_name))
+            .and_then(|garden| garden.variables.get(name))
+        {
+            if let Some(var_value) = var.get_value() {
+                return Some(var_value.to_string());
+            }
+            let expr = var.get_expr();
+            let result = tree_value(
+                app_context,
+                config,
+                graft_config,
+                expr,
+                tree_name,
+                Some(garden_name),
+            );
+            var.set_value(result.clone());
+            return Some(result);
+        }
+
+        // Check for the variable at the root garden scope.
         if let Some(var) = config
             .gardens
             .get(garden_name)
@@ -77,7 +109,52 @@ fn expand_tree_vars(
                 return Some(var_value.to_string());
             }
             let expr = var.get_expr();
-            let result = tree_value(app_context, config, expr, tree_name, Some(garden_name));
+            let result = tree_value(
+                app_context,
+                config,
+                graft_config,
+                expr,
+                tree_name,
+                Some(garden_name),
+            );
+            var.set_value(result.clone());
+            return Some(result);
+        }
+    }
+
+    // Nothing was found -- check for the variable in grafted scopes.
+    if let Some(graft_cfg) = graft_config {
+        if let Some(var) = graft_cfg
+            .trees
+            .get(tree_name)
+            .and_then(|tree| tree.variables.get(name))
+        {
+            if let Some(var_value) = var.get_value() {
+                return Some(var_value.to_string());
+            }
+            let expr = var.get_expr();
+            let result = tree_value(
+                app_context,
+                config,
+                graft_config,
+                expr,
+                tree_name,
+                garden_name,
+            );
+            var.set_value(result.to_string());
+            return Some(result);
+        }
+        // Nothing was found. Check for the variable in global/config scope.
+        if let Some(var) = graft_cfg.variables.get(name) {
+            let expr = var.get_expr();
+            let result = tree_value(
+                app_context,
+                config,
+                graft_config,
+                expr,
+                tree_name,
+                garden_name,
+            );
             var.set_value(result.clone());
             return Some(result);
         }
@@ -93,24 +170,45 @@ fn expand_tree_vars(
             return Some(var_value.to_string());
         }
         let expr = var.get_expr();
-        let result = tree_value(app_context, config, expr, tree_name, garden_name);
+        let result = tree_value(
+            app_context,
+            config,
+            graft_config,
+            expr,
+            tree_name,
+            garden_name,
+        );
         var.set_value(result.to_string());
         return Some(result);
     }
+    if name == constants::TREE_NAME {
+        return Some(tree_name.to_string());
+    }
+
     // Nothing was found. Check for the variable in global/config scope.
     if let Some(var) = config.variables.get(name) {
         let expr = var.get_expr();
-        let result = tree_value(app_context, config, expr, tree_name, garden_name);
+        let result = tree_value(
+            app_context,
+            config,
+            graft_config,
+            expr,
+            tree_name,
+            garden_name,
+        );
         var.set_value(result.clone());
         return Some(result);
     }
 
-    if name == constants::TREE_NAME {
-        return Some(tree_name.to_string());
-    }
     // Nothing was found. Check for garden environment variables.
-    let context = model::TreeContext::new(tree_name, config.get_id(), garden_name.cloned(), None);
-    if let Some(environ) = environment_value(app_context, config, &context, name) {
+    let context = model::TreeContext::new(
+        tree_name,
+        config.get_id(),
+        garden_name.cloned(),
+        None,
+        graft_config.and_then(|cfg| cfg.get_id()),
+    );
+    if let Some(environ) = environment_value(app_context, config, graft_config, &context, name) {
         return Some(environ);
     }
 
@@ -200,6 +298,7 @@ fn home_dir() -> Option<String> {
 pub fn tree_value(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
+    graft_config: Option<&model::Configuration>,
     expr: &str,
     tree_name: &str,
     garden_name: Option<&model::GardenName>,
@@ -213,7 +312,7 @@ pub fn tree_value(
         expr
     };
     let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
-        expand_tree_vars(app_context, config, tree_name, garden_name, x)
+        expand_tree_vars(app_context, config, graft_config, tree_name, garden_name, x)
     })
     .to_string();
 
@@ -242,7 +341,7 @@ fn tree_value_for_shell(
     let expanded = shellexpand::full_with_context_no_errors(
         &syntax::escape_shell_variables(expr),
         home_dir,
-        |x| expand_tree_vars(app_context, config, tree_name, garden_name, x),
+        |x| expand_tree_vars(app_context, config, None, tree_name, garden_name, x),
     )
     .to_string();
 
@@ -304,6 +403,7 @@ fn exec_expression(string: &str, pathbuf: Option<std::path::PathBuf>) -> String 
 pub fn multi_variable(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
+    graft_config: Option<&model::Configuration>,
     multi_var: &mut model::MultiVariable,
     context: &model::TreeContext,
 ) -> Vec<String> {
@@ -316,6 +416,7 @@ pub fn multi_variable(
         let value = tree_value(
             app_context,
             config,
+            graft_config,
             var.get_expr(),
             context.tree.as_str(),
             context.garden.as_ref(),
@@ -375,7 +476,7 @@ pub fn environment(
     if let Some(garden_name) = context.garden.as_ref() {
         // Evaluate garden environments.
         if let Some(garden) = &config.gardens.get(garden_name) {
-            for ctx in query::trees_from_garden(app_context, config, garden) {
+            for ctx in query::trees_from_garden(app_context, config, None, garden) {
                 let config = match ctx.config {
                     Some(config_id) => app_context.get_config(config_id),
                     None => config,
@@ -395,7 +496,7 @@ pub fn environment(
     } else if let Some(name) = &context.group {
         // Evaluate group environments.
         if let Some(group) = config.groups.get(name) {
-            for ctx in query::trees_from_group(app_context, config, None, group) {
+            for ctx in query::trees_from_group(app_context, config, None, None, group) {
                 let config = match ctx.config {
                     Some(config_id) => app_context.get_config(config_id),
                     None => config,
@@ -424,11 +525,12 @@ pub fn environment(
     let mut var_values = Vec::new();
     for (ctx, var) in vars.iter_mut() {
         let mut cloned_var = var.clone();
-        let values = multi_variable(app_context, config, &mut cloned_var, ctx);
+        let values = multi_variable(app_context, config, None, &mut cloned_var, ctx);
         var_values.push((
             tree_value(
                 app_context,
                 config,
+                None,
                 var.get_name(),
                 ctx.tree.as_str(),
                 ctx.garden.as_ref(),
@@ -522,22 +624,17 @@ pub fn environment(
     result
 }
 
-/// Evaluate a single environment variable value.
-pub fn environment_value(
+/// Return a vector of references to variables that reference the specified names.
+fn environment_value_vars<'a>(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
+    graft_config: Option<&model::Configuration>,
     context: &model::TreeContext,
-    name: &str,
-) -> Option<String> {
-    let mut vars = Vec::new();
-
-    let name_prepend = name.to_string();
-    let name_append = format!("{name}+");
-    let name_replace = format!("{name}=");
-    let names = vec![name_prepend, name_append, name_replace];
-
-    // Evaluate environment variables defined at global scope.
-    for var in &config.environment {
+    names: &[String],
+    variables: &'a Vec<model::MultiVariable>,
+) -> Vec<(model::TreeContext, String, &'a model::MultiVariable)> {
+    let mut vars = Vec::with_capacity(variables.len());
+    for var in variables {
         if names.contains(var.get_name()) {
             vars.push((context.clone(), var.get_name().to_string(), var));
             continue;
@@ -546,8 +643,9 @@ pub fn environment_value(
             let name_value = tree_value(
                 app_context,
                 config,
+                graft_config.or(context.graft_config.map(|cfg_id| app_context.get_config(cfg_id))),
                 var.get_name(),
-                context.tree.as_str(),
+                &context.tree,
                 context.garden.as_ref(),
             );
             if names.contains(&name_value) {
@@ -556,120 +654,160 @@ pub fn environment_value(
         }
     }
 
+    vars
+}
+
+/// Evaluate a single environment variable value.
+pub fn environment_value(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    graft_config: Option<&model::Configuration>,
+    context: &model::TreeContext,
+    name: &str,
+) -> Option<String> {
+    let mut vars = Vec::new();
+    let name_prepend = name.to_string();
+    let name_append = format!("{name}+");
+    let name_replace = format!("{name}=");
+    let names = vec![name_prepend, name_append, name_replace];
+
+    // Evaluate environment variables defined at global scope.
+    vars.append(&mut environment_value_vars(
+        app_context,
+        config,
+        graft_config,
+        context,
+        &names,
+        &config.environment,
+    ));
+
+    if let Some(graft_cfg) = graft_config {
+        vars.append(&mut environment_value_vars(
+            app_context,
+            config,
+            graft_config,
+            context,
+            &names,
+            &graft_cfg.environment,
+        ));
+    }
+
+    // Evaluate garden environments.
     let mut ready = false;
     if let Some(garden_name) = context.garden.as_ref() {
-        // Evaluate garden environments.
-        if let Some(garden) = &config.gardens.get(garden_name) {
-            for ctx in query::trees_from_garden(app_context, config, garden) {
-                let config = match ctx.config {
-                    Some(config_id) => app_context.get_config(config_id),
-                    None => config,
-                };
-                if let Some(tree) = config.trees.get(&ctx.tree) {
-                    for var in &tree.environment {
-                        if names.contains(var.get_name()) {
-                            vars.push((ctx.clone(), var.get_name().to_string(), var));
-                            continue;
-                        }
-                        if syntax::is_eval_candidate(var.get_name()) {
-                            let name_value = tree_value(
-                                app_context,
-                                config,
-                                var.get_name(),
-                                ctx.tree.as_str(),
-                                ctx.garden.as_ref(),
-                            );
-                            if names.contains(&name_value) {
-                                vars.push((ctx.clone(), name_value, var));
-                            }
-                        }
-                    }
-                }
-            }
-
-            for var in &garden.environment {
-                if names.contains(var.get_name()) {
-                    vars.push((context.clone(), var.get_name().to_string(), var));
-                    continue;
-                }
-                if syntax::is_eval_candidate(var.get_name()) {
-                    let name_value = tree_value(
+        let mut garden_ref: Option<&model::Garden> = None;
+        if let Some(garden) = graft_config.and_then(|cfg| cfg.gardens.get(garden_name)) {
+            garden_ref = Some(garden);
+        } else if let Some(garden) = config.gardens.get(garden_name) {
+            garden_ref = Some(garden);
+        }
+        if let Some(garden) = garden_ref {
+            for ctx in query::trees_from_garden(app_context, config, graft_config, garden) {
+                let garden_graft_config = ctx
+                    .graft_config
+                    .map(|graft_id| app_context.get_config(graft_id));
+                if let Some(tree) = garden_graft_config.and_then(|cfg| cfg.trees.get(&ctx.tree)) {
+                    vars.append(&mut environment_value_vars(
                         app_context,
                         config,
-                        var.get_name(),
-                        context.tree.as_str(),
-                        context.garden.as_ref(),
-                    );
-                    if names.contains(&name_value) {
-                        vars.push((context.clone(), name_value, &var));
-                    }
+                        garden_graft_config,
+                        &ctx,
+                        &names,
+                        &tree.environment,
+                    ));
+                } else if let Some(tree) = config.trees.get(&ctx.tree) {
+                    vars.append(&mut environment_value_vars(
+                        app_context,
+                        config,
+                        graft_config,
+                        &ctx,
+                        &names,
+                        &tree.environment,
+                    ));
                 }
             }
+            // Garden environment variables prepend over tree environment variables.
+            vars.append(&mut environment_value_vars(
+                app_context,
+                config,
+                graft_config,
+                context,
+                &names,
+                &garden.environment,
+            ));
             ready = true;
         }
-    } else if let Some(group_name) = &context.group {
+    } else if let Some(group_name) = context.group.as_ref() {
         // Evaluate group environments.
         if let Some(group) = config.groups.get(group_name) {
-            for ctx in query::trees_from_group(app_context, config, None, group) {
-                let config = match ctx.config {
-                    Some(config_id) => app_context.get_config(config_id),
-                    None => config,
-                };
-                if let Some(tree) = config.trees.get(&ctx.tree) {
-                    for var in &tree.environment {
-                        if names.contains(var.get_name()) {
-                            vars.push((ctx.clone(), var.get_name().to_string(), var));
-                            continue;
-                        }
-                        if syntax::is_eval_candidate(var.get_name()) {
-                            let name_value = tree_value(
-                                app_context,
-                                config,
-                                var.get_name(),
-                                ctx.tree.as_str(),
-                                ctx.garden.as_ref(),
-                            );
-                            if names.contains(&name_value) {
-                                vars.push((ctx.clone(), name_value, var));
-                            }
-                        }
+            for ctx in query::trees_from_group(app_context, config, graft_config, None, group) {
+                let group_graft_config =
+                    ctx.graft_config.map(|graft_id| app_context.get_config(graft_id));
+                if let Some(graft_cfg) = group_graft_config {
+                    if let Some(tree) = graft_cfg.trees.get(&ctx.tree) {
+                        vars.append(&mut environment_value_vars(
+                            app_context,
+                            config,
+                            group_graft_config,
+                            &ctx,
+                            &names,
+                            &tree.environment,
+                        ));
+                        ready = true;
                     }
+                } else if let Some(tree) = config.trees.get(&ctx.tree) {
+                    vars.append(&mut environment_value_vars(
+                        app_context,
+                        config,
+                        group_graft_config,
+                        &ctx,
+                        &names,
+                        &tree.environment,
+                    ));
+                    ready = true;
                 }
             }
-            ready = true;
         }
     }
 
     // Evaluate a single tree environment when not handled above.
     let single_tree;
     if !ready {
-        if let Some(tree) = config.trees.get(&context.tree) {
-            single_tree = tree;
-            for var in &single_tree.environment {
-                if names.contains(var.get_name()) {
-                    vars.push((context.clone(), var.get_name().to_string(), var));
-                    continue;
-                }
-                if syntax::is_eval_candidate(var.get_name()) {
-                    let name_value = tree_value(
-                        app_context,
-                        config,
-                        var.get_name(),
-                        context.tree.as_str(),
-                        context.garden.as_ref(),
-                    );
-                    if names.contains(&name_value) {
-                        vars.push((context.clone(), name_value, var));
-                    }
-                }
+        if let Some(graft_cfg) = graft_config {
+            if let Some(tree) = graft_cfg.trees.get(&context.tree) {
+                single_tree = tree;
+                vars.append(&mut environment_value_vars(
+                    app_context,
+                    config,
+                    graft_config,
+                    context,
+                    &names,
+                    &single_tree.environment,
+                ));
             }
+        } else if let Some(tree) = config.trees.get(&context.tree) {
+            single_tree = tree;
+            vars.append(&mut environment_value_vars(
+                app_context,
+                config,
+                graft_config,
+                context,
+                &names,
+                &single_tree.environment,
+            ));
         }
     }
 
     let mut var_values = Vec::new();
     for (ctx, name_value, var) in vars.iter_mut() {
         let mut cloned_var = var.clone();
-        let values = multi_variable(app_context, config, &mut cloned_var, ctx);
+        let values = multi_variable(
+            app_context,
+            config,
+            graft_config.or(ctx.graft_config.map(|id| app_context.get_config(id))),
+            &mut cloned_var,
+            ctx,
+        );
         var_values.push((name_value, values));
     }
 

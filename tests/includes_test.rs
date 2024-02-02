@@ -56,6 +56,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-variable}",
         &context.tree,
         None,
@@ -64,6 +65,7 @@ fn template_includes() -> Result<()> {
     let constant = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-constant}",
         &context.tree,
         None,
@@ -86,6 +88,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-variable}",
         &context.tree,
         None,
@@ -93,6 +96,7 @@ fn template_includes() -> Result<()> {
     let constant = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-constant}",
         &context.tree,
         None,
@@ -117,6 +121,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-variable}",
         &context.tree,
         None,
@@ -124,6 +129,7 @@ fn template_includes() -> Result<()> {
     let constant = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-constant}",
         &context.tree,
         None,
@@ -148,6 +154,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-variable}",
         &context.tree,
         None,
@@ -157,6 +164,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${tree-variable}",
         &context.tree,
         None,
@@ -166,6 +174,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${tree-override}",
         &context.tree,
         None,
@@ -179,6 +188,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${template-variable}",
         &context.tree,
         None,
@@ -188,6 +198,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${tree-override}",
         &context.tree,
         None,
@@ -198,6 +209,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${tree-variable}",
         &context.tree,
         None,
@@ -210,6 +222,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${extended-variable}",
         &context.tree,
         None,
@@ -222,6 +235,7 @@ fn template_includes() -> Result<()> {
     let result = garden::eval::tree_value(
         &app_context,
         config,
+        None,
         "${tree-variable}",
         &context.tree,
         None,

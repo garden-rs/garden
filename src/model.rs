@@ -1056,6 +1056,7 @@ pub struct TreeContext {
     pub config: Option<ConfigId>,
     pub garden: Option<GardenName>,
     pub group: Option<String>,
+    pub graft_config: Option<ConfigId>,
 }
 
 impl_display_brief!(TreeContext);
@@ -1067,12 +1068,14 @@ impl TreeContext {
         config: Option<ConfigId>,
         garden: Option<GardenName>,
         group: Option<String>,
+        graft_config: Option<ConfigId>,
     ) -> Self {
         TreeContext {
             tree: TreeName::from(tree),
             config,
             garden,
             group,
+            graft_config,
         }
     }
 }

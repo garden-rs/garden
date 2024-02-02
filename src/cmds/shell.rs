@@ -15,11 +15,12 @@ pub struct ShellOptions {
 
 pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> Result<()> {
     let config = app_context.get_root_config_mut();
-    let contexts = query::resolve_trees(app_context, config, &options.query);
+    let contexts = query::resolve_trees(app_context, config, None, &options.query);
     if contexts.is_empty() {
         return Err(errors::GardenError::EmptyTreeQueryResult(options.query.clone()).into());
     }
     let mut context = contexts[0].clone();
+    let graft_config = context.graft_config.map(|id| app_context.get_config(id));
 
     // If a tree's name in the returned contexts exactly matches the tree
     // query that was used to find it then chdir into that tree.
@@ -57,6 +58,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
     let shell = eval::tree_value(
         app_context,
         config,
+        graft_config,
         &shell_expr,
         &context.tree,
         context.garden.as_ref(),
