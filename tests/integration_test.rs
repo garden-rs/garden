@@ -661,7 +661,7 @@ fn eval_default_config_dir() {
 
 /// `garden eval` evaluates variables from "environment" blocks.
 #[test]
-fn eval_environment_blocks() {
+fn eval_environment_tree_names() {
     // garden --chdir tests/data eval '${GARDEN_ENV_VALUE}' trees/prebuilt
     let expect = "trees/prebuilt/env/value";
     let actual = garden_capture(&[
@@ -704,6 +704,44 @@ fn eval_environment_blocks() {
         "garden/env",
     ]);
     assert_eq!(expect, actual);
+}
+
+/// `garden eval` evaluates TREE_PATH variables in "environment" blocks.
+#[test]
+fn eval_environment_tree_paths() {
+    // garden --chdir tests/data eval '${GARDEN_ENV_PATH}' trees/prebuilt
+    let expect = "/tests/data/trees/prebuilt";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_PATH}",
+        "trees/prebuilt",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "{actual} does not end with {expect}"
+    );
+
+    // garden --chdir tests/data eval '${GARDEN_ENV_PATH}' trees/prebuilt garden/env
+    let expect = "/tests/data/trees/prebuilt";
+    let expect_start = "garden/path:";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_PATH}",
+        "trees/prebuilt",
+        "garden/env",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "{actual} does not end with {expect}"
+    );
+    assert!(
+        actual.starts_with(expect_start),
+        "{actual} does not start with {expect_start}"
+    );
 }
 
 /// `garden::git::worktree_details(path)` returns a struct with branches and a

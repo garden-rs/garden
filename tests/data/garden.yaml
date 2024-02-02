@@ -138,7 +138,9 @@ trees:
     variables:
       variable: "prebuilt ${graft::variable}"
       tree_variable: ${TREE_NAME}/env/value
+      tree_path: ${TREE_PATH}
     environment:
+      GARDEN_ENV_PATH: ${tree_path}
       GARDEN_ENV_VALUE: ${tree_variable}
 
 templates:
@@ -183,4 +185,5 @@ gardens:
       - trees/prebuilt
       - graft::grafted-env
     environment:
+      GARDEN_ENV_PATH: garden/path
       GARDEN_ENV_VALUE: garden/env

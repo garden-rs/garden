@@ -28,4 +28,5 @@ trees:
     path: trees/prebuilt
   grafted-env:
     environment:
+      GARDEN_ENV_PATH: ${TREE_PATH}
       GARDEN_ENV_VALUE: graft/${TREE_NAME}/env/value

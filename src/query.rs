@@ -427,10 +427,10 @@ pub fn tree_context(
             });
         }
 
+        ctx.garden = garden.map(|value| value.to_string());
         let mut found = false;
         for current_ctx in &contexts {
             if current_ctx.tree == ctx.tree {
-                ctx.garden = current_ctx.garden.clone();
                 found = true;
                 break;
             }
