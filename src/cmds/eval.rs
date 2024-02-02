@@ -29,9 +29,7 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
             // Evaluate and print the garden expression.
             let garden = eval.garden.as_deref();
             let ctx = query::find_tree(app_context, app_context.get_root_id(), tree, garden)?;
-            let graft_config = ctx
-                .graft_config
-                .map(|graft_id| app_context.get_config(graft_id));
+            let graft_config = ctx.config.map(|graft_id| app_context.get_config(graft_id));
             let value = eval::tree_value(
                 app_context,
                 app_context.get_root_config(),

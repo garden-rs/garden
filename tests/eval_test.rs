@@ -161,7 +161,7 @@ fn multi_variable_with_tree() -> Result<()> {
     let mut var = config.trees[1].environment[1].clone();
     assert_eq!("PATH", var.get_name());
 
-    let context = garden::model::TreeContext::new("cola", None, None, None, None);
+    let context = garden::model::TreeContext::new("cola", None, None, None);
     let values = garden::eval::multi_variable(&app_context, config, None, &mut var, &context);
     assert_eq!(
         values,
@@ -184,7 +184,7 @@ fn multi_variable_with_garden() -> Result<()> {
     let mut var = config.trees[1].environment[1].clone();
     assert_eq!("PATH", var.get_name());
 
-    let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None, None);
+    let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None);
     let values = garden::eval::multi_variable(&app_context, config, None, &mut var, &context);
     assert_eq!(
         values,
@@ -202,7 +202,7 @@ fn garden_environment() -> Result<()> {
     let app_context = common::garden_context()?;
     let config = app_context.get_root_config();
     // cola tree(1) and cola garden(Some(0))
-    let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None, None);
+    let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None);
     let values = garden::eval::environment(&app_context, config, &context);
     assert_eq!(values.len(), 9);
 
@@ -278,7 +278,7 @@ fn group_environment() -> Result<()> {
     let app_context = common::garden_context()?;
     let config = app_context.get_root_config();
     // cola tree(1) + cola group(Some(0))
-    let context = garden::model::TreeContext::new("cola", None, None, Some(string!("cola")), None);
+    let context = garden::model::TreeContext::new("cola", None, None, Some(string!("cola")));
     let values = garden::eval::environment(&app_context, config, &context);
     assert_eq!(values.len(), 7);
 
@@ -375,7 +375,7 @@ fn environment_empty_value() -> Result<()> {
 #[test]
 fn command_garden_scope() -> Result<()> {
     let app_context = common::garden_context()?;
-    let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None, None);
+    let context = garden::model::TreeContext::new("cola", None, Some(string!("cola")), None);
 
     // Garden scope
     let values = garden::eval::command(&app_context, &context, "build");
@@ -393,7 +393,7 @@ fn command_garden_scope() -> Result<()> {
 #[test]
 fn command_tree_scope() -> Result<()> {
     let app_context = common::garden_context()?;
-    let context = garden::model::TreeContext::new("cola", None, None, None, None);
+    let context = garden::model::TreeContext::new("cola", None, None, None);
 
     // The ${prefix} variable should expand to the tree-local value.
     {
@@ -451,7 +451,7 @@ fn find_tree_in_graft() -> Result<()> {
     assert_eq!("graft", ctx.tree);
     assert!(ctx.config.is_some());
 
-    let node_id: usize = ctx.graft_config.unwrap().into();
+    let node_id: usize = ctx.config.unwrap().into();
     assert_eq!(2usize, node_id);
 
     Ok(())
@@ -467,11 +467,11 @@ fn eval_graft_tree() -> Result<()> {
     let ctx = garden::query::find_tree(&app_context, id, "graft::graft", None)?;
     assert!(ctx.config.is_some());
 
-    let node_id: usize = ctx.graft_config.unwrap().into();
+    let node_id: usize = ctx.config.unwrap().into();
     assert_eq!(2usize, node_id);
 
     // Evaluate the value for ${current_config} using the inner grafted config.
-    let graft_config = Some(app_context.get_config(ctx.graft_config.unwrap()));
+    let graft_config = Some(app_context.get_config(ctx.config.unwrap()));
     let path = garden::eval::tree_value(
         &app_context,
         app_context.get_root_config(),
@@ -495,10 +495,10 @@ fn eval_graft_tree() -> Result<()> {
 
     // Get a TreeContext for "example/tree".
     let example_ctx = garden::query::find_tree(&app_context, id, "example/tree", None)?;
-    assert!(example_ctx.config.is_some());
+    assert!(example_ctx.config.is_none());
 
     // Get the configuration for "example/tree".
-    let example_config = app_context.get_config(example_ctx.config.unwrap());
+    let example_config = app_context.get_config(id);
     // Evaluate "${current_config}" from the context of "example/tree".
     let actual = garden::eval::tree_value(
         &app_context,

@@ -261,10 +261,9 @@ pub fn tree_from_name(
     if let Some(tree) = config.trees.get(tree_name) {
         return Some(model::TreeContext::new(
             tree.get_name(),
-            config.get_id(),
+            config.graft_id(),
             garden_name.cloned(),
             group.cloned(),
-            None,
         ));
     }
 
@@ -319,10 +318,9 @@ pub fn trees_from_pattern(
                 // Tree found in a grafted configuration.
                 result.push(model::TreeContext::new(
                     cfg_tree.get_name(),
-                    config.get_id(),
+                    graft_cfg.get_id(),
                     garden_name.cloned(),
                     group.cloned(),
-                    graft_cfg.get_id(),
                 ));
             }
         }
@@ -335,7 +333,6 @@ pub fn trees_from_pattern(
                 config.get_id(),
                 garden_name.cloned(),
                 group.cloned(),
-                None,
             ));
         }
     }
@@ -380,13 +377,7 @@ fn tree_from_pathbuf(
             Err(_) => continue,
         };
         if pathbuf == tree_canon {
-            return Some(model::TreeContext::new(
-                name,
-                config.get_id(),
-                None,
-                None,
-                None,
-            ));
+            return Some(model::TreeContext::new(name, config.get_id(), None, None));
         }
     }
 
@@ -410,13 +401,7 @@ fn tree_from_pathbuf(
                     Err(_) => continue,
                 };
                 if dirname == &tree_canon {
-                    return Some(model::TreeContext::new(
-                        name,
-                        config.get_id(),
-                        None,
-                        None,
-                        None,
-                    ));
+                    return Some(model::TreeContext::new(name, config.get_id(), None, None));
                 }
             }
         }
@@ -471,8 +456,7 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::T
         if pattern.matches(tree_name) {
             result.push(model::TreeContext::new(
                 tree.get_name(),
-                config.get_id(),
-                None,
+                config.graft_id(),
                 None,
                 None,
             ));
@@ -500,8 +484,7 @@ pub fn tree_context(
     // and record the graft so that later lookups use the graft's context.
     // This is effectively the inverse of the recursive deepening performed by find_tree().
     if config.parent_id.is_some() {
-        ctx.config = app_context.get_root_config().get_id();
-        ctx.graft_config = config.get_id();
+        ctx.config = config.get_id();
     }
 
     if let Some(garden_name) = garden {

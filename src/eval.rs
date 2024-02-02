@@ -203,10 +203,9 @@ fn expand_tree_vars(
     // Nothing was found. Check for garden environment variables.
     let context = model::TreeContext::new(
         tree_name,
-        config.get_id(),
+        graft_config.and_then(|cfg| cfg.get_id()),
         garden_name.cloned(),
         None,
-        graft_config.and_then(|cfg| cfg.get_id()),
     );
     if let Some(environ) = environment_value(app_context, config, graft_config, &context, name) {
         return Some(environ);
@@ -643,7 +642,7 @@ fn environment_value_vars<'a>(
             let name_value = tree_value(
                 app_context,
                 config,
-                graft_config.or(context.graft_config.map(|cfg_id| app_context.get_config(cfg_id))),
+                graft_config.or(context.config.map(|cfg_id| app_context.get_config(cfg_id))),
                 var.get_name(),
                 &context.tree,
                 context.garden.as_ref(),
@@ -703,9 +702,8 @@ pub fn environment_value(
         }
         if let Some(garden) = garden_ref {
             for ctx in query::trees_from_garden(app_context, config, graft_config, garden) {
-                let garden_graft_config = ctx
-                    .graft_config
-                    .map(|graft_id| app_context.get_config(graft_id));
+                let garden_graft_config =
+                    ctx.config.map(|graft_id| app_context.get_config(graft_id));
                 if let Some(tree) = garden_graft_config.and_then(|cfg| cfg.trees.get(&ctx.tree)) {
                     vars.append(&mut environment_value_vars(
                         app_context,
@@ -742,7 +740,7 @@ pub fn environment_value(
         if let Some(group) = config.groups.get(group_name) {
             for ctx in query::trees_from_group(app_context, config, graft_config, None, group) {
                 let group_graft_config =
-                    ctx.graft_config.map(|graft_id| app_context.get_config(graft_id));
+                    ctx.config.map(|graft_id| app_context.get_config(graft_id));
                 if let Some(graft_cfg) = group_graft_config {
                     if let Some(tree) = graft_cfg.trees.get(&ctx.tree) {
                         vars.append(&mut environment_value_vars(
@@ -804,7 +802,7 @@ pub fn environment_value(
         let values = multi_variable(
             app_context,
             config,
-            graft_config.or(ctx.graft_config.map(|id| app_context.get_config(id))),
+            graft_config.or(ctx.config.map(|id| app_context.get_config(id))),
             &mut cloned_var,
             ctx,
         );

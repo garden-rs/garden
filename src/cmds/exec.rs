@@ -65,7 +65,7 @@ fn exec(
         if !pattern.matches(&context.tree) {
             continue;
         }
-        let tree_opt = match context.graft_config {
+        let tree_opt = match context.config {
             Some(graft_id) => app_context.get_config(graft_id).trees.get(&context.tree),
             None => config.trees.get(&context.tree),
         };

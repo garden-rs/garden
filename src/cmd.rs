@@ -122,7 +122,7 @@ where
 {
     let path;
     let graft_config = context
-        .graft_config
+        .config
         .map(|graft_id| app_context.get_config(graft_id));
     if let Some(graft_cfg) = graft_config {
         if let Some(tree) = graft_cfg.trees.get(&context.tree) {
