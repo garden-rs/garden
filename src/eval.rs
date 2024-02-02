@@ -66,7 +66,7 @@ fn expand_tree_vars(
         }
     }
 
-    // First check for the variable at the garden scope.
+    // Check for the variable at the garden scope.
     // Garden scope overrides tree and global scope.
     if let Some(garden_name) = garden_name {
         if let Some(var) = config
@@ -98,8 +98,7 @@ fn expand_tree_vars(
         var.set_value(result.to_string());
         return Some(result);
     }
-
-    // Nothing was found.  Check for the variable in global/config scope.
+    // Nothing was found. Check for the variable in global/config scope.
     if let Some(var) = config.variables.get(name) {
         let expr = var.get_expr();
         let result = tree_value(app_context, config, expr, tree_name, garden_name);
@@ -107,9 +106,61 @@ fn expand_tree_vars(
         return Some(result);
     }
 
+    if name == constants::TREE_NAME {
+        return Some(tree_name.to_string());
+    }
+
+    // Nothing was found. Check for garden environment variables.
+    let context = model::TreeContext::new(tree_name, config.get_id(), garden_name.cloned(), None);
+    let environ = environment(app_context, config, &context);
+    for (env_name, value) in environ.iter().rev() {
+        if env_name == name {
+            return Some(value.to_string());
+        }
+    }
+
     // If nothing was found then check for OS environment variables.
     if let Ok(env_value) = std::env::var(name) {
         return Some(env_value);
+    }
+
+    // Nothing was found -> empty value
+    Some(String::new())
+}
+
+/// Expand expressions containing environment variables against a garden environment.
+/// - `app_context`: reference to the top-level ApplicationContext.
+/// - `config`: reference to Configuration to use for evaluation
+/// - `tree_name`: name of the tree being evaluated.
+/// - `garden_name`: optional garden name being evaluated.
+/// - `name`: the name of the variable being expanded.
+fn expand_tree_environment(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    tree_name: &str,
+    garden_name: Option<&model::GardenName>,
+    name: &str,
+) -> Option<String> {
+    // Special case $0, $1, .. $N so they can be used in commands.
+    if syntax::is_digit(name) {
+        return Some(format!("${name}"));
+    }
+
+    // Check for the variable in override scope defined by "garden -D name=value".
+    if let Some(var) = config.override_variables.get(name) {
+        let expr = var.get_expr();
+        let result = tree_value(app_context, config, expr, tree_name, garden_name);
+        var.set_value(result.clone());
+        return Some(result);
+    }
+
+    // Nothing was found. Check for garden environment variables.
+    let context = model::TreeContext::new(tree_name, config.get_id(), garden_name.cloned(), None);
+    let environ = environment(app_context, config, &context);
+    for (env_name, value) in environ.iter().rev() {
+        if env_name == name {
+            return Some(value.to_string());
+        }
     }
 
     // Nothing was found -> empty value
@@ -361,7 +412,7 @@ pub fn environment(
 
     // Evaluate environment variables defined at global scope.
     for var in &config.environment {
-        vars.push((context.clone(), var.clone()));
+        vars.push((context.clone(), var));
     }
 
     let mut ready = false;
@@ -375,13 +426,13 @@ pub fn environment(
                 };
                 if let Some(tree) = config.trees.get(&ctx.tree) {
                     for var in &tree.environment {
-                        vars.push((ctx.clone(), var.clone()));
+                        vars.push((ctx.clone(), var));
                     }
                 }
             }
 
             for var in &garden.environment {
-                vars.push((context.clone(), var.clone()));
+                vars.push((context.clone(), &var));
             }
             ready = true;
         }
@@ -395,7 +446,7 @@ pub fn environment(
                 };
                 if let Some(tree) = config.trees.get(&ctx.tree) {
                     for var in &tree.environment {
-                        vars.push((ctx.clone(), var.clone()));
+                        vars.push((ctx.clone(), var));
                     }
                 }
             }
@@ -404,25 +455,29 @@ pub fn environment(
     }
 
     // Evaluate a single tree environment when not handled above.
+    let single_tree;
     if !ready {
         if let Some(tree) = config.trees.get(&context.tree) {
-            for var in &tree.environment {
-                vars.push((context.clone(), var.clone()));
+            single_tree = tree;
+            for var in &single_tree.environment {
+                vars.push((context.clone(), var));
             }
         }
     }
 
     let mut var_values = Vec::new();
     for (ctx, var) in vars.iter_mut() {
+        let mut cloned_var = var.clone();
+        let values = multi_variable(app_context, config, &mut cloned_var, ctx);
         var_values.push((
             tree_value(
                 app_context,
                 config,
                 var.get_name(),
-                &ctx.tree,
+                ctx.tree.as_str(),
                 ctx.garden.as_ref(),
             ),
-            multi_variable(app_context, config, var, ctx),
+            values,
         ));
     }
 
@@ -561,4 +616,68 @@ pub fn command(
     }
 
     result
+}
+
+/// Expand garden environment variables
+fn expand_environment_vars(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    name: &str,
+) -> Option<String> {
+    // Check for the variable in the current configuration's global scope.
+    if let Some(var) = config.variables.get(name) {
+        if let Some(var_value) = var.get_value() {
+            return Some(var_value.to_string());
+        }
+        let expr = var.get_expr();
+        let result = value(app_context, config, expr);
+        var.set_value(result.clone());
+
+        return Some(result);
+    }
+    // Nothing was found. Check for garden environment variables.
+    let context = model::TreeContext::new("", config.get_id(), None, None);
+    let environ = environment(app_context, config, &context);
+    for (env_name, value) in environ.iter().rev() {
+        if env_name == name {
+            return Some(value.to_string());
+        }
+    }
+    // Walk up the parent hierarchy to resolve variables defined by graft parents.
+    if let Some(parent_id) = config.parent_id {
+        let parent_config = app_context.get_config(parent_id);
+        return expand_vars(app_context, parent_config, name);
+    }
+    // If nothing was found then check for OS environment variables.
+    if let Ok(env_value) = std::env::var(name) {
+        return Some(env_value);
+    }
+    // Nothing was found -> empty value
+    Some(String::new())
+}
+
+/// Resolve a variable in configuration/global scope
+pub fn environment_value(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    expr: &str,
+) -> String {
+    shellexpand::full_with_context_no_errors(expr, home_dir, |x| {
+        expand_environment_vars(app_context, config, x)
+    })
+    .to_string()
+}
+
+/// Resolve environment variables in a garden environment
+pub fn tree_environment_value(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    expr: &str,
+    tree_name: &str,
+    garden_name: Option<&model::GardenName>,
+) -> String {
+    shellexpand::full_with_context_no_errors(expr, home_dir, |x| {
+        expand_tree_environment(app_context, config, tree_name, garden_name, x)
+    })
+    .to_string()
 }

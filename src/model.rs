@@ -666,7 +666,6 @@ impl Configuration {
     pub(crate) fn reset(&mut self) {
         // Reset variables to allow for tree-scope evaluation
         self.reset_variables();
-
         // Add custom variables
         self.reset_builtin_variables()
     }

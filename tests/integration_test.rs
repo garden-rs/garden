@@ -659,6 +659,53 @@ fn eval_default_config_dir() {
     assert!(output.ends_with("/tests/data/config"));
 }
 
+/// `garden eval` evaluates variables from "environment" blocks.
+#[test]
+fn eval_environment_blocks() {
+    // garden --chdir tests/data eval '${GARDEN_ENV_VALUE}' trees/prebuilt
+    let expect = "trees/prebuilt/env/value";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "trees/prebuilt",
+    ]);
+    assert_eq!(expect, actual);
+    // garden --chdir tests/data eval --env '${GARDEN_ENV_VALUE}' graft::prebuilt
+    let expect = "graft/grafted-env/env/value";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "graft::grafted-env",
+    ]);
+    assert_eq!(expect, actual);
+    // garden --chdir tests/data eval --env '${GARDEN_ENV_VALUE}' trees/prebuilt garden/env
+    let expect = "garden/env:graft/grafted-env/env/value:trees/prebuilt/env/value";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "trees/prebuilt",
+        "garden/env",
+    ]);
+    assert_eq!(expect, actual);
+    // garden --chdir tests/data eval --env '${GARDEN_ENV_VALUE}' graft::prebuilt garden/env
+    let expect = "garden/env:graft/grafted-env/env/value:trees/prebuilt/env/value";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "graft::grafted-env",
+        "garden/env",
+    ]);
+    assert_eq!(expect, actual);
+}
+
 /// `garden::git::worktree_details(path)` returns a struct with branches and a
 /// GitTreeType (Tree, Bare, Parent, Worktree) for this worktree.
 #[test]

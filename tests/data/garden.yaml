@@ -137,6 +137,9 @@ trees:
     url: "file://${repos}/example.git"
     variables:
       variable: "prebuilt ${graft::variable}"
+      tree_variable: ${TREE_NAME}/env/value
+    environment:
+      GARDEN_ENV_VALUE: ${tree_variable}
 
 templates:
   echo-template-extended:
@@ -175,4 +178,9 @@ gardens:
     trees:
       - graft::prebuilt
       - trees/prebuilt
-
+  garden/env:
+    trees:
+      - trees/prebuilt
+      - graft::grafted-env
+    environment:
+      GARDEN_ENV_VALUE: garden/env

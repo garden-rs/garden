@@ -22,7 +22,8 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
             // Evaluate and print the expression in global scope. No trees or gardens
             // were provided so only the top-level variables are included.
             let config = app_context.get_root_config();
-            println!("{}", eval::value(app_context, config, &eval.expr));
+            let value = eval::value(app_context, config, &eval.expr);
+            println!("{value}");
         }
         Some(tree) => {
             // Evaluate and print the garden expression.

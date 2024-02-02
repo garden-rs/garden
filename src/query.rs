@@ -412,8 +412,15 @@ pub fn tree_context(
                 garden: garden_name.into(),
             }
         })?;
-        let contexts = garden_trees(app_context, config, &pattern);
-
+        let mut contexts = garden_trees(app_context, config, &pattern);
+        if contexts.is_empty() {
+            // The current config may be a graft. Allow finding grafts from parents.
+            if let Some(parent_id) = config.parent_id {
+                let parent_config = app_context.get_config(parent_id);
+                contexts = garden_trees(app_context, parent_config, &pattern);
+                ctx.config = parent_config.get_id();
+            }
+        }
         if contexts.is_empty() {
             return Err(errors::GardenError::GardenNotFound {
                 garden: garden_name.to_string(),
