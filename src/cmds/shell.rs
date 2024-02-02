@@ -20,7 +20,6 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
         return Err(errors::GardenError::EmptyTreeQueryResult(options.query.clone()).into());
     }
     let mut context = contexts[0].clone();
-    let graft_config = context.config.map(|id| app_context.get_config(id));
 
     // If a tree's name in the returned contexts exactly matches the tree
     // query that was used to find it then chdir into that tree.
@@ -54,6 +53,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
     }
 
     // Evaluate garden.shell
+    let graft_config = context.config.map(|id| app_context.get_config(id));
     let shell_expr = config.shell.clone();
     let shell = eval::tree_value(
         app_context,
