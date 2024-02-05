@@ -121,7 +121,21 @@ where
     S: AsRef<std::ffi::OsStr>,
 {
     let path;
-    if let Some(tree) = config.trees.get(&context.tree) {
+    let graft_config = context
+        .config
+        .map(|graft_id| app_context.get_config(graft_id));
+    if let Some(graft_cfg) = graft_config {
+        if let Some(tree) = graft_cfg.trees.get(&context.tree) {
+            path = tree.path_as_ref()?;
+
+            // Sparse gardens/missing trees are okay -> skip these entries.
+            if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
+                return Ok(());
+            }
+        } else {
+            return Ok(());
+        }
+    } else if let Some(tree) = config.trees.get(&context.tree) {
         path = tree.path_as_ref()?;
 
         // Sparse gardens/missing trees are okay -> skip these entries.

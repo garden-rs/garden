@@ -79,14 +79,22 @@ fn grow_tree_from_context(
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let config = match context.config {
-        Some(config_id) => app_context.get_config(config_id),
-        None => app_context.get_root_config(),
-    };
+    let config = app_context.get_root_config();
+    let graft_config = context
+        .config
+        .map(|config_id| app_context.get_config(config_id));
     let mut exit_status = errors::EX_OK;
-    let tree = match config.trees.get(&context.tree) {
-        Some(tree) => tree,
-        None => return Ok(exit_status),
+
+    let tree = if let Some(graft_cfg) = graft_config {
+        match graft_cfg.trees.get(&context.tree) {
+            Some(tree) => tree,
+            None => return Ok(exit_status),
+        }
+    } else {
+        match config.trees.get(&context.tree) {
+            Some(tree) => tree,
+            None => return Ok(exit_status),
+        }
     };
 
     let path = tree.path_as_ref()?.clone();
@@ -134,6 +142,7 @@ fn grow_tree_from_context(
         Some(remote) => eval::tree_value(
             app_context,
             config,
+            graft_config,
             remote.get_expr(),
             &context.tree,
             context.garden.as_ref(),
@@ -161,6 +170,7 @@ fn grow_tree_from_context(
     let branch = eval::tree_value(
         app_context,
         config,
+        graft_config,
         tree.branch.get_expr(),
         &context.tree,
         context.garden.as_ref(),
@@ -245,14 +255,22 @@ fn update_tree_from_context(
     _quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let config = match ctx.config {
-        Some(config_id) => app_context.get_config(config_id),
-        None => app_context.get_root_config(),
-    };
+    let config = app_context.get_root_config();
+    let graft_config = ctx
+        .config
+        .map(|config_id| app_context.get_config(config_id));
     let mut exit_status = errors::EX_OK;
-    let tree = match config.trees.get(&ctx.tree) {
-        Some(tree) => tree,
-        None => return Ok(exit_status),
+
+    let tree = if let Some(graft_cfg) = graft_config {
+        match graft_cfg.trees.get(&ctx.tree) {
+            Some(tree) => tree,
+            None => return Ok(exit_status),
+        }
+    } else {
+        match config.trees.get(&ctx.tree) {
+            Some(tree) => tree,
+            None => return Ok(exit_status),
+        }
     };
 
     // Existing symlinks require no further processing.
@@ -290,6 +308,7 @@ fn update_tree_from_context(
         let url = eval::tree_value(
             app_context,
             config,
+            graft_config,
             var.get_expr(),
             &ctx.tree,
             ctx.garden.as_ref(),
@@ -337,6 +356,7 @@ fn update_tree_from_context(
         let name = eval::tree_value(
             app_context,
             config,
+            graft_config,
             var_name,
             &ctx.tree,
             ctx.garden.as_ref(),
@@ -347,6 +367,7 @@ fn update_tree_from_context(
                 None => eval::tree_value(
                     app_context,
                     config,
+                    graft_config,
                     var.get_expr(),
                     &ctx.tree,
                     ctx.garden.as_ref(),
@@ -457,18 +478,28 @@ fn grow_tree_from_context_as_worktree(
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
-    let config = match ctx.config {
-        Some(config_id) => app_context.get_config(config_id),
-        None => app_context.get_root_config(),
-    };
+    let config = app_context.get_root_config();
+    let graft_config = ctx
+        .config
+        .map(|config_id| app_context.get_config(config_id));
     let mut exit_status = errors::EX_OK;
-    let tree = match config.trees.get(&ctx.tree) {
-        Some(tree) => tree,
-        None => return Ok(exit_status),
+
+    let tree = if let Some(graft_cfg) = graft_config {
+        match graft_cfg.trees.get(&ctx.tree) {
+            Some(tree) => tree,
+            None => return Ok(exit_status),
+        }
+    } else {
+        match config.trees.get(&ctx.tree) {
+            Some(tree) => tree,
+            None => return Ok(exit_status),
+        }
     };
+
     let worktree = eval::tree_value(
         app_context,
         config,
+        graft_config,
         tree.worktree.get_expr(),
         &ctx.tree,
         ctx.garden.as_ref(),
@@ -476,6 +507,7 @@ fn grow_tree_from_context_as_worktree(
     let branch = eval::tree_value(
         app_context,
         config,
+        graft_config,
         tree.branch.get_expr(),
         &ctx.tree,
         ctx.garden.as_ref(),

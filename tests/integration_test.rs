@@ -659,6 +659,137 @@ fn eval_default_config_dir() {
     assert!(output.ends_with("/tests/data/config"));
 }
 
+/// `garden eval` evaluates variables from "environment" blocks.
+#[test]
+fn eval_environment_tree_names() {
+    // garden --chdir tests/data eval '${GARDEN_ENV_VALUE}' trees/prebuilt
+    let expect = "trees/prebuilt/env/value";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "trees/prebuilt",
+    ]);
+    assert_eq!(expect, actual);
+    // garden --chdir tests/data eval --env '${GARDEN_ENV_VALUE}' graft::prebuilt
+    let expect = "graft/grafted-env/env/value";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "graft::grafted-env",
+    ]);
+    assert_eq!(expect, actual);
+    // garden --chdir tests/data eval --env '${GARDEN_ENV_VALUE}' trees/prebuilt garden/env
+    let expect = "garden/env:graft/grafted-env/env/value:trees/prebuilt/env/value";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "trees/prebuilt",
+        "garden/env",
+    ]);
+    assert_eq!(expect, actual);
+    // garden --config tests/data/garden.yaml tests/data eval '${GARDEN_ENV_VALUE}' graft::grafted-env garden/env
+    let expect = "garden/env:graft/grafted-env/env/value:trees/prebuilt/env/value";
+    let actual = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_ENV_VALUE}",
+        "graft::grafted-env",
+        "garden/env",
+    ]);
+    assert_eq!(expect, actual);
+}
+
+/// `garden eval` evaluates TREE_PATH variables in "environment" blocks.
+#[test]
+fn eval_environment_tree_paths() {
+    // garden --chdir tests/data eval '${GARDEN_ENV_PATH}' trees/prebuilt
+    let expect = "/tests/data/trees/prebuilt";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_PATH}",
+        "trees/prebuilt",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "{actual} does not end with {expect}"
+    );
+    assert_eq!(1, actual.split(':').count());
+
+    // garden --chdir tests/data eval '${GARDEN_ENV_PATH}' graft::grafted-env
+    let expect = "/tests/data/grafted-env";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_PATH}",
+        "graft::grafted-env",
+    ]);
+    assert!(
+        actual.ends_with(expect),
+        "{actual} does not end with {expect}"
+    );
+    assert_eq!(1, actual.split(':').count());
+
+    // garden --chdir tests/data eval '${GARDEN_ENV_PATH}' trees/prebuilt garden/env
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_PATH}",
+        "trees/prebuilt",
+        "garden/env",
+    ]);
+    let actual_items: Vec<&str> = actual.split(':').collect();
+    assert_eq!(actual_items.len(), 3);
+    assert_eq!(actual_items[0], "garden/path");
+    let expect = "/tests/data/grafted-env";
+    assert!(
+        actual_items[1].ends_with(expect),
+        "{} does not end with {expect}",
+        actual_items[1]
+    );
+    let expect = "/tests/data/trees/prebuilt";
+    assert!(
+        actual_items[2].ends_with(expect),
+        "{} does not end with {expect}",
+        actual_items[2]
+    );
+
+    // garden --chdir tests/data eval '${GARDEN_ENV_PATH}' trees/prebuilt garden/env
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "eval",
+        "${GARDEN_ENV_PATH}",
+        "graft::grafted-env",
+        "garden/env",
+    ]);
+    let actual_items: Vec<&str> = actual.split(':').collect();
+    assert_eq!(actual_items.len(), 3);
+    assert_eq!(actual_items[0], "garden/path");
+    let expect = "/tests/data/grafted-env";
+    assert!(
+        actual_items[1].ends_with(expect),
+        "{} does not end with {expect}",
+        actual_items[1]
+    );
+    let expect = "/tests/data/trees/prebuilt";
+    assert!(
+        actual_items[2].ends_with(expect),
+        "{} does not end with {expect}",
+        actual_items[2]
+    );
+}
+
 /// `garden::git::worktree_details(path)` returns a struct with branches and a
 /// GitTreeType (Tree, Bare, Parent, Worktree) for this worktree.
 #[test]

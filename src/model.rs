@@ -546,6 +546,11 @@ impl Configuration {
         self.reset();
     }
 
+    /// Return Some(&NodeId) when the configuration is a graft and None otherwise.
+    pub(crate) fn graft_id(&self) -> Option<NodeId> {
+        self.parent_id.and(self.get_id())
+    }
+
     pub(crate) fn update(
         &mut self,
         app_context: &ApplicationContext,
@@ -666,7 +671,6 @@ impl Configuration {
     pub(crate) fn reset(&mut self) {
         // Reset variables to allow for tree-scope evaluation
         self.reset_variables();
-
         // Add custom variables
         self.reset_builtin_variables()
     }

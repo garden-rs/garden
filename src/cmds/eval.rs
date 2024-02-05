@@ -22,21 +22,20 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
             // Evaluate and print the expression in global scope. No trees or gardens
             // were provided so only the top-level variables are included.
             let config = app_context.get_root_config();
-            println!("{}", eval::value(app_context, config, &eval.expr));
+            let value = eval::value(app_context, config, &eval.expr);
+            println!("{value}");
         }
         Some(tree) => {
             // Evaluate and print the garden expression.
             let garden = eval.garden.as_deref();
             let ctx = query::find_tree(app_context, app_context.get_root_id(), tree, garden)?;
-            let config = match ctx.config {
-                Some(config_id) => app_context.get_config(config_id),
-                None => app_context.get_root_config(),
-            };
+            let graft_config = ctx.config.map(|graft_id| app_context.get_config(graft_id));
             let value = eval::tree_value(
                 app_context,
-                config,
-                eval.expr.as_str(),
-                ctx.tree.as_str(),
+                app_context.get_root_config(),
+                graft_config,
+                &eval.expr,
+                &ctx.tree,
                 ctx.garden.as_ref(),
             );
             println!("{value}");

@@ -46,6 +46,13 @@ pub(crate) fn is_graft(string: &str) -> bool {
     string.contains("::")
 }
 
+/// Return true if `string` is a candidate for evaluation.
+/// Returns true for strings with ${vars}  and "$ exec" expressions.
+#[inline]
+pub(crate) fn is_eval_candidate(string: &str) -> bool {
+    string.contains('$')
+}
+
 /// Return true if `string` ends in ".git". This is used to detect bare repositories.
 #[inline]
 pub(crate) fn is_git_dir(string: &str) -> bool {

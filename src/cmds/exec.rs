@@ -55,7 +55,7 @@ fn exec(
     // with no garden context.
 
     // Resolve the tree query into a vector of tree contexts.
-    let contexts = query::resolve_trees(app_context, config, query);
+    let contexts = query::resolve_trees(app_context, config, None, query);
     let pattern = glob::Pattern::new(tree_pattern).unwrap_or_default();
     let mut exit_status: i32 = 0;
 
@@ -65,11 +65,11 @@ fn exec(
         if !pattern.matches(&context.tree) {
             continue;
         }
-        let config = match context.config {
-            Some(config_id) => app_context.get_config(config_id),
-            None => config,
+        let tree_opt = match context.config {
+            Some(graft_id) => app_context.get_config(graft_id).trees.get(&context.tree),
+            None => config.trees.get(&context.tree),
         };
-        let tree = match config.trees.get(&context.tree) {
+        let tree = match tree_opt {
             Some(tree) => tree,
             None => continue,
         };

@@ -180,6 +180,7 @@ pub(crate) fn print_tree_extended_details(
             let value = eval::tree_value(
                 app_context,
                 config,
+                None,
                 remote.get_expr(),
                 &context.tree,
                 context.garden.as_ref(),
@@ -198,6 +199,7 @@ pub(crate) fn print_tree_extended_details(
             let value = eval::tree_value(
                 app_context,
                 config,
+                None,
                 link.get_expr(),
                 &context.tree,
                 context.garden.as_ref(),
