@@ -2036,8 +2036,33 @@ trees:
       uname: $ uname -a
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
-<p><em>Released 2023-01-27</em></p>
+<h2 id="v130"><a class="header" href="#v130">v1.3.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden eval</code> and garden expressions in general will now resolve variables defined
+within <code>environment</code> blocks. Environment blocks were previously not considered when
+resolving variables. Environment blocks are now resolved and checked for variables
+when <code>${variable}</code> expressions do not find the variable in scopes with higher
+precedence. The precedence order, from strongest to weakest, is the <code>variables</code>
+block in a garden's scope, the <code>variables</code> block in a tree's scope, the
+<code>variables</code> block in global configuration scope, the <code>environments</code> block in
+a garden's scope, the <code>environments</code> block in a tree's scope, the
+<code>environments</code> block in global configuration scope and, lastly, OS environment
+variables. The first entry found is used when expanding variable expressions.</li>
+</ul>
+<h2 id="v121"><a class="header" href="#v121">v1.2.1</a></h2>
+<p><em>Released 2023-02-05</em></p>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p>The <code>yaml-rust-davvid</code> dependency was upgraded to <code>v0.6.0</code>.</p>
+</li>
+<li>
+<p>Documentation and code maintenance.</p>
+</li>
+</ul>
 <h2 id="v120"><a class="header" href="#v120">v1.2.0</a></h2>
+<p><em>Released 2023-01-27</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
