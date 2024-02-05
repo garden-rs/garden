@@ -177,13 +177,13 @@ pub(crate) fn print_tree_extended_details(
     if !tree.remotes.is_empty() {
         println!("{}", Color::blue("remotes:"));
         for (name, remote) in &tree.remotes {
-            let value = eval::tree_value(
+            let value = eval::tree_variable(
                 app_context,
                 config,
                 None,
-                remote.get_expr(),
                 &context.tree,
                 context.garden.as_ref(),
+                remote,
             );
             println!(
                 "  {}{} {}",
@@ -196,13 +196,13 @@ pub(crate) fn print_tree_extended_details(
     if !tree.links.is_empty() {
         println!("{}", Color::blue("links:"));
         for link in &tree.links {
-            let value = eval::tree_value(
+            let value = eval::tree_variable(
                 app_context,
                 config,
                 None,
-                link.get_expr(),
                 &context.tree,
                 context.garden.as_ref(),
+                link,
             );
             println!("  {} {}", Color::blue("-"), Color::yellow(value));
         }
