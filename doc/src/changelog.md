@@ -14,6 +14,7 @@
   a garden's scope, the `environments` block in a tree's scope, the
   `environments` block in global configuration scope and, lastly, OS environment
   variables. The first entry found is used when expanding variable expressions.
+  ([#23](https://github.com/davvid/garden/pull/23))
 
 
 ## v1.2.1
