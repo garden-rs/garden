@@ -6,6 +6,8 @@
 
 - The `yaml-rust-davvid` dependency was upgraded to `v0.6.0`.
 
+- Documentation and code maintenance.
+
 
 ## v1.2.0
 
