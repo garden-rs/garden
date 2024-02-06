@@ -242,7 +242,7 @@ variables:
   nproc: $ nproc
   prefix: ~/.local
   py_ver_code: from sys import version_info as v; print("%s.%s" % v[:2])
-  py_ver: $ python -c '${py_ver_code}'
+  py_ver: $ python3 -c '${py_ver_code}'
   py_site: ${libdir}/python${py_ver}/site-packages
 ```
 
