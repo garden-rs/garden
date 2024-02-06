@@ -1009,6 +1009,33 @@ fn eval_graft_variables_with_circular_dependencies() {
     assert_eq!(output, "root-graft-");
 }
 
+/// Test evaluating a graft variable that triggers an infinite loop via a circular dependency.
+#[test]
+fn eval_environment_variables_with_circular_dependencies() {
+    // The graft's environment variable has "graft/${TREE_NAME}/${circular-variable}".
+    // The ${env-circular-variable} expression is "variables/${ENV_CIRCULAR_VARIABLE}"
+    // The evaluation machinery is short-circuits itself on the inner ${env-circular-variable}
+    // and resolves down until the cycle is detected and gets cut off.
+    // The graft::current tree is called "current".
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/circular.yaml",
+        "eval",
+        "${ENV_CIRCULAR_VARIABLE}",
+        "graft::current",
+    ]);
+    assert_eq!(output, "graft/current/variables/graft/current/");
+    // The root-tree's context traverses in a different order and evaluates its TREE_NAME.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/circular.yaml",
+        "eval",
+        "${ENV_CIRCULAR_VARIABLE}",
+        "root-tree",
+    ]);
+    assert_eq!(output, "root-tree/variables/root-tree/");
+}
+
 /// `garden grow` creates symlinks
 #[test]
 #[named]

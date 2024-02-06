@@ -7,8 +7,11 @@ trees:
     path: ${GARDEN_CONFIG_DIR}
     variables:
       root-variable: root-tree-${circular-variable}
+    environment:
+      ENV_CIRCULAR_VARIABLE: ${TREE_NAME}/${env-circular-variable}
 
 # This file contains circular dependencies in variables.
 variables:
   circular-variable: ${graft::circular-variable}
   root-variable: root-${circular-variable}
+  env-circular-variable: variables/${ENV_CIRCULAR_VARIABLE}
