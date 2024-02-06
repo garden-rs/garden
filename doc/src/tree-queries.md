@@ -40,8 +40,11 @@ In the following example, the "cola" garden is found in the example
 configuration. Each command is run over every tree in that garden.
 
 ```bash
+# Run "git status -s" over each tree in the "cola" garden.
 garden exec cola git status -s
+# Run the custom "status" command over each tree in the "cola" garden.
 garden status cola
+# Run the "status" and "build" commands over each tree in the "cola" garden.
 garden cmd cola status build
 ```
 
