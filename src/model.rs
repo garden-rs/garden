@@ -45,6 +45,7 @@ pub type ConfigId = NodeId;
 pub struct Variable {
     expr: String,
     value: RefCell<Option<String>>,
+    evaluating: RefCell<bool>,
 }
 
 impl_display_brief!(Variable);
@@ -54,6 +55,7 @@ impl Variable {
         Variable {
             expr,
             value: RefCell::new(value),
+            evaluating: RefCell::new(false),
         }
     }
 
@@ -62,18 +64,33 @@ impl Variable {
         self.expr.is_empty()
     }
 
+    /// Is this variable currently being evaluated?
+    /// This is a guard variable to avoid infinite loops when evaluating.
+    pub fn is_evaluating(&self) -> bool {
+        *self.evaluating.borrow()
+    }
+
+    /// Set the evaluation state.
+    pub fn set_evaluating(&self, value: bool) {
+        *self.evaluating.borrow_mut() = value;
+    }
+
+    /// Return the raw expression for this variable.
     pub fn get_expr(&self) -> &String {
         &self.expr
     }
 
+    /// Return a mutable reference to the underlying raw expression.
     pub fn get_expr_mut(&mut self) -> &mut String {
         &mut self.expr
     }
 
+    /// Set the expression for this variable.
     pub fn set_expr(&mut self, expr: String) {
         self.expr = expr;
     }
 
+    /// Store the cached result of evaluating the expression.
     pub fn set_value(&self, value: String) {
         *self.value.borrow_mut() = Some(value);
     }
@@ -84,6 +101,7 @@ impl Variable {
         unsafe { (*ptr).as_ref() }
     }
 
+    /// Reset the variable.
     pub fn reset(&self) {
         *self.value.borrow_mut() = None;
     }

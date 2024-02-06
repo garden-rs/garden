@@ -571,13 +571,13 @@ pub(crate) fn shared_worktree_path(
         },
     };
     if tree.is_worktree {
-        let worktree = eval::tree_value(
+        let worktree = eval::tree_variable(
             app_context,
             config,
             None,
-            tree.worktree.get_expr(),
             &ctx.tree,
             ctx.garden.as_ref(),
+            &tree.worktree,
         );
         if let Some(parent_ctx) =
             query::tree_from_name(config, &worktree, ctx.garden.as_ref(), ctx.group.as_ref())

@@ -139,13 +139,13 @@ fn grow_tree_from_context(
 
     // The "url" field maps to the default remote.
     let url = match tree.remotes.get(&tree.default_remote) {
-        Some(remote) => eval::tree_value(
+        Some(remote) => eval::tree_variable(
             app_context,
             config,
             graft_config,
-            remote.get_expr(),
             &context.tree,
             context.garden.as_ref(),
+            remote,
         ),
         None => return Ok(exit_status),
     };
@@ -167,15 +167,14 @@ fn grow_tree_from_context(
     }
 
     // "git clone --branch=name" clones the named branch.
-    let branch = eval::tree_value(
+    let branch = eval::tree_variable(
         app_context,
         config,
         graft_config,
-        tree.branch.get_expr(),
         &context.tree,
         context.garden.as_ref(),
+        &tree.branch,
     );
-
     let branch_opt;
     if !branch.is_empty() && !tree.branches.contains_key(&branch) {
         branch_opt = format!("--branch={branch}");
@@ -305,13 +304,13 @@ fn update_tree_from_context(
 
     // Loop over remotes and add/update the git remote configuration.
     for (remote, var) in &tree.remotes {
-        let url = eval::tree_value(
+        let url = eval::tree_variable(
             app_context,
             config,
             graft_config,
-            var.get_expr(),
             &ctx.tree,
             ctx.garden.as_ref(),
+            var,
         );
 
         if existing_remotes.contains(remote) {
@@ -364,13 +363,13 @@ fn update_tree_from_context(
         for var in variables {
             let value = match var.get_value() {
                 Some(precomputed_value) => precomputed_value.to_string(),
-                None => eval::tree_value(
+                None => eval::tree_variable(
                     app_context,
                     config,
                     graft_config,
-                    var.get_expr(),
                     &ctx.tree,
                     ctx.garden.as_ref(),
+                    var,
                 ),
             };
             let status = if variables.len() > 1 {
@@ -393,7 +392,7 @@ fn update_tree_from_context(
         // Create all configured tracking branches.
         for (branch, expr) in &tree.branches {
             if !branches.contains(branch) {
-                let remote_branch = eval::value(app_context, config, expr.get_expr());
+                let remote_branch = eval::variable(app_context, config, expr);
                 if !remote_branch.is_empty() {
                     let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
                     let exec = cmd::exec_in_dir(&command, path);
@@ -496,21 +495,21 @@ fn grow_tree_from_context_as_worktree(
         }
     };
 
-    let worktree = eval::tree_value(
+    let worktree = eval::tree_variable(
         app_context,
         config,
         graft_config,
-        tree.worktree.get_expr(),
         &ctx.tree,
         ctx.garden.as_ref(),
+        &tree.worktree,
     );
-    let branch = eval::tree_value(
+    let branch = eval::tree_variable(
         app_context,
         config,
         graft_config,
-        tree.branch.get_expr(),
         &ctx.tree,
         ctx.garden.as_ref(),
+        &tree.branch,
     );
 
     let parent_ctx =
@@ -570,7 +569,7 @@ fn grow_tree_from_context_as_worktree(
         // Read the upstream branch from tree.<tree>.branches.<branch> when configured.
         // Defaults to "<remote>/<branch>" when not configured.
         if let Some(expr) = tree.branches.get(&branch) {
-            remote_branch = eval::value(app_context, config, expr.get_expr());
+            remote_branch = eval::variable(app_context, config, expr);
         } else {
             // The "default-remote" field is used to change the name of the default "origin" remote.
             let default_remote = tree.default_remote.to_string();
