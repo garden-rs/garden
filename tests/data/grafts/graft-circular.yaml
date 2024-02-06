@@ -1,0 +1,7 @@
+---
+variables:
+  circular-variable: graft-${root-variable}
+
+trees:
+  current:
+    path: ${GARDEN_CONFIG_DIR}

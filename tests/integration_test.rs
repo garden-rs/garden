@@ -958,6 +958,57 @@ fn eval_graft_variable_at_tree_scope() {
     assert_eq!(output, "prebuilt graft value");
 }
 
+/// Test evaluating a graft variable that triggers an infinite loop via a circular dependency.
+#[test]
+fn eval_graft_variables_with_circular_dependencies() {
+    // The graft's circular-variable expression is "graft-${root-variable}".
+    // The root's root-variable  expression is "root-${circular-variable}".
+    // The root's circular-variable expression is "${graft::circular-variable}".
+    // The short-circuit logic in the eval module returns an empty string
+    // so we end up with "graft-root-".
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/circular.yaml",
+        "eval",
+        "${circular-variable}",
+        "graft::current",
+    ]);
+    assert_eq!(output, "graft-root-");
+    // Introduce a cycle at the root tree scope.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/circular.yaml",
+        "eval",
+        "${root-variable}",
+        "root-tree",
+    ]);
+    assert_eq!(output, "root-tree-graft-");
+    // Evaluate a grafted variable from the root tree's scope.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/circular.yaml",
+        "eval",
+        "${graft::circular-variable}",
+        "root-tree",
+    ]);
+    assert_eq!(output, "graft-root-tree-");
+    // Evaluate variables at root scope without a tree scope.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/circular.yaml",
+        "eval",
+        "${graft::circular-variable}",
+    ]);
+    assert_eq!(output, "graft-root-");
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/circular.yaml",
+        "eval",
+        "${root-variable}",
+    ]);
+    assert_eq!(output, "root-graft-");
+}
+
 /// `garden grow` creates symlinks
 #[test]
 #[named]

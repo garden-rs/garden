@@ -45,6 +45,7 @@ pub type ConfigId = NodeId;
 pub struct Variable {
     expr: String,
     value: RefCell<Option<String>>,
+    evaluating: RefCell<bool>,
 }
 
 impl_display_brief!(Variable);
@@ -54,12 +55,24 @@ impl Variable {
         Variable {
             expr,
             value: RefCell::new(value),
+            evaluating: RefCell::new(false),
         }
     }
 
     /// Does this variable have a value?
     pub fn is_empty(&self) -> bool {
         self.expr.is_empty()
+    }
+
+    /// Is this variable currently being evaluated?
+    /// This is a guard variable to avoid infinite loops when evaluating.
+    pub fn is_evaluating(&self) -> bool {
+        *self.evaluating.borrow()
+    }
+
+    /// Set the evaluation state.
+    pub fn set_evaluating(&self, value: bool) {
+        *self.evaluating.borrow_mut() = value;
     }
 
     /// Return the raw expression for this variable.

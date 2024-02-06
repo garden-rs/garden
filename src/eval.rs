@@ -919,6 +919,10 @@ pub(crate) fn tree_variable(
     if let Some(var_value) = var.get_value() {
         return var_value.to_string();
     }
+    if var.is_evaluating() {
+        return String::new();
+    }
+    var.set_evaluating(true);
     let expr = var.get_expr();
     let result = tree_value(
         app_context,
@@ -928,6 +932,7 @@ pub(crate) fn tree_variable(
         tree_name,
         garden_name,
     );
+    var.set_evaluating(false);
     var.set_value(result.to_string());
 
     result
@@ -942,8 +947,13 @@ pub(crate) fn variable(
     if let Some(var_value) = var.get_value() {
         return var_value.to_string();
     }
+    if var.is_evaluating() {
+        return String::new();
+    }
+    var.set_evaluating(true);
     let expr = var.get_expr();
     let result = value(app_context, config, expr);
+    var.set_evaluating(false);
     var.set_value(result.to_string());
 
     result

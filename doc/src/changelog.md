@@ -16,6 +16,11 @@
   variables. The first entry found is used when expanding variable expressions.
   ([#23](https://github.com/davvid/garden/pull/23))
 
+- Evaluation cycles (i.e. circular variable dependencies) are now prevented when
+  evaluating garden variables. The evaluation engine will now return empty strings
+  when a variable with a cyclical expression is evaluated.
+  ([#24](https://github.com/davvid/garden/pull/24))
+
 
 ## v1.2.1
 

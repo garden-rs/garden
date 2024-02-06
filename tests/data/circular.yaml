@@ -1,0 +1,14 @@
+---
+grafts:
+  graft: grafts/graft-circular.yaml
+
+trees:
+  root-tree:
+    path: ${GARDEN_CONFIG_DIR}
+    variables:
+      root-variable: root-tree-${circular-variable}
+
+# This file contains circular dependencies in variables.
+variables:
+  circular-variable: ${graft::circular-variable}
+  root-variable: root-${circular-variable}
