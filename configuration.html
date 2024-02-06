@@ -495,7 +495,7 @@ variables that are can be referenced by other garden values.</p>
   nproc: $ nproc
   prefix: ~/.local
   py_ver_code: from sys import version_info as v; print(&quot;%s.%s&quot; % v[:2])
-  py_ver: $ python -c '${py_ver_code}'
+  py_ver: $ python3 -c '${py_ver_code}'
   py_site: ${libdir}/python${py_ver}/site-packages
 </code></pre>
 <p>Variables definitions can reference environment variables and other garden
@@ -556,6 +556,43 @@ environment can be referenced using garden <code>${variable}</code> expression s
 Garden variables have higher precedence than environment variables when
 resolving <code>${variable}</code> references -- the environment is checked only when
 no garden variables exist by that name.</p>
+<h3 id="variable-expression-evaluation-order"><a class="header" href="#variable-expression-evaluation-order">Variable Expression Evaluation Order</a></h3>
+<p>Garden <code>${variables}</code> expressions can reference other variables and they can also
+reference variables from <code>environment</code> entries.</p>
+<p>Referencing variables defined in an <code>environment</code> section from a <code>variables</code>
+entry is generally discouraged for simplicity, but it is supported and valid.
+It is recommended that a <code>variables</code> entry should only reference other
+<code>variables</code> and avoid referencing entries from <code>environment</code> blocks.</p>
+<p>Following this rule of thumb results in configurations where entries from
+<code>environment</code> sections depend on entries from <code>variables</code> and not the other way around.
+This minimizes the chance of introducing cyclical dependencies across variables.</p>
+<p><code>environment</code> entries are only used during variable resolution when the expression
+evaluation engine is unable to find the variable in any of the higher-precedence scopes.</p>
+<p>The precedence order when expanding variables, from strongest to weakest, is as follows:</p>
+<ul>
+<li>
+<p>The <code>variables</code> block in a garden's scope.</p>
+</li>
+<li>
+<p>The <code>variables</code> block in a tree's scope.</p>
+</li>
+<li>
+<p>The <code>variables</code> block in the global configuration scope.</p>
+</li>
+<li>
+<p>The <code>environments</code> block in a garden's scope.</p>
+</li>
+<li>
+<p>The <code>environments</code> block in a tree's scope.</p>
+</li>
+<li>
+<p>The <code>environments</code> block in the global configuration scope.</p>
+</li>
+<li>
+<p>OS environment variables.</p>
+</li>
+</ul>
+<p>The first entry found is used when expanding <code>${variable}</code> expressions.</p>
 <h2 id="gardens-groups-and-trees"><a class="header" href="#gardens-groups-and-trees">Gardens, Groups and Trees</a></h2>
 <p>Trees are Git repositories with configuration that allows for the
 specification of arbitrary commands and workflows.  Groups are a simple

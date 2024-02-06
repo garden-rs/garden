@@ -209,8 +209,11 @@ your trees, groups and gardens are named uniquely then no prefixes are needed.</
 <h2 id="tree-queries-resolve-to-multiple-trees"><a class="header" href="#tree-queries-resolve-to-multiple-trees">Tree Queries Resolve to Multiple Trees</a></h2>
 <p>In the following example, the &quot;cola&quot; garden is found in the example
 configuration. Each command is run over every tree in that garden.</p>
-<pre><code class="language-bash">garden exec cola git status -s
+<pre><code class="language-bash"># Run &quot;git status -s&quot; over each tree in the &quot;cola&quot; garden.
+garden exec cola git status -s
+# Run the custom &quot;status&quot; command over each tree in the &quot;cola&quot; garden.
 garden status cola
+# Run the &quot;status&quot; and &quot;build&quot; commands over each tree in the &quot;cola&quot; garden.
 garden cmd cola status build
 </code></pre>
 <h2 id="paths"><a class="header" href="#paths">Paths</a></h2>
