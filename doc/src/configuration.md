@@ -329,6 +329,42 @@ resolving `${variable}` references -- the environment is checked only when
 no garden variables exist by that name.
 
 
+### Variable Expression Evaluation Order
+
+Garden `${variables}` expressions can reference other variables and they can also
+reference variables from `environment` entries.
+
+Referencing variables defined in an `environment` section from a `variables`
+entry is generally discouraged for simplicity, but it is supported and valid.
+It is recommended that a `variables` entry should only reference other
+`variables` and avoid referencing entries from `environment` blocks.
+
+Following this rule of thumb results in configurations where entries from
+`environment` sections depend on entries from `variables` and not the other way around.
+This minimizes the chance of introducing cyclical dependencies across variables.
+
+`environment` entries are only used during variable resolution when the expression
+evaluation engine is unable to find the variable in any of the higher-precedence scopes.
+
+The precedence order when expanding variables, from strongest to weakest, is as follows:
+
+* The `variables` block in a garden's scope.
+
+* The `variables` block in a tree's scope.
+
+* The `variables` block in the global configuration scope.
+
+* The `environments` block in a garden's scope.
+
+* The `environments` block in a tree's scope.
+
+* The `environments` block in the global configuration scope.
+
+* OS environment variables.
+
+The first entry found is used when expanding `${variable}` expressions.
+
+
 ## Gardens, Groups and Trees
 
 Trees are Git repositories with configuration that allows for the
