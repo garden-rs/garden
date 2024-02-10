@@ -561,12 +561,8 @@ fn grow_default_remote_url() -> Result<()> {
 
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
-#[named]
 fn eval_garden_config_dir() {
-    let fixture = BareRepoFixture::new(function_name!());
     let output = garden_capture(&[
-        "--chdir",
-        &fixture.root(),
         "--config",
         "tests/data/garden.yaml",
         "eval",
@@ -616,13 +612,9 @@ fn eval_garden_root() {
 
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
-#[named]
-fn eval_override_variables() -> Result<()> {
-    let fixture = BareRepoFixture::new(function_name!());
+fn eval_override_variables() {
     // garden eval ${tree_variable} current
     let output = garden_capture(&[
-        "--chdir",
-        &fixture.root(),
         "--config",
         "tests/data/garden.yaml",
         "--define",
