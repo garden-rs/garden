@@ -610,7 +610,7 @@ fn eval_garden_root() {
     );
 }
 
-/// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
+/// `garden eval` evaluates overridden variables.
 #[test]
 fn eval_override_variables() {
     // garden eval ${tree_variable} current
@@ -624,8 +624,22 @@ fn eval_override_variables() {
         "current",
     ]);
     assert_eq!(output, "test");
+}
 
-    Ok(())
+/// `garden -D value=expression` evaluates the expression.
+#[test]
+fn eval_override_expressions() {
+    // garden -D value='${tree_value}' eval '${value}' current
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "--define",
+        "value=${tree_value}",
+        "eval",
+        "${value}",
+        "current",
+    ]);
+    assert_eq!(output, "tree");
 }
 
 /// `garden eval` evaluates ${GARDEN_ROOT} to the same directory as the
