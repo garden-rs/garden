@@ -357,8 +357,16 @@ The `--no-errexit` option causes commands with multiple statements to run to com
 even when a non-zero exit code is encountered. This is akin to a regular shell script.
 
 Configure `garden.shell-errexit` to `false` in `garden.yaml` to opt-out of this behavior.
-You can also opt-out of the `errexit` behavior on a per-command basis by adding
+You can also opt-out of the `errexit` behavior on a per-command basis by using
 `set +e` as the first line of a multi-line command.
+
+When `zsh` is used it is executed with the `-o shwordsplit` option so that zsh behaves
+similarly to traditional shells and splits words in unquoted `$variable` expressions
+rather than treating `$variable` like a single argument.
+
+Configure `garden.shell-wordsplit` to `false` to opt-out of this behavior.
+You can also opt-out of the `shwordsplit` behavior on a per-command basis by using
+`set +o shwordsplit` as the first line of a multi-line command.
 
 Additional command-line `<arguments>` specified after a double-dash (`--`)
 end-of-options marker are forwarded to each command.

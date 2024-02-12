@@ -36,10 +36,16 @@ pub fn main(options: &cli::MainOptions, completion_options: &CompletionOptions) 
                             .long("keep-going"),
                     )
                     .arg(
-                        Arg::new("no_errexit")
+                        Arg::new("no-errexit")
                             .help("Do not pass -e to the shell")
                             .short('n')
                             .long("no-errexit"),
+                    )
+                    .arg(
+                        Arg::new("no-wordsplit")
+                            .help("Do not pass -o shwordsplit to zsh")
+                            .short('z')
+                            .long("no-wordsplit"),
                     )
                     .arg(
                         Arg::new("queries")

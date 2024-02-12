@@ -503,6 +503,7 @@ pub struct Configuration {
     pub override_variables: VariableHashMap,
     pub verbose: u8,
     pub(crate) shell_exit_on_error: bool,
+    pub(crate) shell_word_split: bool,
     pub(crate) tree_branches: bool,
     pub(crate) parent_id: Option<ConfigId>,
     id: Option<ConfigId>,
@@ -518,6 +519,7 @@ impl Configuration {
             parent_id: None,
             shell: get_default_shell(),
             shell_exit_on_error: true,
+            shell_word_split: true,
             tree_branches: true,
             ..std::default::Default::default()
         }
@@ -649,12 +651,10 @@ impl Configuration {
         if config_verbose > 2 {
             debug!("{}", self);
         }
-
         for key in &options.debug {
             let current = *self.debug.get(key).unwrap_or(&0);
             self.debug.insert(key.into(), current + 1);
         }
-
         for k_eq_v in &options.define {
             let name: String;
             let expr: String;
@@ -670,10 +670,16 @@ impl Configuration {
             }
             // Allow overridding garden.<value> using "garden -D garden.<value>=false".
             match name.as_str() {
-                "garden.shell-errexit" => {
+                constants::GARDEN_SHELL => {
+                    self.shell = expr;
+                }
+                constants::GARDEN_SHELL_ERREXIT => {
                     set_bool(name.as_str(), &expr, &mut self.shell_exit_on_error);
                 }
-                "garden.tree-branches" => {
+                constants::GARDEN_SHELL_WORDSPLIT => {
+                    set_bool(name.as_str(), &expr, &mut self.shell_word_split);
+                }
+                constants::GARDEN_TREE_BRANCHES => {
                     set_bool(name.as_str(), &expr, &mut self.tree_branches);
                 }
                 _ => {
@@ -1359,10 +1365,10 @@ impl ApplicationContext {
         let path = path.to_path_buf();
         let config_verbose = self.options.debug_level(constants::DEBUG_LEVEL_CONFIG);
         let mut graft_config = Configuration::new();
-        // Propagate the current config's "garden.tree-branches" and "garden.shell_exit_on_error"
-        // settings onto child grafts.
+        // Propagate the current config's settings onto child grafts.
         graft_config.tree_branches = self.get_config(config_id).tree_branches;
         graft_config.shell_exit_on_error = self.get_config(config_id).shell_exit_on_error;
+        graft_config.shell_word_split = self.get_config(config_id).shell_word_split;
         // Parse the config file for the graft.
         graft_config.update(self, Some(&path), root, config_verbose, Some(config_id))?;
 

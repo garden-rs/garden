@@ -56,13 +56,13 @@ fn parse_recursive(
             config.root_is_dynamic = true;
         }
         if config_verbose > 0 {
-            debug!("yaml: garden.root = {}", config.root.get_expr());
+            debug!("config: garden.root = {}", config.root.get_expr());
         }
     }
 
     // garden.shell
     if get_str(&doc[constants::GARDEN][constants::SHELL], &mut config.shell) && config_verbose > 0 {
-        debug!("yaml: garden.shell = {}", config.shell);
+        debug!("config: {} = {}", constants::GARDEN_SHELL, config.shell);
     }
     // garden.shell-errexit
     if get_bool(
@@ -71,8 +71,21 @@ fn parse_recursive(
     ) && config_verbose > 0
     {
         debug!(
-            "yaml: garden.shell-errexit = {}",
+            "config: {} = {}",
+            constants::GARDEN_SHELL_ERREXIT,
             config.shell_exit_on_error
+        );
+    }
+    // garden.shell-wordsplit
+    if get_bool(
+        &doc[constants::GARDEN][constants::SHELL_WORDSPLIT],
+        &mut config.shell_word_split,
+    ) && config_verbose > 0
+    {
+        debug!(
+            "config: {} = {}",
+            constants::GARDEN_SHELL_WORDSPLIT,
+            config.shell_word_split
         );
     }
     // garden.tree-branches
@@ -81,14 +94,18 @@ fn parse_recursive(
         &mut config.tree_branches,
     ) && config_verbose > 0
     {
-        debug!("yaml: garden.tree-branches = {}", config.tree_branches);
+        debug!(
+            "config: {} = {}",
+            constants::GARDEN_TREE_BRANCHES,
+            config.tree_branches
+        );
     }
 
     // GARDEN_ROOT and GARDEN_CONFIG_DIR are relative to the root configuration.
     // Referencing these variables from garden files included using garden.includes
     // resolves to the root config's location, not the included location.
     if config_verbose > 1 {
-        debug!("yaml: built-in variables");
+        debug!("config: built-in variables");
     }
     // Provide GARDEN_ROOT.
     config.variables.insert(
@@ -111,7 +128,7 @@ fn parse_recursive(
     if !get_variables_hashmap(&doc[constants::VARIABLES], &mut config.variables)
         && config_verbose > 1
     {
-        debug!("yaml: no variables");
+        debug!("config: no variables");
     }
 
     // Process "includes" after initializing the GARDEN_ROOT and GARDEN_CONFIG_DIR.
@@ -160,33 +177,33 @@ fn parse_recursive(
         if !get_variables_hashmap(&doc[constants::VARIABLES], &mut config.variables)
             && config_verbose > 1
         {
-            debug!("yaml: no reloaded variables");
+            debug!("config: no reloaded variables");
         }
     }
 
     // grafts
     if config_verbose > 1 {
-        debug!("yaml: grafts");
+        debug!("config: grafts");
     }
     if !get_grafts(&doc[constants::GRAFTS], &mut config.grafts) && config_verbose > 1 {
-        debug!("yaml: no grafts");
+        debug!("config: no grafts");
     }
 
     get_multivariables(&doc[constants::ENVIRONMENT], &mut config.environment);
 
     // commands
     if config_verbose > 1 {
-        debug!("yaml: commands");
+        debug!("config: commands");
     }
     if !get_multivariables_hashmap(&doc[constants::COMMANDS], &mut config.commands)
         && config_verbose > 1
     {
-        debug!("yaml: no commands");
+        debug!("config: no commands");
     }
 
     // templates
     if config_verbose > 1 {
-        debug!("yaml: templates");
+        debug!("config: templates");
     }
     if !get_templates(
         &doc["templates"],
@@ -194,31 +211,31 @@ fn parse_recursive(
         &mut config.templates,
     ) && config_verbose > 1
     {
-        debug!("yaml: no templates");
+        debug!("config: no templates");
     }
 
     // trees
     if config_verbose > 1 {
-        debug!("yaml: trees");
+        debug!("config: trees");
     }
     if !get_trees(app_context, config, &doc[constants::TREES]) && config_verbose > 1 {
-        debug!("yaml: no trees");
+        debug!("config: no trees");
     }
 
     // groups
     if config_verbose > 1 {
-        debug!("yaml: groups");
+        debug!("config: groups");
     }
     if !get_groups(&doc[constants::GROUPS], &mut config.groups) && config_verbose > 1 {
-        debug!("yaml: no groups");
+        debug!("config: no groups");
     }
 
     // gardens
     if config_verbose > 1 {
-        debug!("yaml: gardens");
+        debug!("config: gardens");
     }
     if !get_gardens(&doc[constants::GARDENS], &mut config.gardens) && config_verbose > 1 {
-        debug!("yaml: no gardens");
+        debug!("config: no gardens");
     }
 
     Ok(())

@@ -4,11 +4,11 @@ use common::{
     BareRepoFixture,
 };
 
-use garden::git;
-use garden::model;
+use garden::{git, model};
 
 use anyhow::Result;
 use function_name::named;
+use which::which;
 
 /// `garden init` adds the current repository
 #[test]
@@ -1348,7 +1348,6 @@ fn cmd_no_errexit() {
         "error-command",
     ]);
     assert_eq!(output, "ok");
-
     let output = garden_capture(&[
         "--chdir",
         "tests/data",
@@ -1356,6 +1355,15 @@ fn cmd_no_errexit() {
         "cmd",
         "--no-errexit",
         ".",
+        "error-command",
+    ]);
+    assert_eq!(output, "ok\nafter error");
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--define",
+        "garden.shell-errexit=false",
+        "--quiet",
         "error-command",
     ]);
     assert_eq!(output, "ok\nafter error");
@@ -1869,6 +1877,49 @@ fn cmd_shell_variables() {
     assert_eq!(output, "test array value");
 }
 
+/// Test the behavior of garden.shell-wordsplit.
+/// $shell variables subject to word splitting byh default unless
+/// garden.shell-wordsplit is set false.
+#[test]
+fn cmd_zsh_shell_wordsplit() {
+    if which("zsh").is_err() {
+        return;
+    }
+    // Words are split by default.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "--define",
+        "garden.shell=zsh",
+        "--quiet",
+        "echo-wordsplit-variable",
+    ]);
+    assert_eq!(output, "a\nb\nc");
+    // Use garden.shell-wordsplit=false to disable word splitting.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "--define",
+        "garden.shell=zsh",
+        "--define",
+        "garden.shell-wordsplit=false",
+        "--quiet",
+        "echo-wordsplit-variable",
+    ]);
+    assert_eq!(output, "a b c");
+    // use --no-wordsplit to disable word splitting.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "--define",
+        "garden.shell=zsh",
+        "--quiet",
+        "echo-wordsplit-variable",
+        "--no-wordsplit",
+    ]);
+    // Words are split by default.
+    assert_eq!(output, "a b c");
+}
 /// "garden prune" prunes specific depths
 #[test]
 #[named]
