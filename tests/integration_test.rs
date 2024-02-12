@@ -1348,7 +1348,6 @@ fn cmd_no_errexit() {
         "error-command",
     ]);
     assert_eq!(output, "ok");
-
     let output = garden_capture(&[
         "--chdir",
         "tests/data",
@@ -1356,6 +1355,15 @@ fn cmd_no_errexit() {
         "cmd",
         "--no-errexit",
         ".",
+        "error-command",
+    ]);
+    assert_eq!(output, "ok\nafter error");
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data",
+        "--define",
+        "garden.shell-errexit=false",
+        "--quiet",
         "error-command",
     ]);
     assert_eq!(output, "ok\nafter error");
