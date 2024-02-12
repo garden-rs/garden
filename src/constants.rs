@@ -74,6 +74,12 @@ pub const GARDEN_CONFIG_DIR_EXPR: &str = "${GARDEN_CONFIG_DIR}";
 /// Builtin variable for the "garden.root" location where trees are grown.
 pub const GARDEN_ROOT: &str = "GARDEN_ROOT";
 
+/// Command-line defines for overriding configurable behavior.
+pub(crate) const GARDEN_SHELL: &str = "garden.shell";
+pub(crate) const GARDEN_SHELL_ERREXIT: &str = "garden.shell-errexit";
+pub(crate) const GARDEN_SHELL_WORDSPLIT: &str = "garden.shell-wordsplit";
+pub(crate) const GARDEN_TREE_BRANCHES: &str = "garden.tree-branches";
+
 /// The "gitconfig" section in a tree block defines local ".git/config"
 /// settings that are applied when a tree is grown.
 pub const GITCONFIG: &str = "gitconfig";
@@ -128,6 +134,9 @@ pub(crate) const SHELL_DASH: &str = "dash";
 /// The "shell-errexit" key in the garden block disables the "exit on error"
 /// shell option.
 pub const SHELL_ERREXIT: &str = "shell-errexit";
+
+/// The "shell-wordsplit" key in the garden block disables the `zsh -o shwordsplit` option.
+pub const SHELL_WORDSPLIT: &str = "shell-wordsplit";
 
 /// KornShell is a standard/restricted command and programming language.
 pub(crate) const SHELL_KSH: &str = "ksh";

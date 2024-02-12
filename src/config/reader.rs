@@ -71,8 +71,21 @@ fn parse_recursive(
     ) && config_verbose > 0
     {
         debug!(
-            "yaml: garden.shell-errexit = {}",
+            "config: {} = {}",
+            constants::GARDEN_SHELL_ERREXIT,
             config.shell_exit_on_error
+        );
+    }
+    // garden.shell-wordsplit
+    if get_bool(
+        &doc[constants::GARDEN][constants::SHELL_WORDSPLIT],
+        &mut config.shell_word_split,
+    ) && config_verbose > 0
+    {
+        debug!(
+            "config: {} = {}",
+            constants::GARDEN_SHELL_WORDSPLIT,
+            config.shell_word_split
         );
     }
     // garden.tree-branches
@@ -81,7 +94,11 @@ fn parse_recursive(
         &mut config.tree_branches,
     ) && config_verbose > 0
     {
-        debug!("yaml: garden.tree-branches = {}", config.tree_branches);
+        debug!(
+            "config: {} = {}",
+            constants::GARDEN_TREE_BRANCHES,
+            config.tree_branches
+        );
     }
 
     // GARDEN_ROOT and GARDEN_CONFIG_DIR are relative to the root configuration.

@@ -83,7 +83,12 @@ trees:
       echo-pre-and-post-nested>: echo-pre-and-post-nested-after
       echo-pre-and-post-nested-after>: echo-pre-and-post-nested-fini
       echo-pre-and-post-nested-fini: echo fini
-
+      echo-wordsplit-variable: |
+        abc='a b c'
+        for arg in $abc
+        do
+            echo $arg
+        done
   example/shallow:
     path: example/tree/shallow
     url: file://${repos}/example.git

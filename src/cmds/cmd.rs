@@ -21,11 +21,18 @@ pub struct CmdOptions {
     /// Prevent the "errexit" shell option from being set. By default, the "-e" option
     /// is passed to the configured shell so that multi-line and multi-statement
     /// commands halt execution when the first statement with a non-zero exit code is
-    /// encountered. "--no-errexit" has the effect of making multi-line and
+    /// encountered. This option has the effect of making multi-line and
     /// multi-statement commands run all statements even when an earlier statement
     /// returns a non-zero exit code.
-    #[arg(long, short)]
-    no_errexit: bool,
+    #[arg(long = "no-errexit", short = 'n', default_value_t = true, action = clap::ArgAction::SetFalse)]
+    exit_on_error: bool,
+    /// Do not pass "-o shwordsplit" to zsh.
+    /// Prevent the "shwordsplit" shell option from being set when using zsh.
+    /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
+    /// $variable expressions are subject to word splitting, just like other shells.
+    /// This option disables this behavior.
+    #[arg(long = "no-wordsplit", short = 'z', default_value_t = true, action = clap::ArgAction::SetFalse)]
+    word_split: bool,
     /// Tree query for the gardens, groups or trees to execute commands within
     query: String,
     /// Custom commands to run over the resolved trees
@@ -52,11 +59,18 @@ pub struct CustomOptions {
     /// Prevent the "errexit" shell option from being set. By default, the "-e" option
     /// is passed to the configured shell so that multi-line and multi-statement
     /// commands halt execution when the first statement with a non-zero exit code is
-    /// encountered. "--no-errexit" has the effect of making multi-line and
+    /// encountered. This option has the effect of making multi-line and
     /// multi-statement commands run all statements even when an earlier statement
     /// returns a non-zero exit code.
-    #[arg(long, short)]
-    no_errexit: bool,
+    #[arg(long = "no-errexit", short = 'n', default_value_t = true, action = clap::ArgAction::SetFalse)]
+    exit_on_error: bool,
+    /// Do not pass "-o shwordsplit" to zsh.
+    /// Prevent the "shwordsplit" shell option from being set when using zsh.
+    /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
+    /// $variable expressions are subject to word splitting, just like other shells.
+    /// This option disables this behavior.
+    #[arg(long = "no-wordsplit", short = 'z', default_value_t = true, action = clap::ArgAction::SetFalse)]
+    word_split: bool,
     /// Tree queries for the Gardens/Groups/Trees to execute commands within
     // NOTE: value_terminator may not be needed in future versions of clap_complete.
     // https://github.com/clap-rs/clap/pull/4612
@@ -76,7 +90,10 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
         debug!("trees: {:?}", options.trees);
     }
     if !app_context.get_root_config().shell_exit_on_error {
-        options.no_errexit = true;
+        options.exit_on_error = false;
+    }
+    if !app_context.get_root_config().shell_word_split {
+        options.word_split = false;
     }
     let params: CmdParams = options.clone().into();
     let exit_status = cmd(app_context, &options.query, &params)?;
@@ -98,6 +115,8 @@ pub struct CmdParams {
     keep_going: bool,
     #[derivative(Default(value = "true"))]
     exit_on_error: bool,
+    #[derivative(Default(value = "true"))]
+    word_split: bool,
 }
 
 /// Build CmdParams from a CmdOptions struct.
@@ -107,9 +126,10 @@ impl From<CmdOptions> for CmdParams {
             commands: options.commands.clone(),
             arguments: options.arguments.clone(),
             breadth_first: options.breadth_first,
-            exit_on_error: !options.no_errexit,
+            exit_on_error: options.exit_on_error,
             keep_going: options.keep_going,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
+            word_split: options.word_split,
             ..Default::default()
         }
     }
@@ -128,8 +148,9 @@ impl From<CustomOptions> for CmdParams {
             // --breadth-first was added to "garden cmd" and made opt-in.
             breadth_first: true,
             keep_going: options.keep_going,
-            exit_on_error: !options.no_errexit,
+            exit_on_error: options.exit_on_error,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
+            word_split: options.word_split,
             ..Default::default()
         };
 
@@ -159,7 +180,10 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
     let mut options = <CustomOptions as FromArgMatches>::from_arg_matches(&matches)
         .map_err(format_error::<CustomOptions>)?;
     if !app_context.get_root_config().shell_exit_on_error {
-        options.no_errexit = true;
+        options.exit_on_error = false;
+    }
+    if !app_context.get_root_config().shell_word_split {
+        options.word_split = false;
     }
 
     if app_context.options.debug_level(constants::DEBUG_LEVEL_CMD) > 0 {
@@ -253,8 +277,7 @@ fn run_cmd_breadth_first(
                     &shell,
                     &env,
                     &cmd_seq_vec,
-                    &params.arguments,
-                    params.exit_on_error,
+                    params,
                 ) {
                     exit_status = cmd_status;
                     if !params.keep_going {
@@ -324,8 +347,7 @@ fn run_cmd_depth_first(
                     &shell,
                     &env,
                     &cmd_seq_vec,
-                    &params.arguments,
-                    params.exit_on_error,
+                    params,
                 ) {
                     exit_status = cmd_status;
                     if !params.keep_going {
@@ -353,8 +375,7 @@ fn run_cmd_vec(
     shell: &str,
     env: &Vec<(String, String)>,
     cmd_seq_vec: &[Vec<String>],
-    arguments: &[String],
-    exit_on_error: bool,
+    params: &CmdParams,
 ) -> Result<(), i32> {
     // Get the current executable name
     let current_exe = cmd::current_exe();
@@ -375,6 +396,7 @@ fn run_cmd_vec(
             | constants::SHELL_SH
             | constants::SHELL_ZSH
     );
+    let is_zsh = matches!(basename, constants::SHELL_ZSH);
     // Does the shell use "-e <string>" or "-c <string>" to evaluate commands?
     let use_dash_e = matches!(
         basename,
@@ -394,7 +416,10 @@ fn run_cmd_vec(
                 );
             }
             let mut exec = subprocess::Exec::cmd(shell).cwd(path);
-            if exit_on_error && is_shell {
+            if params.word_split && is_zsh {
+                exec = exec.arg("-o").arg("shwordsplit");
+            }
+            if params.exit_on_error && is_shell {
                 exec = exec.arg("-e");
             }
             if use_dash_e {
@@ -406,7 +431,7 @@ fn run_cmd_vec(
             if is_shell {
                 exec = exec.arg(current_exe.as_str());
             }
-            exec = exec.args(arguments);
+            exec = exec.args(&params.arguments);
             // Update the command environment
             for (k, v) in env {
                 exec = exec.env(k, v);
@@ -416,7 +441,7 @@ fn run_cmd_vec(
             let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
-                if exit_on_error {
+                if params.exit_on_error {
                     return Err(status);
                 }
             } else {

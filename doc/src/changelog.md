@@ -21,6 +21,14 @@
   when a variable with a cyclical expression is evaluated.
   ([#24](https://github.com/davvid/garden/pull/24))
 
+- When `zsh` is used as the `garden.shell`, which happens automatically when `zsh`
+  is installed, `garden` will now use `zsh -o shwordsplit` in order to enable
+  word-splitting of `$variable` expressions by default. This makes `zsh` behave
+  just like other shells by default, which improves the portability of commands.
+  Configure `garden.shell-wordsplit` to `false` or use the
+  `garden <cmd> -z | --no-wordsplit` option to opt-out of this behavior.
+  ([#25](https://github.com/davvid/garden/pull/25))
+
 
 ## v1.2.1
 
