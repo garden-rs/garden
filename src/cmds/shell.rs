@@ -8,6 +8,7 @@ use crate::{cmd, errors, eval, model, query};
 #[command(author, about, long_about)]
 pub struct ShellOptions {
     /// Query for trees to build an environment
+    #[arg(default_value = ".")]
     query: String,
     /// Tree to chdir into
     tree: Option<String>,

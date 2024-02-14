@@ -50,6 +50,10 @@
   configuring the `garden.interactive-shell` value.
   ([#26](https://github.com/davvid/garden/pull/26))
 
+- `garden shell` can now be run without any arguments. The tree query now defaults to
+  `.` so that the tree in the current directory is used when nothing is specified.
+  ([#26](https://github.com/davvid/garden/pull/26))
+
 
 ## v1.2.1
 
