@@ -755,20 +755,6 @@ If both a tree and the garden containing that tree defines a command called
 by the garden's <code>test</code> command.</p>
 <p>Commands are executed in a shell so that shell expressions can be used in commands.
 A POSIX-compatible shell must be installed in your <code>$PATH</code>.</p>
-<p>The <code>garden.shell</code> configuration value defaults to <code>zsh</code> but can be set to any
-shell that accepts <code>-e</code> and <code>-c '&lt;command&gt;</code> options (for example <code>bash</code>).
-If <code>zsh</code> is not installed then <code>bash</code> will be used by default instead.
-If neither <code>zsh</code> nor <code>bash</code> is installed then <code>sh</code> will be used by default instead.</p>
-<p>Each command runs under <code>[&quot;zsh&quot;, &quot;-e&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> with the resolved
-environment from the corresponding garden, group, or tree.</p>
-<p>Multi-line and multi-statement command strings will stop executing as soon as the
-first non-zero exit code is encountered due to the use of the <code>-e</code> shell option.
-Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> &quot;errexit&quot; option.</p>
-<p>The <code>--no-errexit</code> option causes commands with multiple statements to run to completion
-even when a non-zero exit code is encountered. This is akin to a regular shell script.</p>
-<p>Configure <code>garden.shell-errexit</code> to <code>false</code> in <code>garden.yaml</code> to opt-out of this behavior.
-You can also opt-out of the <code>errexit</code> behavior on a per-command basis by adding
-<code>set +e</code> as the first line of a multi-line command.</p>
 <p>Additional command-line <code>&lt;arguments&gt;</code> specified after a double-dash (<code>--</code>)
 end-of-options marker are forwarded to each command.</p>
 <p><code>&quot;$0&quot;</code> in a custom command points to the current garden executable and can be
@@ -792,23 +778,105 @@ commands:
     - |
       echo b $3
       echo c $4
-
 variables:
   name: value
   debian: $ type apt-get &gt;/dev/null &amp;&amp; echo yes || echo no
-
 # Commands can also be defined at tree and garden scope
-
 trees:
   our-tree:
     commands:
       tree-cmd: echo ${TREE_NAME}
-
 gardens:
   all:
     trees: &quot;*&quot;
     commands:
       print-pwd: pwd
+</code></pre>
+<h3 id="garden-shell"><a class="header" href="#garden-shell">Garden Shell</a></h3>
+<p>The <code>garden.shell</code> configuration value controls which shell interpreter
+is used to interpret custom commands.</p>
+<pre><code class="language-yaml">garden:
+  shell: zsh  # zsh is used by default when available. Uses bash, dash or sh otherwise.
+  shell-wordsplit: true  # Words are split by default in zsh using &quot;zsh -o shwordsplit&quot;
+  shell-errexit: true  # Non-zero exit status stops execution using &quot;zsh -e&quot;.
+</code></pre>
+<p><code>garden.shell</code> defaults to <code>zsh</code> when <code>zsh</code> is installed but can be set to any shell
+that accepts <code>-e</code> and <code>-c '&lt;string&gt;</code> options (for example <code>ksh</code>).
+If <code>zsh</code> is not installed then <code>bash</code> or <code>dash</code> will be used instead.
+If neither <code>zsh</code>, <code>bash</code> nor <code>dash</code> is installed then <code>sh</code> will be used.</p>
+<p>Each command runs under <code>[&quot;zsh&quot;, &quot;-e&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> with the resolved
+environment from the corresponding garden, group, or tree.</p>
+<p>Multi-line and multi-statement command strings will stop executing as soon as the
+first non-zero exit code is encountered due to the use of the <code>-e</code> shell option.
+Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> &quot;errexit&quot; option.</p>
+<p>The <code>--no-errexit</code> option causes commands with multiple statements to run to completion
+even when a non-zero exit code is encountered. This is akin to a regular shell script.</p>
+<p>Configure <code>garden.shell-errexit</code> to <code>false</code> in <code>garden.yaml</code> to opt-out of this behavior.
+You can also opt-out of the <code>errexit</code> behavior on a per-command basis by using
+<code>set +e</code> as the first line of a multi-line command.</p>
+<p>When <code>zsh</code> is used it is executed with the <code>-o shwordsplit</code> option so that zsh behaves
+similarly to traditional shells by splitting words in unquoted <code>$variable</code> expressions
+rather than treating <code>$variable</code> like a single argument.</p>
+<p>Configure <code>garden.shell-wordsplit</code> to <code>false</code> to opt-out of this behavior.
+You can also opt-out of the <code>shwordsplit</code> behavior on a per-command basis by using
+<code>set +o shwordsplit</code> as the first line of a multi-line command.</p>
+<h4 id="builtin-shells"><a class="header" href="#builtin-shells">Builtin Shells</a></h4>
+<p>The following values for <code>garden.shell</code> are understood directly by <code>garden</code> and
+the following commands are used when <code>garden</code> detects that these shells are
+configured.</p>
+<div class="table-wrapper"><table><thead><tr><th>garden.shell</th><th>Command used for running commands</th><th>errexit=false</th><th>wordsplit=false</th></tr></thead><tbody>
+<tr><td><code>bun</code></td><td><code>bun -e</code></td><td>N/A</td><td>N/A</td></tr>
+<tr><td><code>bash</code></td><td><code>bash -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
+<tr><td><code>dash</code></td><td><code>dash -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
+<tr><td><code>ksh</code></td><td><code>ksh -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
+<tr><td><code>node</code></td><td><code>node -e</code></td><td>N/A</td><td>N/A</td></tr>
+<tr><td><code>nodejs</code></td><td><code>nodejs -e</code></td><td>N/A</td><td>N/A</td></tr>
+<tr><td><code>perl</code></td><td><code>perl -e</code></td><td>N/A</td><td>N/A</td></tr>
+<tr><td><code>ruby</code></td><td><code>ruby -e</code></td><td>N/A</td><td>N/A</td></tr>
+<tr><td><code>sh</code></td><td><code>sh -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
+<tr><td><code>zsh</code></td><td><code>zsh -e -o shwordsplit -c</code></td><td>Omit <code>-e</code></td><td>Omit <code>-o shwordsplit</code></td></tr>
+</tbody></table>
+</div>
+<p>The following shells are not builtin, but they work as expected because they accept
+<code>-c &lt;string&gt;</code> arguments for running command strings.</p>
+<div class="table-wrapper"><table><thead><tr><th>garden.shell</th><th>Command used for running commands</th></tr></thead><tbody>
+<tr><td><code>fish</code></td><td><code>fish -c</code></td></tr>
+<tr><td><code>python3</code></td><td><code>python3 -c</code></td></tr>
+</tbody></table>
+</div>
+<h4 id="custom-command-interpreters"><a class="header" href="#custom-command-interpreters">Custom Command Interpreters</a></h4>
+<p>The command used in <code>garden.shell</code> must specify a command that takes a string to
+execute using the <code>-c &lt;string&gt;</code> option. Some commands take <code>-e &lt;string&gt;</code> instead,
+namely <code>nodejs</code>, <code>perl</code> and <code>ruby</code>, which are all understood by <code>garden</code> and
+are expanded into their corresponding command-line.</p>
+<p>This allows you to specify <code>python3</code> as the shell because <code>garden</code> assumes that
+it can call <code>python3 -c &lt;string&gt;</code> to execute commands.</p>
+<pre><code class="language-yaml">garden:
+  shell: python3  # Uses &quot;python -c &lt;string&gt;&quot; to run commands.
+commands:
+  greet: print('hello')  # Interpreted by python3.
+
+# Builtin shorthand shell values are special-cased internally.
+garden:
+   shell: zsh  # Uses &quot;zsh -o shwordsplit -e -c &lt;string&gt;&quot; to run commands.
+
+garden:
+   shell: bash  # Uses &quot;bash -e -c &lt;string&gt;&quot; to run commands.
+</code></pre>
+<p><code>garden.shell</code> also allows you to completely override the command used for interpreting
+custom commands. When you specify a command line with multiple arguments then <code>garden</code>
+will no longer internally manage the command-line options passed to the shell command.
+The options that you specify will be used instead. You must specify <code>-c</code> or similar
+arguments yourself when <code>garden</code> is configured with a custom command.
+The <code>garden.shell-wordsplit</code> and <code>garden.shell-errexit</code> options have no effect
+when using custom shell commands.</p>
+<pre><code class="language-yaml"># Use &quot;zsh -c&quot; directly without &quot;-o shwordsplit&quot; and &quot;-e&quot;.
+garden:
+  shell: zsh -c
+
+# Additional examples.
+garden:
+  shell: python3 -s -u -c
 </code></pre>
 <h3 id="shell-syntax"><a class="header" href="#shell-syntax">Shell Syntax</a></h3>
 <p>User-defined Commands and Exec Expressions are evaluated by the shell configured
@@ -952,7 +1020,7 @@ block only.</p>
 <p>When a tree is given then its variables are considered as well.</p>
 <p>When a garden is specified then the garden's variables are also available for
 evaluation.</p>
-<h2 id="garden-shell"><a class="header" href="#garden-shell">garden shell</a></h2>
+<h2 id="garden-shell-1"><a class="header" href="#garden-shell-1">garden shell</a></h2>
 <pre><code>garden shell &lt;tree-query&gt; [&lt;tree&gt;]
 
 # example
@@ -966,6 +1034,18 @@ query string then that tree's directory will be used when opening the shell.
 The optional tree argument is not needed for the case where a garden
 and tree share a name -- garden will chdir into that same-named tree when
 creating the shell.</p>
+<p>If you would like to customize the command to use for <code>garden shell</code> then
+you can configure <code>garden.interactive-shell</code>. This value overrides <code>garden.shell</code>
+and is only used by the <code>garden shell</code> command.</p>
+<pre><code class="language-yaml"># Launch a fish login shell for &quot;garden shell&quot;.
+garden:
+  interactive-shell: fish
+</code></pre>
+<p>Arbitrary command interpreters can be specified.</p>
+<pre><code class="language-yaml"># Launch a python interpreter for &quot;garden shell&quot;.
+garden:
+  interactive-shell: python3 -B
+</code></pre>
 <h2 id="garden-ls"><a class="header" href="#garden-ls">garden ls</a></h2>
 <pre><code>garden ls [options] [&lt;tree-query&gt;...]
 </code></pre>
@@ -1291,7 +1371,7 @@ current directory instead of a fixed configuration-defined location.</p>
 <pre><code class="language-yaml">garden:
   root: &quot;&quot;
 </code></pre>
-<h2 id="garden-shell-1"><a class="header" href="#garden-shell-1">Garden Shell</a></h2>
+<h2 id="garden-shell-2"><a class="header" href="#garden-shell-2">Garden Shell</a></h2>
 <p>The shell used by <code>garden</code> when running Commands is configured by the <code>garden.shell</code> field.</p>
 <pre><code class="language-yaml">garden:
   shell: zsh
@@ -2097,6 +2177,43 @@ variables. The first entry found is used when expanding variable expressions.
 evaluating garden variables. The evaluation engine will now return empty strings
 when a variable with a cyclical expression is evaluated.
 (<a href="https://github.com/davvid/garden/pull/24">#24</a>)</p>
+</li>
+<li>
+<p>When <code>zsh</code> is used as the <code>garden.shell</code>, which happens automatically when <code>zsh</code>
+is installed, <code>garden</code> will now use <code>zsh -o shwordsplit</code> in order to enable
+word-splitting of <code>$variable</code> expressions by default. This makes <code>zsh</code> behave
+just like other shells by default, which improves the portability of commands.
+Configure <code>garden.shell-wordsplit</code> to <code>false</code> or use the
+<code>garden &lt;cmd&gt; -z | --no-wordsplit</code> option to opt-out of this behavior.
+(<a href="https://github.com/davvid/garden/pull/25">#25</a>)</p>
+</li>
+<li>
+<p><code>garden.shell</code> can now be configured to use arbitrary commands for executing
+command strings. Garden uses the configured <code>garden.shell</code> as-is and does
+not augment its options (e.g. <code>-e</code>  or <code>-o shwordsplit</code>) when a custom command
+is used. Custom commands are identified as commands that expand to 2 or more
+command-line arguments. Thus, <code>python3</code> is not considered a custom command
+and <code>garden</code> will run <code>python3 -c &lt;string&gt;</code> to run commands. On the other
+hand, specifying <code>ruby -e</code> <em>is</em> considered a custom command because it
+expands to <code>[&quot;ruby&quot;, &quot;-e&quot;]</code> under the hood. If you need to use a custom
+command  that takes no additional command-line arguments then you can
+use <code>env</code> as an extra argument to have it be considered as a custom shell.
+For example, <code>env custom-shell</code> will cause <code>garden</code> to run
+<code>env custom-shell &lt;string&gt;</code>, which is equivalent to <code>custom-shell &lt;string&gt;</code>.
+Using just <code>custom-shell</code> would have resulted in <code>garden</code> running
+<code>custom-shell -c &lt;string&gt;</code> instead, which may not be desired.
+(<a href="https://github.com/davvid/garden/pull/26">#26</a>)</p>
+</li>
+<li>
+<p>The <code>garden shell</code> command can now be configured to use an interactive command shell
+that is distinct from the command specified in the <code>garden.shell</code> configuration by
+configuring the <code>garden.interactive-shell</code> value.
+(<a href="https://github.com/davvid/garden/pull/26">#26</a>)</p>
+</li>
+<li>
+<p><code>garden shell</code> can now be run without any arguments. The tree query now defaults to
+<code>.</code> so that the tree in the current directory is used when nothing is specified.
+(<a href="https://github.com/davvid/garden/pull/26">#26</a>)</p>
 </li>
 </ul>
 <h2 id="v121"><a class="header" href="#v121">v1.2.1</a></h2>
