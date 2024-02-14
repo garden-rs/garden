@@ -29,6 +29,31 @@
   `garden <cmd> -z | --no-wordsplit` option to opt-out of this behavior.
   ([#25](https://github.com/davvid/garden/pull/25))
 
+- `garden.shell` can now be configured to use arbitrary commands for executing
+  command strings. Garden uses the configured `garden.shell` as-is and does
+  not augment its options (e.g. `-e`  or `-o shwordsplit`) when a custom command
+  is used. Custom commands are identified as commands that expand to 2 or more
+  command-line arguments. Thus, `python3` is not considered a custom command
+  and `garden` will run `python3 -c <string>` to run commands. On the other
+  hand, specifying `ruby -e` *is* considered a custom command because it
+  expands to `["ruby", "-e"]` under the hood. If you need to use a custom
+  command  that takes no additional command-line arguments then you can
+  use `env` as an extra argument to have it be considered as a custom shell.
+  For example, `env custom-shell` will cause `garden` to run
+  `env custom-shell <string>`, which is equivalent to `custom-shell <string>`.
+  Using just `custom-shell` would have resulted in `garden` running
+  `custom-shell -c <string>` instead, which may not be desired.
+  ([#26](https://github.com/davvid/garden/pull/26))
+
+- The `garden shell` command can now be configured to use an interactive command shell
+  that is distinct from the command specified in the `garden.shell` configuration by
+  configuring the `garden.interactive-shell` value.
+  ([#26](https://github.com/davvid/garden/pull/26))
+
+- `garden shell` can now be run without any arguments. The tree query now defaults to
+  `.` so that the tree in the current directory is used when nothing is specified.
+  ([#26](https://github.com/davvid/garden/pull/26))
+
 
 ## v1.2.1
 

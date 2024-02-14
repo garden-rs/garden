@@ -64,6 +64,19 @@ fn parse_recursive(
     if get_str(&doc[constants::GARDEN][constants::SHELL], &mut config.shell) && config_verbose > 0 {
         debug!("config: {} = {}", constants::GARDEN_SHELL, config.shell);
     }
+    // garden.interactive-shell
+    if get_str(
+        &doc[constants::GARDEN][constants::INTERACTIVE_SHELL],
+        &mut config.interactive_shell,
+    ) && config_verbose > 0
+    {
+        debug!(
+            "config: {} = {}",
+            constants::GARDEN_INTERACTIVE_SHELL,
+            config.interactive_shell
+        );
+    }
+
     // garden.shell-errexit
     if get_bool(
         &doc[constants::GARDEN][constants::SHELL_ERREXIT],

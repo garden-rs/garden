@@ -1579,6 +1579,30 @@ fn cmd_pre_and_post_nested_commands() {
     assert_eq!(output, "pre\ncmd\ndata\npost\nnested\nfini");
 }
 
+/// Test custom shells in "garden.shell".
+#[test]
+fn cmd_shell_with_custom_command() {
+    if !which("zsh").is_ok() {
+        return;
+    }
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/shell/custom.yaml",
+        "--quiet",
+        "shell-words",
+    ]);
+    assert_eq!(output, "a b c");
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/shell/custom.yaml",
+        "--define",
+        "garden.shell=zsh -o shwordsplit -c",
+        "--quiet",
+        "shell-words",
+    ]);
+    assert_eq!(output, "a\nb\nc");
+}
+
 /// Test the use of graft:: tree references in groups.
 #[test]
 fn cmd_exec_group_with_grafted_trees() {

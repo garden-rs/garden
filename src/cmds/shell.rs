@@ -8,6 +8,7 @@ use crate::{cmd, errors, eval, model, query};
 #[command(author, about, long_about)]
 pub struct ShellOptions {
     /// Query for trees to build an environment
+    #[arg(default_value = ".")]
     query: String,
     /// Tree to chdir into
     tree: Option<String>,
@@ -54,12 +55,16 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
 
     // Evaluate garden.shell
     let graft_config = context.config.map(|id| app_context.get_config(id));
-    let shell_expr = config.shell.clone();
+    let shell_expr = if config.interactive_shell.is_empty() {
+        &config.shell
+    } else {
+        &config.interactive_shell
+    };
     let shell = eval::tree_value(
         app_context,
         config,
         graft_config,
-        &shell_expr,
+        shell_expr,
         &context.tree,
         context.garden.as_ref(),
     );

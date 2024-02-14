@@ -220,6 +220,17 @@ fn cmd(app_context: &model::ApplicationContext, query: &str, params: &CmdParams)
     }
 }
 
+/// Split the configured shell into command-line arguments.
+fn shlex_split(shell: &str) -> Vec<String> {
+    match shlex::split(shell) {
+        Some(shell_command) if !shell_command.is_empty() => shell_command,
+        _ => {
+            vec![shell.to_string()]
+        }
+    }
+}
+
+/// Run commands breadth-first. Each command is run in all trees before running the next command.
 fn run_cmd_breadth_first(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
@@ -228,8 +239,8 @@ fn run_cmd_breadth_first(
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose;
-    let shell = app_context.get_root_config().shell.to_string();
-
+    let shell = app_context.get_root_config().shell.as_str();
+    let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each command, evaluate the tree environment,
     // and run the command in each context.
     for name in &params.commands {
@@ -274,7 +285,7 @@ fn run_cmd_breadth_first(
                 if let Err(cmd_status) = run_cmd_vec(
                     &app_context.options,
                     &path,
-                    &shell,
+                    &shell_params,
                     &env,
                     &cmd_seq_vec,
                     params,
@@ -292,6 +303,75 @@ fn run_cmd_breadth_first(
     Ok(exit_status)
 }
 
+/// The configured shell state.
+struct ShellParams {
+    /// The shell string is parsed into command line arguments.
+    shell_command: Vec<String>,
+    /// Is this a shell script runner that requires $0 to be passed as the first argument?
+    is_shell: bool,
+}
+
+impl ShellParams {
+    fn new(shell: &str, exit_on_error: bool, word_split: bool) -> Self {
+        let mut shell_command = shlex_split(shell);
+        let basename = if shell_command[0].contains('/') {
+            shell_command[0]
+                .split('/')
+                .last()
+                .unwrap_or(&shell_command[0])
+        } else if shell_command[0].contains('\\') {
+            shell_command[0]
+                .split('\\')
+                .last()
+                .unwrap_or(&shell_command[0])
+        } else {
+            &shell_command[0]
+        };
+        // Does the shell understand "-e" for errexit?
+        let is_shell = matches!(
+            basename,
+            constants::SHELL_BASH
+                | constants::SHELL_DASH
+                | constants::SHELL_KSH
+                | constants::SHELL_SH
+                | constants::SHELL_ZSH
+        );
+        let is_zsh = matches!(basename, constants::SHELL_ZSH);
+        // Does the shell use "-e <string>" or "-c <string>" to evaluate commands?
+        let is_dash_e = matches!(
+            basename,
+            constants::SHELL_BUN
+                | constants::SHELL_NODE
+                | constants::SHELL_NODEJS
+                | constants::SHELL_PERL
+                | constants::SHELL_RUBY
+        );
+        // Is the shell a full-blown command with "-c" and everything defined by the user?
+        // If so we won't manage the custom shell options ourselves.
+        let is_custom = shell_command.len() > 1;
+        if !is_custom {
+            if word_split && is_zsh {
+                shell_command.push(string!("-o"));
+                shell_command.push(string!("shwordsplit"));
+            }
+            if exit_on_error && is_shell {
+                shell_command.push(string!("-e"));
+            }
+            if is_dash_e {
+                shell_command.push(string!("-e"));
+            } else {
+                shell_command.push(string!("-c"));
+            }
+        }
+
+        Self {
+            shell_command,
+            is_shell,
+        }
+    }
+}
+
+/// Run commands depth-first. All commands are run in each tree before visiting the next tree.
 fn run_cmd_depth_first(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
@@ -300,8 +380,8 @@ fn run_cmd_depth_first(
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose;
-    let shell = app_context.get_root_config().shell.to_string();
-
+    let shell = app_context.get_root_config().shell.as_str();
+    let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
         // Skip filtered trees.
@@ -328,7 +408,6 @@ fn run_cmd_depth_first(
         if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
             continue;
         }
-
         // One invocation runs multiple commands
         for name in &params.commands {
             // Expand one named command to include its pre-commands and post-commands.
@@ -340,11 +419,10 @@ fn run_cmd_depth_first(
                 // its matching commands are appended to the end.
                 let cmd_seq_vec = eval::command(app_context, context, command_name);
                 app_context.get_root_config_mut().reset();
-
                 if let Err(cmd_status) = run_cmd_vec(
                     &app_context.options,
                     &path,
-                    &shell,
+                    &shell_params,
                     &env,
                     &cmd_seq_vec,
                     params,
@@ -372,7 +450,7 @@ fn run_cmd_depth_first(
 fn run_cmd_vec(
     options: &cli::MainOptions,
     path: &str,
-    shell: &str,
+    shell_params: &ShellParams,
     env: &Vec<(String, String)>,
     cmd_seq_vec: &[Vec<String>],
     params: &CmdParams,
@@ -380,32 +458,6 @@ fn run_cmd_vec(
     // Get the current executable name
     let current_exe = cmd::current_exe();
     let mut exit_status = errors::EX_OK;
-    let basename = if shell.contains('/') {
-        shell.split('/').last().unwrap_or(shell)
-    } else if shell.contains('\\') {
-        shell.split('\\').last().unwrap_or(shell)
-    } else {
-        shell
-    };
-    // Does the shell understand "-e" for errexit?
-    let is_shell = matches!(
-        basename,
-        constants::SHELL_BASH
-            | constants::SHELL_DASH
-            | constants::SHELL_KSH
-            | constants::SHELL_SH
-            | constants::SHELL_ZSH
-    );
-    let is_zsh = matches!(basename, constants::SHELL_ZSH);
-    // Does the shell use "-e <string>" or "-c <string>" to evaluate commands?
-    let use_dash_e = matches!(
-        basename,
-        constants::SHELL_BUN
-            | constants::SHELL_NODE
-            | constants::SHELL_NODEJS
-            | constants::SHELL_PERL
-    );
-
     for cmd_seq in cmd_seq_vec {
         for cmd_str in cmd_seq {
             if options.verbose > 1 {
@@ -415,20 +467,13 @@ fn run_cmd_vec(
                     display::Color::green(&cmd_str),
                 );
             }
-            let mut exec = subprocess::Exec::cmd(shell).cwd(path);
-            if params.word_split && is_zsh {
-                exec = exec.arg("-o").arg("shwordsplit");
-            }
-            if params.exit_on_error && is_shell {
-                exec = exec.arg("-e");
-            }
-            if use_dash_e {
-                exec = exec.arg("-e");
-            } else {
-                exec = exec.arg("-c");
-            }
+            let mut exec = subprocess::Exec::cmd(&shell_params.shell_command[0]).cwd(path);
+            exec = exec.args(&shell_params.shell_command[1..]);
             exec = exec.arg(cmd_str);
-            if is_shell {
+            if shell_params.is_shell {
+                // Shells require $0 to be specified when using -c to run commands in order to make $1 and friends
+                // behave intuitively from within the script. The garden executable's location is
+                // provided in $0 for convenience.
                 exec = exec.arg(current_exe.as_str());
             }
             exec = exec.args(&params.arguments);
@@ -459,7 +504,6 @@ fn run_cmd_vec(
 /// Run cmd() over a Vec of tree queries
 fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
     let mut exit_status = errors::EX_OK;
-
     for query in &params.queries {
         let status = cmd(app, query, params).unwrap_or(errors::EX_IOERR);
         if status != errors::EX_OK {
@@ -469,7 +513,6 @@ fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
             }
         }
     }
-
     // Return the last non-zero exit status.
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
