@@ -75,6 +75,7 @@ pub const GARDEN_CONFIG_DIR_EXPR: &str = "${GARDEN_CONFIG_DIR}";
 pub const GARDEN_ROOT: &str = "GARDEN_ROOT";
 
 /// Command-line defines for overriding configurable behavior.
+pub(crate) const GARDEN_INTERACTIVE_SHELL: &str = "garden.interactive-shell";
 pub(crate) const GARDEN_SHELL: &str = "garden.shell";
 pub(crate) const GARDEN_SHELL_ERREXIT: &str = "garden.shell-errexit";
 pub(crate) const GARDEN_SHELL_WORDSPLIT: &str = "garden.shell-wordsplit";
@@ -94,6 +95,10 @@ pub const GROUPS: &str = "groups";
 /// The "includes" key in the garden block reads additional configuration
 /// files directly into the configuration.
 pub const INCLUDES: &str = "includes";
+
+/// The "interactive-shell" key in the garden block overrides the
+/// command used by interactive "garden shell" sessions.
+pub const INTERACTIVE_SHELL: &str = "interactive-shell";
 
 /// The "links" key in a tree block defines URLs displayed by "garden ls".
 pub const LINKS: &str = "links";

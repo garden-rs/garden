@@ -1,5 +1,6 @@
 garden:
   shell: zsh -c
+  interactive-shell: zsh
 
 commands:
   shell-words: |

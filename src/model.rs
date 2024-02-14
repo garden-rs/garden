@@ -494,6 +494,7 @@ pub struct Configuration {
     pub root_is_dynamic: bool,
     pub root_path: std::path::PathBuf,
     pub shell: String,
+    pub interactive_shell: String,
     pub templates: HashMap<String, Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: IndexMap<TreeName, Tree>,
@@ -670,6 +671,9 @@ impl Configuration {
             }
             // Allow overridding garden.<value> using "garden -D garden.<value>=false".
             match name.as_str() {
+                constants::GARDEN_INTERACTIVE_SHELL => {
+                    self.interactive_shell = expr;
+                }
                 constants::GARDEN_SHELL => {
                     self.shell = expr;
                 }

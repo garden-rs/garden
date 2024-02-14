@@ -698,6 +698,24 @@ The optional tree argument is not needed for the case where a garden
 and tree share a name -- garden will chdir into that same-named tree when
 creating the shell.
 
+If you would like to customize the command to use for `garden shell` then
+you can configure `garden.interactive-shell`. This value overrides `garden.shell`
+and is only used by the `garden shell` command.
+
+```yaml
+# Launch a fish login shell for "garden shell".
+garden:
+  interactive-shell: fish
+```
+
+Arbitrary command interpreters can be specified.
+
+```yaml
+# Launch a python interpreter for "garden shell".
+garden:
+  interactive-shell: python3 -B
+```
+
 
 ## garden ls
 
