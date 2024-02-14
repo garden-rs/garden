@@ -422,6 +422,33 @@ Configure `garden.shell-wordsplit` to `false` to opt-out of this behavior.
 You can also opt-out of the `shwordsplit` behavior on a per-command basis by using
 `set +o shwordsplit` as the first line of a multi-line command.
 
+#### Builtin Shells
+
+The following values for `garden.shell` are understood directly by `garden` and
+the following commands are used when `garden` detects that these shells are
+configured.
+
+| garden.shell  | Command used for running commands | errexit=false | wordsplit=false       |
+|---------------|-----------------------------------|---------------|-----------------------|
+| `bun`         | `bun -e`                          | N/A           | N/A                   |
+| `bash`        | `bash -e -c`                      | Omit `-e`     | N/A                   |
+| `dash`        | `dash -e -c`                      | Omit `-e`     | N/A                   |
+| `ksh`         | `ksh -e -c`                       | Omit `-e`     | N/A                   |
+| `node`        | `node -e`                         | N/A           | N/A                   |
+| `nodejs`      | `nodejs -e`                       | N/A           | N/A                   |
+| `perl`        | `perl -e`                         | N/A           | N/A                   |
+| `ruby`        | `ruby -e`                         | N/A           | N/A                   |
+| `sh`          | `sh -e -c`                        | Omit `-e`     | N/A                   |
+| `zsh`         | `zsh -e -o shwordsplit -c`        | Omit `-e`     | Omit `-o shwordsplit` |
+
+The following shells are not builtin, but they work as expected because they accept
+`-c <string>` arguments for running command strings.
+
+| garden.shell  | Command used for running commands |
+|---------------|-----------------------------------|
+| `fish`        | `fish -c`                         |
+| `python3`     | `python3 -c`                      |
+
 #### Custom Command Interpreters
 
 The command used in `garden.shell` must specify a command that takes a string to
@@ -687,6 +714,7 @@ If no tree-queries are specified then `garden ls` behaves as if
 Use the `-t | --trees` option to specify a glob pattern that can be used to
 filter trees by name post-query. This is useful when you want to list details
 about a group or garden while only listing details about a subset of the trees.
+
 
 ## garden prune
 
