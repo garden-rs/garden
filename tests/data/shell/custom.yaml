@@ -1,0 +1,10 @@
+garden:
+  shell: zsh -c
+
+commands:
+  shell-words: |
+    args='a b c'
+    for arg in $args
+    do
+        echo $arg
+    done

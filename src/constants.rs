@@ -153,6 +153,9 @@ pub(crate) const SHELL_PERL: &str = "perl";
 /// Default command interpreter.
 pub(crate) const SHELL_SH: &str = "sh";
 
+/// A dynamic, open source programming language with a focus on simplicity and productivity.
+pub(crate) const SHELL_RUBY: &str = "ruby";
+
 /// Extended version of the Bourne Shell with new features.
 pub(crate) const SHELL_ZSH: &str = "zsh";
 
