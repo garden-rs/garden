@@ -40,10 +40,7 @@ commands:
   fix: cargo clippy --all --fix "$@" -- -D warnings
   fmt: cargo fmt "$@"
   git: git "$@"
-  install: |
-    cargo build --release "$@"
-    install -m 775 -d "${DESTDIR}${bindir}"
-    install -m 755 target/release/garden "${DESTDIR}${bindir}"
+  install: cargo install --path . --root "${DESTDIR}${prefix}"
   install-doc<: doc
   install-doc: |
     mkdir -p "${DESTDIR}${docdir}"
