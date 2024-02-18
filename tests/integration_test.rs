@@ -1582,7 +1582,7 @@ fn cmd_pre_and_post_nested_commands() {
 /// Test custom shells in "garden.shell".
 #[test]
 fn cmd_shell_with_custom_command() {
-    if !which("zsh").is_ok() {
+    if which("zsh").is_err() {
         return;
     }
     let output = garden_capture(&[
