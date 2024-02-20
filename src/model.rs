@@ -502,6 +502,8 @@ pub struct Configuration {
     /// Variables defined on the command-line using "-D name=value" have the
     /// highest precedence and override variables defined by any configuration or tree.
     pub override_variables: VariableHashMap,
+    pub config_verbose: u8,
+    pub quiet: bool,
     pub verbose: u8,
     pub(crate) shell_exit_on_error: bool,
     pub(crate) shell_word_split: bool,
@@ -583,7 +585,9 @@ impl Configuration {
         if let Some(parent_id) = parent {
             self.set_parent(parent_id);
         }
-        self.verbose = config_verbose;
+        self.config_verbose = config_verbose;
+        self.quiet = app_context.options.quiet;
+        self.verbose = app_context.options.verbose;
 
         // Override the configured garden root
         if let Some(root_path) = root.map(|path| path.canonicalize().unwrap_or(path.clone())) {

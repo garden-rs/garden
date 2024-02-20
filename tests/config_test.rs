@@ -44,7 +44,12 @@ fn variables() -> Result<()> {
     );
     let app_context = common::garden_context_from_string(&string)?;
     let config = app_context.get_root_config();
-    assert_eq!(3, config.variables.len());
+    assert_eq!(5, config.variables.len());
+    assert!(config.variables.contains_key("GARDEN_ROOT"));
+    assert!(config.variables.contains_key("GARDEN_CMD_QUIET"));
+    assert!(config.variables.contains_key("GARDEN_CMD_VERBOSE"));
+    assert!(config.variables.contains_key("foo"));
+    assert!(config.variables.contains_key("bar"));
 
     let root_var = config.variables.get("GARDEN_ROOT").context("GARDEN_ROOT")?;
     assert_eq!("/home/test/src", root_var.get_expr());

@@ -62,6 +62,12 @@ pub const GARDEN: &str = "garden";
 /// environment variables for commands.
 pub const GARDENS: &str = "gardens";
 
+/// Builtin variable is either empty or contains the "--quiet" command-line option.
+pub const GARDEN_CMD_QUIET: &str = "GARDEN_CMD_QUIET";
+
+/// Builtin variable is either empty or contains the "-v" verbosity level command-line option.
+pub const GARDEN_CMD_VERBOSE: &str = "GARDEN_CMD_VERBOSE";
+
 /// The default "garden.yaml" configuration file.
 pub const GARDEN_CONFIG: &str = "garden.yaml";
 
