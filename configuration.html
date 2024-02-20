@@ -516,6 +516,14 @@ when constructing values for variables, commands, and paths.</p>
 <li><strong>TREE_NAME</strong> -- Current tree name.</li>
 <li><strong>TREE_PATH</strong> -- Current tree path.</li>
 </ul>
+<h3 id="variables-for-custom-commands"><a class="header" href="#variables-for-custom-commands">Variables for Custom Commands</a></h3>
+<p>The following built-in variables are provided to make it easier to write custom commands
+that re-execute <code>garden</code>. These variables allow you to forward the user-specified
+<code>-vv</code> or <code>--quiet</code> options to child commands.</p>
+<ul>
+<li><strong>GARDEN_CMD_QUIET</strong> -- <code>--quiet</code> when <code>--quiet</code> is specified, empty otherwise.</li>
+<li><strong>GARDEN_CMD_VERBOSE</strong> -- <code>-v</code>, <code>-vv</code> etc. when verbosity is increased, empty otherwise.</li>
+</ul>
 <h2 id="environment-variables"><a class="header" href="#environment-variables">Environment Variables</a></h2>
 <p>The &quot;environment&quot; block defines variables that are stored in the environment.</p>
 <p>Environment variables are resolved in the same order as garden variables:
