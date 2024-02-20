@@ -2,6 +2,8 @@
 
 ## v1.3.0
 
+*Released 2023-02-19*
+
 **Features**:
 
 - `garden eval` and garden expressions in general will now resolve variables defined
