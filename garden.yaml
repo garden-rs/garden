@@ -59,14 +59,14 @@ commands:
     EOF
       return 1
     )
-    garden grow doc
-    garden grow homebrew
+    garden ${GARDEN_CMD_VERBOSE} grow doc
+    garden ${GARDEN_CMD_VERBOSE} grow homebrew
   stage: git add --update "$@"
   stat: git status --short "$@"
   status: git status "$@"
   test: cargo test "$@"
   update: cargo update "$@"
-  watch: cargo watch --shell "garden build && garden check"
+  watch: cargo watch --shell "garden ${GARDEN_CMD_VERBOSE} build && garden ${GARDEN_CMD_VERBOSE} check"
 
 # Trees define named repositories where commands are run.
 trees:
