@@ -270,6 +270,15 @@ when constructing values for variables, commands, and paths.
 * **TREE_NAME** -- Current tree name.
 * **TREE_PATH** -- Current tree path.
 
+### Variables for Custom Commands
+
+The following built-in variables are provided to make it easier to write custom commands
+that re-execute `garden`. These variables allow you to forward the user-specified
+`-vv` or `--quiet` options to child commands.
+
+* **GARDEN_CMD_QUIET** -- `--quiet` when `--quiet` is specified, empty otherwise.
+* **GARDEN_CMD_VERBOSE** -- `-v`, `-vv` etc. when verbosity is increased, empty otherwise.
+
 ## Environment Variables
 
 The "environment" block defines variables that are stored in the environment.

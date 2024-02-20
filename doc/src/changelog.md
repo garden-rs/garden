@@ -54,6 +54,13 @@
   `.` so that the tree in the current directory is used when nothing is specified.
   ([#26](https://github.com/davvid/garden/pull/26))
 
+- Custom commands now have access to a `${GARDEN_CMD_VERBOSE}` and `${GARDEN_CMD_QUIET}`
+  variables which can be used to forward the `--verbose` and `--quiet` arguments
+  down into child `garden` invocations. `${GARDEN_CMD_VERBOSE}` uses the short `-v`
+  flag in the value to support the case where the verbose option is specified
+  multiples times to increase the verbosity level (e.g. `-vv`).
+  ([#27](https://github.com/davvid/garden/pull/27))
+
 
 ## v1.2.1
 

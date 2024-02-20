@@ -610,6 +610,56 @@ fn eval_garden_root() {
     );
 }
 
+/// `garden eval` handles ${GARDEN_CMD_QUIET} and ${GARDEN_CMD_VERBOSE}.
+#[test]
+fn eval_builtin_command_variables() {
+    let expect = "";
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_CMD_VERBOSE}",
+    ]);
+    assert_eq!(output, expect);
+    // The --verbose flag uses the short "-v" option to allow for increasing verbositry.
+    let expect = "-v";
+    let output = garden_capture(&[
+        "--verbose",
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_CMD_VERBOSE}",
+    ]);
+    assert_eq!(output, expect);
+    let expect = "-vv";
+    let output = garden_capture(&[
+        "-vv",
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_CMD_VERBOSE}",
+    ]);
+    assert_eq!(output, expect);
+    // GARDEN_CMD_QUIET is empty unless "--quiet" is specified.
+    let expect = "";
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_CMD_QUIET}",
+    ]);
+    assert_eq!(output, expect);
+    let expect = "--quiet";
+    let output = garden_capture(&[
+        "--quiet",
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "${GARDEN_CMD_QUIET}",
+    ]);
+    assert_eq!(output, expect);
+}
+
 /// `garden eval` evaluates overridden variables.
 #[test]
 fn eval_override_variables() {
