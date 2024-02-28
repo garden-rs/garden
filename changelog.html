@@ -182,8 +182,16 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v140"><a class="header" href="#v140">v1.4.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>Custom commands can now specify an interpreter to use on a per-command basis.
+If a command uses a shebang <code>#!</code> line then the command's text will be passed as an
+argument to the specified command. For example, using <code>#!python3 -c</code> as the
+first line in a custom command will cause <code>python3 -c &lt;command&gt;</code> to be executed.</li>
+</ul>
 <h2 id="v130"><a class="header" href="#v130">v1.3.0</a></h2>
-<p><em>Released 2023-02-19</em></p>
+<p><em>Released 2024-02-19</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
@@ -252,7 +260,7 @@ multiples times to increase the verbosity level (e.g. <code>-vv</code>).
 </li>
 </ul>
 <h2 id="v121"><a class="header" href="#v121">v1.2.1</a></h2>
-<p><em>Released 2023-02-05</em></p>
+<p><em>Released 2024-02-05</em></p>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
@@ -263,7 +271,7 @@ multiples times to increase the verbosity level (e.g. <code>-vv</code>).
 </li>
 </ul>
 <h2 id="v120"><a class="header" href="#v120">v1.2.0</a></h2>
-<p><em>Released 2023-01-27</em></p>
+<p><em>Released 2024-01-27</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
@@ -315,7 +323,7 @@ to disable this behavior.</p>
 <a href="https://github.com/comex/rust-shlex/security/advisories/GHSA-r7qv-8r2h-pg27">GHSA-r7qv-8r2h-pg27</a>.</li>
 </ul>
 <h2 id="v110"><a class="header" href="#v110">v1.1.0</a></h2>
-<p><em>Released 2023-01-15</em></p>
+<p><em>Released 2024-01-15</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
