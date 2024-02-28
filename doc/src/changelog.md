@@ -2,7 +2,7 @@
 
 ## v1.3.0
 
-*Released 2023-02-19*
+*Released 2024-02-19*
 
 **Features**:
 
@@ -66,7 +66,7 @@
 
 ## v1.2.1
 
-*Released 2023-02-05*
+*Released 2024-02-05*
 
 **Development**:
 
@@ -77,7 +77,7 @@
 
 ## v1.2.0
 
-*Released 2023-01-27*
+*Released 2024-01-27*
 
 **Features**:
 
@@ -123,7 +123,7 @@
 
 ## v1.1.0
 
-*Released 2023-01-15*
+*Released 2024-01-15*
 
 **Features**:
 
