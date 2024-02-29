@@ -129,6 +129,8 @@ pub(crate) fn trim_graft(string: &str) -> Option<String> {
         None => return None,
     };
     let result;
+    // We split the graft prefix off which can contain garden/group/tree qualifiers.
+    // Reattach the qualifiers onto the inner graft query string.
     if is_garden(string) {
         result = string!(":") + after;
     } else if is_group(string) {
