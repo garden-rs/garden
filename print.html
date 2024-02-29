@@ -792,6 +792,21 @@ gardens:
     commands:
       print-pwd: pwd
 </code></pre>
+<h4 id="shebang--commands"><a class="header" href="#shebang--commands">Shebang (#!) Commands</a></h4>
+<p>Custom command shells can be used on a per-command basis by using a <code>#!&lt;command&gt;</code>
+shebang line as the start of a multi-line command.</p>
+<p>The command specified in the <code>#!</code> shebang line <em>must</em> accept a command string as the
+next argument to the specified command.</p>
+<pre><code class="language-yaml">commands:
+  python-cmd: |
+    #!python3 -c
+    import sys
+    print(sys.implementation)
+</code></pre>
+<p>Using <code>#!python3 -c</code> as the shebang line, as demonstrated above in the <code>python-cmd</code>
+command, will result in the remainder of the command getting passed as the next argument.</p>
+<p>Concretely, <code>garden</code> will run <code>python3 -c &quot;import sys\nprint(sys.implementation)&quot;</code> when
+the <code>garden python-cmd</code> command is run.</p>
 <h3 id="garden-shell"><a class="header" href="#garden-shell">Garden Shell</a></h3>
 <p>The <code>garden.shell</code> configuration value controls which shell interpreter
 is used to interpret custom commands.</p>
@@ -2168,8 +2183,8 @@ trees:
 <p><strong>Features</strong>:</p>
 <ul>
 <li>Custom commands can now specify an interpreter to use on a per-command basis.
-If a command uses a shebang <code>#!</code> line then the command's text will be passed as an
-argument to the specified command. For example, using <code>#!python3 -c</code> as the
+If a command uses a shebang <code>#!</code> line then the command's text will be passed as the
+next argument to the specified command. For example, using <code>#!python3 -c</code> as the
 first line in a custom command will cause <code>python3 -c &lt;command&gt;</code> to be executed.</li>
 </ul>
 <h2 id="v130"><a class="header" href="#v130">v1.3.0</a></h2>
