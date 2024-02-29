@@ -985,12 +985,14 @@ impl Configuration {
         &self,
         value: &'a str,
     ) -> Result<(ConfigId, &'a str), errors::GardenError> {
-        let (ok, graft_name, remainder) = syntax::split_graft(value);
-        if !ok {
-            return Err(errors::GardenError::ConfigurationError(format!(
-                "{value}: invalid graft expression"
-            )));
-        }
+        let (graft_name, remainder) = match syntax::split_graft(value) {
+            Some((graft_name, remainder)) => (graft_name, remainder),
+            None => {
+                return Err(errors::GardenError::ConfigurationError(format!(
+                    "{value}: invalid graft expression"
+                )))
+            }
+        };
         let graft = self.get_graft(graft_name)?;
         let graft_id = graft
             .get_id()

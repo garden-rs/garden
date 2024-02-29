@@ -99,11 +99,11 @@ pub(crate) fn trim_op_inplace(string: &mut String) {
 
 /// Safely a string into pre and post-split references
 #[inline]
-pub(crate) fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, &'a str) {
+pub(crate) fn split_string<'a>(string: &'a str, split: &str) -> Option<(&'a str, &'a str)> {
     let end = string.len();
     let split_len = split.len();
     if end < split_len {
-        return (false, string, "");
+        return None;
     }
     // split offset, everything up to this point is before the split
     let before = string.find(split).unwrap_or(end);
@@ -111,23 +111,26 @@ pub(crate) fn split_string<'a>(string: &'a str, split: &str) -> (bool, &'a str, 
     // offset after the split
     let after = if ok { before + split_len } else { before };
 
-    (ok, &string[..before], &string[after..])
+    if ok {
+        Some((&string[..before], &string[after..]))
+    } else {
+        None
+    }
 }
 
 /// Split a string into pre and post-graft namespace string refs
 #[inline]
-pub(crate) fn split_graft(string: &str) -> (bool, &str, &str) {
+pub(crate) fn split_graft(string: &str) -> Option<(&str, &str)> {
     split_string(string, "::")
 }
 
 /// Remove the graft basename leaving the remainder of the graft string.
 #[inline]
 pub(crate) fn trim_graft(string: &str) -> Option<String> {
-    let (ok, _before, after) = split_graft(string);
-    if !ok {
-        return None;
-    }
-
+    let (_before, after) = match split_graft(string) {
+        Some((before, after)) => (before, after),
+        None => return None,
+    };
     let result;
     if is_garden(string) {
         result = string!(":") + after;
@@ -145,11 +148,10 @@ pub(crate) fn trim_graft(string: &str) -> Option<String> {
 /// Return the graft basename.  "@foo::bar::baz" -> "foo"
 #[inline]
 pub(crate) fn graft_basename(string: &str) -> Option<String> {
-    let (ok, before, _after) = split_graft(string);
-    if !ok {
-        return None;
-    }
-
+    let (before, _after) = match split_graft(string) {
+        Some((before, after)) => (before, after),
+        None => return None,
+    };
     let result = if is_garden(string) || is_group(string) || is_tree(string) {
         trim(before)
     } else {
@@ -174,12 +176,10 @@ pub(crate) fn trim_shebang(string: &str) -> Option<&str> {
 /// Return an Option<(shebang, command)> when a shebang is present and None otherwise.
 pub(crate) fn split_shebang(string: &str) -> Option<(&str, &str)> {
     if let Some(trimmed) = trim_shebang(string) {
-        let (ok, before, after) = split_string(trimmed, "\n");
-        if ok {
-            return Some((before, after));
-        }
+        split_string(trimmed, "\n")
+    } else {
+        None
     }
-    None
 }
 
 /// Escape $variable into $$variable for evaluation by shellexpand.
@@ -287,58 +287,49 @@ mod tests {
 
     #[test]
     fn split_string_ok() {
-        let (ok, pre, post) = super::split_string("foo::bar", "::");
-        assert!(ok, "split :: on foo::bar is ok");
-        assert_eq!(pre, "foo");
-        assert_eq!(post, "bar");
+        let split = super::split_string("foo::bar", "::");
+        assert!(split.is_some(), "split :: on foo::bar is ok");
+        assert_eq!(split, Some(("foo", "bar")));
     }
 
     #[test]
     fn split_string_empty() {
-        let (ok, pre, post) = super::split_string("foo::", "::");
-        assert!(ok, "split :: on foo:: is ok");
-        assert_eq!(pre, "foo");
-        assert_eq!(post, "");
+        let split = super::split_string("foo::", "::");
+        assert!(split.is_some(), "split :: on foo:: is Some(...)");
+        assert_eq!(split, Some(("foo", "")));
     }
 
     #[test]
     fn split_string_not_found() {
-        let (ok, pre, post) = super::split_string("foo", "::");
-        assert!(!ok, "split :: on foo is false");
-        assert_eq!(pre, "foo");
-        assert_eq!(post, "");
+        let split = super::split_string("foo", "::");
+        assert!(split.is_none(), "split :: on foo is None");
     }
 
     #[test]
     fn split_graft_ok() {
-        let (ok, pre, post) = super::split_graft("foo::bar");
-        assert!(ok, "split_graft on foo::bar is ok");
-        assert_eq!(pre, "foo");
-        assert_eq!(post, "bar");
+        let split = super::split_graft("foo::bar");
+        assert!(split.is_some(), "split_graft on foo::bar is ok");
+        assert_eq!(split, Some(("foo", "bar")));
     }
 
     #[test]
     fn split_graft_nested_ok() {
-        let (ok, pre, post) = super::split_graft("@foo::bar::baz");
-        assert!(ok, "split_graft on @foo::bar::baz is ok");
-        assert_eq!(pre, "@foo");
-        assert_eq!(post, "bar::baz");
+        let split = super::split_graft("@foo::bar::baz");
+        assert!(split.is_some(), "split_graft on @foo::bar::baz is ok");
+        assert_eq!(split, Some(("@foo", "bar::baz")));
     }
 
     #[test]
     fn split_graft_empty() {
-        let (ok, pre, post) = super::split_graft("foo::");
-        assert!(ok, "split_graft on foo:: is ok");
-        assert_eq!(pre, "foo");
-        assert_eq!(post, "");
+        let split = super::split_graft("foo::");
+        assert!(split.is_some(), "split_graft on foo:: is ok");
+        assert_eq!(split, Some(("foo", "")));
     }
 
     #[test]
     fn split_graft_not_found() {
-        let (ok, pre, post) = super::split_graft("foo");
-        assert!(!ok, "split_graft on foo is false");
-        assert_eq!(pre, "foo");
-        assert_eq!(post, "");
+        let split = super::split_graft("foo");
+        assert!(split.is_none(), "split_graft on foo is None");
     }
 
     #[test]
