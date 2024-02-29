@@ -147,7 +147,7 @@ pub(crate) fn trim_graft(string: &str) -> Option<String> {
 
 /// Return the graft basename.  "@foo::bar::baz" -> "foo"
 #[inline]
-pub(crate) fn graft_basename(string: &str) -> Option<String> {
+pub(crate) fn graft_basename(string: &str) -> Option<&str> {
     let (before, _after) = match split_graft(string) {
         Some((before, after)) => (before, after),
         None => return None,
@@ -156,8 +156,7 @@ pub(crate) fn graft_basename(string: &str) -> Option<String> {
         trim(before)
     } else {
         before
-    }
-    .to_string();
+    };
 
     Some(result)
 }

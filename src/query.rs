@@ -535,8 +535,8 @@ pub fn find_tree(
     {
         let config = app_context.get_config(id);
         if let Some(graft_name) = syntax::graft_basename(tree) {
-            if syntax::is_graft(tree) && config.contains_graft(&graft_name) {
-                let graft = config.get_graft(&graft_name)?;
+            if syntax::is_graft(tree) && config.contains_graft(graft_name) {
+                let graft = config.get_graft(graft_name)?;
                 let graft_id = graft
                     .get_id()
                     .ok_or(errors::GardenError::ConfigurationError(format!(
