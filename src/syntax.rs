@@ -107,15 +107,12 @@ pub(crate) fn split_string<'a>(string: &'a str, split: &str) -> Option<(&'a str,
     }
     // split offset, everything up to this point is before the split
     let before = string.find(split).unwrap_or(end);
-    let ok = before <= (end - split_len);
-    // offset after the split
-    let after = if ok { before + split_len } else { before };
-
-    if ok {
-        Some((&string[..before], &string[after..]))
-    } else {
-        None
+    if before > (end - split_len) {
+        return None;
     }
+    let after = before + split_len;  // offset after the split
+
+    Some((&string[..before], &string[after..]))
 }
 
 /// Split a string into pre and post-graft namespace string refs
