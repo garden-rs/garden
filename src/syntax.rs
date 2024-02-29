@@ -97,28 +97,10 @@ pub(crate) fn trim_op_inplace(string: &mut String) {
     }
 }
 
-/// Safely a string into pre and post-split references
-#[inline]
-pub(crate) fn split_string<'a>(string: &'a str, split: &str) -> Option<(&'a str, &'a str)> {
-    let end = string.len();
-    let split_len = split.len();
-    if end < split_len {
-        return None;
-    }
-    // split offset, everything up to this point is before the split
-    let before = string.find(split).unwrap_or(end);
-    if before > (end - split_len) {
-        return None;
-    }
-    let after = before + split_len;  // offset after the split
-
-    Some((&string[..before], &string[after..]))
-}
-
 /// Split a string into pre and post-graft namespace string refs
 #[inline]
 pub(crate) fn split_graft(string: &str) -> Option<(&str, &str)> {
-    split_string(string, "::")
+    string.split_once("::")
 }
 
 /// Remove the graft basename leaving the remainder of the graft string.
@@ -174,7 +156,7 @@ pub(crate) fn trim_shebang(string: &str) -> Option<&str> {
 /// Return an Option<(shebang, command)> when a shebang is present and None otherwise.
 pub(crate) fn split_shebang(string: &str) -> Option<(&str, &str)> {
     if let Some(trimmed) = trim_shebang(string) {
-        split_string(trimmed, "\n")
+        trimmed.split_once('\n')
     } else {
         None
     }
@@ -281,26 +263,6 @@ mod tests {
         );
         assert!(!super::is_git_dir(".git"), ".git is a git dir");
         assert!(!super::is_git_dir("/.git"), "/.git is a git dir");
-    }
-
-    #[test]
-    fn split_string_ok() {
-        let split = super::split_string("foo::bar", "::");
-        assert!(split.is_some(), "split :: on foo::bar is ok");
-        assert_eq!(split, Some(("foo", "bar")));
-    }
-
-    #[test]
-    fn split_string_empty() {
-        let split = super::split_string("foo::", "::");
-        assert!(split.is_some(), "split :: on foo:: is Some(...)");
-        assert_eq!(split, Some(("foo", "")));
-    }
-
-    #[test]
-    fn split_string_not_found() {
-        let split = super::split_string("foo", "::");
-        assert!(split.is_none(), "split :: on foo is None");
     }
 
     #[test]
