@@ -1994,6 +1994,19 @@ fn cmd_zsh_shell_wordsplit() {
     // Words are split by default.
     assert_eq!(output, "a b c");
 }
+
+/// "garden <command>" can use custom shell per-command.
+#[test]
+fn cmd_custom_shell() {
+    let output = garden_capture(&[
+        "--quiet",
+        "--config",
+        "tests/data/shell/custom.yaml",
+        "echo-shell",
+    ]);
+    assert_eq!(output, "hello\nworld");
+}
+
 /// "garden prune" prunes specific depths
 #[test]
 #[named]

@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
 use derivative::Derivative;
 
-use crate::{cli, cmd, constants, display, errors, eval, model, query};
+use crate::{cli, cmd, constants, display, errors, eval, model, path, query, syntax};
 
 /// Run one or more custom commands over a tree query
 #[derive(Parser, Clone, Debug)]
@@ -314,28 +314,9 @@ struct ShellParams {
 impl ShellParams {
     fn new(shell: &str, exit_on_error: bool, word_split: bool) -> Self {
         let mut shell_command = shlex_split(shell);
-        let basename = if shell_command[0].contains('/') {
-            shell_command[0]
-                .split('/')
-                .last()
-                .unwrap_or(&shell_command[0])
-        } else if shell_command[0].contains('\\') {
-            shell_command[0]
-                .split('\\')
-                .last()
-                .unwrap_or(&shell_command[0])
-        } else {
-            &shell_command[0]
-        };
+        let basename = path::str_basename(&shell_command[0]);
         // Does the shell understand "-e" for errexit?
-        let is_shell = matches!(
-            basename,
-            constants::SHELL_BASH
-                | constants::SHELL_DASH
-                | constants::SHELL_KSH
-                | constants::SHELL_SH
-                | constants::SHELL_ZSH
-        );
+        let is_shell = path::is_shell(basename);
         let is_zsh = matches!(basename, constants::SHELL_ZSH);
         // Does the shell use "-e <string>" or "-c <string>" to evaluate commands?
         let is_dash_e = matches!(
@@ -363,6 +344,19 @@ impl ShellParams {
                 shell_command.push(string!("-c"));
             }
         }
+
+        Self {
+            shell_command,
+            is_shell,
+        }
+    }
+
+    /// Return ShellParams from a "#!" shebang line string.
+    fn from_str(shell: &str) -> Self {
+        let shell_command = shlex_split(shell);
+        let basename = path::str_basename(&shell_command[0]);
+        // Does the shell understand "-e" for errexit?
+        let is_shell = path::is_shell(basename);
 
         Self {
             shell_command,
@@ -467,6 +461,15 @@ fn run_cmd_vec(
                     display::Color::green(&cmd_str),
                 );
             }
+            // Create a custom ShellParams when "#!" is used.
+            let cmd_shell_params;
+            let (cmd_str, shell_params) = match syntax::split_shebang(cmd_str) {
+                Some((shell_cmd, cmd_str)) => {
+                    cmd_shell_params = ShellParams::from_str(shell_cmd);
+                    (cmd_str, &cmd_shell_params)
+                }
+                None => (cmd_str.as_str(), shell_params),
+            };
             let mut exec = subprocess::Exec::cmd(&shell_params.shell_command[0]).cwd(path);
             exec = exec.args(&shell_params.shell_command[1..]);
             exec = exec.arg(cmd_str);

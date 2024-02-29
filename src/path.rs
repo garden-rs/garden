@@ -22,6 +22,31 @@ pub fn abspath(path: &std::path::Path) -> std::path::PathBuf {
         .unwrap_or_else(|_| path.to_path_buf())
 }
 
+/// Return the basename of a path-like string.
+pub(crate) fn str_basename(path: &str) -> &str {
+    let basename = if path.contains('/') {
+        path.split('/').last().unwrap_or(path)
+    } else if path.contains('\\') {
+        path.split('\\').last().unwrap_or(path)
+    } else {
+        path
+    };
+
+    basename
+}
+
+/// Return true if the basename is a known shell.
+pub(crate) fn is_shell(basename: &str) -> bool {
+    matches!(
+        basename,
+        constants::SHELL_BASH
+            | constants::SHELL_DASH
+            | constants::SHELL_KSH
+            | constants::SHELL_SH
+            | constants::SHELL_ZSH
+    )
+}
+
 /// Strip a prefix from a path.
 pub(crate) fn strip_prefix(
     root: &std::path::Path,

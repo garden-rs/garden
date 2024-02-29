@@ -59,6 +59,12 @@ pub(crate) fn is_git_dir(string: &str) -> bool {
     string.len() > 4 && string.ends_with(".git") && !string.ends_with("/.git")
 }
 
+/// Return ture if `string` is a "#!" shebang line.
+#[inline]
+pub(crate) fn is_shebang(string: &str) -> bool {
+    string.starts_with("#!")
+}
+
 /// Trim garden, group, and tree prefixes
 #[inline]
 pub(crate) fn trim(string: &str) -> &str {
@@ -152,6 +158,28 @@ pub(crate) fn graft_basename(string: &str) -> Option<String> {
     .to_string();
 
     Some(result)
+}
+
+/// Trim the "#!" shebang section from a string.
+#[inline]
+pub(crate) fn trim_shebang(string: &str) -> Option<&str> {
+    if is_shebang(string) {
+        Some(&string[2..])
+    } else {
+        None
+    }
+}
+
+/// Parse a custom command and extract a custom shebang interpreter command.
+/// Return an Option<(shebang, command)> when a shebang is present and None otherwise.
+pub(crate) fn split_shebang(string: &str) -> Option<(&str, &str)> {
+    if let Some(trimmed) = trim_shebang(string) {
+        let (ok, before, after) = split_string(trimmed, "\n");
+        if ok {
+            return Some((before, after));
+        }
+    }
+    None
 }
 
 /// Escape $variable into $$variable for evaluation by shellexpand.
@@ -437,5 +465,26 @@ mod tests {
         // Escaped ${braced} value
         let value = super::escape_shell_variables("echo $${value[@]:0:1}");
         assert_eq!(value, "echo $${value[@]:0:1}");
+    }
+
+    #[test]
+    fn trim_and_split_shebang() {
+        assert!(super::is_shebang("#!test"));
+
+        let value = super::trim_shebang("#not-shebang\nvalue\n");
+        assert!(value.is_none());
+
+        let value = super::trim_shebang("#!test\nvalue\n");
+        assert!(value.is_some());
+        assert_eq!(value, Some("test\nvalue\n"));
+
+        let value = super::split_shebang("#not-shebang\nvalue\n");
+        assert!(value.is_none());
+
+        let value = super::split_shebang("#!test\nvalue\n");
+        assert_eq!(value, Some(("test", "value\n")));
+
+        let value = super::split_shebang("#comment\nvalue\n");
+        assert_eq!(value, None);
     }
 }

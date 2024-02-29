@@ -383,6 +383,28 @@ gardens:
       print-pwd: pwd
 ```
 
+#### Shebang (#!) Commands
+
+Custom command shells can be used on a per-command basis by using a `#!<command>`
+shebang line as the start of a multi-line command.
+
+The command specified in the `#!` shebang line *must* accept a command string as the
+next argument to the specified command.
+
+```yaml
+commands:
+  python-cmd: |
+    #!python3 -c
+    import sys
+    print(sys.implementation)
+```
+
+Using `#!python3 -c` as the shebang line, as demonstrated above in the `python-cmd`
+command, will result in the remainder of the command getting passed as the next argument.
+
+Concretely, `garden` will run `python3 -c "import sys\nprint(sys.implementation)"` when
+the `garden python-cmd` command is run.
+
 ### Garden Shell
 
 The `garden.shell` configuration value controls which shell interpreter

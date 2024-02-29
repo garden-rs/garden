@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.4.0
+
+**Features**:
+
+- Custom commands can now specify an interpreter to use on a per-command basis.
+  If a command uses a shebang `#!` line then the command's text will be passed as the
+  next argument to the specified command. For example, using `#!python3 -c` as the
+  first line in a custom command will cause `python3 -c <command>` to be executed.
+
+
 ## v1.3.0
 
 *Released 2024-02-19*

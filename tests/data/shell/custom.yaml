@@ -9,3 +9,8 @@ commands:
     do
         echo $arg
     done
+
+  echo-shell: |
+    #!echo
+    hello
+    world
