@@ -100,7 +100,7 @@ fn commands() -> Result<()> {
             .commands
             .get("test_cmd")
             .context("test_cmd command")?
-            .get(0)
+            .first()
             .context("test_cmd[0]")?
             .get_expr()
     );
@@ -269,24 +269,27 @@ fn trees() -> Result<()> {
     let user_name_var = tree0.gitconfig.get("user.name").context("user.name")?;
     assert_eq!(
         "A U Thor",
-        user_name_var.get(0).context("user.name expr")?.get_expr()
+        user_name_var.first().context("user.name expr")?.get_expr()
     );
     assert_eq!(
         None,
         user_name_var
-            .get(0)
+            .first()
             .context("None for user.name value")?
             .get_value()
     );
     let user_email_var = tree0.gitconfig.get("user.email").context("user.email")?;
     assert_eq!(
         "author@example.com",
-        user_email_var.get(0).context("user.email expr")?.get_expr()
+        user_email_var
+            .first()
+            .context("user.email expr")?
+            .get_expr()
     );
     assert_eq!(
         None,
         user_email_var
-            .get(0)
+            .first()
             .context("user.email value")?
             .get_value()
     );
@@ -355,7 +358,7 @@ fn trees() -> Result<()> {
     assert_eq!(
         "true",
         annex_ignore_var
-            .get(0)
+            .first()
             .context("remote.origin.annex-ignore expr")?
             .get_expr()
     );
@@ -378,7 +381,7 @@ fn trees() -> Result<()> {
     assert_eq!(
         "true",
         annex_ignore_var
-            .get(0)
+            .first()
             .context("annex-ignore expr")?
             .get_expr()
     );
@@ -498,7 +501,7 @@ fn test_gardens(config: &garden::model::Configuration) -> Result<()> {
         .context("user.name")?;
     assert_eq!(
         "A U Thor",
-        user_name_var.get(0).context("user.name expr")?.get_expr()
+        user_name_var.first().context("user.name expr")?.get_expr()
     );
 
     let user_email_var = config.gardens[1]
@@ -507,7 +510,10 @@ fn test_gardens(config: &garden::model::Configuration) -> Result<()> {
         .context("user.email")?;
     assert_eq!(
         "author@example.com",
-        user_email_var.get(0).context("user.email expr")?.get_expr()
+        user_email_var
+            .first()
+            .context("user.email expr")?
+            .get_expr()
     );
 
     Ok(())
