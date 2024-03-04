@@ -97,7 +97,8 @@ pub fn xdg_dir() -> std::path::PathBuf {
         home_config_dir = path::home_dir();
         home_config_dir.push(".config")
     }
-    #[cfg(not(unix))] {
+    #[cfg(not(unix))]
+    {
         home_config_dir = path::home_dir();
         home_config_dir.push(".config")
     }

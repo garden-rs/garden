@@ -639,17 +639,20 @@ fn grow_symlink(app_context: &model::ApplicationContext, ctx: &model::TreeContex
     .to_string();
 
     let target_path = std::path::PathBuf::from(&target);
-    #[cfg(unix)] {
-        std::os::unix::fs::symlink(&target_path, &path)?;
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(target_path, &path)?;
     }
-    #[cfg(windows)] {
+    #[cfg(windows)]
+    {
         println!(
             "warning: symlink trees are not supported on Windows: {} -> {}",
             path.to_string_lossy(),
             target_path.to_string_lossy()
         );
     }
-    #[cfg(target_family = "wasm")] {
+    #[cfg(target_family = "wasm")]
+    {
         println!(
             "warning: symlink trees are not available on wasm: {} -> {}",
             path.to_string_lossy(),
