@@ -2187,6 +2187,12 @@ If a command uses a shebang <code>#!</code> line then the command's text will be
 next argument to the specified command. For example, using <code>#!python3 -c</code> as the
 first line in a custom command will cause <code>python3 -c &lt;command&gt;</code> to be executed.</li>
 </ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li><code>garden</code> can now be built on Windows. Symlink trees and the XDG base directory support
+is UNIX-only and disabled on Windows.
+(<a href="https://gitlab.com/garden-rs/garden/-/issues/17">#17</a>)</li>
+</ul>
 <h2 id="v130"><a class="header" href="#v130">v1.3.0</a></h2>
 <p><em>Released 2024-02-19</em></p>
 <p><strong>Features</strong>:</p>
