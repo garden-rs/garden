@@ -90,12 +90,18 @@ pub(crate) fn search_path() -> Vec<std::path::PathBuf> {
 pub fn xdg_dir() -> std::path::PathBuf {
     let mut home_config_dir;
 
+    #[cfg(unix)]
     if let Ok(xdg_dirs) = xdg::BaseDirectories::new() {
         home_config_dir = xdg_dirs.get_config_home();
     } else {
         home_config_dir = path::home_dir();
         home_config_dir.push(".config")
     }
+    #[cfg(not(unix))] {
+        home_config_dir = path::home_dir();
+        home_config_dir.push(".config")
+    }
+
     home_config_dir.push("garden");
 
     home_config_dir
