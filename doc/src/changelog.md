@@ -9,6 +9,12 @@
   next argument to the specified command. For example, using `#!python3 -c` as the
   first line in a custom command will cause `python3 -c <command>` to be executed.
 
+**Development**:
+
+- `garden` can now be built on Windows. Symlink trees and the XDG base directory support
+  is UNIX-only and disabled on Windows.
+  ([#17](https://gitlab.com/garden-rs/garden/-/issues/17))
+
 
 ## v1.3.0
 
