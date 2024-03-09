@@ -384,7 +384,45 @@ impl Tree {
         }
     }
 
-    // Return the "url" field for the default remote.
+    /// Return the resolved "branch" field.
+    pub(crate) fn eval_branch(&self, eval_context: &EvalContext) -> String {
+        self.get_branch(
+            eval_context.app_context,
+            eval_context.config,
+            eval_context.graft_config,
+            eval_context.tree_context,
+        )
+    }
+
+    /// Return the resolved "branch" field.
+    pub(crate) fn get_branch(
+        &self,
+        app_context: &ApplicationContext,
+        config: &Configuration,
+        graft_config: Option<&Configuration>,
+        tree_context: &TreeContext,
+    ) -> String {
+        eval::tree_variable(
+            app_context,
+            config,
+            graft_config,
+            &tree_context.tree,
+            tree_context.garden.as_ref(),
+            &self.branch,
+        )
+    }
+
+    // Return the resolved "url" field for the default remote.
+    pub(crate) fn eval_url(&self, eval_context: &EvalContext) -> Option<String> {
+        self.get_url(
+            eval_context.app_context,
+            eval_context.config,
+            eval_context.graft_config,
+            eval_context.tree_context,
+        )
+    }
+
+    // Return the resolved "url" field for the default remote.
     pub(crate) fn get_url(
         &self,
         app_context: &ApplicationContext,
@@ -402,6 +440,34 @@ impl Tree {
                 remote,
             )
         })
+    }
+
+    /// Return the resolved "worktree" field.
+    pub(crate) fn eval_worktree(&self, eval_context: &EvalContext) -> String {
+        self.get_worktree(
+            eval_context.app_context,
+            eval_context.config,
+            eval_context.graft_config,
+            eval_context.tree_context,
+        )
+    }
+
+    /// Return the resolved "worktree" field.
+    pub(crate) fn get_worktree(
+        &self,
+        app_context: &ApplicationContext,
+        config: &Configuration,
+        graft_config: Option<&Configuration>,
+        tree_context: &TreeContext,
+    ) -> String {
+        eval::tree_variable(
+            app_context,
+            config,
+            graft_config,
+            &tree_context.tree,
+            tree_context.garden.as_ref(),
+            &self.worktree,
+        )
     }
 }
 
@@ -1083,29 +1149,63 @@ impl Graft {
 
 // TODO EvalContext
 #[derive(Clone, Debug)]
-pub struct EvalContext {
-    pub config: ConfigId,
-    pub tree: Option<TreeName>,
-    pub garden: Option<GardenName>,
-    pub group: Option<GroupName>,
+pub(crate) struct EvalContext<'a> {
+    pub(crate) app_context: &'a ApplicationContext,
+    pub(crate) config: &'a Configuration,
+    pub(crate) graft_config: Option<&'a Configuration>,
+    pub(crate) tree_context: &'a TreeContext,
 }
 
-impl_display_brief!(EvalContext);
-
-impl EvalContext {
+impl EvalContext<'_> {
     /// Construct a new EvalContext.
-    pub fn new(
-        config: ConfigId,
-        tree: Option<TreeName>,
-        garden: Option<GardenName>,
-        group: Option<GroupName>,
-    ) -> Self {
+    pub(crate) fn new<'a>(
+        app_context: &'a ApplicationContext,
+        config: &'a Configuration,
+        graft_config: Option<&'a Configuration>,
+        tree_context: &'a TreeContext,
+    ) -> EvalContext<'a> {
         EvalContext {
+            app_context,
             config,
-            tree,
-            garden,
-            group,
+            graft_config,
+            tree_context,
         }
+    }
+
+    /// Create an EvalContext from an ApplicationContext and TreeContext.
+    pub(crate) fn from_app_context<'a>(
+        app_context: &'a ApplicationContext,
+        tree_context: &'a TreeContext,
+    ) -> EvalContext<'a> {
+        let config = app_context.get_root_config();
+        let graft_config = tree_context
+            .config
+            .map(|config_id| app_context.get_config(config_id));
+        EvalContext::new(app_context, config, graft_config, tree_context)
+    }
+
+    /// Evaluate a tree variable.
+    pub(crate) fn tree_value(&self, value: &str) -> String {
+        eval::tree_value(
+            self.app_context,
+            self.config,
+            self.graft_config,
+            value,
+            &self.tree_context.tree,
+            self.tree_context.garden.as_ref(),
+        )
+    }
+
+    /// Evaluate a Variable with a tree scope.
+    pub(crate) fn tree_variable(&self, var: &Variable) -> String {
+        eval::tree_variable(
+            self.app_context,
+            self.config,
+            self.graft_config,
+            &self.tree_context.tree,
+            self.tree_context.garden.as_ref(),
+            var,
+        )
     }
 }
 
