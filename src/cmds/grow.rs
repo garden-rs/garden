@@ -97,15 +97,23 @@ fn grow_tree_from_context(
         }
     };
 
-    let path = tree.path_as_ref()?.clone();
     display::print_tree_details(tree, config.tree_branches, verbose, quiet);
-
-    let pathbuf = std::path::PathBuf::from(&path);
-    let parent = pathbuf.parent().ok_or_else(|| {
-        errors::GardenError::AssertionError(format!("unable to get parent directory for {path}"))
+    let Some(pathbuf) = tree.pathbuf() else {
+        return Err(errors::GardenError::ConfigurationError(format!(
+            "invalid path for tree: {tree}",
+            tree = tree.get_name()
+        ))
+        .into());
+    };
+    let Some(parent) = pathbuf.parent() else {
+        return Err(errors::GardenError::OSError(format!(
+            "{pathbuf:?}: unable to get parent directory"
+        ))
+        .into());
+    };
+    std::fs::create_dir_all(parent).map_err(|err| {
+        errors::GardenError::OSError(format!("unable to create {parent:?}: {err}"))
     })?;
-    std::fs::create_dir_all(parent)
-        .map_err(|err| errors::GardenError::OSError(format!("unable to create {path}: {err}")))?;
 
     if pathbuf.exists() {
         return update_tree_from_context(
@@ -191,8 +199,9 @@ fn grow_tree_from_context(
     }
 
     // <url> <path>
+    let path = tree.path_as_ref()?;
     cmd.push(&url);
-    cmd.push(&path);
+    cmd.push(path);
     if verbose > 1 {
         print_quoted_command(&cmd);
     }
