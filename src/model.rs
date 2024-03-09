@@ -383,6 +383,26 @@ impl Tree {
             self.is_bare_repository = false;
         }
     }
+
+    // Return the "url" field for the default remote.
+    pub(crate) fn get_url(
+        &self,
+        app_context: &ApplicationContext,
+        config: &Configuration,
+        graft_config: Option<&Configuration>,
+        context: &TreeContext,
+    ) -> Option<String> {
+        self.remotes.get(&self.default_remote).map(|remote| {
+            eval::tree_variable(
+                app_context,
+                config,
+                graft_config,
+                &context.tree,
+                context.garden.as_ref(),
+                remote,
+            )
+        })
+    }
 }
 
 #[derive(Clone, Debug, Default)]

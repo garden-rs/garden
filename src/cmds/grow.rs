@@ -138,16 +138,8 @@ fn grow_tree_from_context(
     }
 
     // The "url" field maps to the default remote.
-    let url = match tree.remotes.get(&tree.default_remote) {
-        Some(remote) => eval::tree_variable(
-            app_context,
-            config,
-            graft_config,
-            &context.tree,
-            context.garden.as_ref(),
-            remote,
-        ),
-        None => return Ok(exit_status),
+    let Some(url) = tree.get_url(app_context, config, graft_config, context) else {
+        return Ok(exit_status);
     };
 
     // git clone [options] <url> <path>
