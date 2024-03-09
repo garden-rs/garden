@@ -219,7 +219,7 @@ pub struct Tree {
     pub branch: Variable,
     pub(crate) branches: VariableHashMap,
     pub worktree: Variable,
-    #[derivative(Default(value = "\"origin\".to_string()"))]
+    #[derivative(Default(value = r#""origin".to_string()"#))]
     pub(crate) default_remote: String,
     pub(crate) clone_depth: i64,
     pub(crate) is_single_branch: bool,
