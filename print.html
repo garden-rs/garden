@@ -91,7 +91,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.3.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.4.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/custom-interpreters.html"><strong aria-hidden="true">8.3.</strong> Custom Interpreters</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.4.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.5.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -1263,97 +1263,97 @@ when showing examples.</p>
 
 # The following variables are used in the custom commands below.
 variables:
-  # A virtualenv is created in the ./dist/git-cola/env3 directory.
-  prefix: ${GARDEN_ROOT}/git-cola/env3
-  jobs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
+    # A virtualenv is created in the ./dist/git-cola/env3 directory.
+    prefix: ${GARDEN_ROOT}/git-cola/env3
+    jobs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
 
 commands:
-  add-all: git add --update
-  diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
-  lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
-  run: vx ${prefix} git cola &quot;$@&quot;
-  status:
-    - git status --short
-    - git branch
+    add-all: git add --update
+    diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
+    lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
+    run: vx ${prefix} git cola &quot;$@&quot;
+    status:
+        - git status --short
+        - git branch
 
 templates:
-  bin:
-    environment:
-      PATH: ${TREE_PATH}/bin
-  python:
-    environment:
-      PYTHONPATH: ${TREE_PATH}
-  makefile:
-    commands:
-      build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
-      install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-      test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
-      doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
+    bin:
+        environment:
+            PATH: ${TREE_PATH}/bin
+    python:
+        environment:
+            PYTHONPATH: ${TREE_PATH}
+    makefile:
+        commands:
+            build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+            install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+            test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+            doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
-  # git/main is the parent worktree that shares its .git storage with the child
-  # git/next worktrees using &quot;git worktree&quot; -- https://git-scm.com/docs/git-worktree
-  git/main:
-    url: https://github.com/git/git.git
-    templates: makefile
-    environment:
-      PATH: ${TREE_PATH}/bin-wrappers
-  # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
-  git/next:
-    worktree: git/main
-    branch: next
+    # git/main is the parent worktree that shares its .git storage with the child
+    # git/next worktrees using &quot;git worktree&quot; -- https://git-scm.com/docs/git-worktree
+    git/main:
+        url: https://github.com/git/git.git
+        templates: makefile
+        environment:
+            PATH: ${TREE_PATH}/bin-wrappers
+            # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
+    git/next:
+        worktree: git/main
+        branch: next
 
-  # git-cola's worktree can be reused alongside any of the git/* trees defined above.
-  git-cola:
-    url: https://gitlab.com/git-cola/git-cola.git
-    templates: [bin, python]
-    commands:
-      setup: garden dev
-      test/cola: garden test &quot;$@&quot;
-      install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-      test: garden test &quot;$@&quot;
-      doc: garden doc &quot;$@&quot;
+        # git-cola's worktree can be reused alongside any of the git/* trees defined above.
+    git-cola:
+        url: https://gitlab.com/git-cola/git-cola.git
+        templates: [bin, python]
+        commands:
+            setup: garden dev
+            test/cola: garden test &quot;$@&quot;
+            install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+            test: garden test &quot;$@&quot;
+            doc: garden doc &quot;$@&quot;
 
-  qtpy:
-    description: Qt abstraction library used by git-cola
-    url: https://github.com/spyder-ide/qtpy.git
-    templates: python
-    setup: vx ${prefix} pip install pytest-qt
+    qtpy:
+        description: Qt abstraction library used by git-cola
+        url: https://github.com/spyder-ide/qtpy.git
+        templates: python
+        setup: vx ${prefix} pip install pytest-qt
 
-  vx:
-    description: Utility for activating Python virtualenvs
-    url: https://gitlab.com/davvid/vx.git
-    depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
-    environment:
-      PATH: ${TREE_PATH}
-    commands:
-      test: make test
+    vx:
+        description: Utility for activating Python virtualenvs
+        url: https://gitlab.com/davvid/vx.git
+        depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
+        environment:
+            PATH: ${TREE_PATH}
+        commands:
+            test: make test
 
-  # This tree allows the &quot;run&quot; command to be run from any directory.
-  cwd:
-    path: ${PWD}
+    # This tree allows the &quot;run&quot; command to be run from any directory.
+    cwd:
+        path: ${PWD}
 
 groups:
-  cola-repos-grp:
-    - git-cola
-    - qtpy
-    - vx
+    cola-repos-grp:
+        - git-cola
+        - qtpy
+        - vx
 
 gardens:
-  cola:
-    groups: cola-repos-grp
-    environment:
-      PATH: ${prefix}/bin
-  cola/main:
-    groups: cola-repos-grp
-    trees: git/main
-    environment:
-      PATH: ${prefix}/bin
-  cola/next:
-    groups: cola-repos-grp
-    trees: git/next
-    environment:
-      PATH: ${prefix}/bin
+    cola:
+        groups: cola-repos-grp
+        environment:
+            PATH: ${prefix}/bin
+    cola/main:
+        groups: cola-repos-grp
+        trees: git/main
+        environment:
+            PATH: ${prefix}/bin
+    cola/next:
+        groups: cola-repos-grp
+        trees: git/next
+        environment:
+            PATH: ${prefix}/bin
 </code></pre>
 <h2 id="garden-root"><a class="header" href="#garden-root">Garden Root</a></h2>
 <p>The garden root directory is configured in the <code>garden.root</code> field.
@@ -1805,15 +1805,25 @@ global scope.</p>
 <p>Running <code>garden eval '${value}' local-tree</code> will output <code>local grafted value</code>, as it
 evaluates from <code>local-tree</code>'s scope.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
-<p>These examples demonstrate how to setup and run real-world projects using <code>garden</code>.</p>
+<p>These examples demonstrate how to use <code>garden</code> using runnable examples.</p>
 <h2 id="photo-restoration"><a class="header" href="#photo-restoration">Photo Restoration</a></h2>
 <p>The &quot;Photo Restoration&quot; example sets up the
 <a href="https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life">Bringing Old Photos Back to Life</a>
 software for restoring old photos that suffer from severe degradation using
-deep learning approaches.</p>
-<h2 id="git-cola-development"><a class="header" href="#git-cola-development">Git Cola Development</a></h2>
+machine-learning techniques.</p>
+<h2 id="git-cola"><a class="header" href="#git-cola">Git Cola</a></h2>
 <p>The &quot;Git Cola&quot; example sets up a development environment for
 <a href="https://git-cola.github.io/">Git Cola</a>, a PyQt-based graphical user interface for Git.</p>
+<p><a href="https://github.com/git-cola/git-cola/blob/main/garden.yaml">Git Cola's garden.yaml</a>
+uses garden as a command runner, to keep track of development forks, and to gather
+associated trees without the overhead of using submodules.</p>
+<h2 id="custom-interpreters"><a class="header" href="#custom-interpreters">Custom Interpreters</a></h2>
+<p>The &quot;Custom Interpreters&quot; example demonstrates how to use a custom interpreter
+on a per-command basis.</p>
+<h2 id="python"><a class="header" href="#python">Python</a></h2>
+<p>The &quot;Python&quot; example demonstrates how to use <code>python3</code> to interpret all custom commands.</p>
+<h2 id="node"><a class="header" href="#node">Node</a></h2>
+<p>The &quot;Node&quot; example demonstrates how to use <code>node</code> to interpret all custom commands.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="photo-restoration-1"><a class="header" href="#photo-restoration-1">Photo Restoration</a></h1>
 <p>This example demonstrates how to run the
 <a href="https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life">Bringing Old Photo Back to Life</a>
@@ -1852,53 +1862,65 @@ in order to use the photo restoration tool. See the <code>--help</code> output f
 <p>The <code>run</code> command defines when happens during <code>garden run old-photos</code>.</p>
 <p>Additional command-line arguments specified after the double-dash <code>--</code> marker are
 available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$N</code>, ... <code>&quot;$@&quot;</code> shell variables.</p>
-<pre><code class="language-yaml">variables:
-  env_py3: $ python3 -c 'import sys; print(&quot;env%s%s&quot; % sys.version_info[:2])'
-trees:
-  old-photos:
-    description: |
-      Restore old photos using machine-learning.
-      $ garden grow old-photos
-      $ garden setup old-photos
-      $ garden run old-photos -- --help
-    url: &quot;https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life.git&quot;
-    links:
-      - &quot;https://colab.research.google.com/drive/1NEm6AsybIiC5TwTU_4DqDkQO0nFRB-uA?usp=sharing&amp;authuser=2#scrollTo=32jCofdSr8AW&quot;
-      - &quot;http://raywzy.com/Old_Photo/&quot;
-      - &quot;https://news.ycombinator.com/item?id=25148253&quot;
-    environment:
-      PATH: &quot;${TREE_PATH}/${env_py3}/bin&quot;
-    commands:
-      setup: |
-        (
-          cd ./Face_Detection &amp;&amp; (
-            test -f shape_predictor_68_face_landmarks.dat || (
-              curl -L http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 -o shape_predictor_68_face_landmarks.dat.bz2
-              bzip2 -v -d shape_predictor_68_face_landmarks.dat.bz2
-            )
-          )
-        )
-        (
-          cd ./Face_Enhancement &amp;&amp; (
-            test -f checkpoints.zip ||
-            curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/face_checkpoints.zip -o checkpoints.zip
-            test -d checkpoints || unzip checkpoints.zip
-          )
-        )
-        (
-          cd ./Global &amp;&amp; (
-            test -f checkpoints.zip ||
-            curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/global_checkpoints.zip -o checkpoints.zip
-            test -d checkpoints || unzip checkpoints.zip
-          )
-        )
-        test -d ${env_py3} || (
-          python3 -m venv ${env_py3}
-          ${env_py3}/bin/pip install -r requirements.txt
-        )
-      run: ${env_py3}/bin/python3 run.py &quot;$@&quot;
+<pre><code class="language-yaml">trees:
+    old-photos:
+        description: |
+          Restore old photos using machine-learning.
+          $ garden grow old-photos
+          $ garden setup old-photos
+          $ garden run old-photos -- --help
+
+        url: &quot;https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life.git&quot;
+        links:
+            - &quot;https://colab.research.google.com/drive/1NEm6AsybIiC5TwTU_4DqDkQO0nFRB-uA?usp=sharing&amp;authuser=2#scrollTo=32jCofdSr8AW&quot;
+            - &quot;http://raywzy.com/Old_Photo/&quot;
+            - &quot;https://news.ycombinator.com/item?id=25148253&quot;
+
+        commands:
+            # &quot;setup&quot; uses &quot;&gt;&quot; post-commands to run &quot;setup/virtualenv&quot; and &quot;setup/download&quot;.
+            setup&gt;:
+                - setup/virtualenv
+                - setup/download
+
+            setup/virtualenv: |
+                test -d ${env3} || (
+                    python3 -m venv ${env3}
+                    ${env3}/bin/pip install -r requirements.txt
+                )
+
+            setup/download: |
+                (
+                    cd ./Face_Detection
+                    test -f shape_predictor_68_face_landmarks.dat || (
+                        curl -L http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 \
+                            -o shape_predictor_68_face_landmarks.dat.bz2
+                        bzip2 -v -d shape_predictor_68_face_landmarks.dat.bz2
+                    )
+                )
+                (
+                    cd ./Face_Enhancement
+                    test -f checkpoints.zip ||
+                    curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/face_checkpoints.zip \
+                        -o checkpoints.zip
+                    test -d checkpoints || unzip checkpoints.zip
+                )
+                (
+                    cd ./Global
+                    test -f checkpoints.zip ||
+                    curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/global_checkpoints.zip \
+                        -o checkpoints.zip
+                    test -d checkpoints || unzip checkpoints.zip
+                )
+
+            run: ${env3}/bin/python3 run.py &quot;$@&quot;
+
+        environment:
+            PATH: &quot;${TREE_PATH}/${env3}/bin&quot;
+
+variables:
+    env3: $ python3 -c 'import sys; print(&quot;env%s%s&quot; % sys.version_info[:2])'
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="git-cola-development-1"><a class="header" href="#git-cola-development-1">Git Cola Development</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="git-cola-development"><a class="header" href="#git-cola-development">Git Cola Development</a></h1>
 <p>This garden file sets up a development garden with the latest version of Git, Git Cola,
 qtpy and vx.</p>
 <p>Run the following commands to see this in action.</p>
@@ -1984,97 +2006,97 @@ development virtualenv is present in the <code>./dist</code> directory.</p>
 
 # The following variables are used in the custom commands below.
 variables:
-  # A virtualenv is created in the ./dist/git-cola/env3 directory.
-  prefix: ${GARDEN_ROOT}/git-cola/env3
-  jobs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
+    # A virtualenv is created in the ./dist/git-cola/env3 directory.
+    prefix: ${GARDEN_ROOT}/git-cola/env3
+    jobs: $ nproc 2&gt;/dev/null || sysctl -n hw.ncpu 2&gt;/dev/null || echo 8
 
 commands:
-  add-all: git add --update
-  diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
-  lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
-  run: vx ${prefix} git cola &quot;$@&quot;
-  status:
-    - git status --short
-    - git branch
+    add-all: git add --update
+    diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
+    lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
+    run: vx ${prefix} git cola &quot;$@&quot;
+    status:
+        - git status --short
+        - git branch
 
 templates:
-  bin:
-    environment:
-      PATH: ${TREE_PATH}/bin
-  python:
-    environment:
-      PYTHONPATH: ${TREE_PATH}
-  makefile:
-    commands:
-      build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
-      install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-      test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
-      doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
+    bin:
+        environment:
+            PATH: ${TREE_PATH}/bin
+    python:
+        environment:
+            PYTHONPATH: ${TREE_PATH}
+    makefile:
+        commands:
+            build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
+            install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+            test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
+            doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
 
 trees:
-  # git/main is the parent worktree that shares its .git storage with the child
-  # git/next worktrees using &quot;git worktree&quot; -- https://git-scm.com/docs/git-worktree
-  git/main:
-    url: https://github.com/git/git.git
-    templates: makefile
-    environment:
-      PATH: ${TREE_PATH}/bin-wrappers
-  # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
-  git/next:
-    worktree: git/main
-    branch: next
+    # git/main is the parent worktree that shares its .git storage with the child
+    # git/next worktrees using &quot;git worktree&quot; -- https://git-scm.com/docs/git-worktree
+    git/main:
+        url: https://github.com/git/git.git
+        templates: makefile
+        environment:
+            PATH: ${TREE_PATH}/bin-wrappers
+            # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
+    git/next:
+        worktree: git/main
+        branch: next
 
-  # git-cola's worktree can be reused alongside any of the git/* trees defined above.
-  git-cola:
-    url: https://gitlab.com/git-cola/git-cola.git
-    templates: [bin, python]
-    commands:
-      setup: garden dev
-      test/cola: garden test &quot;$@&quot;
-      install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-      test: garden test &quot;$@&quot;
-      doc: garden doc &quot;$@&quot;
+        # git-cola's worktree can be reused alongside any of the git/* trees defined above.
+    git-cola:
+        url: https://gitlab.com/git-cola/git-cola.git
+        templates: [bin, python]
+        commands:
+            setup: garden dev
+            test/cola: garden test &quot;$@&quot;
+            install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
+            test: garden test &quot;$@&quot;
+            doc: garden doc &quot;$@&quot;
 
-  qtpy:
-    description: Qt abstraction library used by git-cola
-    url: https://github.com/spyder-ide/qtpy.git
-    templates: python
-    setup: vx ${prefix} pip install pytest-qt
+    qtpy:
+        description: Qt abstraction library used by git-cola
+        url: https://github.com/spyder-ide/qtpy.git
+        templates: python
+        setup: vx ${prefix} pip install pytest-qt
 
-  vx:
-    description: Utility for activating Python virtualenvs
-    url: https://gitlab.com/davvid/vx.git
-    depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
-    environment:
-      PATH: ${TREE_PATH}
-    commands:
-      test: make test
+    vx:
+        description: Utility for activating Python virtualenvs
+        url: https://gitlab.com/davvid/vx.git
+        depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
+        environment:
+            PATH: ${TREE_PATH}
+        commands:
+            test: make test
 
-  # This tree allows the &quot;run&quot; command to be run from any directory.
-  cwd:
-    path: ${PWD}
+    # This tree allows the &quot;run&quot; command to be run from any directory.
+    cwd:
+        path: ${PWD}
 
 groups:
-  cola-repos-grp:
-    - git-cola
-    - qtpy
-    - vx
+    cola-repos-grp:
+        - git-cola
+        - qtpy
+        - vx
 
 gardens:
-  cola:
-    groups: cola-repos-grp
-    environment:
-      PATH: ${prefix}/bin
-  cola/main:
-    groups: cola-repos-grp
-    trees: git/main
-    environment:
-      PATH: ${prefix}/bin
-  cola/next:
-    groups: cola-repos-grp
-    trees: git/next
-    environment:
-      PATH: ${prefix}/bin
+    cola:
+        groups: cola-repos-grp
+        environment:
+            PATH: ${prefix}/bin
+    cola/main:
+        groups: cola-repos-grp
+        trees: git/main
+        environment:
+            PATH: ${prefix}/bin
+    cola/next:
+        groups: cola-repos-grp
+        trees: git/next
+        environment:
+            PATH: ${prefix}/bin
 </code></pre>
 <h2 id="pre-defined-custom-commands-and-ad-hoc-commands"><a class="header" href="#pre-defined-custom-commands-and-ad-hoc-commands">Pre-defined Custom Commands and Ad-Hoc Commands</a></h2>
 <p>Included in <code>garden.yaml</code> are a few few helpful commands that give us a quick
@@ -2107,9 +2129,8 @@ by running the &quot;make install&quot; targets in each repo:</p>
 </code></pre>
 <p>Voila, we now have a fully functional development environment with PyQt5, qtpy
 and Git Cola ready to go for development.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="python-commands"><a class="header" href="#python-commands">Python Commands</a></h1>
-<p>This example demonstrates how to configure <code>garden.shell</code> to use <code>python3</code>
-when running custom commands.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="command-interpreters"><a class="header" href="#command-interpreters">Command Interpreters</a></h1>
+<p>This example demonstrates how to use custom interpreters on a per-command basis.</p>
 <h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
 <pre><code class="language-bash">garden hello
 garden info
@@ -2117,16 +2138,11 @@ garden info
 garden hello -- cat
 </code></pre>
 <h2 id="gardenyaml-2"><a class="header" href="#gardenyaml-2">garden.yaml</a></h2>
-<pre><code class="language-yaml"># Demo using &quot;python3&quot; as the interpreter for custom commands.
-garden:
-  shell: python3
-
-trees:
-  python:
-    description: Demo using &quot;python3&quot; as the interpreter for custom commands
-    path: ${GARDEN_CONFIG_DIR}
-    commands:
-      hello: |
+<pre><code class="language-yaml"># Demo using custom interpreters on a per-command basis.
+commands:
+    # The &quot;#!&quot; shebang line specifies the interpreter to use.
+    hello: |
+        #!python3 -c
         import sys
         # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
         args = sys.argv[1:]  # additional arguments specified after '--'
@@ -2135,19 +2151,16 @@ trees:
         else:
             world = 'world'
         print(f'hello {world}')
-      info: |
-        import os
-        import sys
-        print(f'os.name = {os.name}')
-        print(f'sys.platform = {sys.platform}')
-        print(r'sys.int_info = {sys.int_info}')
-        print('uname = ${uname}')
-    # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
-    variables:
-      uname: $ uname -a
+
+    # The default `garden.shell` is used when no shebang line is present.
+    info: echo ${uname}
+
+# NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
+variables:
+    uname: $ uname -a
 </code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="nodejs-commands"><a class="header" href="#nodejs-commands">Node.js Commands</a></h1>
-<p>This example demonstrates how to configure <code>garden.shell</code> to use <code>node</code>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="python-commands"><a class="header" href="#python-commands">Python Commands</a></h1>
+<p>This example demonstrates how to configure <code>garden.shell</code> to use <code>python3</code>
 when running custom commands.</p>
 <h2 id="examples-2"><a class="header" href="#examples-2">Examples</a></h2>
 <pre><code class="language-bash">garden hello
@@ -2156,36 +2169,84 @@ garden info
 garden hello -- cat
 </code></pre>
 <h2 id="gardenyaml-3"><a class="header" href="#gardenyaml-3">garden.yaml</a></h2>
+<pre><code class="language-yaml"># Demo using &quot;python3&quot; as the interpreter for custom commands.
+garden:
+    shell: python3
+
+commands:
+    hello: |
+        import sys
+        # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
+        args = sys.argv[1:]  # additional arguments specified after '--'
+        if args:
+            world = ' '.join(args)
+        else:
+            world = 'world'
+        print(f'hello {world}')
+
+    info: |
+        import os
+        import sys
+        print(f'os.name = {os.name}')
+        print(f'sys.platform = {sys.platform}')
+        print(r'sys.int_info = {sys.int_info}')
+        print('uname = ${uname}')
+
+variables:
+    # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
+    uname: $ uname -a
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="nodejs-commands"><a class="header" href="#nodejs-commands">Node.js Commands</a></h1>
+<p>This example demonstrates how to configure <code>garden.shell</code> to use <code>node</code>
+when running custom commands.</p>
+<h2 id="examples-3"><a class="header" href="#examples-3">Examples</a></h2>
+<pre><code class="language-bash">garden hello
+garden info
+# Pass additional arguments after the double-dash `--` end-of-options marker.
+garden hello -- cat
+</code></pre>
+<h2 id="gardenyaml-4"><a class="header" href="#gardenyaml-4">garden.yaml</a></h2>
 <pre><code class="language-yaml"># Demo using &quot;node&quot; as the interpreter for custom commands.
 garden:
-  shell: node
+    shell: node
 
-trees:
-  node:
-    description: Demo using &quot;node&quot; as the interpreter for custom commands
-    path: ${GARDEN_CONFIG_DIR}
-    commands:
-      hello: |
+commands:
+    hello: |
         if (process.argv.length &gt; 1) {
             console.log('hello ' + process.argv.slice(1).join(' '));
         } else {
             console.log('hello world')
         }
-      info: |
+
+    info: |
         console.log(process)
         console.log('${uname}')
-    # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
-    variables:
-      uname: $ uname -a
+
+# NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
+variables:
+    uname: $ uname -a
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="v140"><a class="header" href="#v140">v1.4.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
-<li>Custom commands can now specify an interpreter to use on a per-command basis.
+<li>
+<p>Custom commands can now specify an interpreter to use on a per-command basis.
 If a command uses a shebang <code>#!</code> line then the command's text will be passed as the
 next argument to the specified command. For example, using <code>#!python3 -c</code> as the
-first line in a custom command will cause <code>python3 -c &lt;command&gt;</code> to be executed.</li>
+first line in a custom command will cause <code>python3 -c &lt;command&gt;</code> to be executed.</p>
+</li>
+<li>
+<p>Trees can now use branches defined in separate remotes when configuring the
+default branch to checkout. <code>garden grow</code> will now fetch the remote associated with the
+configured branch switching branches in order to make this possible.</p>
+</li>
+<li>
+<p>Trees can now use any upstream branch from any configured remote in the <code>branches</code> section.
+Previously, branches associated with non-default remotes could not be created unless
+they were fetched beforehand. <code>garden grow</code> will now fetch the associated remote
+before creating the local branch.</p>
+</li>
 </ul>
 <p><strong>Development</strong>:</p>
 <ul>

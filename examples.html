@@ -90,7 +90,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html" class="active"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.3.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.4.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html" class="active"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/custom-interpreters.html"><strong aria-hidden="true">8.3.</strong> Custom Interpreters</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.4.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.5.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -182,15 +182,25 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="examples"><a class="header" href="#examples">Examples</a></h1>
-<p>These examples demonstrate how to setup and run real-world projects using <code>garden</code>.</p>
+<p>These examples demonstrate how to use <code>garden</code> using runnable examples.</p>
 <h2 id="photo-restoration"><a class="header" href="#photo-restoration">Photo Restoration</a></h2>
 <p>The &quot;Photo Restoration&quot; example sets up the
 <a href="https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life">Bringing Old Photos Back to Life</a>
 software for restoring old photos that suffer from severe degradation using
-deep learning approaches.</p>
-<h2 id="git-cola-development"><a class="header" href="#git-cola-development">Git Cola Development</a></h2>
+machine-learning techniques.</p>
+<h2 id="git-cola"><a class="header" href="#git-cola">Git Cola</a></h2>
 <p>The &quot;Git Cola&quot; example sets up a development environment for
 <a href="https://git-cola.github.io/">Git Cola</a>, a PyQt-based graphical user interface for Git.</p>
+<p><a href="https://github.com/git-cola/git-cola/blob/main/garden.yaml">Git Cola's garden.yaml</a>
+uses garden as a command runner, to keep track of development forks, and to gather
+associated trees without the overhead of using submodules.</p>
+<h2 id="custom-interpreters"><a class="header" href="#custom-interpreters">Custom Interpreters</a></h2>
+<p>The &quot;Custom Interpreters&quot; example demonstrates how to use a custom interpreter
+on a per-command basis.</p>
+<h2 id="python"><a class="header" href="#python">Python</a></h2>
+<p>The &quot;Python&quot; example demonstrates how to use <code>python3</code> to interpret all custom commands.</p>
+<h2 id="node"><a class="header" href="#node">Node</a></h2>
+<p>The &quot;Node&quot; example demonstrates how to use <code>node</code> to interpret all custom commands.</p>
 
                     </main>
 

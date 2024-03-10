@@ -90,7 +90,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.3.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.4.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html" class="active"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/custom-interpreters.html"><strong aria-hidden="true">8.3.</strong> Custom Interpreters</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.4.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.5.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="changelog.html" class="active"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -185,10 +185,23 @@
 <h2 id="v140"><a class="header" href="#v140">v1.4.0</a></h2>
 <p><strong>Features</strong>:</p>
 <ul>
-<li>Custom commands can now specify an interpreter to use on a per-command basis.
+<li>
+<p>Custom commands can now specify an interpreter to use on a per-command basis.
 If a command uses a shebang <code>#!</code> line then the command's text will be passed as the
 next argument to the specified command. For example, using <code>#!python3 -c</code> as the
-first line in a custom command will cause <code>python3 -c &lt;command&gt;</code> to be executed.</li>
+first line in a custom command will cause <code>python3 -c &lt;command&gt;</code> to be executed.</p>
+</li>
+<li>
+<p>Trees can now use branches defined in separate remotes when configuring the
+default branch to checkout. <code>garden grow</code> will now fetch the remote associated with the
+configured branch switching branches in order to make this possible.</p>
+</li>
+<li>
+<p>Trees can now use any upstream branch from any configured remote in the <code>branches</code> section.
+Previously, branches associated with non-default remotes could not be created unless
+they were fetched beforehand. <code>garden grow</code> will now fetch the associated remote
+before creating the local branch.</p>
+</li>
 </ul>
 <p><strong>Development</strong>:</p>
 <ul>

@@ -90,7 +90,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="../tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="../commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="../configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="../examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="../examples/python.html"><strong aria-hidden="true">8.3.</strong> Python</a></li><li class="chapter-item expanded "><a href="../examples/node.html" class="active"><strong aria-hidden="true">8.4.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="../changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="../glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="../installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="../setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="../tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="../commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="../configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="../examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="../examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="../examples/custom-interpreters.html"><strong aria-hidden="true">8.3.</strong> Custom Interpreters</a></li><li class="chapter-item expanded "><a href="../examples/python.html"><strong aria-hidden="true">8.4.</strong> Python</a></li><li class="chapter-item expanded "><a href="../examples/node.html" class="active"><strong aria-hidden="true">8.5.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="../changelog.html"><strong aria-hidden="true">9.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -193,25 +193,23 @@ garden hello -- cat
 <h2 id="gardenyaml"><a class="header" href="#gardenyaml">garden.yaml</a></h2>
 <pre><code class="language-yaml"># Demo using &quot;node&quot; as the interpreter for custom commands.
 garden:
-  shell: node
+    shell: node
 
-trees:
-  node:
-    description: Demo using &quot;node&quot; as the interpreter for custom commands
-    path: ${GARDEN_CONFIG_DIR}
-    commands:
-      hello: |
+commands:
+    hello: |
         if (process.argv.length &gt; 1) {
             console.log('hello ' + process.argv.slice(1).join(' '));
         } else {
             console.log('hello world')
         }
-      info: |
+
+    info: |
         console.log(process)
         console.log('${uname}')
-    # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
-    variables:
-      uname: $ uname -a
+
+# NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
+variables:
+    uname: $ uname -a
 </code></pre>
 
                     </main>
