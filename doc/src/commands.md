@@ -448,19 +448,19 @@ You can also opt-out of the `shwordsplit` behavior on a per-command basis by usi
 
 The following values for `garden.shell` are understood directly by `garden` and
 the following commands are used when `garden` detects that these shells are
-configured.
+configured. Not applicable (N/A) is denoted by `-`.
 
 | garden.shell  | Command used for running commands | errexit=false | wordsplit=false       |
 |---------------|-----------------------------------|---------------|-----------------------|
-| `bun`         | `bun -e`                          | N/A           | N/A                   |
-| `bash`        | `bash -e -c`                      | Omit `-e`     | N/A                   |
-| `dash`        | `dash -e -c`                      | Omit `-e`     | N/A                   |
-| `ksh`         | `ksh -e -c`                       | Omit `-e`     | N/A                   |
-| `node`        | `node -e`                         | N/A           | N/A                   |
-| `nodejs`      | `nodejs -e`                       | N/A           | N/A                   |
-| `perl`        | `perl -e`                         | N/A           | N/A                   |
-| `ruby`        | `ruby -e`                         | N/A           | N/A                   |
-| `sh`          | `sh -e -c`                        | Omit `-e`     | N/A                   |
+| `bun`         | `bun -e`                          | -             | -                     |
+| `bash`        | `bash -e -c`                      | Omit `-e`     | -                     |
+| `dash`        | `dash -e -c`                      | Omit `-e`     | -                     |
+| `ksh`         | `ksh -e -c`                       | Omit `-e`     | -                     |
+| `node`        | `node -e`                         | -             | -                     |
+| `nodejs`      | `nodejs -e`                       | -             | -                     |
+| `perl`        | `perl -e`                         | -             | -                     |
+| `ruby`        | `ruby -e`                         | -             | -                     |
+| `sh`          | `sh -e -c`                        | Omit `-e`     | -                     |
 | `zsh`         | `zsh -e -o shwordsplit -c`        | Omit `-e`     | Omit `-o shwordsplit` |
 
 The following shells are not builtin, but they work as expected because they accept
