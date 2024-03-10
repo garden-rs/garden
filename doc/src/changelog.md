@@ -13,6 +13,11 @@
   default branch to checkout. `garden grow` will now fetch the remote associated with the
   configured branch switching branches in order to make this possible.
 
+- Trees can now use any upstream branch from any configured remote in the `branches` section.
+  Previously, branches associated with non-default remotes could not be created unless
+  they were fetched beforehand. `garden grow` will now fetch the associated remote
+  before creating the local branch.
+
 **Development**:
 
 - `garden` can now be built on Windows. Symlink trees and the XDG base directory support

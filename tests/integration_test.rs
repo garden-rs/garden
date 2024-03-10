@@ -577,20 +577,41 @@ fn grow_branch_from_non_default_remote() -> Result<()> {
         "custom-remote",
     ])?;
 
+    // "custom-branch" should be the currently checked-out branch.
     let repo = fixture.worktree("custom-remote");
-    let cmd_local_branch = ["git", "rev-parse", "custom-branch"];
-    let cmd_upstream_branch = ["git", "rev-parse", "custom/default"];
+    let command = ["git", "symbolic-ref", "HEAD"];
+    let ref_name = assert_cmd_capture(&command, &repo);
+    assert_eq!(ref_name, "refs/heads/custom-dev");
+
+    // "custom-dev" should point to "custom/dev".
+    let cmd_local_branch = ["git", "rev-parse", "custom-dev"];
+    let cmd_upstream_branch = ["git", "rev-parse", "custom/dev"];
     let local_id = assert_cmd_capture(&cmd_local_branch, &repo);
     let upstream_id = assert_cmd_capture(&cmd_upstream_branch, &repo);
     assert_eq!(local_id, upstream_id);
-
-    let cmd_upstream_name = ["git", "config", "branch.custom-branch.remote"];
+    // The configured remote should be "custom".
+    let cmd_upstream_name = ["git", "config", "branch.custom-dev.remote"];
     let upstream_name = assert_cmd_capture(&cmd_upstream_name, &repo);
     assert_eq!(upstream_name, "custom");
-
-    let cmd_upstream_name = ["git", "config", "branch.custom-branch.merge"];
+    // The upstream branch from "custom" should be "dev".
+    let cmd_upstream_name = ["git", "config", "branch.custom-dev.merge"];
     let upstream_name = assert_cmd_capture(&cmd_upstream_name, &repo);
     assert_eq!(upstream_name, "refs/heads/dev");
+
+    // "extra-default" should point to "extra/default".
+    let cmd_local_branch = ["git", "rev-parse", "extra-default"];
+    let cmd_upstream_branch = ["git", "rev-parse", "extra/default"];
+    let local_id = assert_cmd_capture(&cmd_local_branch, &repo);
+    let upstream_id = assert_cmd_capture(&cmd_upstream_branch, &repo);
+    assert_eq!(local_id, upstream_id);
+    // The configured remote should be "extra".
+    let cmd_upstream_name = ["git", "config", "branch.extra-default.remote"];
+    let upstream_name = assert_cmd_capture(&cmd_upstream_name, &repo);
+    assert_eq!(upstream_name, "extra");
+    // The upstream branch from "extra" should be "default".
+    let cmd_upstream_name = ["git", "config", "branch.extra-default.merge"];
+    let upstream_name = assert_cmd_capture(&cmd_upstream_name, &repo);
+    assert_eq!(upstream_name, "refs/heads/default");
 
     Ok(())
 }

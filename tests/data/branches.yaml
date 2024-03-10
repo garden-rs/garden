@@ -28,6 +28,8 @@ trees:
     url: file://${repos}/example.git
     remotes:
       custom: file://${repos}/example.git
-    branch: custom-branch
+      extra: file://${repos}/example.git
+    branch: custom-dev
     branches:
-      custom-branch: custom/dev
+      custom-dev: custom/dev
+      extra-default: extra/default

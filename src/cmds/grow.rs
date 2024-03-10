@@ -305,6 +305,9 @@ fn update_tree_from_context(
         set_gitconfig_value("checkout.defaultRemoteName", &tree.default_remote, path);
     }
 
+    let mut fetched_remotes: HashSet<String> = HashSet::new();
+    fetched_remotes.insert(tree.default_remote.to_string());
+
     // Loop over remotes and add/update the git remote configuration.
     for (remote, var) in &tree.remotes {
         let url = eval_context.tree_variable(var);
@@ -351,6 +354,7 @@ fn update_tree_from_context(
                 if verbose > 1 {
                     print_command_str(&command.join(" "));
                 }
+                fetched_remotes.insert(remote.to_string());
                 let exec = cmd::exec_in_dir(&command, path);
                 let status = cmd::status(exec);
                 if status != errors::EX_OK {
@@ -390,16 +394,31 @@ fn update_tree_from_context(
         for (branch, expr) in &tree.branches {
             if !branches.contains(branch) {
                 let remote_branch = eval_context.tree_variable(expr);
-                if !remote_branch.is_empty() {
-                    let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
-                    if verbose > 1 {
-                        print_command_str(&command.join(" "));
+                if remote_branch.is_empty() {
+                    continue;
+                }
+                if let Some(remote_for_branch) = tree.get_remote_for_branch(eval_context, branch) {
+                    if !fetched_remotes.contains(&remote_for_branch) {
+                        fetched_remotes.insert(remote_for_branch.to_string());
+                        let command = ["git", "fetch", remote_for_branch.as_str()];
+                        if verbose > 1 {
+                            print_command_str(&command.join(" "));
+                        }
+                        let exec = cmd::exec_in_dir(&command, path);
+                        let status = cmd::status(exec);
+                        if status != errors::EX_OK {
+                            exit_status = status;
+                        }
                     }
-                    let exec = cmd::exec_in_dir(&command, path);
-                    let status = cmd::status(exec);
-                    if status != errors::EX_OK {
-                        exit_status = status;
-                    }
+                }
+                let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
+                if verbose > 1 {
+                    print_command_str(&command.join(" "));
+                }
+                let exec = cmd::exec_in_dir(&command, path);
+                let status = cmd::status(exec);
+                if status != errors::EX_OK {
+                    exit_status = status;
                 }
             }
         }
