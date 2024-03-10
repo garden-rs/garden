@@ -367,30 +367,30 @@ with trees that are located relative to the <code>garden.yaml</code> config file
 <pre><code class="language-yaml"># By default, &quot;garden init&quot; generates a &quot;garden.yaml&quot; that uses the
 # ${GARDEN_CONFIG_DIR} for its &quot;garden.root&quot; location.
 garden:
-  root: ${GARDEN_CONFIG_DIR}
+    root: ${GARDEN_CONFIG_DIR}
 </code></pre>
 <p>Omitting <code>garden.root</code> is equivalent to the configuration above.</p>
 <p>To place all trees in a <code>src</code> directory sibling to the <code>garden.yaml</code> file, the
 following configuration can be used:</p>
 <pre><code class="language-yaml">garden:
-  root: ${GARDEN_CONFIG_DIR}/src
+    root: ${GARDEN_CONFIG_DIR}/src
 </code></pre>
 <p>To place all trees in a <code>src</code> directory in your <code>$HOME</code> directory, the
 following configuration can be used:</p>
 <pre><code class="language-yaml">garden:
-  root: ~/src
+    root: ~/src
 </code></pre>
 <p>Configure <code>garden.root</code> to <code>&quot;&quot;</code> (an empty string) to use a dynamic
 <code>garden.root</code> that follows your current directory. This lets you use
 <code>garden --config &lt;path&gt;</code> to create and interact with trees in your
 current directory instead of a fixed configuration-defined location.</p>
 <pre><code class="language-yaml">garden:
-  root: &quot;&quot;
+    root: &quot;&quot;
 </code></pre>
 <h2 id="garden-shell"><a class="header" href="#garden-shell">Garden Shell</a></h2>
 <p>The shell used by <code>garden</code> when running Commands is configured by the <code>garden.shell</code> field.</p>
 <pre><code class="language-yaml">garden:
-  shell: zsh
+    shell: zsh
 </code></pre>
 <p>The <code>$PATH</code> environment variable is probed for available shells in the following order
 when <code>garden.shell</code> is omitted. The first one found is the one that's used.</p>
@@ -419,21 +419,21 @@ While this has a marginal performance impact, this feature can be disabled by ei
 passing the <code>garden -D garden.tree-branches=0</code> option or by configuring the
 <code>garden.tree-branches</code> option to <code>false</code> in the <code>garden.yaml</code> configuration.</p>
 <pre><code class="language-yaml">garden:
-  tree-branches: false
+    tree-branches: false
 </code></pre>
 <h2 id="includes"><a class="header" href="#includes">Includes</a></h2>
 <p>Garden files can be split apart into several files for modularity and reuse.
 You can use the <code>garden.includes</code> list to specify other garden files to include
 into the current garden file.</p>
 <pre><code class="language-yaml">garden:
-  includes:
-    # Includes are relative to the GARDEN_CONFIG_DIR by default.
-    - variables.yaml
-    # Includes can reference custom and built-in ${variables}.
-    - ${include_dir}/commands.yaml
+    includes:
+        # Includes are relative to the GARDEN_CONFIG_DIR by default.
+        - variables.yaml
+        # Includes can reference custom and built-in ${variables}.
+        - ${include_dir}/commands.yaml
 
 variables:
-  include_dir: ${GARDEN_ROOT}
+    include_dir: ${GARDEN_ROOT}
 </code></pre>
 <p>Absolute paths in the <code>garden.includes</code> list are included as-is.
 Relative paths in the <code>garden.includes</code> list are resolved.</p>
@@ -464,12 +464,12 @@ earlier tree definition.</p>
 <pre><code class="language-yaml"># garden.yaml
 ---
 garden:
-  includes: trees.yaml
+    includes: trees.yaml
 
 trees:
-  example:
-    replace: true
-    url: https://custom.example.com/custom/tree
+    example:
+        replace: true
+        url: https://custom.example.org/custom/example.git
 ...
 </code></pre>
 <p>The <code>garden.yaml</code> above includes <code>trees.yaml</code>. The <code>example</code> tree is originally
@@ -477,9 +477,9 @@ defined here, but it is completely replaced by the same entry above.</p>
 <pre><code class="language-yaml"># trees.yaml
 ---
 trees:
-  example: https://example.com/original/tree
-  commands:
-    echo: Hello, ${TREE_NAME}
+    example: https://example.com/original/tree.git
+    commands:
+        echo: Hello, ${TREE_NAME}
 ...
 </code></pre>
 <p>In the example above, the <code>example</code> tree completely replaces the
@@ -489,14 +489,14 @@ settings from the replaced tree are retained.</p>
 <p>Garden configuration contains a &quot;variables&quot; block that allows defining
 variables that are can be referenced by other garden values.</p>
 <pre><code class="language-yaml">variables:
-  flavor: debug
-  user: $ whoami
-  libdir: $ test -e /usr/lib64 &amp;&amp; echo lib64 || echo lib
-  nproc: $ nproc
-  prefix: ~/.local
-  py_ver_code: from sys import version_info as v; print(&quot;%s.%s&quot; % v[:2])
-  py_ver: $ python3 -c '${py_ver_code}'
-  py_site: ${libdir}/python${py_ver}/site-packages
+    flavor: debug
+    user: $ whoami
+    libdir: $ test -e /usr/lib64 &amp;&amp; echo lib64 || echo lib
+    nproc: $ nproc
+    prefix: ~/.local
+    py_ver_code: from sys import version_info as v; print(&quot;%s.%s&quot; % v[:2])
+    py_ver: $ python3 -c '${py_ver_code}'
+    py_site: ${libdir}/python${py_ver}/site-packages
 </code></pre>
 <p>Variables definitions can reference environment variables and other garden
 variables.</p>
@@ -533,18 +533,18 @@ of behavior from the garden scope.</p>
 <p>Values in environment blocks prepend to the environment variable by default.
 The <code>:</code> UNIX path separator is used when prepending and appending values.</p>
 <pre><code class="language-yaml">trees:
-  foo:
-    environment:
-      PATH: ${TREE_PATH}/bin
+    foo:
+        environment:
+            PATH: ${TREE_PATH}/bin
 </code></pre>
 <p>The example above prepends the <code>foo/bin</code> directory to the colon (<code>:</code>)-delimited <code>PATH</code>
 environment variable.</p>
 <p>Names with an equals sign (<code>=</code>) suffix are treated as &quot;store&quot; operations and are
 stored into the environment, fully replacing any pre-existing values.</p>
 <pre><code class="language-yaml">trees:
-  foo:
-    environment:
-      ${TREE_NAME}_LOCATION=: ${TREE_PATH}
+    foo:
+        environment:
+            ${TREE_NAME}_LOCATION=: ${TREE_PATH}
 </code></pre>
 <p>Environment variable entries can use garden <code>${variable}</code> syntax when defining
 both their name and values. The example above exports a variable called <code>foo_LOCATION</code>
@@ -552,9 +552,9 @@ with the location of the tree. If <code>foo_LOCATION</code> is already defined t
 replaced.</p>
 <p>A plus sign (<code>+</code>) suffix in the name append to a variable instead of prepending.</p>
 <pre><code class="language-yaml">trees:
-  foo:
-    environment:
-      PATH+: ${TREE_PATH}/bin
+    foo:
+        environment:
+            PATH+: ${TREE_PATH}/bin
 </code></pre>
 <p>The example above appends to the <code>PATH</code> environment variable.
 Note the <code>+</code> suffix after <code>PATH</code>.</p>
@@ -619,19 +619,19 @@ The <code>tree</code> block defines properties about a tree such as its Git URL,
 custom variables, environment variables, Git remotes, Git configuration variables,
 and custom commands.</p>
 <pre><code class="language-yaml">trees:
-  git-scm:
-    description: Fast, scalable, distributed version control
-    path: git
-    url: git://git.kernel.org/pub/scm/git/git.git
-    remotes:
-      gitlab: https://gitlab.com/gitlab-org/git.git
-      github: https://github.com/git/git.git
-      gitster: https://github.com/gitster/git.git
-    commands:
-      build: make all -j ${num_procs} &quot;$@&quot;
-      test: make test &quot;$@&quot;
-    variables:
-      num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.activecpu 2&gt;/dev/null || echo 4
+    git-scm:
+        description: Fast, scalable, distributed version control
+        path: git
+        url: git://git.kernel.org/pub/scm/git/git.git
+        remotes:
+            gitster: https://github.com/gitster/git.git
+            gitlab: https://gitlab.com/gitlab-org/git.git
+            github: https://github.com/git/git.git
+        commands:
+            build: make all -j ${num_procs} &quot;$@&quot;
+            test: make test &quot;$@&quot;
+        variables:
+            num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.activecpu 2&gt;/dev/null || echo 4
 </code></pre>
 <p>All fields are more or less optional. The <code>path</code> field defaults to the same
 name as the tree, so the <code>path: git</code> setting above can be omitted without
@@ -648,7 +648,7 @@ use a <code>string</code> rather than a <code>dictionary</code> / <code>table</c
 by providing just the URL. This configures a tree with a single <code>origin</code>
 remote pointing to the configured URL.</p>
 <pre><code class="language-yaml">trees:
-  git-scm: git://git.kernel.org/pub/scm/git/git.git
+    git-scm: git://git.kernel.org/pub/scm/git/git.git
 </code></pre>
 <h3 id="default-tree"><a class="header" href="#default-tree">Default Tree</a></h3>
 <p>The <code>trees</code> block is optional when a <code>commands</code> block exists.</p>
@@ -669,18 +669,18 @@ you may have added using the <code>git remote add</code>
 <p>The default <code>origin</code> remote name used by Git can be overridden by setting the
 <code>default-remote</code> field in the tree's configuration.</p>
 <pre><code class="language-yaml">trees:
-  git:
-    url: git://git.kernel.org/pub/scm/git/git.git
-    default-remote: kernel.org
+    git:
+        url: git://git.kernel.org/pub/scm/git/git.git
+        default-remote: kernel.org
 </code></pre>
 <p>This will create a remote called <code>kernel.org</code> instead or <code>origin</code> when growing trees.
 This feature can also be used when multiple named remotes are configured.</p>
 <pre><code class="language-yaml">trees:
-  git:
-    default-remote: kernel.org
-    remotes:
-      kernel.org: git://git.kernel.org/pub/scm/git/git.git
-      gitster: https://github.com/gitster/git.git
+    git:
+        default-remote: kernel.org
+        remotes:
+            kernel.org: git://git.kernel.org/pub/scm/git/git.git
+            gitster: https://github.com/gitster/git.git
 </code></pre>
 <h2 id="templates"><a class="header" href="#templates">Templates</a></h2>
 <p>Templates allow sharing of command, variable, gitconfig, and environment
@@ -693,20 +693,19 @@ template names.</p>
 keyword with the name of another tree.  Only the first remote is used when
 extending a tree.</p>
 <pre><code class="language-yaml">templates:
-  hello:
-    variables:
-      message: Hello ${TREE_NAME}.
-    commands:
-      echo: echo ${message}
+    hello:
+        variables:
+            message: Hello ${TREE_NAME}.
+        commands:
+            echo: echo ${message}
 
 trees:
-  hello-tree:
-    templates: hello
-
-  hello-tree-extended:
-    extend: hello-tree
-    variables:
-      message: The time is now: $(date)
+    hello-tree:
+        templates: hello
+    hello-tree-extended:
+        extend: hello-tree
+        variables:
+            message: The time is now: $(date)
 </code></pre>
 <p>When a tree specifies multiple templates then all of the templates are merged into
 the tree's definitions. If variables are multiply-defined across multiple templates
@@ -721,26 +720,25 @@ String that can either be a simple value or a multi-line YAML String.</p>
 <p>The following commands show the various ways that <code>commands</code> can be specified
 due to the automatic promotion of Strings into Lists.</p>
 <pre><code class="language-yaml">commands:
-  # commands are a list of command strings.
-  cmd1:
-    - echo ${TREE_NAME}
-    - pwd
+    # commands are lists of command strings.
+    cmd1:
+        - echo cmd1 ${TREE_NAME}
+        - pwd
 
-  # strings are promoted to a list with a single item.
-  cmd2: echo ${TREE_NAME} &amp;&amp; pwd
+    # Strings are promoted to a list with a single item.
+    cmd2: echo cmd2 ${TREE_NAME} &amp;&amp; pwd
+    # cmd2 is equivalent to...
+    cmd2:
+        - echo cmd2 ${TREE_NAME} &amp;&amp; pwd
 
-  # cmd2 is promoted into
-  cmd2:
-    - echo ${TREE_NAME} &amp;&amp; pwd
+    # Multi-line command strings can be written using &quot;|&quot; YAML syntax.
+    cmd4: |
+        echo ${TREE_NAME}
+        pwd
 
-  # multi-line command strings are supported using &quot;|&quot; YAML syntax.
-  cmd4: |
-    echo ${TREE_NAME}
-    pwd
-
-  # cmd4 is promoted into
-  cmd4:
-    - &quot;echo ${TREE_NAME}\npwd&quot;
+    # cmd4 is promoted into
+    cmd4:
+        - &quot;echo ${TREE_NAME}\npwd&quot;
 </code></pre>
 <h2 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h2>
 <p>The names in garden <code>tree</code> and <code>group</code> lists, and group member names accept glob
@@ -753,9 +751,9 @@ matches &quot;cola&quot; only.</p>
 <p>Symlink trees create a symlink on the filesystem during <code>garden init</code>.
 <code>garden exec</code>, and custom <code>garden cmd</code> commands ignore symlink trees.</p>
 <pre><code class="language-yaml">trees:
-  media:
-    path: ~/media
-    symlink: /media/${USER}
+    media:
+        path: ~/media
+        symlink: /media/${USER}
 </code></pre>
 <p>The &quot;path&quot; entry behaves like the tree &quot;path&quot; entry -- when unspecified it
 defaults to a path named after the tree relative to the garden root.</p>
@@ -766,26 +764,26 @@ files underneath a custom &quot;graft namespace&quot;.</p>
 &quot;graft&quot; files and refer to them using a <code>graft::</code> namespace qualifier.</p>
 <pre><code class="language-yaml"># Top-level garden.yaml
 grafts:
-  graft: graft.yaml
-  graft-repos:
-    config: repos.yaml
-    root: repos
+    graft: graft.yaml
+    graft-repos:
+        config: repos.yaml
+        root: repos
 
 trees:
-  local-tree:
-    url: https://git.example.com/repo.git
-    variables:
-      value: &quot;local ${graft::value}&quot;
+    local-tree:
+        url: https://example.com/trees/repo.git
+        variables:
+            value: &quot;local ${graft::value}&quot;
 
 variables:
     value: &quot;global ${graft::value}&quot;
 
 gardens:
-  example:
-    trees:
-      - local-tree
-      - graft::tree
-      - graft-repos::example
+    example:
+        trees:
+            - local-tree
+            - graft::tree
+            - graft-repos::example
 </code></pre>
 <p>The <code>graft-repos</code> graft entry demonstrates how to use a custom root directory for
 the trees provided by the grafted configuration.</p>
@@ -795,10 +793,10 @@ using variables.</p>
 <p><code>graft.yaml</code> contains the following:</p>
 <pre><code class="language-yaml"># The grafted &quot;graft.yaml&quot; file.
 trees:
-  tree: https://git.example.com/tree.git
+    tree: https://example.org/trees/tree.git
 
 variables:
-  value: &quot;grafted value&quot;
+    value: &quot;grafted value&quot;
 </code></pre>
 <p>Running <code>garden eval '${graft::value}'</code> will output <code>grafted value</code>.</p>
 <p>Running <code>garden eval '${value}'</code> will output <code>global grafted value</code>, as it evaluates at

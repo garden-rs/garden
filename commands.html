@@ -273,18 +273,18 @@ repositories are created by cloning the configured tree URL.</p>
 <p>The <code>branch: &lt;branch-name&gt;</code> tree variable is used to specify which branch should be
 cloned and checked out when the tree is grown.</p>
 <pre><code class="language-yaml">trees:
-  example:
-    branch: dev
-    url: url
+    example:
+        branch: dev
+        url: git@example.org:trees/example.git
 </code></pre>
 <p><code>garden grow example</code> clones the repository using <code>git clone --branch=dev</code>.
 The <code>branch</code> setting is a tree variable and supports <code>${variable}</code> expressions.</p>
 <h3 id="shallow-clones"><a class="header" href="#shallow-clones">Shallow Clones</a></h3>
 <p>The <code>depth: &lt;integer&gt;</code> tree parameter is used to create shallow clones.</p>
 <pre><code class="language-yaml">trees:
-  example:
-    depth: 42
-    url: url
+    example:
+        depth: 42
+        url: git@example.org:trees/example.git
 </code></pre>
 <p><code>garden grow example</code> clones the repository using:</p>
 <pre><code class="language-bash">git clone --depth=42 --no-single-branch
@@ -298,11 +298,11 @@ of repositories by only having a single branch available.</p>
 <p>This par mater is typically used in conjunction with <code>branch: &lt;branch-name&gt;</code> and
 <code>depth: 1</code> to create a 1-commit shallow clone with a single branch.</p>
 <pre><code class="language-yaml">trees:
-  example:
-    branch: dev
-    depth: 1
-    single-branch: true
-    url: url
+    example:
+        branch: dev
+        depth: 1
+        single-branch: true
+        url: git@example.org:trees/example.git
 </code></pre>
 <h3 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h3>
 <p>Wildcards are supported in the trees queries supported by <code>garden grow</code>.
@@ -320,15 +320,15 @@ using <a href="https://git-scm.com/docs/git-worktree">git worktree</a>.</p>
 storage will reside and then define additional trees that reference the
 worktrees.</p>
 <pre><code class="language-yaml">trees:
-  example/main: url
+    example/main: git@example.org:trees/example.git
 
-  example/dev:
-    worktree: example/main
-    branch: dev
+    example/dev:
+        worktree: example/main
+        branch: dev
 
-  example/v2:
-    worktree: example/main
-    branch: v2
+    example/v2:
+        worktree: example/main
+        branch: v2
 </code></pre>
 <p>This example uses <code>example/main</code> tree for the shared storage and two additional worktrees.
 <code>example/dev</code> uses the <code>dev</code> branch and <code>example/v2</code> uses the <code>v2</code> branch.</p>
@@ -336,11 +336,11 @@ worktrees.</p>
 <p>Remote tracking branches can be configured by defining a <code>branches</code> block that maps
 local branch names (the <code>key</code>) to a remote branch name expression (the <code>value</code>).</p>
 <pre><code class="language-yaml">trees:
-  example/branches:
-    branch: local
-    branches:
-      local: origin/dev
-      dev: origin/dev
+    example/branches:
+        branch: local
+        branches:
+            local: origin/dev
+            dev: origin/dev
 </code></pre>
 <p>The above configuration creates local branches called <code>local</code> and <code>dev</code> and checks out
 the <code>local</code> branch when <code>garden grow example/branches</code> is run.</p>
@@ -359,31 +359,31 @@ value can be set to multiple values.</p>
 <p>Use a list as the value for the key and multiple values will be added using
 <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt---add">git config --add $name $value</a>.</p>
 <pre><code class="language-yaml">trees:
-  foo:
-    url: &quot;git@github.com:example/foo.git&quot;
-    gitconfig:
-      remote.origin.pushurl:
-        # Push to multiple remotes when using &quot;git push origin&quot;
-        - &quot;git@github.com:example/foo.git&quot;
-        - &quot;git@private.example.com:example/foo.git&quot;
+    foo:
+        url: &quot;git@example.org:trees/foo.git&quot;
+        gitconfig:
+            remote.origin.pushurl:
+                # Push to multiple remotes when using &quot;git push origin&quot;
+                - &quot;git@jupiter.example.org:trees/foo.git&quot;
+                - &quot;git@saturn.example.org:trees/foo.git&quot;
 </code></pre>
 <h3 id="bare-repositories"><a class="header" href="#bare-repositories">Bare Repositories</a></h3>
 <p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
 <pre><code class="language-yaml">trees:
-  example:
-    bare: true
-    url: url
+    example:
+        bare: true
+        url: url
 </code></pre>
 <p>Bare clones are created by default when the tree path ends in <code>.git</code>.
 For example, a tree called <code>example.git</code> will be <code>bare: true</code> by default.</p>
 <pre><code class="language-yaml">trees:
-  example.git: url
+    example.git: git@example.org:trees/example.git
 </code></pre>
 <p>Setting <code>bare: false</code> overrides the name-based detection of bare repositories.</p>
 <pre><code class="language-yaml">trees:
-  example.git:
-    bare: false
-    url: url
+    example.git:
+        bare: false
+        url: git@example.org:tree/example.git
 </code></pre>
 <h2 id="garden-cmd"><a class="header" href="#garden-cmd">garden cmd</a></h2>
 <pre><code class="language-bash">garden cmd &lt;tree-query&gt; &lt;command&gt; [&lt;command&gt;]... [-- &lt;arguments&gt;..]
@@ -426,30 +426,33 @@ subsequent variables will be set according to each argument.</p>
 # The YAML reader accepts multi-line strings using the &quot;|&quot; pipe syntax.
 
 commands:
-  one-liner: echo hello &quot;$@&quot;
-  multi-liner: |
-    if test &quot;${debian}&quot; = &quot;yes&quot;
-    then
-        apt install rust-all
-    else
-  multi-statement-and-multi-liner:
-    - echo a $1
-    - |
-      echo b $3
-      echo c $4
+    one-line: echo hello &quot;$@&quot;
+    multi-line: |
+        if test &quot;${debian}&quot; = &quot;yes&quot;
+        then
+            sudo apt install rust-all
+        fi
+    multiple-commands:
+        - echo a $1 ${name}
+        - |
+            echo b $3
+            echo c $4
+
 variables:
-  name: value
-  debian: $ type apt-get &gt;/dev/null &amp;&amp; echo yes || echo no
+    debian: $ type apt-get &gt;/dev/null &amp;&amp; echo yes || echo no
+    name: value
+
 # Commands can also be defined at tree and garden scope
 trees:
-  our-tree:
-    commands:
-      tree-cmd: echo ${TREE_NAME}
+    our-tree:
+        commands:
+            tree-cmd: echo ${TREE_NAME}
+
 gardens:
-  all:
-    trees: &quot;*&quot;
-    commands:
-      print-pwd: pwd
+    all:
+        trees: &quot;*&quot;
+        commands:
+            print-pwd: pwd
 </code></pre>
 <h4 id="shebang--commands"><a class="header" href="#shebang--commands">Shebang (#!) Commands</a></h4>
 <p>Custom command shells can be used on a per-command basis by using a <code>#!&lt;command&gt;</code>
@@ -457,10 +460,10 @@ shebang line as the start of a multi-line command.</p>
 <p>The command specified in the <code>#!</code> shebang line <em>must</em> accept a command string as the
 next argument to the specified command.</p>
 <pre><code class="language-yaml">commands:
-  python-cmd: |
-    #!python3 -c
-    import sys
-    print(sys.implementation)
+    python-cmd: |
+        #!python3 -c
+        import sys
+        print(sys.implementation)
 </code></pre>
 <p>Using <code>#!python3 -c</code> as the shebang line, as demonstrated above in the <code>python-cmd</code>
 command, will result in the remainder of the command getting passed as the next argument.</p>
@@ -470,9 +473,9 @@ the <code>garden python-cmd</code> command is run.</p>
 <p>The <code>garden.shell</code> configuration value controls which shell interpreter
 is used to interpret custom commands.</p>
 <pre><code class="language-yaml">garden:
-  shell: zsh  # zsh is used by default when available. Uses bash, dash or sh otherwise.
-  shell-wordsplit: true  # Words are split by default in zsh using &quot;zsh -o shwordsplit&quot;
-  shell-errexit: true  # Non-zero exit status stops execution using &quot;zsh -e&quot;.
+    shell: zsh  # zsh is used by default when available. Uses bash, dash or sh otherwise.
+    shell-wordsplit: true  # Words are split by default in zsh using &quot;zsh -o shwordsplit&quot;
+    shell-errexit: true  # Non-zero exit status stops execution using &quot;zsh -e&quot;.
 </code></pre>
 <p><code>garden.shell</code> defaults to <code>zsh</code> when <code>zsh</code> is installed but can be set to any shell
 that accepts <code>-e</code> and <code>-c '&lt;string&gt;</code> options (for example <code>ksh</code>).
@@ -497,17 +500,17 @@ You can also opt-out of the <code>shwordsplit</code> behavior on a per-command b
 <h4 id="builtin-shells"><a class="header" href="#builtin-shells">Builtin Shells</a></h4>
 <p>The following values for <code>garden.shell</code> are understood directly by <code>garden</code> and
 the following commands are used when <code>garden</code> detects that these shells are
-configured.</p>
+configured. Not applicable (N/A) is denoted by <code>-</code>.</p>
 <div class="table-wrapper"><table><thead><tr><th>garden.shell</th><th>Command used for running commands</th><th>errexit=false</th><th>wordsplit=false</th></tr></thead><tbody>
-<tr><td><code>bun</code></td><td><code>bun -e</code></td><td>N/A</td><td>N/A</td></tr>
-<tr><td><code>bash</code></td><td><code>bash -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
-<tr><td><code>dash</code></td><td><code>dash -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
-<tr><td><code>ksh</code></td><td><code>ksh -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
-<tr><td><code>node</code></td><td><code>node -e</code></td><td>N/A</td><td>N/A</td></tr>
-<tr><td><code>nodejs</code></td><td><code>nodejs -e</code></td><td>N/A</td><td>N/A</td></tr>
-<tr><td><code>perl</code></td><td><code>perl -e</code></td><td>N/A</td><td>N/A</td></tr>
-<tr><td><code>ruby</code></td><td><code>ruby -e</code></td><td>N/A</td><td>N/A</td></tr>
-<tr><td><code>sh</code></td><td><code>sh -e -c</code></td><td>Omit <code>-e</code></td><td>N/A</td></tr>
+<tr><td><code>bun</code></td><td><code>bun -e</code></td><td>-</td><td>-</td></tr>
+<tr><td><code>bash</code></td><td><code>bash -e -c</code></td><td>Omit <code>-e</code></td><td>-</td></tr>
+<tr><td><code>dash</code></td><td><code>dash -e -c</code></td><td>Omit <code>-e</code></td><td>-</td></tr>
+<tr><td><code>ksh</code></td><td><code>ksh -e -c</code></td><td>Omit <code>-e</code></td><td>-</td></tr>
+<tr><td><code>node</code></td><td><code>node -e</code></td><td>-</td><td>-</td></tr>
+<tr><td><code>nodejs</code></td><td><code>nodejs -e</code></td><td>-</td><td>-</td></tr>
+<tr><td><code>perl</code></td><td><code>perl -e</code></td><td>-</td><td>-</td></tr>
+<tr><td><code>ruby</code></td><td><code>ruby -e</code></td><td>-</td><td>-</td></tr>
+<tr><td><code>sh</code></td><td><code>sh -e -c</code></td><td>Omit <code>-e</code></td><td>-</td></tr>
 <tr><td><code>zsh</code></td><td><code>zsh -e -o shwordsplit -c</code></td><td>Omit <code>-e</code></td><td>Omit <code>-o shwordsplit</code></td></tr>
 </tbody></table>
 </div>
@@ -525,17 +528,30 @@ namely <code>nodejs</code>, <code>perl</code> and <code>ruby</code>, which are a
 are expanded into their corresponding command-line.</p>
 <p>This allows you to specify <code>python3</code> as the shell because <code>garden</code> assumes that
 it can call <code>python3 -c &lt;string&gt;</code> to execute commands.</p>
-<pre><code class="language-yaml">garden:
-  shell: python3  # Uses &quot;python -c &lt;string&gt;&quot; to run commands.
+<pre><code class="language-yaml"># This uses &quot;python -c &lt;string&gt;&quot; to run commands.
+garden:
+    shell: python3
 commands:
-  greet: print('hello')  # Interpreted by python3.
+    hello: print('hello world')
+    info: |
+        import platform
+        print(platform.platform())
 
 # Builtin shorthand shell values are special-cased internally.
+# This uses &quot;zsh -o shwordsplit -e -c &lt;string&gt;&quot; to run commands.
 garden:
-   shell: zsh  # Uses &quot;zsh -o shwordsplit -e -c &lt;string&gt;&quot; to run commands.
+    shell: zsh
 
+# This uses &quot;bash -e -c &lt;string&gt;&quot; to run commands.
 garden:
-   shell: bash  # Uses &quot;bash -e -c &lt;string&gt;&quot; to run commands.
+    shell: bash
+
+# Use &quot;#!&quot; shebang lines to use a custom interpreters for a command.
+commands:
+    info: |
+        #!python3 -c
+        import platform
+        print(platform.platform())
 </code></pre>
 <p><code>garden.shell</code> also allows you to completely override the command used for interpreting
 custom commands. When you specify a command line with multiple arguments then <code>garden</code>
@@ -546,11 +562,11 @@ The <code>garden.shell-wordsplit</code> and <code>garden.shell-errexit</code> op
 when using custom shell commands.</p>
 <pre><code class="language-yaml"># Use &quot;zsh -c&quot; directly without &quot;-o shwordsplit&quot; and &quot;-e&quot;.
 garden:
-  shell: zsh -c
+    shell: zsh -c
 
 # Additional examples.
 garden:
-  shell: python3 -s -u -c
+    shell: python3 -s -u -c
 </code></pre>
 <h3 id="shell-syntax"><a class="header" href="#shell-syntax">Shell Syntax</a></h3>
 <p>User-defined Commands and Exec Expressions are evaluated by the shell configured
@@ -563,9 +579,9 @@ in the <code>garden.shell</code> configuration value.</p>
 a subset of the full syntax because shell-only variables such as <code>${OSTYPE}</code> cannot
 be accessed using the braced-variable syntax.</p>
 <pre><code class="language-yaml">commands:
-  example-command: |
-    shell_variable=$(date +%s)
-    echo hello $OSTYPE $shell_variable
+    example-command: |
+        shell_variable=$(date +%s)
+        echo hello $OSTYPE $shell_variable
 </code></pre>
 <p>The plain <code>$variable</code> syntax is reserved for use by the shell commands used in
 user-defined Commands and Exec Expressions.</p>
@@ -640,14 +656,14 @@ run after the command.</p>
 </li>
 </ul>
 <pre><code class="language-yaml">commands:
-  custom-cmd: echo custom-cmd
-  custom-cmd&lt;: pre
-  custom-cmd&gt;:
-    - post1
-    - post2
-  pre: echo before
-  post1: echo after1
-  post1: echo after2
+    custom-cmd: echo custom-cmd
+    custom-cmd&lt;: pre
+    custom-cmd&gt;:
+        - post1
+        - post2
+    pre: echo before
+    post1: echo after1
+    post2: echo after2
 </code></pre>
 <p>Running <code>garden custom-cmd</code> with the above configuration runs the following commands:</p>
 <pre><code># pre
@@ -713,12 +729,12 @@ you can configure <code>garden.interactive-shell</code>. This value overrides <c
 and is only used by the <code>garden shell</code> command.</p>
 <pre><code class="language-yaml"># Launch a fish login shell for &quot;garden shell&quot;.
 garden:
-  interactive-shell: fish
+    interactive-shell: fish
 </code></pre>
 <p>Arbitrary command interpreters can be specified.</p>
 <pre><code class="language-yaml"># Launch a python interpreter for &quot;garden shell&quot;.
 garden:
-  interactive-shell: python3 -B
+    interactive-shell: python3 -B
 </code></pre>
 <h2 id="garden-ls"><a class="header" href="#garden-ls">garden ls</a></h2>
 <pre><code>garden ls [options] [&lt;tree-query&gt;...]
