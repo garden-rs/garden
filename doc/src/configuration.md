@@ -407,13 +407,16 @@ trees:
         url: git://git.kernel.org/pub/scm/git/git.git
         remotes:
             gitster: https://github.com/gitster/git.git
-            gitlab: https://gitlab.com/gitlab-org/git.git
+            gitlab: https://gitlab.com/git-vcs/git.git
             github: https://github.com/git/git.git
         commands:
             build: make all -j ${num_procs} "$@"
             test: make test "$@"
         variables:
             num_procs: $ nproc 2>/dev/null || sysctl -n hw.activecpu 2>/dev/null || echo 4
+        links:
+            - "https://gitgitgadget.github.io/"
+            - "https://github.com/gitgitgadget/git/issues"
 ```
 
 All fields are more or less optional. The `path` field defaults to the same
@@ -486,6 +489,11 @@ trees:
             kernel.org: git://git.kernel.org/pub/scm/git/git.git
             gitster: https://github.com/gitster/git.git
 ```
+
+### Links
+
+The `links` field allows you to specify a list of related URLs.
+Links are displayed by `garden ls` and are clickable when using a capable terminal.
 
 
 ## Templates
