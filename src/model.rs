@@ -469,6 +469,35 @@ impl Tree {
             &self.worktree,
         )
     }
+
+    /// Return the remote associated with a branch to checkout.
+    pub(crate) fn get_remote_for_branch(
+        &self,
+        eval_context: &EvalContext,
+        branch: &str,
+    ) -> Option<String> {
+        let remote_branch = self.get_upstream_branch(eval_context, branch)?;
+        let remote = remote_branch.split_once('/')?.0;
+        if self.remotes.contains_key(remote) {
+            Some(remote.to_string())
+        } else {
+            None
+        }
+    }
+
+    /// Return the remote branch associated with a local branch.
+    pub(crate) fn get_upstream_branch(
+        &self,
+        eval_context: &EvalContext,
+        branch: &str,
+    ) -> Option<String> {
+        if branch.is_empty() {
+            return None;
+        }
+        self.branches
+            .get(branch)
+            .map(|remote_branch_var| eval_context.tree_variable(remote_branch_var))
+    }
 }
 
 #[derive(Clone, Debug, Default)]

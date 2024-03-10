@@ -559,6 +559,42 @@ fn grow_default_remote_url() -> Result<()> {
     Ok(())
 }
 
+/// `garden grow` will fetch remotes before creating a local
+/// branch when that branch is associated with a different remote.
+#[test]
+#[named]
+fn grow_branch_from_non_default_remote() -> Result<()> {
+    let fixture = BareRepoFixture::new(function_name!());
+    // garden grow example/default-remote-url
+    exec_garden(&[
+        "--verbose",
+        "--verbose",
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        "tests/data/branches.yaml",
+        "grow",
+        "custom-remote",
+    ])?;
+
+    let repo = fixture.worktree("custom-remote");
+    let cmd_local_branch = ["git", "rev-parse", "custom-branch"];
+    let cmd_upstream_branch = ["git", "rev-parse", "custom/default"];
+    let local_id = assert_cmd_capture(&cmd_local_branch, &repo);
+    let upstream_id = assert_cmd_capture(&cmd_upstream_branch, &repo);
+    assert_eq!(local_id, upstream_id);
+
+    let cmd_upstream_name = ["git", "config", "branch.custom-branch.remote"];
+    let upstream_name = assert_cmd_capture(&cmd_upstream_name, &repo);
+    assert_eq!(upstream_name, "custom");
+
+    let cmd_upstream_name = ["git", "config", "branch.custom-branch.merge"];
+    let upstream_name = assert_cmd_capture(&cmd_upstream_name, &repo);
+    assert_eq!(upstream_name, "refs/heads/dev");
+
+    Ok(())
+}
+
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
 fn eval_garden_config_dir() {
@@ -2014,6 +2050,7 @@ fn cmd_prune_depth() -> Result<()> {
     let fixture = BareRepoFixture::new(function_name!());
     // garden grow examples/tree creates "example/tree".
     exec_garden(&[
+        "--verbose",
         "--verbose",
         "--chdir",
         &fixture.root(),

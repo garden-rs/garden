@@ -24,7 +24,6 @@ pub struct GrowOptions {
 pub fn main(app_context: &model::ApplicationContext, options: &GrowOptions) -> Result<()> {
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose;
-
     let mut exit_status = errors::EX_OK;
     let mut configured_worktrees: HashSet<String> = HashSet::new();
     for query in &options.queries {
@@ -114,12 +113,14 @@ fn grow_tree_from_context(
         errors::GardenError::OSError(format!("unable to create {parent:?}: {err}"))
     })?;
 
+    let branch = tree.eval_branch(eval_context);
     if pathbuf.exists() {
         return update_tree_from_context(
             eval_context,
             configured_worktrees,
             &pathbuf,
-            None,
+            &branch,
+            false,
             quiet,
             verbose,
         );
@@ -165,9 +166,14 @@ fn grow_tree_from_context(
     }
 
     // "git clone --branch=name" clones the named branch.
-    let branch = tree.eval_branch(eval_context);
+    // We can only use this when the branch to clone is coming from the default remote.
+    // If the configured branch is associated with a different remote then we will omit this option
+    // and defer creating the branch until after we fetch its associated remote in
+    // update_tree_from_context().
+    let remote_for_branch = tree.get_remote_for_branch(eval_context, &branch);
+    let upstream_branch = tree.get_upstream_branch(eval_context, &branch);
     let branch_opt;
-    if !branch.is_empty() && !tree.branches.contains_key(&branch) {
+    if !branch.is_empty() && upstream_branch.is_none() && remote_for_branch.is_none() {
         branch_opt = format!("--branch={branch}");
         cmd.push(&branch_opt);
     }
@@ -207,13 +213,15 @@ fn grow_tree_from_context(
         eval_context,
         configured_worktrees,
         &pathbuf,
-        Some(&branch),
+        &branch,
+        true,
         quiet,
         verbose,
     )?;
     if status != errors::EX_OK {
         exit_status = status;
     }
+
     Ok(exit_status)
 }
 
@@ -240,7 +248,8 @@ fn update_tree_from_context(
     eval_context: &model::EvalContext,
     configured_worktrees: &mut HashSet<String>,
     path: &std::path::Path,
-    branch: Option<&str>,
+    branch: &str,
+    checkout: bool,
     _quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
@@ -306,6 +315,9 @@ fn update_tree_from_context(
                 print_command_str(&command.join(" "));
             }
             let exec = cmd::exec_in_dir(&command, path);
+            if verbose > 1 {
+                print_command_str(&command.join(" "));
+            }
             let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
@@ -331,6 +343,19 @@ fn update_tree_from_context(
             let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
+            }
+
+            let remote_for_branch = tree.get_remote_for_branch(eval_context, branch);
+            if Some(remote) == remote_for_branch.as_ref() {
+                let command = ["git", "fetch", &remote];
+                if verbose > 1 {
+                    print_command_str(&command.join(" "));
+                }
+                let exec = cmd::exec_in_dir(&command, path);
+                let status = cmd::status(exec);
+                if status != errors::EX_OK {
+                    exit_status = status;
+                }
             }
         }
     }
@@ -367,6 +392,9 @@ fn update_tree_from_context(
                 let remote_branch = eval_context.tree_variable(expr);
                 if !remote_branch.is_empty() {
                     let command = ["git", "branch", "--track", branch, remote_branch.as_str()];
+                    if verbose > 1 {
+                        print_command_str(&command.join(" "));
+                    }
                     let exec = cmd::exec_in_dir(&command, path);
                     let status = cmd::status(exec);
                     if status != errors::EX_OK {
@@ -378,14 +406,12 @@ fn update_tree_from_context(
     }
 
     // Checkout the configured branch if we are creating the repository initially.
-    if let Some(branch) = branch {
-        if tree.branches.contains_key(branch) {
-            let command = ["git", "checkout", branch];
-            let exec = cmd::exec_in_dir(&command, path);
-            let status = cmd::status(exec);
-            if status != errors::EX_OK {
-                exit_status = status;
-            }
+    if checkout && !branch.is_empty() && tree.branches.contains_key(branch) {
+        let command = ["git", "checkout", branch];
+        let exec = cmd::exec_in_dir(&command, path);
+        let status = cmd::status(exec);
+        if status != errors::EX_OK {
+            exit_status = status;
         }
     }
 
