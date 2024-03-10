@@ -10,7 +10,7 @@
 - [Examples](examples.md)
   - [Photo Restoration](examples/photo-restoration.md)
   - [Git Cola](examples/git-cola.md)
-  - [Custom Interpreters](examples/command-interpreters.md)
+  - [Command Interpreters](examples/command-interpreters.md)
   - [Python](examples/python.md)
   - [Node](examples/node.md)
 - [Changelog](changelog.md)
