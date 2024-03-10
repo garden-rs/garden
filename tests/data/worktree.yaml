@@ -1,19 +1,19 @@
 garden:
-  root: ""
+    root: ""
 
 variables:
-  repos: ${GARDEN_ROOT}/repos
-  worktree_parent: default
+    repos: ${GARDEN_ROOT}/repos
+    worktree_parent: default
 
 templates:
-  echo:
-    commands:
-      echo: echo ${TREE_NAME} "$@"
+    echo:
+        commands:
+            echo: echo ${TREE_NAME} "$@"
 
 trees:
-  default:
-    templates: echo
-    url: file:///${repos}/example.git
-  dev:
-    worktree: ${worktree_parent}
-    branch: dev
+    default:
+        templates: echo
+        url: file:///${repos}/example.git
+    dev:
+        worktree: ${worktree_parent}
+        branch: dev

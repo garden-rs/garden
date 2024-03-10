@@ -1,10 +1,10 @@
 ---
 variables:
-  current_config: graft-test
-  test_graft_variable: test graft value
-  test_graft_repos: ../../repos
-  test_graft_example_url: ${repos}/example.git
+    current_config: graft-test
+    test_graft_variable: test graft value
+    test_graft_repos: ../../repos
+    test_graft_example_url: ${repos}/example.git
 
 trees:
-  graft-test-tree: ${example_url}
-  graft-test-core: ${repos}/core.git
+    graft-test-tree: ${example_url}
+    graft-test-core: ${repos}/core.git

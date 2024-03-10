@@ -1,13 +1,9 @@
 # Demo using "python3" as the interpreter for custom commands.
 garden:
-  shell: python3
+    shell: python3
 
-trees:
-  python:
-    description: Demo using "python3" as the interpreter for custom commands
-    path: ${GARDEN_CONFIG_DIR}
-    commands:
-      hello: |
+commands:
+    hello: |
         import sys
         # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
         args = sys.argv[1:]  # additional arguments specified after '--'
@@ -16,13 +12,15 @@ trees:
         else:
             world = 'world'
         print(f'hello {world}')
-      info: |
+
+    info: |
         import os
         import sys
         print(f'os.name = {os.name}')
         print(f'sys.platform = {sys.platform}')
         print(r'sys.int_info = {sys.int_info}')
         print('uname = ${uname}')
+
+variables:
     # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
-    variables:
-      uname: $ uname -a
+    uname: $ uname -a

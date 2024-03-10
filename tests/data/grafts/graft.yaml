@@ -1,32 +1,32 @@
 ---
 garden:
-  root: ""
+    root: ""
 
 grafts:
-  deps: deps.yaml
-  test:
-    config: test.yaml
-    root: ${GARDEN_CONFIG_DIR}/test
+    deps: deps.yaml
+    test:
+        config: test.yaml
+        root: ${GARDEN_CONFIG_DIR}/test
 
 variables:
-  current_config: graft
-  variable: graft value
-  repos: ../repos
-  example_url: ${repos}/example.git
+    current_config: graft
+    variable: graft value
+    repos: ../repos
+    example_url: ${repos}/example.git
 
 groups:
-  prebuilt-group:
-    - prebuilt
-    - prebuilt2
+    prebuilt-group:
+        - prebuilt
+        - prebuilt2
 
 trees:
-  graft: ${example_url}
-  core: ${repos}/core.git
-  prebuilt:
-    path: trees/prebuilt
-  prebuilt2:
-    path: trees/prebuilt
-  grafted-env:
-    environment:
-      GARDEN_ENV_PATH: ${TREE_PATH}
-      GARDEN_ENV_VALUE: graft/${TREE_NAME}/env/value
+    graft: ${example_url}
+    core: ${repos}/core.git
+    prebuilt:
+        path: trees/prebuilt
+    prebuilt2:
+        path: trees/prebuilt
+    grafted-env:
+        environment:
+            GARDEN_ENV_PATH: ${TREE_PATH}
+            GARDEN_ENV_VALUE: graft/${TREE_NAME}/env/value

@@ -1,29 +1,29 @@
 ---
 trees:
-  tree-echo-nested:
-    templates: echo-template
-    variables:
-      template-variable: nested
-      tree-variable: nested
-      tree-override: nested
-  tree-echo-extended-tree-inner:
-    extend: tree-echo-nested
-    variables:
-      template-variable: extended-tree
-      tree-override: extended-tree
-  # This tree is overridden by the top-level garden.yaml.
-  # The variables provided here should get overridden by the top-level variables.
-  tree-echo-extended-tree:
-    extend: tree-echo-nested
-    variables:
-      template-variable: extended-tree
-      tree-override: extended-tree
-      extended-variable: extended-tree
+    tree-echo-nested:
+        templates: echo-template
+        variables:
+            template-variable: nested
+            tree-variable: nested
+            tree-override: nested
+    tree-echo-extended-tree-inner:
+        extend: tree-echo-nested
+        variables:
+            template-variable: extended-tree
+            tree-override: extended-tree
+            # This tree is overridden by the top-level garden.yaml.
+            # The variables provided here should get overridden by the top-level variables.
+    tree-echo-extended-tree:
+        extend: tree-echo-nested
+        variables:
+            template-variable: extended-tree
+            tree-override: extended-tree
+            extended-variable: extended-tree
 
-  replacement-tree:
-    url: https://example.com/original/tree
-    variables:
-      tree-variable: inner-replacement-tree
-    commands:
-      tree-command: echo replacement-tree
+    replacement-tree:
+        url: https://example.com/original/tree
+        variables:
+            tree-variable: inner-replacement-tree
+        commands:
+            tree-command: echo replacement-tree
 ...

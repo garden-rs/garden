@@ -8,117 +8,117 @@
 # Variables can be set externally. e.g.:
 #   garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc
 variables:
-  cargo_package: garden-tools
-  DESTDIR: ""
-  prefix: ~/.cargo
-  bindir: ${prefix}/bin
-  docdir: ${prefix}/share/doc/garden
-  mdbook: mdbook
+    cargo_package: garden-tools
+    DESTDIR: ""
+    prefix: ~/.cargo
+    bindir: ${prefix}/bin
+    docdir: ${prefix}/share/doc/garden
+    mdbook: mdbook
 
 # usage:
 #   garden <cmd> [<tree-query>] [-- [<args>]]
 commands:
-  bench: cargo bench "$@"
-  build: cargo build "$@"
-  check<:
-    - check/fmt
-    - check/clippy
-    - test
-  check/clippy: cargo clippy --all "$@" -- -D warnings
-  check/fmt: cargo fmt --check "$@"
-  clean: cargo clean "$@"
-  commit: git commit "$@"
-  coverage: cargo kcov "$@"
-  diff: git diff "$@"
-  diffs: git diff --staged "$@"
-  doc: |
-    cargo doc --no-deps --package ${cargo_package} "$@"
-    cd doc
-    ${mdbook} build --dest-dir book.new
-    rsync -r --delete --exclude=.git book.new/ book/
-    rm -rf book.new
-  fix: cargo clippy --all --fix "$@" -- -D warnings
-  fmt: cargo fmt "$@"
-  git: git "$@"
-  install: cargo install --path . --root "${DESTDIR}${prefix}"
-  install-doc<: doc
-  install-doc: |
-    mkdir -p "${DESTDIR}${docdir}"
-    rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
-  push: git push "$@"
-  setup: |
-    git fetch -q pages 2>/dev/null || (
-    cat <<-\EOF
+    bench: cargo bench "$@"
+    build: cargo build "$@"
+    check<:
+        - check/fmt
+        - check/clippy
+        - test
+    check/clippy: cargo clippy --all "$@" -- -D warnings
+    check/fmt: cargo fmt --check "$@"
+    clean: cargo clean "$@"
+    commit: git commit "$@"
+    coverage: cargo kcov "$@"
+    diff: git diff "$@"
+    diffs: git diff --staged "$@"
+    doc: |
+        cargo doc --no-deps --package ${cargo_package} "$@"
+        cd doc
+        ${mdbook} build --dest-dir book.new
+        rsync -r --delete --exclude=.git book.new/ book/
+        rm -rf book.new
+    fix: cargo clippy --all --fix "$@" -- -D warnings
+    fmt: cargo fmt "$@"
+    git: git "$@"
+    install: cargo install --path . --root "${DESTDIR}${prefix}"
+    install-doc<: doc
+    install-doc: |
+        mkdir -p "${DESTDIR}${docdir}"
+        rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
+    push: git push "$@"
+    setup: |
+        git fetch -q pages 2>/dev/null || (
+        cat <<-\EOF
 
-    error: The "pages" remote is not available.
+        error: The "pages" remote is not available.
 
-    To fix this, run this command and try again:
+        To fix this, run this command and try again:
 
-        garden grow .
+            garden grow .
 
-    EOF
-      return 1
-    )
-    garden ${GARDEN_CMD_VERBOSE} grow doc
-    garden ${GARDEN_CMD_VERBOSE} grow homebrew
-  stage: git add --update "$@"
-  stat: git status --short "$@"
-  status: git status "$@"
-  test: cargo test "$@"
-  update: cargo update "$@"
-  watch: cargo watch --shell "garden ${GARDEN_CMD_VERBOSE} build && garden ${GARDEN_CMD_VERBOSE} check"
+        EOF
+            return 1
+        )
+        garden ${GARDEN_CMD_VERBOSE} grow doc
+        garden ${GARDEN_CMD_VERBOSE} grow homebrew
+    stage: git add --update "$@"
+    stat: git status --short "$@"
+    status: git status "$@"
+    test: cargo test "$@"
+    update: cargo update "$@"
+    watch: cargo watch --shell "garden ${GARDEN_CMD_VERBOSE} build && garden ${GARDEN_CMD_VERBOSE} check"
 
 # Trees define named repositories where commands are run.
 trees:
-  garden:
-    description: Garden grows and cultivates collections of Git trees
-    path: ${GARDEN_CONFIG_DIR}
-    url: "git@gitlab.com:garden-rs/garden.git"
-    remotes:
-      garden: "git@gitlab.com:garden-rs/garden.git"
-      davvid: "git@gitlab.com:davvid/garden.git"
-      github: "git@github.com:davvid/garden.git"
-      jtietema: "git@github.com:jtietema/garden.git"
-      slackline: "git@github.com:slackline/garden.git"
-      pages: "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
-    gitconfig:
-      remote.origin.pushurl:
-        - "git@gitlab.com:garden-rs/garden.git"
-        - "git@github.com:davvid/garden.git"
-      branch.pages.remote: pages
-      remote.pages.pushurl:
-        - "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
-        - "git@github.com:davvid/garden.git"
-    links:
-      - "https://garden-rs.gitlab.io"
-      - "https://crates.io/crates/garden-tools"
-      - "https://docs.rs/garden-tools/latest/garden/"
-      - "https://lib.rs/crates/garden-tools"
-      - "https://gitlab.com/garden-rs/garden"
-      - "https://github.com/davvid/garden"
-  doc:
-    description: Prebuilt garden user manual for garden-rs.gitlab.io
-    path: doc/book
-    worktree: garden
-    branch: pages
-    branches:
-      pages: pages/pages
-  homebrew:
-    description: Homebrew tap for installing Garden on macOS
-    url: "git@gitlab.com:garden-rs/homebrew-garden.git"
-    remotes:
-      davvid: "git@github.com:davvid/homebrew-garden.git"
-    gitconfig:
-      remote.origin.pushurl:
-        - "git@gitlab.com:garden-rs/homebrew-garden.git"
-        - "git@github.com:davvid/homebrew-garden.git"
-    links:
-      - "https://gitlab.com/garden-rs/homebrew-garden"
+    garden:
+        description: Garden grows and cultivates collections of Git trees
+        path: ${GARDEN_CONFIG_DIR}
+        url: "git@gitlab.com:garden-rs/garden.git"
+        remotes:
+            garden: "git@gitlab.com:garden-rs/garden.git"
+            davvid: "git@gitlab.com:davvid/garden.git"
+            github: "git@github.com:davvid/garden.git"
+            jtietema: "git@github.com:jtietema/garden.git"
+            slackline: "git@github.com:slackline/garden.git"
+            pages: "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
+        gitconfig:
+            remote.origin.pushurl:
+                - "git@gitlab.com:garden-rs/garden.git"
+                - "git@github.com:davvid/garden.git"
+            branch.pages.remote: pages
+            remote.pages.pushurl:
+                - "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
+                - "git@github.com:davvid/garden.git"
+        links:
+            - "https://garden-rs.gitlab.io"
+            - "https://crates.io/crates/garden-tools"
+            - "https://docs.rs/garden-tools/latest/garden/"
+            - "https://lib.rs/crates/garden-tools"
+            - "https://gitlab.com/garden-rs/garden"
+            - "https://github.com/davvid/garden"
+    doc:
+        description: Prebuilt garden user manual for garden-rs.gitlab.io
+        path: doc/book
+        worktree: garden
+        branch: pages
+        branches:
+            pages: pages/pages
+    homebrew:
+        description: Homebrew tap for installing Garden on macOS
+        url: "git@gitlab.com:garden-rs/homebrew-garden.git"
+        remotes:
+            davvid: "git@github.com:davvid/homebrew-garden.git"
+        gitconfig:
+            remote.origin.pushurl:
+                - "git@gitlab.com:garden-rs/homebrew-garden.git"
+                - "git@github.com:davvid/homebrew-garden.git"
+        links:
+            - "https://gitlab.com/garden-rs/homebrew-garden"
 
 # Named groups for convenience. Use the "all" group to run a command over all trees.
 # e.g.: "garden stat all"
 groups:
-  all:
-    - garden
-    - doc
-    - homebrew
+    all:
+        - garden
+        - doc
+        - homebrew

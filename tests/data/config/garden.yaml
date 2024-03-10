@@ -1,3 +1,3 @@
 trees:
-  current:
-    path: ${GARDEN_CONFIG_DIR}
+    current:
+        path: ${GARDEN_CONFIG_DIR}

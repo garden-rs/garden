@@ -1,7 +1,5 @@
----
 garden:
-  includes: variables-transitive.yaml
+    includes: variables-transitive.yaml
 
 variables:
-  var_1: ONE
-...
+    var_1: ONE

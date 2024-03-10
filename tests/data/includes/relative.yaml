@@ -1,5 +1,5 @@
 garden:
-  includes:
-    - variables.yaml
-    - templates.yaml
-    - trees.yaml
+    includes:
+        - variables.yaml
+        - templates.yaml
+        - trees.yaml
