@@ -426,7 +426,7 @@ fn update_tree_from_context(
 
     // Checkout the configured branch if we are creating the repository initially.
     if checkout && !branch.is_empty() && tree.branches.contains_key(branch) {
-        let command = ["git", "checkout", branch];
+        let command = ["git", "checkout", branch, "--"];
         let exec = cmd::exec_in_dir(&command, path);
         let status = cmd::status(exec);
         if status != errors::EX_OK {
