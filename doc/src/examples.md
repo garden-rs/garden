@@ -18,9 +18,9 @@ The "Git Cola" example sets up a development environment for
 uses garden as a command runner, to keep track of development forks, and to gather
 associated trees without the overhead of using submodules.
 
-## Custom Interpreters
+## Command Interpreters
 
-The "Custom Interpreters" example demonstrates how to use a custom interpreter
+The "Command Interpreters" example demonstrates how to use a custom interpreter
 on a per-command basis.
 
 ## Python

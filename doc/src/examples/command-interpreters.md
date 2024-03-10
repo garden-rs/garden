@@ -14,5 +14,5 @@ garden hello -- cat
 ## garden.yaml
 
 ```yaml
-{{#include custom-interpreters/garden.yaml}}
+{{#include command-interpreters/garden.yaml}}
 ```
