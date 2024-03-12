@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
+        uses: styfle/cancel-workflow-action@0.12.1
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy --no-self-update
       - uses: Swatinem/rust-cache@v2
       - run: cargo install --path .
@@ -24,9 +24,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
+        uses: styfle/cancel-workflow-action@0.12.1
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - run: rustup toolchain install stable --profile minimal --no-self-update
       - uses: Swatinem/rust-cache@v2
       - run: cargo install mdbook
@@ -44,9 +44,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@0.11.0
+        uses: styfle/cancel-workflow-action@0.12.1
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - run: git config --global init.defaultBranch main
       - run: git config --global user.email garden-tools@crates.io
       - run: git config --global user.name Garden
