@@ -24,6 +24,10 @@ before creating the local branch.
 is UNIX-only and disabled on Windows.
 ([#17](https://gitlab.com/garden-rs/garden/-/issues/17))
 
+- [yaml-rust2](https://crates.io/crates/yaml-rust2) is now used instead of
+the [yaml-rust-davvid](https://crates.io/crates/yaml-rust-davvid) fork that was
+being maintained by [@davvid](https://github.com/davvid) for use by garden.
+
 
 ## v1.3.0
 

@@ -75,6 +75,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ad32ce52e4161730f7098c077cd2ed6229b5804ccf99e5366be1ab72a98b4e1"
 
 [[package]]
+name = "arraydeque"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d902e3d592a523def97af8f317b08ce16b7ab854c1985a0c671e6f15cebc236"
+
+[[package]]
 name = "assert_cmd"
 version = "2.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -408,7 +414,7 @@ dependencies = [
  "thiserror",
  "which",
  "xdg",
- "yaml-rust-davvid",
+ "yaml-rust2",
  "yansi",
 ]
 
@@ -1026,11 +1032,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "213b7324336b53d2414b2db8537e56544d981803139155afa84f76eeebb7a546"
 
 [[package]]
-name = "yaml-rust-davvid"
-version = "0.6.0"
+name = "yaml-rust2"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2f8a17c9120b0ec12c1052f32937ff984e383f937b65515f872d4e0e23622c3"
+checksum = "777f823b2efee8266b47d35cc79ab1130250c2e4d5dbd3baf0bf3f776ea03a0a"
 dependencies = [
+ "arraydeque",
  "encoding",
  "hashlink",
 ]
