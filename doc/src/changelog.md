@@ -20,9 +20,9 @@ Previously, branches associated with non-default remotes could not be created un
 they were fetched beforehand. `garden grow` will now fetch the associated remote
 before creating the local branch.
 
-- `garden grow` now detects empty tree directories (e.g. the directories when using
-Git submodules) and will remove empty directories before cloning a repository into
-the same location.
+- `garden grow` now detects empty directories (e.g. the directories that are created
+when using uninitialized Git submodules) and will properly clone into the empty directories
+instead of treating them like an already-grown tree.
 ([#30](https://github.com/davvid/garden/pull/30))
 
 **Development**:
