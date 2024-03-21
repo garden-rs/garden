@@ -204,9 +204,9 @@ they were fetched beforehand. <code>garden grow</code> will now fetch the associ
 before creating the local branch.</p>
 </li>
 <li>
-<p><code>garden grow</code> now detects empty tree directories (e.g. the directories when using
-Git submodules) and will remove empty directories before cloning a repository into
-the same location.
+<p><code>garden grow</code> now detects empty directories (e.g. the directories that are created
+when using uninitialized Git submodules) and will properly clone into the empty directories
+instead of treating them like an already-grown tree.
 (<a href="https://github.com/davvid/garden/pull/30">#30</a>)</p>
 </li>
 </ul>
