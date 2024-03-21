@@ -18,6 +18,10 @@ Previously, branches associated with non-default remotes could not be created un
 they were fetched beforehand. `garden grow` will now fetch the associated remote
 before creating the local branch.
 
+- `garden grow` now detects empty tree directories (e.g. the directories when using
+Git submodules) and will remove empty directories before cloning a repository into
+the same location.
+
 **Development**:
 
 - `garden` can now be built on Windows. Symlink trees and the XDG base directory support
