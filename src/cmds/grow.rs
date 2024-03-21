@@ -114,7 +114,7 @@ fn grow_tree_from_context(
     })?;
 
     let branch = tree.eval_branch(eval_context);
-    if pathbuf.exists() {
+    if is_valid_tree(&pathbuf) {
         return update_tree_from_context(
             eval_context,
             configured_worktrees,
@@ -665,4 +665,25 @@ fn grow_symlink(
     }
 
     Ok(errors::EX_OK)
+}
+
+/// Return true if the path is a valid Git worktree.
+fn is_valid_tree(path: &std::path::Path) -> bool {
+    if !path.exists() {
+        return false;
+    }
+
+    // Is this directory empty?
+    let Ok(read_dir) = path.read_dir() else {
+        return false;
+    };
+    let num_entries = read_dir.count();
+    if num_entries == 0 {
+        return false;
+    }
+
+    let mut git_path = path.to_path_buf();
+    git_path.push(".git");
+
+    git_path.exists()
 }
