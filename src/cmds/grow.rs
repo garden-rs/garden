@@ -247,7 +247,7 @@ fn print_command_str(cmd: &str) {
 fn update_tree_from_context(
     eval_context: &model::EvalContext,
     configured_worktrees: &mut HashSet<String>,
-    path: &std::path::Path,
+    path: &dyn AsRef<std::path::Path>,
     branch: &str,
     checkout: bool,
     _quiet: bool,
@@ -292,7 +292,7 @@ fn update_tree_from_context(
     let mut existing_remotes = HashSet::new();
     {
         let command = ["git", "remote"];
-        let exec = cmd::exec_in_dir(&command, path);
+        let exec = cmd::exec_in_dir(&command, path.as_ref());
         if let Ok(output) = cmd::stdout_to_string(exec) {
             for line in output.lines() {
                 existing_remotes.insert(String::from(line));
@@ -317,7 +317,7 @@ fn update_tree_from_context(
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            let exec = cmd::exec_in_dir(&command, path);
+            let exec = cmd::exec_in_dir(&command, path.as_ref());
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
@@ -330,7 +330,7 @@ fn update_tree_from_context(
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            let exec = cmd::exec_in_dir(&command, path);
+            let exec = cmd::exec_in_dir(&command, path.as_ref());
             let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
@@ -342,7 +342,7 @@ fn update_tree_from_context(
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            let exec = cmd::exec_in_dir(&command, path);
+            let exec = cmd::exec_in_dir(&command, path.as_ref());
             let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
@@ -355,7 +355,7 @@ fn update_tree_from_context(
                     print_command_str(&command.join(" "));
                 }
                 fetched_remotes.insert(remote.to_string());
-                let exec = cmd::exec_in_dir(&command, path);
+                let exec = cmd::exec_in_dir(&command, path.as_ref());
                 let status = cmd::status(exec);
                 if status != errors::EX_OK {
                     exit_status = status;
@@ -389,7 +389,7 @@ fn update_tree_from_context(
     // Create configured tracking branches.
     if !tree.branches.is_empty() {
         // Gather existing branches.
-        let branches = git::branches(path);
+        let branches = git::branches(path.as_ref());
         // Create all configured tracking branches.
         for (branch, expr) in &tree.branches {
             if !branches.contains(branch) {
@@ -404,7 +404,7 @@ fn update_tree_from_context(
                         if verbose > 1 {
                             print_command_str(&command.join(" "));
                         }
-                        let exec = cmd::exec_in_dir(&command, path);
+                        let exec = cmd::exec_in_dir(&command, path.as_ref());
                         let status = cmd::status(exec);
                         if status != errors::EX_OK {
                             exit_status = status;
@@ -415,7 +415,7 @@ fn update_tree_from_context(
                 if verbose > 1 {
                     print_command_str(&command.join(" "));
                 }
-                let exec = cmd::exec_in_dir(&command, path);
+                let exec = cmd::exec_in_dir(&command, path.as_ref());
                 let status = cmd::status(exec);
                 if status != errors::EX_OK {
                     exit_status = status;
@@ -427,7 +427,7 @@ fn update_tree_from_context(
     // Checkout the configured branch if we are creating the repository initially.
     if checkout && !branch.is_empty() && tree.branches.contains_key(branch) {
         let command = ["git", "checkout", branch, "--"];
-        let exec = cmd::exec_in_dir(&command, path);
+        let exec = cmd::exec_in_dir(&command, path.as_ref());
         let status = cmd::status(exec);
         if status != errors::EX_OK {
             exit_status = status;
@@ -441,7 +441,7 @@ fn update_tree_from_context(
 fn append_gitconfig_value(
     name: &str,
     value: &str,
-    path: &std::path::Path,
+    path: &dyn AsRef<std::path::Path>,
     config_map: &mut GitConfigMap,
 ) -> i32 {
     // If the config_map doesn't contain this variable then we need
@@ -450,7 +450,7 @@ fn append_gitconfig_value(
     let needs_cache = !config_map.contains_key(name);
     if needs_cache {
         let cmd = ["git", "config", "--get-all", name];
-        let exec = cmd::exec_in_dir(&cmd, path);
+        let exec = cmd::exec_in_dir(&cmd, path.as_ref());
         if let Ok(output) = cmd::stdout_to_string(exec) {
             let mut values = HashSet::new();
             for value in output.lines() {
@@ -469,7 +469,7 @@ fn append_gitconfig_value(
         if !values.contains(value) {
             values.insert(value.to_string());
             let command = ["git", "config", "--add", name, value];
-            let exec = cmd::exec_in_dir(&command, path);
+            let exec = cmd::exec_in_dir(&command, path.as_ref());
             status = cmd::status(exec)
         }
     }
@@ -478,9 +478,9 @@ fn append_gitconfig_value(
 }
 
 /// Set a simple gitconfig value.
-fn set_gitconfig_value(name: &str, value: &str, path: &std::path::Path) -> i32 {
+fn set_gitconfig_value(name: &str, value: &str, path: &dyn AsRef<std::path::Path>) -> i32 {
     let command = ["git", "config", name, value];
-    let exec = cmd::exec_in_dir(&command, path);
+    let exec = cmd::exec_in_dir(&command, path.as_ref());
 
     cmd::status(exec)
 }
@@ -669,7 +669,8 @@ fn grow_symlink(
 
 /// Returns true if the path doesn't exist or is an empty directory that can be cloned into using
 /// "git clone".
-fn is_empty_tree(path: &std::path::Path) -> bool {
+fn is_empty_tree(path: &dyn AsRef<std::path::Path>) -> bool {
+    let path = path.as_ref();
     if !path.exists() {
         return true;
     }
