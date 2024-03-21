@@ -23,6 +23,7 @@ before creating the local branch.
 - `garden grow` now detects empty tree directories (e.g. the directories when using
 Git submodules) and will remove empty directories before cloning a repository into
 the same location.
+([#30](https://github.com/davvid/garden/pull/30))
 
 **Development**:
 
@@ -33,6 +34,7 @@ is UNIX-only and disabled on Windows.
 - [yaml-rust2](https://crates.io/crates/yaml-rust2) is now used instead of
 the [yaml-rust-davvid](https://crates.io/crates/yaml-rust-davvid) fork that was
 being maintained by [@davvid](https://github.com/davvid) for use by garden.
+([#29](https://github.com/davvid/garden/pull/29))
 
 
 ## v1.3.0
