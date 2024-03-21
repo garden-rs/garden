@@ -61,8 +61,3 @@ command-line tools.
 
 The structure and content of the README and documentation was heavily inspired
 by the [mdbook documentation](https://github.com/rust-lang/mdBook).
-
-The [yaml-rust parser used by Garden](https://github.com/davvid/yaml-rust)
-is [@davvid](https://github.com/davvid)'s ([gitlab](https://gitlab.com/davvid))
-fork of the [original yaml-rust](https://github.com/chyh1990/yaml-rust) crate by
-[@chyh1990](https://github.com/chyh1990).
