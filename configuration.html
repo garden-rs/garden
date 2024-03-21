@@ -625,13 +625,16 @@ and custom commands.</p>
         url: git://git.kernel.org/pub/scm/git/git.git
         remotes:
             gitster: https://github.com/gitster/git.git
-            gitlab: https://gitlab.com/gitlab-org/git.git
+            gitlab: https://gitlab.com/git-vcs/git.git
             github: https://github.com/git/git.git
         commands:
             build: make all -j ${num_procs} &quot;$@&quot;
             test: make test &quot;$@&quot;
         variables:
             num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.activecpu 2&gt;/dev/null || echo 4
+        links:
+            - &quot;https://gitgitgadget.github.io/&quot;
+            - &quot;https://github.com/gitgitgadget/git/issues&quot;
 </code></pre>
 <p>All fields are more or less optional. The <code>path</code> field defaults to the same
 name as the tree, so the <code>path: git</code> setting above can be omitted without
@@ -682,6 +685,9 @@ This feature can also be used when multiple named remotes are configured.</p>
             kernel.org: git://git.kernel.org/pub/scm/git/git.git
             gitster: https://github.com/gitster/git.git
 </code></pre>
+<h3 id="links"><a class="header" href="#links">Links</a></h3>
+<p>The <code>links</code> field allows you to specify a list of related URLs.
+Links are displayed by <code>garden ls</code> and are clickable when using a capable terminal.</p>
 <h2 id="templates"><a class="header" href="#templates">Templates</a></h2>
 <p>Templates allow sharing of command, variable, gitconfig, and environment
 definitions across trees. Adding an entry to the <code>templates</code> configuration block

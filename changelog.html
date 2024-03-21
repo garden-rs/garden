@@ -183,6 +183,7 @@
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="v140"><a class="header" href="#v140">v1.4.0</a></h2>
+<p><em>Released 2024-03-21</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
@@ -202,12 +203,24 @@ Previously, branches associated with non-default remotes could not be created un
 they were fetched beforehand. <code>garden grow</code> will now fetch the associated remote
 before creating the local branch.</p>
 </li>
+<li>
+<p><code>garden grow</code> now detects empty tree directories (e.g. the directories when using
+Git submodules) and will remove empty directories before cloning a repository into
+the same location.</p>
+</li>
 </ul>
 <p><strong>Development</strong>:</p>
 <ul>
-<li><code>garden</code> can now be built on Windows. Symlink trees and the XDG base directory support
+<li>
+<p><code>garden</code> can now be built on Windows. Symlink trees and the XDG base directory support
 is UNIX-only and disabled on Windows.
-(<a href="https://gitlab.com/garden-rs/garden/-/issues/17">#17</a>)</li>
+(<a href="https://gitlab.com/garden-rs/garden/-/issues/17">#17</a>)</p>
+</li>
+<li>
+<p><a href="https://crates.io/crates/yaml-rust2">yaml-rust2</a> is now used instead of
+the <a href="https://crates.io/crates/yaml-rust-davvid">yaml-rust-davvid</a> fork that was
+being maintained by <a href="https://github.com/davvid">@davvid</a> for use by garden.</p>
+</li>
 </ul>
 <h2 id="v130"><a class="header" href="#v130">v1.3.0</a></h2>
 <p><em>Released 2024-02-19</em></p>
