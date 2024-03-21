@@ -2,6 +2,8 @@
 
 ## v1.4.0
 
+*Released 2024-03-21*
+
 **Features**:
 
 - Custom commands can now specify an interpreter to use on a per-command basis.
