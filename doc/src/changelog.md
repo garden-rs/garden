@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.4.1
+
+*Released 2024-03-22*
+
+**Features**:
+
+- The empty directory detection in `garden grow` was improved.
+
+**Development**:
+
+- The internal APIs were updated to use `AsRef<Path>` wherever possible.
+
+
 ## v1.4.0
 
 *Released 2024-03-21*
