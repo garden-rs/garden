@@ -166,7 +166,7 @@ pub fn read_grafts_recursive(
 
     // Read child grafts recursively after the immutable scope has ended.
     for (graft_name, path, root) in details {
-        app.add_graft_config(id, &graft_name, &path, root.as_ref())?;
+        app.add_graft_config(id, &graft_name, &path, root.as_deref())?;
     }
 
     Ok(())

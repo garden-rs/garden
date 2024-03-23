@@ -692,8 +692,8 @@ impl Configuration {
     pub(crate) fn update(
         &mut self,
         app_context: &ApplicationContext,
-        config: Option<&std::path::PathBuf>,
-        root: Option<&std::path::PathBuf>,
+        config: Option<&std::path::Path>,
+        root: Option<&std::path::Path>,
         config_verbose: u8,
         parent: Option<ConfigId>,
     ) -> Result<(), errors::GardenError> {
@@ -705,7 +705,9 @@ impl Configuration {
         self.verbose = app_context.options.verbose;
 
         // Override the configured garden root
-        if let Some(root_path) = root.map(|path| path.canonicalize().unwrap_or(path.clone())) {
+        let root_pathbuf_option =
+            root.map(|path| path.canonicalize().unwrap_or(path.to_path_buf()));
+        if let Some(root_path) = root_pathbuf_option {
             self.root.set_expr(root_path.to_string_lossy().to_string());
         }
 
@@ -1425,8 +1427,8 @@ impl ApplicationContext {
 
         app_context.get_root_config_mut().update(
             &app_context,
-            options.config.as_ref(),
-            options.root.as_ref(),
+            options.config.as_deref(),
+            options.root.as_deref(),
             config_verbose,
             None,
         )?;
@@ -1438,15 +1440,15 @@ impl ApplicationContext {
 
     /// Construct an ApplicationContext from a path and root using default MainOptions.
     pub fn from_path_and_root(
-        pathbuf: std::path::PathBuf,
-        root: Option<&std::path::PathBuf>,
+        path: &dyn AsRef<std::path::Path>,
+        root: Option<&std::path::Path>,
     ) -> Result<Self, errors::GardenError> {
         let options = cli::MainOptions::new();
         let app_context = Self::new(options.clone());
         let config_verbose = options.debug_level(constants::DEBUG_LEVEL_CONFIG);
         app_context.get_root_config_mut().update(
             &app_context,
-            Some(&pathbuf),
+            Some(path.as_ref()),
             root,
             config_verbose,
             None,
@@ -1458,17 +1460,17 @@ impl ApplicationContext {
     }
 
     /// Construct an ApplicationContext from a path using default MainOptions.
-    pub fn from_path(pathbuf: std::path::PathBuf) -> Result<Self, errors::GardenError> {
-        if let Some(root_dir) = pathbuf.parent().map(std::path::Path::to_owned) {
-            Self::from_path_and_root(pathbuf, Some(&root_dir))
+    pub fn from_path(path: &dyn AsRef<std::path::Path>) -> Result<Self, errors::GardenError> {
+        if let Some(root_dir) = path.as_ref().parent().map(std::path::Path::to_owned) {
+            Self::from_path_and_root(path, Some(&root_dir))
         } else {
-            Self::from_path_and_root(pathbuf, None)
+            Self::from_path_and_root(path, None)
         }
     }
 
     /// Construct an ApplicationContext from a path using default MainOptions.
     pub fn from_path_string(path: &str) -> Result<Self, errors::GardenError> {
-        Self::from_path(std::path::PathBuf::from(path))
+        Self::from_path(&std::path::PathBuf::from(path))
     }
 
     /// Construct an ApplicationContext from a string using default MainOptions.
@@ -1519,7 +1521,7 @@ impl ApplicationContext {
         config_id: ConfigId,
         graft_name: &str,
         path: &std::path::Path,
-        root: Option<&std::path::PathBuf>,
+        root: Option<&std::path::Path>,
     ) -> Result<(), errors::GardenError> {
         let path = path.to_path_buf();
         let config_verbose = self.options.debug_level(constants::DEBUG_LEVEL_CONFIG);

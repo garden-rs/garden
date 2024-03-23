@@ -284,15 +284,15 @@ enum PromptResponse {
 }
 
 /// Read input from stdin for whether or not we should delete the current path.
-fn prompt_for_deletion(pathbuf: &std::path::Path) -> PromptResponse {
+fn prompt_for_deletion(pathbuf: &dyn AsRef<std::path::Path>) -> PromptResponse {
     let stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
     let mut buffer = String::new();
     let answer;
 
     loop {
-        let path_string = pathbuf.to_string_lossy();
-        let path_basename = match pathbuf.file_name() {
+        let path_string = pathbuf.as_ref().to_string_lossy();
+        let path_basename = match pathbuf.as_ref().file_name() {
             Some(stem) => stem.to_string_lossy(),
             None => continue,
         };
@@ -374,7 +374,7 @@ impl PromptUser {
             match self.recv_repo_path.recv() {
                 Ok(PathBufMessage::Path(pathbuf)) => {
                     if !self.quit {
-                        self.prompt_pathbuf_for_deletion(pathbuf);
+                        self.prompt_pathbuf_for_deletion(&pathbuf);
                     }
                 }
                 Ok(PathBufMessage::Finished) | Err(_) => {
@@ -393,23 +393,23 @@ impl PromptUser {
         self.display_finished_blocking();
     }
 
-    fn prompt_pathbuf_for_deletion(&mut self, pathbuf: std::path::PathBuf) {
+    fn prompt_pathbuf_for_deletion(&mut self, path: &dyn AsRef<std::path::Path>) {
         if self.no_prompt {
             self.send_remove_path
-                .send(PathBufMessage::Path(pathbuf))
+                .send(PathBufMessage::Path(path.as_ref().to_path_buf()))
                 .unwrap_or(());
             return;
         }
-        match prompt_for_deletion(&pathbuf) {
+        match prompt_for_deletion(&path) {
             PromptResponse::All => {
                 self.no_prompt = true;
                 self.send_remove_path
-                    .send(PathBufMessage::Path(pathbuf))
+                    .send(PathBufMessage::Path(path.as_ref().to_path_buf()))
                     .unwrap_or(());
             }
             PromptResponse::Delete => {
                 self.send_remove_path
-                    .send(PathBufMessage::Path(pathbuf))
+                    .send(PathBufMessage::Path(path.as_ref().to_path_buf()))
                     .unwrap_or(());
             }
             PromptResponse::Skip => (),
