@@ -407,7 +407,7 @@ trees:
         url: git://git.kernel.org/pub/scm/git/git.git
         remotes:
             gitster: https://github.com/gitster/git.git
-            gitlab: https://gitlab.com/git-vcs/git.git
+            gitlab: https://gitlab.com/git-scm/git.git
             github: https://github.com/git/git.git
         commands:
             build: make all -j ${num_procs} "$@"
