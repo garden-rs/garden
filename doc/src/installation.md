@@ -96,7 +96,7 @@ Read on for how to build garden from source.
 
 Garden has been packaged for
 [pkgsrc/NetBSD](http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html)
-as described in [#13](https://github.com/davvid/garden/issues/13).
+as described in [#13](https://github.com/garden-rs/garden/issues/13).
 
 To install from the official repository, run:
 

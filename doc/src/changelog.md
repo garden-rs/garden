@@ -1,5 +1,12 @@
 # Changelog
 
+## Upcoming
+
+**Development**:
+
+- The original github repository under `davvid`'s namespace was transferred to the
+[garden-rs](https://github.com/garden-rs/garden) organization on github.
+
 ## v1.4.1
 
 *Released 2024-03-22*
@@ -36,7 +43,7 @@ before creating the local branch.
 - `garden grow` now detects empty directories (e.g. the directories that are created
 when using uninitialized Git submodules) and will properly clone into the empty directories
 instead of treating them like an already-grown tree.
-([#30](https://github.com/davvid/garden/pull/30))
+([#30](https://github.com/garden-rs/garden/pull/30))
 
 **Development**:
 
@@ -47,7 +54,7 @@ is UNIX-only and disabled on Windows.
 - [yaml-rust2](https://crates.io/crates/yaml-rust2) is now used instead of
 the [yaml-rust-davvid](https://crates.io/crates/yaml-rust-davvid) fork that was
 being maintained by [@davvid](https://github.com/davvid) for use by garden.
-([#29](https://github.com/davvid/garden/pull/29))
+([#29](https://github.com/garden-rs/garden/pull/29))
 
 
 ## v1.3.0
@@ -66,12 +73,12 @@ block in a garden's scope, the `variables` block in a tree's scope, the
 a garden's scope, the `environments` block in a tree's scope, the
 `environments` block in global configuration scope and, lastly, OS environment
 variables. The first entry found is used when expanding variable expressions.
-([#23](https://github.com/davvid/garden/pull/23))
+([#23](https://github.com/garden-rs/garden/pull/23))
 
 - Evaluation cycles (i.e. circular variable dependencies) are now prevented when
 evaluating garden variables. The evaluation engine will now return empty strings
 when a variable with a cyclical expression is evaluated.
-([#24](https://github.com/davvid/garden/pull/24))
+([#24](https://github.com/garden-rs/garden/pull/24))
 
 - When `zsh` is used as the `garden.shell`, which happens automatically when `zsh`
 is installed, `garden` will now use `zsh -o shwordsplit` in order to enable
@@ -79,7 +86,7 @@ word-splitting of `$variable` expressions by default. This makes `zsh` behave
 just like other shells by default, which improves the portability of commands.
 Configure `garden.shell-wordsplit` to `false` or use the
 `garden <cmd> -z | --no-wordsplit` option to opt-out of this behavior.
-([#25](https://github.com/davvid/garden/pull/25))
+([#25](https://github.com/garden-rs/garden/pull/25))
 
 - `garden.shell` can now be configured to use arbitrary commands for executing
 command strings. Garden uses the configured `garden.shell` as-is and does
@@ -95,23 +102,23 @@ For example, `env custom-shell` will cause `garden` to run
 `env custom-shell <string>`, which is equivalent to `custom-shell <string>`.
 Using just `custom-shell` would have resulted in `garden` running
 `custom-shell -c <string>` instead, which may not be desired.
-([#26](https://github.com/davvid/garden/pull/26))
+([#26](https://github.com/garden-rs/garden/pull/26))
 
 - The `garden shell` command can now be configured to use an interactive command shell
 that is distinct from the command specified in the `garden.shell` configuration by
 configuring the `garden.interactive-shell` value.
-([#26](https://github.com/davvid/garden/pull/26))
+([#26](https://github.com/garden-rs/garden/pull/26))
 
 - `garden shell` can now be run without any arguments. The tree query now defaults to
 `.` so that the tree in the current directory is used when nothing is specified.
-([#26](https://github.com/davvid/garden/pull/26))
+([#26](https://github.com/garden-rs/garden/pull/26))
 
 - Custom commands now have access to a `${GARDEN_CMD_VERBOSE}` and `${GARDEN_CMD_QUIET}`
 variables which can be used to forward the `--verbose` and `--quiet` arguments
 down into child `garden` invocations. `${GARDEN_CMD_VERBOSE}` uses the short `-v`
 flag in the value to support the case where the verbose option is specified
 multiples times to increase the verbosity level (e.g. `-vv`).
-([#27](https://github.com/davvid/garden/pull/27))
+([#27](https://github.com/garden-rs/garden/pull/27))
 
 
 ## v1.2.1
@@ -207,14 +214,14 @@ This allows you to use these interpreters to run custom commands.
 
 - Commands can now specify pre-commands and post-commands that are run before/after
 the specified command.
-([#3](https://github.com/davvid/garden/issues/3))
+([#3](https://github.com/garden-rs/garden/issues/3))
 ([documentation](https://garden-rs.gitlab.io/commands.html#pre-and-post-commands))
 
 - The default `origin` remote name can now be configured using `tree.<tree>.default-remote`.
 ([#16](https://gitlab.com/garden-rs/garden/-/issues/16))
 
 - Commands now display the tree's current branch alongside the tree name.
-([#18](https://github.com/davvid/garden/issues/18))
+([#18](https://github.com/garden-rs/garden/issues/18))
 
 - `garden -vv exec` and `garden -vv shell` now display the command being run.
 
@@ -222,7 +229,7 @@ the specified command.
 
 - `garden` can now be installed as a `nix flake` package.
 A `flake.nix` file is now provided.
-([#16](https://github.com/davvid/garden/issues/16))
+([#16](https://github.com/garden-rs/garden/issues/16))
 
 ## v0.9.1
 
@@ -287,8 +294,8 @@ using [`git config --add <name> <value>`](https://git-scm.com/docs/git-config#Do
 override entries defined via `garden.includes`. Configuration entities now follow
 "last one wins" semantics -- if the same entity is defined in multiple includes files
 then only the final definition will be used.
-([#14](https://github.com/davvid/garden/issues/14))
-([#15](https://github.com/davvid/garden/pull/15))
+([#14](https://github.com/garden-rs/garden/issues/14))
+([#15](https://github.com/garden-rs/garden/pull/15))
 
 - [Trees now sparsely override existing entries](https://garden-rs.gitlab.io/configuration.html#l#the-last-one-wins-rule).
 This behavior allows a tree definition to replace just the `url` field, or to replace
@@ -302,7 +309,7 @@ overriding it.
 
 - [0323pin](https://github.com/0323) packaged `garden` for pkgsrc/NetBSD and
 [merged the package into the main branch!](http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html)
-([#13](https://github.com/davvid/garden/issues/13))
+([#13](https://github.com/garden-rs/garden/issues/13))
 
 ## v0.6.0
 
@@ -318,7 +325,7 @@ Previously only values were evaluated. Names are evaluated now as well.
 - The `zsh` workaround for `garden completion zsh` is no longer needed.
 The [documentation for generating zsh completions](https://garden-rs.gitlab.io/commands.html#zsh)
 has been updated.
-([#10](https://github.com/davvid/garden/issues/10))
+([#10](https://github.com/garden-rs/garden/issues/10))
 
 ## v0.5.1
 
@@ -342,19 +349,19 @@ the additional files to include in the `garden.includes` field.
 The `includes` feature makes it possible to create modular and reusable garden files.
 The `trees`, `variables`, `commands`, `groups` and `gardens` defined in the included
 files are added to the current configuration.
-([#7](https://github.com/davvid/garden/pull/7))
+([#7](https://github.com/garden-rs/garden/pull/7))
 
 - [Garden commands can now use shell variables](https://garden-rs.gitlab.io/commands.html#shell-syntax)
 using the standard (brace-less) shell `$variable` syntax. The braced `${garden}`
 variable syntax remains reserved for resolving Garden Variables.
 Double-`$` braces (ex: `$${...}`) can be used to escape a `$${variable}` from
 evaluation so that a literal `${variable}` value is used in the garden command.
-([#11](https://github.com/davvid/garden/issues/11))
-([#12](https://github.com/davvid/garden/pull/12))
+([#11](https://github.com/garden-rs/garden/issues/11))
+([#12](https://github.com/garden-rs/garden/pull/12))
 
 - A new `garden completion` subcommand was added for providing shell command-line
 completion using the [clap_complete](https://crates.io/crates/clap_complete) crate.
-([#9](https://github.com/davvid/garden/pull/9))
+([#9](https://github.com/garden-rs/garden/pull/9))
 
 - `garden -V | --version` was added alongside the `clap` rewrite for displaying
 the `garden` command version.
@@ -368,7 +375,7 @@ Packagers can use `cargo install` to install `garden` and invoke `mdbook` direct
 to install the user manual. We also provide
 `garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc` if distros
 want to install the user manual using our recipe.
-([#8](https://github.com/davvid/garden/pull/8))
+([#8](https://github.com/garden-rs/garden/pull/8))
 
 - Garden's command-line parsing has been rewritten to leverage the
 [clap](https://crates.io/crates/clap) crate and ecosystem.
@@ -402,14 +409,14 @@ configuration variable can be used to override the default shell.
 **Features**:
 
 - `garden prune` was added for removing orphaned Git repositories.
-([#4](https://github.com/davvid/garden/issues/4))
+([#4](https://github.com/garden-rs/garden/issues/4))
 
 - `garden cmd` can now run commands in breadth-first order when the
 `-b/--breadth-first` option is used. Depth-first tree traversal is the default.
 The `garden cmd --breadth-first` traversal runs all commands on a tree before
 continuing on to the next tree. The default `garden cmd` depth-first traversal
 runs a command across all trees before continuing on to the next command.
-([#3](https://github.com/davvid/garden/issues/3))
+([#3](https://github.com/garden-rs/garden/issues/3))
 
 ## v0.3.0
 
@@ -418,7 +425,7 @@ runs a command across all trees before continuing on to the next command.
 **Features**:
 
 - `garden plant` can now detect `git worktree` repositories.
-([#1](https://github.com/davvid/garden/issues/1))
+([#1](https://github.com/garden-rs/garden/issues/1))
 
 ## v0.2.0
 
