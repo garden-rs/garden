@@ -75,27 +75,26 @@ trees:
         path: ${GARDEN_CONFIG_DIR}
         url: "git@gitlab.com:garden-rs/garden.git"
         remotes:
-            garden: "git@gitlab.com:garden-rs/garden.git"
             davvid: "git@gitlab.com:davvid/garden.git"
-            github: "git@github.com:davvid/garden.git"
+            github: "git@github.com:garden-rs/garden.git"
             jtietema: "git@github.com:jtietema/garden.git"
             slackline: "git@github.com:slackline/garden.git"
             pages: "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
         gitconfig:
             remote.origin.pushurl:
                 - "git@gitlab.com:garden-rs/garden.git"
-                - "git@github.com:davvid/garden.git"
+                - "git@github.com:garden-rs/garden.git"
             branch.pages.remote: pages
             remote.pages.pushurl:
                 - "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
-                - "git@github.com:davvid/garden.git"
+                - "git@github.com:garden-rs/garden.git"
         links:
             - "https://garden-rs.gitlab.io"
             - "https://crates.io/crates/garden-tools"
             - "https://docs.rs/garden-tools/latest/garden/"
             - "https://lib.rs/crates/garden-tools"
             - "https://gitlab.com/garden-rs/garden"
-            - "https://github.com/davvid/garden"
+            - "https://github.com/garden-rs/garden"
     doc:
         description: Prebuilt garden user manual for garden-rs.gitlab.io
         path: doc/book
@@ -107,11 +106,11 @@ trees:
         description: Homebrew tap for installing Garden on macOS
         url: "git@gitlab.com:garden-rs/homebrew-garden.git"
         remotes:
-            davvid: "git@github.com:davvid/homebrew-garden.git"
+            github: "git@github.com:garden-rs/homebrew-garden.git"
         gitconfig:
             remote.origin.pushurl:
                 - "git@gitlab.com:garden-rs/homebrew-garden.git"
-                - "git@github.com:davvid/homebrew-garden.git"
+                - "git@github.com:garden-rs/homebrew-garden.git"
         links:
             - "https://gitlab.com/garden-rs/homebrew-garden"
 
