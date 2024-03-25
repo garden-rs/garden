@@ -182,6 +182,12 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>The original github repository under <code>davvid</code>'s namespace was transferred to the
+<a href="https://github.com/garden-rs/garden">garden-rs</a> organization on github.</li>
+</ul>
 <h2 id="v141"><a class="header" href="#v141">v1.4.1</a></h2>
 <p><em>Released 2024-03-22</em></p>
 <p><strong>Features</strong>:</p>
@@ -217,7 +223,7 @@ before creating the local branch.</p>
 <p><code>garden grow</code> now detects empty directories (e.g. the directories that are created
 when using uninitialized Git submodules) and will properly clone into the empty directories
 instead of treating them like an already-grown tree.
-(<a href="https://github.com/davvid/garden/pull/30">#30</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/30">#30</a>)</p>
 </li>
 </ul>
 <p><strong>Development</strong>:</p>
@@ -231,7 +237,7 @@ is UNIX-only and disabled on Windows.
 <p><a href="https://crates.io/crates/yaml-rust2">yaml-rust2</a> is now used instead of
 the <a href="https://crates.io/crates/yaml-rust-davvid">yaml-rust-davvid</a> fork that was
 being maintained by <a href="https://github.com/davvid">@davvid</a> for use by garden.
-(<a href="https://github.com/davvid/garden/pull/29">#29</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/29">#29</a>)</p>
 </li>
 </ul>
 <h2 id="v130"><a class="header" href="#v130">v1.3.0</a></h2>
@@ -249,13 +255,13 @@ block in a garden's scope, the <code>variables</code> block in a tree's scope, t
 a garden's scope, the <code>environments</code> block in a tree's scope, the
 <code>environments</code> block in global configuration scope and, lastly, OS environment
 variables. The first entry found is used when expanding variable expressions.
-(<a href="https://github.com/davvid/garden/pull/23">#23</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/23">#23</a>)</p>
 </li>
 <li>
 <p>Evaluation cycles (i.e. circular variable dependencies) are now prevented when
 evaluating garden variables. The evaluation engine will now return empty strings
 when a variable with a cyclical expression is evaluated.
-(<a href="https://github.com/davvid/garden/pull/24">#24</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/24">#24</a>)</p>
 </li>
 <li>
 <p>When <code>zsh</code> is used as the <code>garden.shell</code>, which happens automatically when <code>zsh</code>
@@ -264,7 +270,7 @@ word-splitting of <code>$variable</code> expressions by default. This makes <cod
 just like other shells by default, which improves the portability of commands.
 Configure <code>garden.shell-wordsplit</code> to <code>false</code> or use the
 <code>garden &lt;cmd&gt; -z | --no-wordsplit</code> option to opt-out of this behavior.
-(<a href="https://github.com/davvid/garden/pull/25">#25</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/25">#25</a>)</p>
 </li>
 <li>
 <p><code>garden.shell</code> can now be configured to use arbitrary commands for executing
@@ -281,18 +287,18 @@ For example, <code>env custom-shell</code> will cause <code>garden</code> to run
 <code>env custom-shell &lt;string&gt;</code>, which is equivalent to <code>custom-shell &lt;string&gt;</code>.
 Using just <code>custom-shell</code> would have resulted in <code>garden</code> running
 <code>custom-shell -c &lt;string&gt;</code> instead, which may not be desired.
-(<a href="https://github.com/davvid/garden/pull/26">#26</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/26">#26</a>)</p>
 </li>
 <li>
 <p>The <code>garden shell</code> command can now be configured to use an interactive command shell
 that is distinct from the command specified in the <code>garden.shell</code> configuration by
 configuring the <code>garden.interactive-shell</code> value.
-(<a href="https://github.com/davvid/garden/pull/26">#26</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/26">#26</a>)</p>
 </li>
 <li>
 <p><code>garden shell</code> can now be run without any arguments. The tree query now defaults to
 <code>.</code> so that the tree in the current directory is used when nothing is specified.
-(<a href="https://github.com/davvid/garden/pull/26">#26</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/26">#26</a>)</p>
 </li>
 <li>
 <p>Custom commands now have access to a <code>${GARDEN_CMD_VERBOSE}</code> and <code>${GARDEN_CMD_QUIET}</code>
@@ -300,7 +306,7 @@ variables which can be used to forward the <code>--verbose</code> and <code>--qu
 down into child <code>garden</code> invocations. <code>${GARDEN_CMD_VERBOSE}</code> uses the short <code>-v</code>
 flag in the value to support the case where the verbose option is specified
 multiples times to increase the verbosity level (e.g. <code>-vv</code>).
-(<a href="https://github.com/davvid/garden/pull/27">#27</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/27">#27</a>)</p>
 </li>
 </ul>
 <h2 id="v121"><a class="header" href="#v121">v1.2.1</a></h2>
@@ -406,7 +412,7 @@ This allows you to use these interpreters to run custom commands.</p>
 <li>
 <p>Commands can now specify pre-commands and post-commands that are run before/after
 the specified command.
-(<a href="https://github.com/davvid/garden/issues/3">#3</a>)
+(<a href="https://github.com/garden-rs/garden/issues/3">#3</a>)
 (<a href="https://garden-rs.gitlab.io/commands.html#pre-and-post-commands">documentation</a>)</p>
 </li>
 <li>
@@ -415,7 +421,7 @@ the specified command.
 </li>
 <li>
 <p>Commands now display the tree's current branch alongside the tree name.
-(<a href="https://github.com/davvid/garden/issues/18">#18</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/18">#18</a>)</p>
 </li>
 <li>
 <p><code>garden -vv exec</code> and <code>garden -vv shell</code> now display the command being run.</p>
@@ -425,7 +431,7 @@ the specified command.
 <ul>
 <li><code>garden</code> can now be installed as a <code>nix flake</code> package.
 A <code>flake.nix</code> file is now provided.
-(<a href="https://github.com/davvid/garden/issues/16">#16</a>)</li>
+(<a href="https://github.com/garden-rs/garden/issues/16">#16</a>)</li>
 </ul>
 <h2 id="v091"><a class="header" href="#v091">v0.9.1</a></h2>
 <p><em>Released 2023-11-19</em></p>
@@ -488,8 +494,8 @@ using <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt-
 override entries defined via <code>garden.includes</code>. Configuration entities now follow
 &quot;last one wins&quot; semantics -- if the same entity is defined in multiple includes files
 then only the final definition will be used.
-(<a href="https://github.com/davvid/garden/issues/14">#14</a>)
-(<a href="https://github.com/davvid/garden/pull/15">#15</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/14">#14</a>)
+(<a href="https://github.com/garden-rs/garden/pull/15">#15</a>)</p>
 </li>
 <li>
 <p><a href="https://garden-rs.gitlab.io/configuration.html#l#the-last-one-wins-rule">Trees now sparsely override existing entries</a>.
@@ -506,7 +512,7 @@ overriding it.</p>
 <ul>
 <li><a href="https://github.com/0323">0323pin</a> packaged <code>garden</code> for pkgsrc/NetBSD and
 <a href="http://mail-index.netbsd.org/pkgsrc-changes/2023/01/22/msg267560.html">merged the package into the main branch!</a>
-(<a href="https://github.com/davvid/garden/issues/13">#13</a>)</li>
+(<a href="https://github.com/garden-rs/garden/issues/13">#13</a>)</li>
 </ul>
 <h2 id="v060"><a class="header" href="#v060">v0.6.0</a></h2>
 <p><em>Released 2023-01-20</em></p>
@@ -520,7 +526,7 @@ Previously only values were evaluated. Names are evaluated now as well.</li>
 <li>The <code>zsh</code> workaround for <code>garden completion zsh</code> is no longer needed.
 The <a href="https://garden-rs.gitlab.io/commands.html#zsh">documentation for generating zsh completions</a>
 has been updated.
-(<a href="https://github.com/davvid/garden/issues/10">#10</a>)</li>
+(<a href="https://github.com/garden-rs/garden/issues/10">#10</a>)</li>
 </ul>
 <h2 id="v051"><a class="header" href="#v051">v0.5.1</a></h2>
 <p><em>Released 2023-01-15</em></p>
@@ -541,7 +547,7 @@ the additional files to include in the <code>garden.includes</code> field.
 The <code>includes</code> feature makes it possible to create modular and reusable garden files.
 The <code>trees</code>, <code>variables</code>, <code>commands</code>, <code>groups</code> and <code>gardens</code> defined in the included
 files are added to the current configuration.
-(<a href="https://github.com/davvid/garden/pull/7">#7</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/7">#7</a>)</p>
 </li>
 <li>
 <p><a href="https://garden-rs.gitlab.io/commands.html#shell-syntax">Garden commands can now use shell variables</a>
@@ -549,13 +555,13 @@ using the standard (brace-less) shell <code>$variable</code> syntax. The braced 
 variable syntax remains reserved for resolving Garden Variables.
 Double-<code>$</code> braces (ex: <code>$${...}</code>) can be used to escape a <code>$${variable}</code> from
 evaluation so that a literal <code>${variable}</code> value is used in the garden command.
-(<a href="https://github.com/davvid/garden/issues/11">#11</a>)
-(<a href="https://github.com/davvid/garden/pull/12">#12</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/11">#11</a>)
+(<a href="https://github.com/garden-rs/garden/pull/12">#12</a>)</p>
 </li>
 <li>
 <p>A new <code>garden completion</code> subcommand was added for providing shell command-line
 completion using the <a href="https://crates.io/crates/clap_complete">clap_complete</a> crate.
-(<a href="https://github.com/davvid/garden/pull/9">#9</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/9">#9</a>)</p>
 </li>
 <li>
 <p><code>garden -V | --version</code> was added alongside the <code>clap</code> rewrite for displaying
@@ -572,7 +578,7 @@ Packagers can use <code>cargo install</code> to install <code>garden</code> and 
 to install the user manual. We also provide
 <code>garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc</code> if distros
 want to install the user manual using our recipe.
-(<a href="https://github.com/davvid/garden/pull/8">#8</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/8">#8</a>)</p>
 </li>
 <li>
 <p>Garden's command-line parsing has been rewritten to leverage the
@@ -608,7 +614,7 @@ configuration variable can be used to override the default shell.</p>
 <ul>
 <li>
 <p><code>garden prune</code> was added for removing orphaned Git repositories.
-(<a href="https://github.com/davvid/garden/issues/4">#4</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/4">#4</a>)</p>
 </li>
 <li>
 <p><code>garden cmd</code> can now run commands in breadth-first order when the
@@ -616,7 +622,7 @@ configuration variable can be used to override the default shell.</p>
 The <code>garden cmd --breadth-first</code> traversal runs all commands on a tree before
 continuing on to the next tree. The default <code>garden cmd</code> depth-first traversal
 runs a command across all trees before continuing on to the next command.
-(<a href="https://github.com/davvid/garden/issues/3">#3</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/3">#3</a>)</p>
 </li>
 </ul>
 <h2 id="v030"><a class="header" href="#v030">v0.3.0</a></h2>
@@ -624,7 +630,7 @@ runs a command across all trees before continuing on to the next command.
 <p><strong>Features</strong>:</p>
 <ul>
 <li><code>garden plant</code> can now detect <code>git worktree</code> repositories.
-(<a href="https://github.com/davvid/garden/issues/1">#1</a>)</li>
+(<a href="https://github.com/garden-rs/garden/issues/1">#1</a>)</li>
 </ul>
 <h2 id="v020"><a class="header" href="#v020">v0.2.0</a></h2>
 <p><em>Released 2022-07-29</em></p>
