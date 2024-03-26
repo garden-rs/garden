@@ -7,6 +7,10 @@
 - The original github repository under `davvid`'s namespace was transferred to the
 [garden-rs](https://github.com/garden-rs/garden) organization on github.
 
+- The `yaml-rust2` dependency was upgraded to `0.8.0` to avoid the `encoding` crate
+([RUSTSEC-2021-0153](https://rustsec.org/advisories/RUSTSEC-2021-0153)).
+
+
 ## v1.4.1
 
 *Released 2024-03-22*

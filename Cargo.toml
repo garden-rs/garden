@@ -46,7 +46,7 @@ subprocess = "0.2.9"
 thiserror = "1.0.56"
 which = "5.0.0"
 xdg = "2.5.2"
-yaml-rust = { version = "0.7", package = "yaml-rust2" }
+yaml-rust = { version = "0.8", package = "yaml-rust2" }
 yansi = "0.5.1"
 
 [dev-dependencies]
