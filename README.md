@@ -54,7 +54,7 @@ command-line tools.
 
 * [Garden NetBSD pkgsrc](https://cdn.netbsd.org/pub/pkgsrc/current/pkgsrc/devel/garden/index.html)
 
-* [Garden seeds](https://gitlab.com/davvid/garden-seeds) ~ reusable templates for garden.
+* [Garden seeds](https://gitlab.com/garden-rs/garden-seeds) ~ reusable templates for garden.
 
 
 ## Acknowledgements
