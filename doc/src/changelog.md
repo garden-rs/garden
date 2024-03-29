@@ -2,6 +2,14 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden plant` now avoids updating the configuration when a tree is
+re-planted and its configuration contains expressions that evaluate
+to the same value as currently exist in git.
+([#31](https://github.com/garden-rs/garden/-/issues/31))
+([#32](https://github.com/garden-rs/garden/-/pull/32))
+
 **Development**:
 
 - The original github repository under `davvid`'s namespace was transferred to the
