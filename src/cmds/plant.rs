@@ -244,6 +244,7 @@ pub(crate) fn plant_path(
         }
     }
 
+    let mut is_empty = false;
     if !remotes.is_empty() {
         if !has_remotes {
             entry.insert(remotes_key.clone(), Yaml::Hash(yaml::Hash::new()));
@@ -277,6 +278,12 @@ pub(crate) fn plant_path(
                 remotes_hash.insert(remote, value);
             }
         }
+        is_empty = remotes_hash.is_empty();
+    }
+
+    // A template might not have remotes so we should purge the empty "remotes:" block.
+    if is_empty {
+        entry.remove(&remotes_key);
     }
 
     let url_key = Yaml::String(constants::URL.into());
