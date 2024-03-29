@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{Parser, ValueHint};
 use yaml_rust::{yaml, Yaml};
 
-use crate::{cmd, config, constants, errors, git, model, path, query};
+use crate::{cmd, config, constants, errors, eval, git, model, path, query};
 
 // Add pre-existing worktrees to a garden configuration file
 #[derive(Parser, Clone, Debug)]
@@ -50,7 +50,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
             }
         };
         for path in &options.paths {
-            if let Err(msg) = plant_path(config, verbose, path, trees) {
+            if let Err(msg) = plant_path(Some(app_context), config, verbose, path, trees) {
                 error!("{}", msg);
             }
         }
@@ -96,6 +96,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
 }
 
 pub(crate) fn plant_path(
+    app_context: Option<&model::ApplicationContext>,
     config: &model::Configuration,
     verbose: u8,
     raw_path: &str,
@@ -257,11 +258,19 @@ pub(crate) fn plant_path(
             }
         };
 
-        for (k, v) in &remotes {
-            let remote = Yaml::String(k.clone());
-            let value = Yaml::String(v.clone());
-
+        for (remote_str, value_str) in &remotes {
+            let remote = Yaml::String(remote_str.clone());
+            let value = Yaml::String(value_str.clone());
             if let Some(remote_entry) = remotes_hash.get_mut(&remote) {
+                if let Some(current_value) = app_context
+                    .and_then(|ctx| get_url_for_remote(ctx, config, &tree_name, remote_str))
+                {
+                    // Leave existing remotes as-is if their evaluated value
+                    // resolves to the value from git.
+                    if &current_value == value_str {
+                        continue;
+                    }
+                }
                 *remote_entry = value;
             } else {
                 remotes_hash.insert(remote, value);
@@ -270,7 +279,7 @@ pub(crate) fn plant_path(
     }
 
     let url_key = Yaml::String(constants::URL.into());
-    if verbose > 0 && entry.contains_key(&url_key) {
+    if verbose > 0 && !entry.contains_key(&url_key) {
         eprintln!("{tree_name}: no url");
     }
 
@@ -281,8 +290,18 @@ pub(crate) fn plant_path(
         let command = ["git", "config", remote_url.as_str()];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(remote_url) = cmd::stdout_to_string(exec) {
+            let mut update = true;
             url = remote_url.clone();
-            entry.insert(url_key, Yaml::String(remote_url));
+            if let Some(current_url) = app_context
+                .and_then(|ctx| get_url_for_remote(ctx, config, &tree_name, &default_remote))
+            {
+                // Leave existing remotes as-is if their evaluated value
+                // resolves to the value from git.
+                update = current_url != remote_url;
+            }
+            if update {
+                entry.insert(url_key, Yaml::String(remote_url));
+            }
         }
     }
 
@@ -320,4 +339,19 @@ pub(crate) fn plant_path(
     }
 
     Ok(())
+}
+
+/// Return the currently configured evaluated value for a git remote.
+fn get_url_for_remote(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    tree_name: &str,
+    remote: &str,
+) -> Option<String> {
+    let tree = config.trees.get(tree_name)?;
+    let remote_variable = tree.remotes.get(remote)?;
+    let current_value =
+        eval::tree_variable(app_context, config, None, tree_name, None, remote_variable);
+
+    Some(current_value)
 }
