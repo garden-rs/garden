@@ -252,25 +252,26 @@ pub(crate) fn plant_path(
         let remotes_hash: &mut yaml::Hash = match entry.get_mut(&remotes_key) {
             Some(Yaml::Hash(ref mut hash)) => hash,
             _ => {
-                return Err(
-                    errors::GardenError::ConfigurationError(string!("trees: not a hash")).into(),
-                );
+                return Err(errors::GardenError::ConfigurationError(string!(
+                    "remotes: not a hash"
+                ))
+                .into());
             }
         };
 
         for (remote_str, value_str) in &remotes {
+            if let Some(current_value) =
+                app_context.and_then(|ctx| get_url_for_remote(ctx, config, &tree_name, remote_str))
+            {
+                // Leave existing remotes as-is if their evaluated value
+                // resolves to the value from git.
+                if &current_value == value_str {
+                    continue;
+                }
+            }
             let remote = Yaml::String(remote_str.clone());
             let value = Yaml::String(value_str.clone());
             if let Some(remote_entry) = remotes_hash.get_mut(&remote) {
-                if let Some(current_value) = app_context
-                    .and_then(|ctx| get_url_for_remote(ctx, config, &tree_name, remote_str))
-                {
-                    // Leave existing remotes as-is if their evaluated value
-                    // resolves to the value from git.
-                    if &current_value == value_str {
-                        continue;
-                    }
-                }
                 *remote_entry = value;
             } else {
                 remotes_hash.insert(remote, value);
