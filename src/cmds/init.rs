@@ -104,7 +104,8 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
             if let Yaml::Hash(ref mut doc_hash) = doc {
                 let trees_key = Yaml::String(constants::TREES.into());
                 if let Some(Yaml::Hash(trees)) = doc_hash.get_mut(&trees_key) {
-                    done = plant::plant_path(&config, options.verbose, &worktree, trees).is_ok();
+                    done =
+                        plant::plant_path(None, &config, options.verbose, &worktree, trees).is_ok();
                 }
             }
         }

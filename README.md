@@ -5,6 +5,10 @@ Garden grows and cultivates collections of Git trees.
 Garden helps you define development workflows that operate over collections of
 self-contained and inter-dependent Git worktrees.
 
+```bash
+cargo install garden-tools
+```
+
 ## Code Status
 
 [![Build status](https://gitlab.com/garden-rs/garden/badges/main/pipeline.svg)](https://gitlab.com/garden-rs/garden/-/pipelines)
