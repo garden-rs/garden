@@ -341,7 +341,10 @@ pub(crate) fn plant_path(
 
     // Move the entry into the trees container
     if let Some(tree_entry) = trees.get_mut(&key) {
-        *tree_entry = Yaml::Hash(entry);
+        // The entry can be empty if we ended up not actually changing anything.
+        if !entry.is_empty() {
+            *tree_entry = Yaml::Hash(entry);
+        }
     } else {
         trees.insert(key, Yaml::Hash(entry));
     }

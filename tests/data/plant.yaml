@@ -10,6 +10,7 @@ templates:
     remotes:
       example: "${storage}"
 trees:
+  example/oneline: "${storage}"
   example/main:
     url: "${storage}"
   example/variables:
