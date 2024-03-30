@@ -1,0 +1,20 @@
+---
+garden:
+  root: ""
+variables:
+  repos: "${GARDEN_ROOT}/repos"
+  storage: "file://${repos}/example.git"
+templates:
+  example:
+    url: "${storage}"
+    remotes:
+      example: "${storage}"
+trees:
+  example/main:
+    url: "${storage}"
+  example/variables:
+    url: "${storage}"
+    remotes:
+      example: "${storage}"
+  example/template:
+    templates: example

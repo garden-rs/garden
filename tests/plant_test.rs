@@ -179,3 +179,170 @@ fn plant_git_worktree() -> Result<()> {
 
     Ok(())
 }
+
+
+/// `garden plant` retains "${variable}" references for a simple tree.
+#[test]
+#[named]
+fn plant_keep_variables_simple() -> Result<()> {
+    let tree_name = "example/main";
+    let config_path = "tests/data/plant.yaml";
+    let config_pathbuf = std::path::PathBuf::from(config_path);
+    let fixture = common::BareRepoFixture::new(function_name!());
+    // Check that the config uses ${storage} variables for url and remotes.
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+    }
+    // Grow the tree.
+    common::exec_garden(&[
+        "--root",
+        &fixture.root(),
+        "--config",
+        config_path,
+        "grow",
+        tree_name,
+    ])?;
+    assert!(fixture.pathbuf(tree_name).exists());
+    // Re-plant the tree and ensure that the variables are retained.
+    common::exec_garden(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        config_path,
+        "plant",
+        tree_name,
+    ])?;
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+    }
+
+    Ok(())
+}
+
+/// `garden plant` retains "${variable}" references for a tree with remotes.
+#[test]
+#[named]
+fn plant_keep_variables_with_remotes() -> Result<()> {
+    let tree_name = "example/variables";
+    let config_path = "tests/data/plant.yaml";
+    let config_pathbuf = std::path::PathBuf::from(config_path);
+    let fixture = common::BareRepoFixture::new(function_name!());
+    // Check that the config uses ${storage} variables for url and remotes.
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+        assert_eq!(
+            tree.remotes.get("example").unwrap().get_expr(),
+            "${storage}"
+        );
+    }
+    // Grow the tree.
+    common::exec_garden(&[
+        "--root",
+        &fixture.root(),
+        "--config",
+        config_path,
+        "grow",
+        tree_name,
+    ])?;
+    assert!(fixture.pathbuf(tree_name).exists());
+    // Re-plant the tree and ensure that the variables are retained.
+    common::exec_garden(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        config_path,
+        "plant",
+        tree_name,
+    ])?;
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+        assert_eq!(
+            tree.remotes.get("example").unwrap().get_expr(),
+            "${storage}"
+        );
+    }
+
+    Ok(())
+}
+
+/// `garden plant` retains "${variable}" references for a templated tree.
+#[test]
+#[named]
+fn plant_keep_variables_with_templates() -> Result<()> {
+    let tree_name = "example/template";
+    let config_path = "tests/data/plant.yaml";
+    let config_pathbuf = std::path::PathBuf::from(config_path);
+    let fixture = common::BareRepoFixture::new(function_name!());
+    // Check that the config uses ${storage} variables for url and remotes.
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+        assert_eq!(
+            tree.remotes.get("example").unwrap().get_expr(),
+            "${storage}"
+        );
+    }
+    // Grow the tree.
+    common::exec_garden(&[
+        "--root",
+        &fixture.root(),
+        "--config",
+        config_path,
+        "grow",
+        tree_name,
+    ])?;
+    assert!(fixture.pathbuf(tree_name).exists());
+    // Re-plant the tree and ensure that the variables are retained.
+    common::exec_garden(&[
+        "--chdir",
+        &fixture.root(),
+        "--config",
+        config_path,
+        "plant",
+        tree_name,
+    ])?;
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+        assert_eq!(
+            tree.remotes.get("example").unwrap().get_expr(),
+            "${storage}"
+        );
+    }
+
+    Ok(())
+}
