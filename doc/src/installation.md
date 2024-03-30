@@ -188,7 +188,7 @@ For example, `nix derivation show` will contain output that looks like the follo
 You can use these details to open a shell with your previously-built `garden` package.
 
 ```bash
-`nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
+nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
 ```
 
 ## Windows
