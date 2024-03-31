@@ -1,8 +1,8 @@
 [licenses]
-# CC0-1.0 is needed by encoding-index-*
-# Unicode-DFS-2016 is needed by unicode-ident
 allow = [
-  "CC0-1.0",
+  # encoding_rs
+  "BSD-3-Clause",
   "MIT",
+  # clap -> clap_derivce -> proc-macro2 -> unicode-ident
   "Unicode-DFS-2016"
 ]
