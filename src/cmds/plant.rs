@@ -308,7 +308,7 @@ pub(crate) fn plant_path(
                 update = current_url != remote_url;
             }
             if update {
-                entry.insert(url_key, Yaml::String(remote_url));
+                entry.insert(url_key.clone(), Yaml::String(remote_url));
             }
         }
     }
@@ -343,7 +343,13 @@ pub(crate) fn plant_path(
     if let Some(tree_entry) = trees.get_mut(&key) {
         // The entry can be empty if we ended up not actually changing anything.
         if !entry.is_empty() {
-            *tree_entry = Yaml::Hash(entry);
+            let is_string = matches!(tree_entry, Yaml::String(_));
+            let is_still_string = entry.len() == 1 && entry.contains_key(&url_key);
+            if is_string && is_still_string {
+                *tree_entry = Yaml::String(url);
+            } else {
+                *tree_entry = Yaml::Hash(entry);
+            }
         }
     } else {
         trees.insert(key, Yaml::Hash(entry));
