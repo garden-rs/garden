@@ -197,7 +197,7 @@ mkdir -p photo-restoration &amp;&amp; cd photo-restoration
 wget https://gitlab.com/garden-rs/garden/-/raw/main/doc/src/examples/photo-restoration/garden.yaml
 cat garden.yaml
 
-# One-time setup: Clone all of the trees. This will clone an &quot;old-photos&quot; repo.
+# One-time setup: Clone all of the trees. This will clone an "old-photos" repo.
 garden grow old-photos
 
 # One-time setup: Download resources.
@@ -209,7 +209,7 @@ provided by the <code>garden.yaml</code> file. The <code>run.py</code> script ta
 <pre><code class="language-bash">garden run old-photos -- --help
 </code></pre>
 <p>Arguments can be passed directly to <code>run.py</code> by passing additional arguments
-after the special double-dash <code>--</code> &quot;end of options&quot; marker.</p>
+after the special double-dash <code>--</code> "end of options" marker.</p>
 <p>The example above pases the <code>--help</code> option for demonstration purposes.
 You will have to specify the <code>--input_folder &lt;folder&gt;</code> and <code>--output_folder &lt;folder&gt;</code>
 in order to use the photo restoration tool. See the <code>--help</code> output for more details.</p>
@@ -218,7 +218,7 @@ in order to use the photo restoration tool. See the <code>--help</code> output f
 <p>The <code>setup</code> command defines what happens during <code>garden setup old-photos</code>.</p>
 <p>The <code>run</code> command defines when happens during <code>garden run old-photos</code>.</p>
 <p>Additional command-line arguments specified after the double-dash <code>--</code> marker are
-available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$N</code>, ... <code>&quot;$@&quot;</code> shell variables.</p>
+available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$N</code>, ... <code>"$@"</code> shell variables.</p>
 <pre><code class="language-yaml">trees:
     old-photos:
         description: |
@@ -227,14 +227,14 @@ available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$
           $ garden setup old-photos
           $ garden run old-photos -- --help
 
-        url: &quot;https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life.git&quot;
+        url: "https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life.git"
         links:
-            - &quot;https://colab.research.google.com/drive/1NEm6AsybIiC5TwTU_4DqDkQO0nFRB-uA?usp=sharing&amp;authuser=2#scrollTo=32jCofdSr8AW&quot;
-            - &quot;http://raywzy.com/Old_Photo/&quot;
-            - &quot;https://news.ycombinator.com/item?id=25148253&quot;
+            - "https://colab.research.google.com/drive/1NEm6AsybIiC5TwTU_4DqDkQO0nFRB-uA?usp=sharing&amp;authuser=2#scrollTo=32jCofdSr8AW"
+            - "http://raywzy.com/Old_Photo/"
+            - "https://news.ycombinator.com/item?id=25148253"
 
         commands:
-            # &quot;setup&quot; uses &quot;&gt;&quot; post-commands to run &quot;setup/virtualenv&quot; and &quot;setup/download&quot;.
+            # "setup" uses "&gt;" post-commands to run "setup/virtualenv" and "setup/download".
             setup&gt;:
                 - setup/virtualenv
                 - setup/download
@@ -269,13 +269,13 @@ available to commands via conventional <code>$1</code>, <code>$2</code>, <code>$
                     test -d checkpoints || unzip checkpoints.zip
                 )
 
-            run: ${env3}/bin/python3 run.py &quot;$@&quot;
+            run: ${env3}/bin/python3 run.py "$@"
 
         environment:
-            PATH: &quot;${TREE_PATH}/${env3}/bin&quot;
+            PATH: "${TREE_PATH}/${env3}/bin"
 
 variables:
-    env3: $ python3 -c 'import sys; print(&quot;env%s%s&quot; % sys.version_info[:2])'
+    env3: $ python3 -c 'import sys; print("env%s%s" % sys.version_info[:2])'
 </code></pre>
 
                     </main>

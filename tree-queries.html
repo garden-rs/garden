@@ -182,7 +182,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="tree-queries"><a class="header" href="#tree-queries">Tree Queries</a></h1>
-<p>Garden commands use &quot;Tree Query&quot; arguments that specify which groups, gardens or trees
+<p>Garden commands use "Tree Query" arguments that specify which groups, gardens or trees
 to operate on. Tree Queries are strings that resolve to a set of trees.</p>
 <p>Strings with garden, group or tree names, <code>@tree</code> references, <code>%group</code> references,
 <code>:garden</code> references and wildcards are all Tree Queries.</p>
@@ -190,19 +190,19 @@ to operate on. Tree Queries are strings that resolve to a set of trees.</p>
 tree, in that order, when determining which trees to operate on.  When a
 garden or group is matched, all of its associated trees are used.</p>
 <h2 id="tree-queries-resolve-to-multiple-trees"><a class="header" href="#tree-queries-resolve-to-multiple-trees">Tree Queries Resolve to Multiple Trees</a></h2>
-<p>The &quot;cola&quot; garden in the configuration section contains multiple trees that can be
-operated on together by specifying &quot;cola&quot; as the tree query.</p>
-<pre><code class="language-bash"># Run &quot;git status -s&quot; over each tree in the &quot;cola&quot; garden.
+<p>The "cola" garden in the configuration section contains multiple trees that can be
+operated on together by specifying "cola" as the tree query.</p>
+<pre><code class="language-bash"># Run "git status -s" over each tree in the "cola" garden.
 garden exec cola git status -s
-# Run the custom &quot;status&quot; command over each tree in the &quot;cola&quot; garden.
+# Run the custom "status" command over each tree in the "cola" garden.
 garden status cola
-# Run the &quot;status&quot; and &quot;build&quot; commands over each tree in the &quot;cola&quot; garden.
+# Run the "status" and "build" commands over each tree in the "cola" garden.
 garden cmd cola status build
 </code></pre>
 <h2 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h2>
 <p>Garden understands shell wildcards in tree queries. Glob wildcards allow commands to
 operate on multiple sets of gardens, groups or trees.</p>
-<pre><code class="language-bash"># Clone trees whose name starts with &quot;git&quot; and run &quot;pwd&quot; in each tree.
+<pre><code class="language-bash"># Clone trees whose name starts with "git" and run "pwd" in each tree.
 garden grow '@git*'
 garden exec '@git*' pwd
 </code></pre>
@@ -210,18 +210,18 @@ garden exec '@git*' pwd
 <p>Paths can be used as a tree query as long as the specified directory refers to a tree
 known to Garden. If the path does not correspond to a tree known to garden then no
 commands will be run.</p>
-<pre><code class="language-bash"># Run &quot;build&quot; on the tree in the current directory and pass &quot;--verbose&quot; to the command.
+<pre><code class="language-bash"># Run "build" on the tree in the current directory and pass "--verbose" to the command.
 garden build . -- --verbose
 </code></pre>
 <p>The file system has the lowest priority relative to gardens, groups, and trees when
 expanding a tree query. If an argument is ambiguous and can, for example, refer to both
-a &quot;group&quot; name and a single tree's path on the file system, garden will interpret the
-argument as a &quot;group&quot;.</p>
+a "group" name and a single tree's path on the file system, garden will interpret the
+argument as a "group".</p>
 <p>Please note that <code>garden</code> will use <code>.</code> (dot, the current directory in file system jargon)
 as the default tree query for custom commands when no tree query is specified.</p>
 <pre><code class="language-bash"># This...
 garden build
-# is equivalent to specifying &quot;.&quot; as the tree query.
+# is equivalent to specifying "." as the tree query.
 garden build .
 </code></pre>
 <h2 id="resolving-trees-groups-or-gardens-only"><a class="header" href="#resolving-trees-groups-or-gardens-only">Resolving Trees, Groups or Gardens Only</a></h2>
@@ -232,9 +232,9 @@ garden build .
 <li><em><strong>%group</strong></em> - values prefixed with <code>%</code> resolve groups only</li>
 <li><em><strong>:garden</strong></em> - values prefixed with <code>:</code> resolve gardens only</li>
 </ul>
-<pre><code class="language-bash">garden grow @tree      # grow the tree called &quot;tree&quot;
-garden grow %group     # grow the group called &quot;group&quot;
-garden grow :garden    # grow the garden called &quot;garden&quot;
+<pre><code class="language-bash">garden grow @tree      # grow the tree called "tree"
+garden grow %group     # grow the group called "group"
+garden grow :garden    # grow the garden called "garden"
 </code></pre>
 <p>When no prefixes are used then the names are resolved in a specific order.
 Gardens have the highest priority, followed by groups, trees and lastly paths.</p>

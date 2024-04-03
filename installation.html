@@ -291,11 +291,11 @@ location. To do this we need to get the package's nix store output path.</p>
 The <code>output.path</code> field contains the Nix Store location of the <code>nix</code> package.
 For example, <code>nix derivation show</code> will contain output that looks like the following:</p>
 <pre><code class="language-yaml">{
-  &quot;/nix/store/n92qrx1j889bl2ippabpghsr4kyqbknh-garden-tools-1.0.0-beta2.drv&quot;: {
+  "/nix/store/n92qrx1j889bl2ippabpghsr4kyqbknh-garden-tools-1.0.0-beta2.drv": {
     # ...
-    &quot;outputs&quot;: {
-      &quot;out&quot;: {
-        &quot;path&quot;: &quot;/nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2&quot;
+    "outputs": {
+      "out": {
+        "path": "/nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2"
       }
     },
     # ...
@@ -303,12 +303,12 @@ For example, <code>nix derivation show</code> will contain output that looks lik
 }
 </code></pre>
 <p>You can use these details to open a shell with your previously-built <code>garden</code> package.</p>
-<pre><code class="language-bash">`nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
+<pre><code class="language-bash">nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
 </code></pre>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
 <p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
 <p>Garden is not supported on Windows.</p>
-<p>Garden &quot;should&quot; work fine on Windows if you install a shell (e.g. <code>bash.exe</code> or
+<p>Garden "should" work fine on Windows if you install a shell (e.g. <code>bash.exe</code> or
 <code>zsh.exe</code>) in <code>$PATH</code> and patch a few details to deal with Windows-isms, but Garden is
 untested and not supported by the core team on Windows or WSL.</p>
 <p>Issues related to Windows will be closed. Pull requests related to these systems are

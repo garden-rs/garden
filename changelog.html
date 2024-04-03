@@ -183,10 +183,24 @@
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden plant</code> now avoids updating the configuration when a tree is
+re-planted and its configuration contains expressions that evaluate
+to the same value as currently exist in git.
+(<a href="https://github.com/garden-rs/garden/-/issues/31">#31</a>)
+(<a href="https://github.com/garden-rs/garden/-/pull/32">#32</a>)</li>
+</ul>
 <p><strong>Development</strong>:</p>
 <ul>
-<li>The original github repository under <code>davvid</code>'s namespace was transferred to the
-<a href="https://github.com/garden-rs/garden">garden-rs</a> organization on github.</li>
+<li>
+<p>The original github repository under <code>davvid</code>'s namespace was transferred to the
+<a href="https://github.com/garden-rs/garden">garden-rs</a> organization on github.</p>
+</li>
+<li>
+<p>The <code>yaml-rust2</code> dependency was upgraded to <code>0.8.0</code> to avoid the <code>encoding</code> crate
+(<a href="https://rustsec.org/advisories/RUSTSEC-2021-0153">RUSTSEC-2021-0153</a>).</p>
+</li>
 </ul>
 <h2 id="v141"><a class="header" href="#v141">v1.4.1</a></h2>
 <p><em>Released 2024-03-22</em></p>
@@ -280,7 +294,7 @@ is used. Custom commands are identified as commands that expand to 2 or more
 command-line arguments. Thus, <code>python3</code> is not considered a custom command
 and <code>garden</code> will run <code>python3 -c &lt;string&gt;</code> to run commands. On the other
 hand, specifying <code>ruby -e</code> <em>is</em> considered a custom command because it
-expands to <code>[&quot;ruby&quot;, &quot;-e&quot;]</code> under the hood. If you need to use a custom
+expands to <code>["ruby", "-e"]</code> under the hood. If you need to use a custom
 command  that takes no additional command-line arguments then you can
 use <code>env</code> as an extra argument to have it be considered as a custom shell.
 For example, <code>env custom-shell</code> will cause <code>garden</code> to run
@@ -338,7 +352,7 @@ is the only section required in order to run <code>garden</code> commands.</p>
 omit <code>garden.root</code> from their configuration in typical scenarios.</p>
 </li>
 <li>
-<p>Configuring <code>garden.root</code> to an empty string (<code>&quot;&quot;</code>) will behave as if <code>garden.root</code>
+<p>Configuring <code>garden.root</code> to an empty string (<code>""</code>) will behave as if <code>garden.root</code>
 is configured to the current directory from which <code>garden</code> was run.</p>
 </li>
 <li>
@@ -492,7 +506,7 @@ using <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt-
 <li>
 <p>Trees, Groups, Gardens and Commands defined in the top-level <code>garden.yaml</code> can now
 override entries defined via <code>garden.includes</code>. Configuration entities now follow
-&quot;last one wins&quot; semantics -- if the same entity is defined in multiple includes files
+"last one wins" semantics -- if the same entity is defined in multiple includes files
 then only the final definition will be used.
 (<a href="https://github.com/garden-rs/garden/issues/14">#14</a>)
 (<a href="https://github.com/garden-rs/garden/pull/15">#15</a>)</p>
@@ -640,7 +654,7 @@ runs a command across all trees before continuing on to the next command.
 </ul>
 <p><strong>Features</strong>:</p>
 <ul>
-<li><code>garden grow</code> can now grow trees using &quot;git worktree&quot; (#1).</li>
+<li><code>garden grow</code> can now grow trees using "git worktree" (#1).</li>
 <li><code>garden grow</code> learned to clone specific branches.</li>
 <li><code>garden grow</code> and <code>garden plant</code> can now handle bare repositories.</li>
 </ul>

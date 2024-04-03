@@ -251,7 +251,7 @@ Parent trees must be planted first before planting a child tree.</p>
 <p>Garden commands accept <a href="tree-queries.html">tree query</a> strings that are used to
 refer to sets of trees.</p>
 <p>Tree queries are glob string patterns that can be used to match the gardens,
-groups or trees defined in &quot;garden.yaml&quot;.</p>
+groups or trees defined in "garden.yaml".</p>
 <h2 id="garden-grow"><a class="header" href="#garden-grow">garden grow</a></h2>
 <pre><code class="language-bash">garden grow &lt;tree-query&gt;
 
@@ -306,10 +306,10 @@ of repositories by only having a single branch available.</p>
 </code></pre>
 <h3 id="wildcards"><a class="header" href="#wildcards">Wildcards</a></h3>
 <p>Wildcards are supported in the trees queries supported by <code>garden grow</code>.
-<code>garden grow 'glob*'</code> grows the gardens, groups or trees that start with &quot;glob&quot;.</p>
+<code>garden grow 'glob*'</code> grows the gardens, groups or trees that start with "glob".</p>
 <p>If <code>garden.yaml</code> contains <code>gardens</code> whose name matches the query then the trees
 associated with each garden are grown.</p>
-<p>If no gardens are found then garden will search for &quot;groups&quot; that match
+<p>If no gardens are found then garden will search for "groups" that match
 the query. If groups are found then the trees within each group will be grown.</p>
 <p>If no gardens and no groups are found then will garden search for trees and grow
 those whose names match the query string.</p>
@@ -350,8 +350,8 @@ specified using the <code>gitconfig</code> key.</p>
 <pre><code class="language-yaml">trees:
   foo:
     gitconfig:
-      # Override the submodule URL for &quot;thirdparty/repo&quot;.
-      submodule.thirdparty/repo.url: &quot;git@private.example.com:thirdparty/repo.git&quot;
+      # Override the submodule URL for "thirdparty/repo".
+      submodule.thirdparty/repo.url: "git@private.example.com:thirdparty/repo.git"
 </code></pre>
 <p>Multi-valued <code>git config --add</code> values are also supported, for example
 the <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt-remoteltnamegtpushurl">remote.$name.pushurl</a>
@@ -360,12 +360,12 @@ value can be set to multiple values.</p>
 <a href="https://git-scm.com/docs/git-config#Documentation/git-config.txt---add">git config --add $name $value</a>.</p>
 <pre><code class="language-yaml">trees:
     foo:
-        url: &quot;git@example.org:trees/foo.git&quot;
+        url: "git@example.org:trees/foo.git"
         gitconfig:
             remote.origin.pushurl:
-                # Push to multiple remotes when using &quot;git push origin&quot;
-                - &quot;git@jupiter.example.org:trees/foo.git&quot;
-                - &quot;git@saturn.example.org:trees/foo.git&quot;
+                # Push to multiple remotes when using "git push origin"
+                - "git@jupiter.example.org:trees/foo.git"
+                - "git@saturn.example.org:trees/foo.git"
 </code></pre>
 <h3 id="bare-repositories"><a class="header" href="#bare-repositories">Bare Repositories</a></h3>
 <p>To clone bare repositories use <code>bare: true</code> in the tree configuration.</p>
@@ -401,10 +401,10 @@ configured in the <code>commands</code> section for templates, trees, gardens,
 and the top-level scope.</p>
 <pre><code class="language-bash"># Example usage
 
-# Run the test&quot; command in the cola and vx trees
+# Run the test" command in the cola and vx trees
 garden test git-cola vx
 
-# Use &quot;--&quot; to forward arguments to the custom commands
+# Use "--" to forward arguments to the custom commands
 garden test git-cola -- --verbose
 </code></pre>
 <p>Custom commands can be defined at either the tree or garden scope.
@@ -416,19 +416,19 @@ by the garden's <code>test</code> command.</p>
 A POSIX-compatible shell must be installed in your <code>$PATH</code>.</p>
 <p>Additional command-line <code>&lt;arguments&gt;</code> specified after a double-dash (<code>--</code>)
 end-of-options marker are forwarded to each command.</p>
-<p><code>&quot;$0&quot;</code> in a custom command points to the current garden executable and can be
+<p><code>"$0"</code> in a custom command points to the current garden executable and can be
 used to rerun garden from within a garden command.</p>
 <p>Additional arguments are available to command strings by using the traditional
-<code>&quot;$@&quot;</code> shell syntax.  When additional arguments are present <code>&quot;$1&quot;</code>, <code>&quot;$2&quot;</code>, and
+<code>"$@"</code> shell syntax.  When additional arguments are present <code>"$1"</code>, <code>"$2"</code>, and
 subsequent variables will be set according to each argument.</p>
 <pre><code class="language-yaml"># Commands can be defined in multiple ways.
-# Strings and lists of strings are both supported via &quot;String to List Promotion&quot;.
-# The YAML reader accepts multi-line strings using the &quot;|&quot; pipe syntax.
+# Strings and lists of strings are both supported via "String to List Promotion".
+# The YAML reader accepts multi-line strings using the "|" pipe syntax.
 
 commands:
-    one-line: echo hello &quot;$@&quot;
+    one-line: echo hello "$@"
     multi-line: |
-        if test &quot;${debian}&quot; = &quot;yes&quot;
+        if test "${debian}" = "yes"
         then
             sudo apt install rust-all
         fi
@@ -450,7 +450,7 @@ trees:
 
 gardens:
     all:
-        trees: &quot;*&quot;
+        trees: "*"
         commands:
             print-pwd: pwd
 </code></pre>
@@ -467,25 +467,25 @@ next argument to the specified command.</p>
 </code></pre>
 <p>Using <code>#!python3 -c</code> as the shebang line, as demonstrated above in the <code>python-cmd</code>
 command, will result in the remainder of the command getting passed as the next argument.</p>
-<p>Concretely, <code>garden</code> will run <code>python3 -c &quot;import sys\nprint(sys.implementation)&quot;</code> when
+<p>Concretely, <code>garden</code> will run <code>python3 -c "import sys\nprint(sys.implementation)"</code> when
 the <code>garden python-cmd</code> command is run.</p>
 <h3 id="garden-shell"><a class="header" href="#garden-shell">Garden Shell</a></h3>
 <p>The <code>garden.shell</code> configuration value controls which shell interpreter
 is used to interpret custom commands.</p>
 <pre><code class="language-yaml">garden:
     shell: zsh  # zsh is used by default when available. Uses bash, dash or sh otherwise.
-    shell-wordsplit: true  # Words are split by default in zsh using &quot;zsh -o shwordsplit&quot;
-    shell-errexit: true  # Non-zero exit status stops execution using &quot;zsh -e&quot;.
+    shell-wordsplit: true  # Words are split by default in zsh using "zsh -o shwordsplit"
+    shell-errexit: true  # Non-zero exit status stops execution using "zsh -e".
 </code></pre>
 <p><code>garden.shell</code> defaults to <code>zsh</code> when <code>zsh</code> is installed but can be set to any shell
-that accepts <code>-e</code> and <code>-c '&lt;string&gt;</code> options (for example <code>ksh</code>).
+that accepts <code>-e</code> and <code>-c &lt;string&gt;</code> options (for example <code>ksh</code>).
 If <code>zsh</code> is not installed then <code>bash</code> or <code>dash</code> will be used instead.
 If neither <code>zsh</code>, <code>bash</code> nor <code>dash</code> is installed then <code>sh</code> will be used.</p>
-<p>Each command runs under <code>[&quot;zsh&quot;, &quot;-e&quot;, &quot;-c&quot;, &quot;&lt;command&gt;&quot;]</code> with the resolved
+<p>Each command runs under <code>["zsh", "-e", "-c", "&lt;command&gt;"]</code> with the resolved
 environment from the corresponding garden, group, or tree.</p>
 <p>Multi-line and multi-statement command strings will stop executing as soon as the
 first non-zero exit code is encountered due to the use of the <code>-e</code> shell option.
-Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> &quot;errexit&quot; option.</p>
+Use the <code>-n | --no-errexit</code> option to inhibit the use of the <code>-e</code> "errexit" option.</p>
 <p>The <code>--no-errexit</code> option causes commands with multiple statements to run to completion
 even when a non-zero exit code is encountered. This is akin to a regular shell script.</p>
 <p>Configure <code>garden.shell-errexit</code> to <code>false</code> in <code>garden.yaml</code> to opt-out of this behavior.
@@ -528,7 +528,7 @@ namely <code>nodejs</code>, <code>perl</code> and <code>ruby</code>, which are a
 are expanded into their corresponding command-line.</p>
 <p>This allows you to specify <code>python3</code> as the shell because <code>garden</code> assumes that
 it can call <code>python3 -c &lt;string&gt;</code> to execute commands.</p>
-<pre><code class="language-yaml"># This uses &quot;python -c &lt;string&gt;&quot; to run commands.
+<pre><code class="language-yaml"># This uses "python -c &lt;string&gt;" to run commands.
 garden:
     shell: python3
 commands:
@@ -538,15 +538,15 @@ commands:
         print(platform.platform())
 
 # Builtin shorthand shell values are special-cased internally.
-# This uses &quot;zsh -o shwordsplit -e -c &lt;string&gt;&quot; to run commands.
+# This uses "zsh -o shwordsplit -e -c &lt;string&gt;" to run commands.
 garden:
     shell: zsh
 
-# This uses &quot;bash -e -c &lt;string&gt;&quot; to run commands.
+# This uses "bash -e -c &lt;string&gt;" to run commands.
 garden:
     shell: bash
 
-# Use &quot;#!&quot; shebang lines to use a custom interpreters for a command.
+# Use "#!" shebang lines to use a custom interpreters for a command.
 commands:
     info: |
         #!python3 -c
@@ -560,7 +560,7 @@ The options that you specify will be used instead. You must specify <code>-c</co
 arguments yourself when <code>garden</code> is configured with a custom command.
 The <code>garden.shell-wordsplit</code> and <code>garden.shell-errexit</code> options have no effect
 when using custom shell commands.</p>
-<pre><code class="language-yaml"># Use &quot;zsh -c&quot; directly without &quot;-o shwordsplit&quot; and &quot;-e&quot;.
+<pre><code class="language-yaml"># Use "zsh -c" directly without "-o shwordsplit" and "-e".
 garden:
     shell: zsh -c
 
@@ -727,12 +727,12 @@ creating the shell.</p>
 <p>If you would like to customize the command to use for <code>garden shell</code> then
 you can configure <code>garden.interactive-shell</code>. This value overrides <code>garden.shell</code>
 and is only used by the <code>garden shell</code> command.</p>
-<pre><code class="language-yaml"># Launch a fish login shell for &quot;garden shell&quot;.
+<pre><code class="language-yaml"># Launch a fish login shell for "garden shell".
 garden:
     interactive-shell: fish
 </code></pre>
 <p>Arbitrary command interpreters can be specified.</p>
-<pre><code class="language-yaml"># Launch a python interpreter for &quot;garden shell&quot;.
+<pre><code class="language-yaml"># Launch a python interpreter for "garden shell".
 garden:
     interactive-shell: python3 -B
 </code></pre>
@@ -761,7 +761,7 @@ have since been removed from your version-controlled garden configuration.</p>
 <h2 id="enable-deletions"><a class="header" href="#enable-deletions">Enable deletions</a></h2>
 <pre><code>--rm
 </code></pre>
-<p>The <code>garden prune</code> command uses a no-op &quot;safe mode&quot; which does not actually
+<p>The <code>garden prune</code> command uses a no-op "safe mode" which does not actually
 delete repositories by default. Deletions must be enabled by specifying the
 <code>--rm</code> option.</p>
 <p>Use the <code>--rm</code> option only after you have verified that <code>garden prune</code> is not
@@ -784,14 +784,14 @@ as the garden file.</p>
 <p>Specifying a maximum depth will not remove repositories deeper than the specified
 depth. For example, <code>--max-depth 0</code> will not remove repositories in subdirectories
 below the directory containing the garden file.</p>
-<h2 id="enable-scripted-usage-by-answering-yes-to-all-prompts"><a class="header" href="#enable-scripted-usage-by-answering-yes-to-all-prompts">Enable scripted usage by answering &quot;yes&quot; to all prompts</a></h2>
+<h2 id="enable-scripted-usage-by-answering-yes-to-all-prompts"><a class="header" href="#enable-scripted-usage-by-answering-yes-to-all-prompts">Enable scripted usage by answering "yes" to all prompts</a></h2>
 <pre><code>--no-prompt
 </code></pre>
 <p>The <code>garden prune</code> command interactively prompts before removing each repository.
 The prompt looks like the following:</p>
 <pre><code class="language-bash"># /home/user/src/example
-Delete the &quot;example&quot; repository?
-WARNING: &quot;all&quot; deletes &quot;example&quot; and ALL subsequent repositories!
+Delete the "example" repository?
+WARNING: "all" deletes "example" and ALL subsequent repositories!
 Choices: yes, no, all, quit [y,n,all,q]?
 </code></pre>
 <p>Entering <code>y</code> (or <code>yes</code>) at the prompt will delete the repository and all of its files.</p>
@@ -831,9 +831,9 @@ to include completions for custom commands.</p>
 is upgraded to ensure that all of the options and commands have up to date completions.</p>
 <h3 id="bash"><a class="header" href="#bash">Bash</a></h3>
 <p>Add the following snippet to your <code>~/.bashrc</code> to enable <code>bash</code> tab completions.</p>
-<pre><code class="language-bash">if test -n &quot;$PS1&quot; &amp;&amp; type garden &gt;/dev/null 2&gt;&amp;1
+<pre><code class="language-bash">if test -n "$PS1" &amp;&amp; type garden &gt;/dev/null 2&gt;&amp;1
 then
-    eval &quot;$(garden completion bash)&quot; 2&gt;/dev/null
+    eval "$(garden completion bash)" 2&gt;/dev/null
 fi
 </code></pre>
 <p>Use <code>garden completion --commands bash</code> instead of <code>garden completion bash</code>

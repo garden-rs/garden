@@ -192,11 +192,11 @@ mkdir -p cola &amp;&amp; cd cola
 wget https://gitlab.com/garden-rs/garden/-/raw/main/doc/src/examples/git-cola/garden.yaml
 cat garden.yaml
 
-# One-time setup: Clone all of the repos in the &quot;cola&quot; garden and use a custom
-# &quot;garden grow&quot; is a garden built-in command that clones.
+# One-time setup: Clone all of the repos in the "cola" garden and use a custom
+# "garden grow" is a garden built-in command that clones.
 garden grow cola
 
-# &quot;garden setup&quot; command defined in &quot;garden.yaml&quot; to initializes the environment.
+# "garden setup" command defined in "garden.yaml" to initializes the environment.
 garden setup cola
 
 # All set! Now we can run Git Cola from the development environment.
@@ -205,12 +205,12 @@ garden run
 # Daily development workflow: run tests in each repository in-place.
 garden test cola
 
-# Commands can be passed to the underlying &quot;run&quot; command to run Git Cola
+# Commands can be passed to the underlying "run" command to run Git Cola
 # against any Git repository.
 garden run -- --repo path/to/any/git/tree
 
-# These projects don't need to be &quot;built&quot;, so this is technically a no-op.
-# A Rust or C++ Rust project could use something like this to run &quot;make&quot;
+# These projects don't need to be "built", so this is technically a no-op.
+# A Rust or C++ Rust project could use something like this to run "make"
 # in each repository.
 garden build cola
 </code></pre>
@@ -220,11 +220,11 @@ development virtualenv is present in the <code>./dist</code> directory.</p>
 <p>The following is the contents of the <code>garden.yaml</code> file used in this example.</p>
 <pre><code class="language-yaml"># Create environments for developing Git Cola against development versions of Git.
 #
-# The following gardens are defined: &quot;cola&quot;, &quot;cola/main&quot; and &quot;cola/next&quot;.
+# The following gardens are defined: "cola", "cola/main" and "cola/next".
 #
-# The &quot;cola&quot; garden runs git-cola using the &quot;git&quot; command from your $PATH.
-# The &quot;cola/main&quot; garden runs git-cola using git.git's &quot;main&quot; branch.
-# The &quot;cola/next&quot; garden runs git-cola using git.git's &quot;next&quot; branch.
+# The "cola" garden runs git-cola using the "git" command from your $PATH.
+# The "cola/main" garden runs git-cola using git.git's "main" branch.
+# The "cola/next" garden runs git-cola using git.git's "next" branch.
 #
 # One-time Setup:
 #
@@ -238,10 +238,10 @@ development virtualenv is present in the <code>./dist</code> directory.</p>
 #
 # Development workflows:
 #
-# * Build the &quot;cola/main&quot; garden using git.git's &quot;main&quot; branch:
+# * Build the "cola/main" garden using git.git's "main" branch:
 #   garden build cola/main
 #
-# * Build the &quot;cola/next&quot; garden using git.git's &quot;next&quot; branch:
+# * Build the "cola/next" garden using git.git's "next" branch:
 #   garden build cola/next
 #
 # * Run Git Cola
@@ -273,9 +273,9 @@ variables:
 
 commands:
     add-all: git add --update
-    diff: GIT_PAGER= git diff --patience --color-words &quot;$@&quot;
-    lol: git log --decorate --graph --oneline &quot;$@&quot; &amp;&amp; echo
-    run: vx ${prefix} git cola &quot;$@&quot;
+    diff: GIT_PAGER= git diff --patience --color-words "$@"
+    lol: git log --decorate --graph --oneline "$@" &amp;&amp; echo
+    run: vx ${prefix} git cola "$@"
     status:
         - git status --short
         - git branch
@@ -289,20 +289,20 @@ templates:
             PYTHONPATH: ${TREE_PATH}
     makefile:
         commands:
-            build: make -j ${jobs} prefix=&quot;${prefix}&quot; all &quot;$@&quot;
-            install: make -j ${jobs} prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-            test: make -j ${jobs} prefix=&quot;${prefix}&quot; test &quot;$@&quot;
-            doc: make -j ${jobs} prefix=&quot;${prefix}&quot; doc &quot;$@&quot;
+            build: make -j ${jobs} prefix="${prefix}" all "$@"
+            install: make -j ${jobs} prefix="${prefix}" install "$@"
+            test: make -j ${jobs} prefix="${prefix}" test "$@"
+            doc: make -j ${jobs} prefix="${prefix}" doc "$@"
 
 trees:
     # git/main is the parent worktree that shares its .git storage with the child
-    # git/next worktrees using &quot;git worktree&quot; -- https://git-scm.com/docs/git-worktree
+    # git/next worktrees using "git worktree" -- https://git-scm.com/docs/git-worktree
     git/main:
         url: https://github.com/git/git.git
         templates: makefile
         environment:
             PATH: ${TREE_PATH}/bin-wrappers
-            # git/next is a &quot;git worktree&quot; for git.git's &quot;next&quot; branch.
+            # git/next is a "git worktree" for git.git's "next" branch.
     git/next:
         worktree: git/main
         branch: next
@@ -313,10 +313,10 @@ trees:
         templates: [bin, python]
         commands:
             setup: garden dev
-            test/cola: garden test &quot;$@&quot;
-            install: garden -D prefix=&quot;${prefix}&quot; install &quot;$@&quot;
-            test: garden test &quot;$@&quot;
-            doc: garden doc &quot;$@&quot;
+            test/cola: garden test "$@"
+            install: garden -D prefix="${prefix}" install "$@"
+            test: garden test "$@"
+            doc: garden doc "$@"
 
     qtpy:
         description: Qt abstraction library used by git-cola
@@ -327,13 +327,13 @@ trees:
     vx:
         description: Utility for activating Python virtualenvs
         url: https://gitlab.com/davvid/vx.git
-        depth: 1  # Create a shallow clone using &quot;git clone --depth=1&quot;
+        depth: 1  # Create a shallow clone using "git clone --depth=1"
         environment:
             PATH: ${TREE_PATH}
         commands:
             test: make test
 
-    # This tree allows the &quot;run&quot; command to be run from any directory.
+    # This tree allows the "run" command to be run from any directory.
     cwd:
         path: ${PWD}
 
@@ -381,7 +381,7 @@ It contains just the virtualenv created needed to run it.</p>
 independently of their source repositories we have to install them into the
 <code>./dist</code> directory.</p>
 <p>The following example installs Git and Git Cola into the <code>./dist</code> directory
-by running the &quot;make install&quot; targets in each repo:</p>
+by running the "make install" targets in each repo:</p>
 <pre><code class="language-bash">garden install cola
 </code></pre>
 <p>Now we can test the installed tools directly by adding <code>./dist/bin</code> to our
