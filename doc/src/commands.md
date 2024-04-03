@@ -421,7 +421,7 @@ garden:
 ```
 
 `garden.shell` defaults to `zsh` when `zsh` is installed but can be set to any shell
-that accepts `-e` and `-c '<string>` options (for example `ksh`).
+that accepts `-e` and `-c <string>` options (for example `ksh`).
 If `zsh` is not installed then `bash` or `dash` will be used instead.
 If neither `zsh`, `bash` nor `dash` is installed then `sh` will be used.
 
