@@ -22,9 +22,21 @@ commands:
     build: cargo build "$@"
     check<:
         - check/fmt
+        - check/audit
         - check/clippy
+        - check/deny
         - test
+    check/audit: |
+        if type cargo-audit >/dev/null 2>&1
+        then
+            cargo audit "$@"
+        fi
     check/clippy: cargo clippy --all "$@" -- -D warnings
+    check/deny: |
+        if type cargo-deny >/dev/null 2>&1
+        then
+            cargo deny check "$@"
+        fi
     check/fmt: cargo fmt --check "$@"
     clean: cargo clean "$@"
     commit: git commit "$@"
