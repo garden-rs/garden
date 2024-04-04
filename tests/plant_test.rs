@@ -230,6 +230,58 @@ fn plant_keep_variables_oneline() -> Result<()> {
     Ok(())
 }
 
+/// `garden plant` is able to add remotes to a oneline tree
+#[test]
+#[named]
+fn plant_add_remote_to_oneline_tree() -> Result<()> {
+    let tree_name = "example/oneline";
+    let fixture = common::BareRepoFixture::new(function_name!());
+
+    let mut garden_yaml = fixture.root_pathbuf();
+    garden_yaml.push("garden.yaml");
+    std::fs::copy("tests/data/plant.yaml", &garden_yaml)?;
+
+    let config_path = fixture.path("garden.yaml");
+    let config_pathbuf = std::path::PathBuf::from(config_path);
+
+    // Check that the config uses ${storage} variables for url and remotes.
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+    }
+    // Grow the tree.
+    common::exec_garden(&["--chdir", &fixture.root(), "grow", tree_name])?;
+    assert!(fixture.pathbuf(tree_name).exists());
+
+    // Add a remote called "new-remote".
+    let oneline_path = fixture.path(&tree_name);
+    let cmd = ["git", "remote", "add", "new-remote", "new-url"];
+    common::assert_cmd(&cmd, &oneline_path);
+
+    // Re-plant the tree and ensure that variables are retained and the new remote is recorded.
+    common::exec_garden(&["--chdir", &fixture.root(), "plant", tree_name])?;
+    {
+        let app_context = garden::model::ApplicationContext::from_path_and_root(
+            &config_pathbuf,
+            Some(&fixture.root_pathbuf()),
+        )?;
+        let cfg = app_context.get_root_config();
+        let tree = cfg.get_tree(tree_name).unwrap();
+        assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
+        assert_eq!(
+            tree.remotes.get("new-remote").unwrap().get_expr(),
+            "new-url"
+        );
+    }
+
+    Ok(())
+}
+
 /// `garden plant` retains "${variable}" references for a simple tree.
 #[test]
 #[named]

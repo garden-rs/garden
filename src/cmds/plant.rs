@@ -292,22 +292,22 @@ pub(crate) fn plant_path(
     }
 
     // Update the "url" field.
+    let mut update_url = true;
     let mut url = String::new();
     {
         let remote_url = format!("remote.{default_remote}.url");
         let command = ["git", "config", remote_url.as_str()];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(remote_url) = cmd::stdout_to_string(exec) {
-            let mut update = true;
             url = remote_url.clone();
             if let Some(current_url) = app_context
                 .and_then(|ctx| get_url_for_remote(ctx, config, &tree_name, &default_remote))
             {
                 // Leave existing remotes as-is if their evaluated value
                 // resolves to the value from git.
-                update = current_url != remote_url;
+                update_url = current_url != remote_url;
             }
-            if update {
+            if update_url {
                 entry.insert(url_key.clone(), Yaml::String(remote_url));
             }
         }
@@ -347,6 +347,9 @@ pub(crate) fn plant_path(
             let is_still_string = entry.len() == 1 && entry.contains_key(&url_key);
             if is_string && is_still_string {
                 *tree_entry = Yaml::String(url);
+            } else if is_string && !is_still_string && !update_url {
+                entry.insert(url_key, tree_entry.clone());
+                *tree_entry = Yaml::Hash(entry);
             } else {
                 *tree_entry = Yaml::Hash(entry);
             }
