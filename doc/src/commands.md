@@ -137,9 +137,9 @@ cloned and checked out when the tree is grown.
 
 ```yaml
 trees:
-    example:
-        branch: dev
-        url: git@example.org:trees/example.git
+  example:
+    branch: dev
+    url: git@example.org:trees/example.git
 ```
 
 `garden grow example` clones the repository using `git clone --branch=dev`.
@@ -152,9 +152,9 @@ The `depth: <integer>` tree parameter is used to create shallow clones.
 
 ```yaml
 trees:
-    example:
-        depth: 42
-        url: git@example.org:trees/example.git
+  example:
+    depth: 42
+    url: git@example.org:trees/example.git
 ```
 
 `garden grow example` clones the repository using:
@@ -176,11 +176,11 @@ This par mater is typically used in conjunction with `branch: <branch-name>` and
 
 ```yaml
 trees:
-    example:
-        branch: dev
-        depth: 1
-        single-branch: true
-        url: git@example.org:trees/example.git
+  example:
+    branch: dev
+    depth: 1
+    single-branch: true
+    url: git@example.org:trees/example.git
 ```
 
 
@@ -210,15 +210,15 @@ worktrees.
 
 ```yaml
 trees:
-    example/main: git@example.org:trees/example.git
+  example/main: git@example.org:trees/example.git
 
-    example/dev:
-        worktree: example/main
-        branch: dev
+  example/dev:
+    worktree: example/main
+    branch: dev
 
-    example/v2:
-        worktree: example/main
-        branch: v2
+  example/v2:
+    worktree: example/main
+    branch: v2
 ```
 
 This example uses `example/main` tree for the shared storage and two additional worktrees.
@@ -232,11 +232,11 @@ local branch names (the `key`) to a remote branch name expression (the `value`).
 
 ```yaml
 trees:
-    example/branches:
-        branch: local
-        branches:
-            local: origin/dev
-            dev: origin/dev
+  example/branches:
+    branch: local
+    branches:
+      local: origin/dev
+      dev: origin/dev
 ```
 
 The above configuration creates local branches called `local` and `dev` and checks out
@@ -264,13 +264,13 @@ Use a list as the value for the key and multiple values will be added using
 
 ```yaml
 trees:
-    foo:
-        url: "git@example.org:trees/foo.git"
-        gitconfig:
-            remote.origin.pushurl:
-                # Push to multiple remotes when using "git push origin"
-                - "git@jupiter.example.org:trees/foo.git"
-                - "git@saturn.example.org:trees/foo.git"
+  foo:
+    url: "git@example.org:trees/foo.git"
+    gitconfig:
+      remote.origin.pushurl:
+        # Push to multiple remotes when using "git push origin"
+        - "git@jupiter.example.org:trees/foo.git"
+        - "git@saturn.example.org:trees/foo.git"
 ```
 
 ### Bare Repositories
@@ -279,9 +279,9 @@ To clone bare repositories use `bare: true` in the tree configuration.
 
 ```yaml
 trees:
-    example:
-        bare: true
-        url: url
+  example:
+    bare: true
+    url: url
 ```
 
 Bare clones are created by default when the tree path ends in `.git`.
@@ -289,16 +289,16 @@ For example, a tree called `example.git` will be `bare: true` by default.
 
 ```yaml
 trees:
-    example.git: git@example.org:trees/example.git
+  example.git: git@example.org:trees/example.git
 ```
 
 Setting `bare: false` overrides the name-based detection of bare repositories.
 
 ```yaml
 trees:
-    example.git:
-        bare: false
-        url: git@example.org:tree/example.git
+  example.git:
+    bare: false
+    url: git@example.org:tree/example.git
 ```
 
 ## garden cmd
@@ -357,33 +357,33 @@ subsequent variables will be set according to each argument.
 # The YAML reader accepts multi-line strings using the "|" pipe syntax.
 
 commands:
-    one-line: echo hello "$@"
-    multi-line: |
-        if test "${debian}" = "yes"
-        then
-            sudo apt install rust-all
-        fi
-    multiple-commands:
-        - echo a $1 ${name}
-        - |
-            echo b $3
-            echo c $4
+  one-line: echo hello "$@"
+  multi-line: |
+    if test "${debian}" = "yes"
+    then
+        sudo apt install rust-all
+    fi
+  multiple-commands:
+    - echo a $1 ${name}
+    - |
+        echo b $3
+        echo c $4
 
 variables:
-    debian: $ type apt-get >/dev/null && echo yes || echo no
-    name: value
+  debian: $ type apt-get >/dev/null && echo yes || echo no
+  name: value
 
 # Commands can also be defined at tree and garden scope
 trees:
-    our-tree:
-        commands:
-            tree-cmd: echo ${TREE_NAME}
+  our-tree:
+    commands:
+      tree-cmd: echo ${TREE_NAME}
 
 gardens:
-    all:
-        trees: "*"
-        commands:
-            print-pwd: pwd
+  all:
+    trees: "*"
+    commands:
+      print-pwd: pwd
 ```
 
 #### Shebang (#!) Commands
@@ -396,10 +396,10 @@ next argument to the specified command.
 
 ```yaml
 commands:
-    python-cmd: |
-        #!python3 -c
-        import sys
-        print(sys.implementation)
+  python-cmd: |
+    #!python3 -c
+    import sys
+    print(sys.implementation)
 ```
 
 Using `#!python3 -c` as the shebang line, as demonstrated above in the `python-cmd`
@@ -415,9 +415,9 @@ is used to interpret custom commands.
 
 ```yaml
 garden:
-    shell: zsh  # zsh is used by default when available. Uses bash, dash or sh otherwise.
-    shell-wordsplit: true  # Words are split by default in zsh using "zsh -o shwordsplit"
-    shell-errexit: true  # Non-zero exit status stops execution using "zsh -e".
+  shell: zsh  # zsh is used by default when available. Uses bash, dash or sh otherwise.
+  shell-wordsplit: true  # Words are split by default in zsh using "zsh -o shwordsplit"
+  shell-errexit: true  # Non-zero exit status stops execution using "zsh -e".
 ```
 
 `garden.shell` defaults to `zsh` when `zsh` is installed but can be set to any shell
@@ -487,28 +487,28 @@ it can call `python3 -c <string>` to execute commands.
 ```yaml
 # This uses "python -c <string>" to run commands.
 garden:
-    shell: python3
+  shell: python3
 commands:
-    hello: print('hello world')
-    info: |
-        import platform
-        print(platform.platform())
+  hello: print('hello world')
+  info: |
+    import platform
+    print(platform.platform())
 
 # Builtin shorthand shell values are special-cased internally.
 # This uses "zsh -o shwordsplit -e -c <string>" to run commands.
 garden:
-    shell: zsh
+  shell: zsh
 
 # This uses "bash -e -c <string>" to run commands.
 garden:
-    shell: bash
+  shell: bash
 
 # Use "#!" shebang lines to use a custom interpreters for a command.
 commands:
-    info: |
-        #!python3 -c
-        import platform
-        print(platform.platform())
+  info: |
+    #!python3 -c
+    import platform
+    print(platform.platform())
 ```
 
 `garden.shell` also allows you to completely override the command used for interpreting
@@ -522,11 +522,11 @@ when using custom shell commands.
 ```yaml
 # Use "zsh -c" directly without "-o shwordsplit" and "-e".
 garden:
-    shell: zsh -c
+  shell: zsh -c
 
 # Additional examples.
 garden:
-    shell: python3 -s -u -c
+  shell: python3 -s -u -c
 ```
 
 ### Shell Syntax
@@ -546,9 +546,9 @@ be accessed using the braced-variable syntax.
 
 ```yaml
 commands:
-    example-command: |
-        shell_variable=$(date +%s)
-        echo hello $OSTYPE $shell_variable
+  example-command: |
+    shell_variable=$(date +%s)
+    echo hello $OSTYPE $shell_variable
 ```
 
 The plain `$variable` syntax is reserved for use by the shell commands used in
@@ -643,14 +643,14 @@ a command.
 
 ```yaml
 commands:
-    custom-cmd: echo custom-cmd
-    custom-cmd<: pre
-    custom-cmd>:
-        - post1
-        - post2
-    pre: echo before
-    post1: echo after1
-    post2: echo after2
+  custom-cmd: echo custom-cmd
+  custom-cmd<: pre
+  custom-cmd>:
+    - post1
+    - post2
+  pre: echo before
+  post1: echo after1
+  post2: echo after2
 ```
 
 Running `garden custom-cmd` with the above configuration runs the following commands:
@@ -743,7 +743,7 @@ and is only used by the `garden shell` command.
 ```yaml
 # Launch a fish login shell for "garden shell".
 garden:
-    interactive-shell: fish
+  interactive-shell: fish
 ```
 
 Arbitrary command interpreters can be specified.
@@ -751,7 +751,7 @@ Arbitrary command interpreters can be specified.
 ```yaml
 # Launch a python interpreter for "garden shell".
 garden:
-    interactive-shell: python3 -B
+  interactive-shell: python3 -B
 ```
 
 

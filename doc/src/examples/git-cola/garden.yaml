@@ -47,94 +47,94 @@
 
 # The following variables are used in the custom commands below.
 variables:
-    # A virtualenv is created in the ./dist/git-cola/env3 directory.
-    prefix: ${GARDEN_ROOT}/git-cola/env3
-    jobs: $ nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 8
+  # A virtualenv is created in the ./dist/git-cola/env3 directory.
+  prefix: ${GARDEN_ROOT}/git-cola/env3
+  jobs: $ nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 8
 
 commands:
-    add-all: git add --update
-    diff: GIT_PAGER= git diff --patience --color-words "$@"
-    lol: git log --decorate --graph --oneline "$@" && echo
-    run: vx ${prefix} git cola "$@"
-    status:
-        - git status --short
-        - git branch
+  add-all: git add --update
+  diff: GIT_PAGER= git diff --patience --color-words "$@"
+  lol: git log --decorate --graph --oneline "$@" && echo
+  run: vx ${prefix} git cola "$@"
+  status:
+    - git status --short
+    - git branch
 
 templates:
-    bin:
-        environment:
-            PATH: ${TREE_PATH}/bin
-    python:
-        environment:
-            PYTHONPATH: ${TREE_PATH}
-    makefile:
-        commands:
-            build: make -j ${jobs} prefix="${prefix}" all "$@"
-            install: make -j ${jobs} prefix="${prefix}" install "$@"
-            test: make -j ${jobs} prefix="${prefix}" test "$@"
-            doc: make -j ${jobs} prefix="${prefix}" doc "$@"
+  bin:
+    environment:
+      PATH: ${TREE_PATH}/bin
+  python:
+    environment:
+      PYTHONPATH: ${TREE_PATH}
+  makefile:
+    commands:
+      build: make -j ${jobs} prefix="${prefix}" all "$@"
+      install: make -j ${jobs} prefix="${prefix}" install "$@"
+      test: make -j ${jobs} prefix="${prefix}" test "$@"
+      doc: make -j ${jobs} prefix="${prefix}" doc "$@"
 
 trees:
-    # git/main is the parent worktree that shares its .git storage with the child
-    # git/next worktrees using "git worktree" -- https://git-scm.com/docs/git-worktree
-    git/main:
-        url: https://github.com/git/git.git
-        templates: makefile
-        environment:
-            PATH: ${TREE_PATH}/bin-wrappers
-            # git/next is a "git worktree" for git.git's "next" branch.
-    git/next:
-        worktree: git/main
-        branch: next
+  # git/main is the parent worktree that shares its .git storage with the child
+  # git/next worktrees using "git worktree" -- https://git-scm.com/docs/git-worktree
+  git/main:
+    url: https://github.com/git/git.git
+    templates: makefile
+    environment:
+      PATH: ${TREE_PATH}/bin-wrappers
+      # git/next is a "git worktree" for git.git's "next" branch.
+  git/next:
+    worktree: git/main
+    branch: next
 
-        # git-cola's worktree can be reused alongside any of the git/* trees defined above.
-    git-cola:
-        url: https://gitlab.com/git-cola/git-cola.git
-        templates: [bin, python]
-        commands:
-            setup: garden dev
-            test/cola: garden test "$@"
-            install: garden -D prefix="${prefix}" install "$@"
-            test: garden test "$@"
-            doc: garden doc "$@"
+  # git-cola's worktree can be reused alongside any of the git/* trees defined above.
+  git-cola:
+    url: https://gitlab.com/git-cola/git-cola.git
+    templates: [bin, python]
+    commands:
+      setup: garden dev
+      test/cola: garden test "$@"
+      install: garden -D prefix="${prefix}" install "$@"
+      test: garden test "$@"
+      doc: garden doc "$@"
 
-    qtpy:
-        description: Qt abstraction library used by git-cola
-        url: https://github.com/spyder-ide/qtpy.git
-        templates: python
-        setup: vx ${prefix} pip install pytest-qt
+  qtpy:
+    description: Qt abstraction library used by git-cola
+    url: https://github.com/spyder-ide/qtpy.git
+    templates: python
+    setup: vx ${prefix} pip install pytest-qt
 
-    vx:
-        description: Utility for activating Python virtualenvs
-        url: https://gitlab.com/davvid/vx.git
-        depth: 1  # Create a shallow clone using "git clone --depth=1"
-        environment:
-            PATH: ${TREE_PATH}
-        commands:
-            test: make test
+  vx:
+    description: Utility for activating Python virtualenvs
+    url: https://gitlab.com/davvid/vx.git
+    depth: 1  # Create a shallow clone using "git clone --depth=1"
+    environment:
+      PATH: ${TREE_PATH}
+    commands:
+      test: make test
 
-    # This tree allows the "run" command to be run from any directory.
-    cwd:
-        path: ${PWD}
+  # This tree allows the "run" command to be run from any directory.
+  cwd:
+    path: ${PWD}
 
 groups:
-    cola-repos-grp:
-        - git-cola
-        - qtpy
-        - vx
+  cola-repos-grp:
+    - git-cola
+    - qtpy
+    - vx
 
 gardens:
-    cola:
-        groups: cola-repos-grp
-        environment:
-            PATH: ${prefix}/bin
-    cola/main:
-        groups: cola-repos-grp
-        trees: git/main
-        environment:
-            PATH: ${prefix}/bin
-    cola/next:
-        groups: cola-repos-grp
-        trees: git/next
-        environment:
-            PATH: ${prefix}/bin
+  cola:
+    groups: cola-repos-grp
+    environment:
+      PATH: ${prefix}/bin
+  cola/main:
+    groups: cola-repos-grp
+    trees: git/main
+    environment:
+      PATH: ${prefix}/bin
+  cola/next:
+    groups: cola-repos-grp
+    trees: git/next
+    environment:
+      PATH: ${prefix}/bin

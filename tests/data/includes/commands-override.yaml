@@ -1,3 +1,3 @@
 commands:
-    echo: echo commands-override.yaml
-    test: echo override test
+  echo: echo commands-override.yaml
+  test: echo override test

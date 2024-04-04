@@ -1,35 +1,35 @@
 garden:
-    root: ""
+  root: ""
 
 variables:
-    repos: ${GARDEN_ROOT}/repos
-    dev_branch: dev
+  repos: ${GARDEN_ROOT}/repos
+  dev_branch: dev
 
 templates:
-    shared-url: file://${repos}/example.git
+  shared-url: file://${repos}/example.git
 
 trees:
-    default:
-        templates: shared-url
-        branch: default
+  default:
+    templates: shared-url
+    branch: default
 
-    dev:
-        templates: shared-url
-        branch: ${dev_branch}
+  dev:
+    templates: shared-url
+    branch: ${dev_branch}
 
-    local:
-        templates: shared-url
-        branch: local
-        branches:
-            dev: origin/dev
-            local: origin/default
+  local:
+    templates: shared-url
+    branch: local
+    branches:
+      dev: origin/dev
+      local: origin/default
 
-    custom-remote:
-        url: file://${repos}/example.git
-        remotes:
-            custom: file://${repos}/example.git
-            extra: file://${repos}/example.git
-        branch: custom-dev
-        branches:
-            custom-dev: custom/dev
-            extra-default: extra/default
+  custom-remote:
+    url: file://${repos}/example.git
+    remotes:
+      custom: file://${repos}/example.git
+      extra: file://${repos}/example.git
+    branch: custom-dev
+    branches:
+      custom-dev: custom/dev
+      extra-default: extra/default

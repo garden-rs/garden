@@ -1,194 +1,196 @@
 ---
 garden:
-    root: ""
-    includes:
-        # Paths are implicitly relative to ${GARDEN_CONFIG_DIR}.
-        - variables.yaml
-        # Paths can use ${variables} defined in the current config file.
-        - trees.yaml
-        # Includes are recursive.
-        - includes.yaml
-        # Includes files are found relative to the include file.
-        - includes/relative.yaml
+  root: ""
+  includes:
+    # Paths are implicitly relative to ${GARDEN_CONFIG_DIR}.
+    - variables.yaml
+    # Paths can use ${variables} defined in the current config file.
+    - trees.yaml
+    # Includes are recursive.
+    - includes.yaml
+    # Includes files are found relative to the include file.
+    - includes/relative.yaml
 
 # Grafts attach additional configuration values under a graft namespace.
 # The "prebuilt" tree from grafts/graft.yaml is referenced as "graft::prebuilt".
 grafts:
-    graft: grafts/graft.yaml
-    graft-no-root: grafts/graft-no-root.yaml
-    libs:
-        config: grafts/libs.yaml
-        root: libs
+  graft: grafts/graft.yaml
+  graft-no-root: grafts/graft-no-root.yaml
+  libs:
+    config: grafts/libs.yaml
+    root: libs
 
 variables:
-    current_config: main
-    gh_ssh: "git@github.com"
-    repos: ${GARDEN_ROOT}/repos
-    config_dir: ${GARDEN_CONFIG_DIR}
-    variable: global ${graft::variable}
+  current_config: main
+  gh_ssh: "git@github.com"
+  repos: ${GARDEN_ROOT}/repos
+  config_dir: ${GARDEN_CONFIG_DIR}
+  variable: global ${graft::variable}
 
 trees:
-    example/tree:
-        environment:
-            PATH: "${TREE_PATH}"
-        gitconfig:
-            remote.origin.annex-ignore: true
-            user.name: A U Thor
-            user.email: author@example.com
-            remote.origin.pushurl:
-                - "url1"
-                - "url2"
-                # The duplicate "url2" value is ignored.
-                - "url2"
-        path: example/tree/repo
-        remotes:
-            publish: "${gh_ssh}:user/example.git"
-        # repos/example.git is created by setup.sh during the integration test.
-        url: file://${repos}/example.git
+  example/tree:
+    environment:
+      PATH: "${TREE_PATH}"
+    gitconfig:
+      remote.origin.annex-ignore: true
+      user.name: A U Thor
+      user.email: author@example.com
+      remote.origin.pushurl:
+        - "url1"
+        - "url2"
+        # The duplicate "url2" value is ignored.
+        - "url2"
+    path: example/tree/repo
+    remotes:
+      publish: "${gh_ssh}:user/example.git"
+      # repos/example.git is created by setup.sh during the integration test.
+    url: file://${repos}/example.git
 
-    example/link:
-        symlink: example/tree/repo
+  example/link:
+    symlink: example/tree/repo
 
-    link:
-        symlink: example/tree/repo
+  link:
+    symlink: example/tree/repo
 
-    current:
-        path: .
-        variables:
-            exec_expr: $ value=$(echo expr); echo $value
-            garden_value: garden
-            tree_value: tree
-        commands:
-            echo-dir:
-                - basename "$(pwd)"
-            echo-args:
-                - basename "$0"
-                - echo arguments -- a b c -- "$@" -- x y z
-            echo-variable: |
-                arg_value=$1
-                shell_value=$(echo shell)
-                echo ${garden_value} $arg_value $shell_value $2 ${exec_expr}
-            echo-escaped: |
-                values=(a array c)
-                echo $1 $${values[@]:1:1} $2
-            echo-pre-and-post: echo cmd
-            echo-pre-and-post<: echo-pre
-            echo-pre-and-post>:
-                - echo-dir
-                - echo-post
-            echo-pre: echo pre
-            echo-post: echo post
-            echo-pre-and-post-nested<: echo-pre-and-post
-            echo-pre-and-post-nested: echo nested
-            echo-pre-and-post-nested>: echo-pre-and-post-nested-after
-            echo-pre-and-post-nested-after>: echo-pre-and-post-nested-fini
-            echo-pre-and-post-nested-fini: echo fini
-            echo-wordsplit-variable: |
-                abc='a b c'
-                for arg in $abc
-                do
-                echo $arg
-                done
-    example/shallow:
-        path: example/tree/shallow
-        url: file://${repos}/example.git
-        depth: 1
+  current:
+    path: .
+    variables:
+      exec_expr: $ value=$(echo expr); echo $value
+      garden_value: garden
+      tree_value: tree
+    commands:
+      echo-dir:
+        - basename "$(pwd)"
+      echo-args:
+        - basename "$0"
+        - echo arguments -- a b c -- "$@" -- x y z
+      echo-variable: |
+        arg_value=$1
+        shell_value=$(echo shell)
+        echo ${garden_value} $arg_value $shell_value $2 ${exec_expr}
+      echo-escaped: |
+        values=(a array c)
+        echo $1 $${values[@]:1:1} $2
+      echo-pre-and-post: echo cmd
+      echo-pre-and-post<: echo-pre
+      echo-pre-and-post>:
+        - echo-dir
+        - echo-post
+      echo-pre: echo pre
+      echo-post: echo post
+      echo-pre-and-post-nested<: echo-pre-and-post
+      echo-pre-and-post-nested: echo nested
+      echo-pre-and-post-nested>: echo-pre-and-post-nested-after
+      echo-pre-and-post-nested-after>: echo-pre-and-post-nested-fini
+      echo-pre-and-post-nested-fini: echo fini
+      echo-wordsplit-variable: |
+        abc='a b c'
+        for arg in $abc
+        do
+            echo $arg
+        done
 
-    example/single-branch:
-        path: example/tree/single-branch
-        url: file://${repos}/example.git
-        depth: 1
-        single-branch: true
+  example/shallow:
+    path: example/tree/shallow
+    url: file://${repos}/example.git
+    depth: 1
 
-    example/default-remote-url:
-        path: example/tree/default-remote
-        url: file://${repos}/example.git
-        default-remote: custom
+  example/single-branch:
+    path: example/tree/single-branch
+    url: file://${repos}/example.git
+    depth: 1
+    single-branch: true
 
-    example/default-remote-name:
-        path: example/tree/default-remote
-        default-remote: custom
-        remotes:
-            custom: file://${repos}/example.git
-            origin: git://git.example.org/example.git
+  example/default-remote-url:
+    path: example/tree/default-remote
+    url: file://${repos}/example.git
+    default-remote: custom
 
-    tree1:
-        path: .
-        variables:
-            tree_var: x1
-    tree2:
-        path: .
-        variables:
-            tree_var: x2
+  example/default-remote-name:
+    path: example/tree/default-remote
+    default-remote: custom
+    remotes:
+      custom: file://${repos}/example.git
+      origin: git://git.example.org/example.git
 
-    # Trees can use templates defined via includes.
-    tree-echo:
-        templates: echo-template
+  tree1:
+    path: .
+    variables:
+      tree_var: x1
 
-    tree-echo-extended:
-        templates: echo-template-extended
+  tree2:
+    path: .
+    variables:
+      tree_var: x2
 
-    tree-echo-extended-tree:
-        extend: tree-echo-extended
-        variables:
-            template-variable: top-level
-            tree-override: top-level
+      # Trees can use templates defined via includes.
+  tree-echo:
+    templates: echo-template
 
-    replacement-tree:
-        url: https://example.com/replacement/tree
-        replace: true
+  tree-echo-extended:
+    templates: echo-template-extended
 
-    trees/prebuilt:
-        url: "file://${repos}/example.git"
-        variables:
-            variable: "prebuilt ${graft::variable}"
-            tree_variable: ${TREE_NAME}/env/value
-            tree_path: ${TREE_PATH}
-        environment:
-            GARDEN_ENV_PATH: ${tree_path}
-            GARDEN_ENV_VALUE: ${tree_variable}
+  tree-echo-extended-tree:
+    extend: tree-echo-extended
+    variables:
+      template-variable: top-level
+      tree-override: top-level
+
+  replacement-tree:
+    url: https://example.com/replacement/tree
+    replace: true
+
+  trees/prebuilt:
+    url: "file://${repos}/example.git"
+    variables:
+      variable: "prebuilt ${graft::variable}"
+      tree_variable: ${TREE_NAME}/env/value
+      tree_path: ${TREE_PATH}
+    environment:
+      GARDEN_ENV_PATH: ${tree_path}
+      GARDEN_ENV_VALUE: ${tree_variable}
 
 templates:
-    echo-template-extended:
-        extend: echo-template
-        commands:
-            echo: echo extended
-        variables:
-            template-variable: extended
+  echo-template-extended:
+    extend: echo-template
+    commands:
+      echo: echo extended
+    variables:
+      template-variable: extended
 
 commands:
-    pwd: pwd
-    basename: basename "$(pwd)"
-    tree-name: echo "${TREE_NAME}"
-    tree-var: echo "${tree_var}"
-    error-command: |
-        echo ok
-        false
-        echo after error
-        false
-    error-command-list:
-        - echo ok
-        - "false"
-        - echo after error
-        - "false"
+  pwd: pwd
+  basename: basename "$(pwd)"
+  tree-name: echo "${TREE_NAME}"
+  tree-var: echo "${tree_var}"
+  error-command: |
+    echo ok
+    false
+    echo after error
+    false
+  error-command-list:
+    - echo ok
+    - "false"
+    - echo after error
+    - "false"
 
 groups:
-    trees:
-        - tree1
-        - tree2
-    grafted-group:
-        - graft::prebuilt
-        - trees/prebuilt
+  trees:
+    - tree1
+    - tree2
+  grafted-group:
+    - graft::prebuilt
+    - trees/prebuilt
 
 gardens:
-    grafted-garden:
-        trees:
-            - graft::prebuilt
-            - trees/prebuilt
-    garden/env:
-        trees:
-            - trees/prebuilt
-            - graft::grafted-env
-        environment:
-            GARDEN_ENV_PATH: garden/path
-            GARDEN_ENV_VALUE: garden/env
+  grafted-garden:
+    trees:
+      - graft::prebuilt
+      - trees/prebuilt
+  garden/env:
+    trees:
+      - trees/prebuilt
+      - graft::grafted-env
+    environment:
+      GARDEN_ENV_PATH: garden/path
+      GARDEN_ENV_VALUE: garden/env

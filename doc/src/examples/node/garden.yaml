@@ -1,19 +1,19 @@
 # Demo using "node" as the interpreter for custom commands.
 garden:
-    shell: node
+  shell: node
 
 commands:
-    hello: |
-        if (process.argv.length > 1) {
-            console.log('hello ' + process.argv.slice(1).join(' '));
-        } else {
-            console.log('hello world')
-        }
+  hello: |
+    if (process.argv.length > 1) {
+      console.log('hello ' + process.argv.slice(1).join(' '));
+    } else {
+      console.log('hello world')
+    }
 
-    info: |
-        console.log(process)
-        console.log('${uname}')
+  info: |
+    console.log(process)
+    console.log('${uname}')
 
 # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
 variables:
-    uname: $ uname -a
+  uname: $ uname -a

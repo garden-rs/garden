@@ -1,7 +1,7 @@
 ---
 trees:
-    framework: framework.git
+  framework: framework.git
 
 variables:
-    current_config: deps
-    deps_graft_value: deps-graft-value
+  current_config: deps
+  deps_graft_value: deps-graft-value

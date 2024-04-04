@@ -1,16 +1,16 @@
 garden:
-    shell: zsh -c
-    interactive-shell: zsh
+  shell: zsh -c
+  interactive-shell: zsh
 
 commands:
-    shell-words: |
-        args='a b c'
-        for arg in $args
-        do
-            echo $arg
-        done
+  shell-words: |
+    args='a b c'
+    for arg in $args
+    do
+        echo $arg
+    done
 
-    echo-shell: |
-        #!echo
-        hello
-        world
+  echo-shell: |
+    #!echo
+    hello
+    world

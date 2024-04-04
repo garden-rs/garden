@@ -1,9 +1,9 @@
 ---
 templates:
-    echo-template:
-        commands:
-            echo: echo Hello, ${TREE_NAME}
-        variables:
-            template-variable: template
-            template-constant: constant
+  echo-template:
+    commands:
+      echo: echo Hello, ${TREE_NAME}
+    variables:
+      template-variable: template
+      template-constant: constant
 ...
