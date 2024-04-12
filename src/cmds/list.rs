@@ -94,7 +94,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
             if idx > 0 {
                 println!();
             }
-            display::print_tree(tree, config.tree_branches, verbose, false);
+            display::print_tree(tree, config.tree_branches, verbose, false, false);
             display::print_tree_extended_details(app_context, context, tree, display_worktrees);
             if show_commands && !tree.commands.is_empty() {
                 display::print_commands(&tree.commands);

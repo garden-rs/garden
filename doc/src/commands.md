@@ -669,6 +669,30 @@ echo after1
 echo after2
 ```
 
+### Missing Trees
+
+`garden` skips missing trees when running custom commands by default.
+
+This means that if a tree has not yet been grown then `garden` will not visit it when
+running custom commands. Missing trees are silently ignored and skipped.
+
+Use `garden --verbose <command> ...` to instruct `garden` to print information about
+missing trees when it skips them. Missing trees are annotated with a `(skipped)` message.
+
+Using `mkdir` to create the tree's directory is all that's needed to get `garden` to run
+commands in those trees.
+
+Alternatively, use the `-f | --force` option when running custom commands to get
+`garden` to run custom commands on missing trees. The `--force` option only affects the
+behavior of custom commands when they operate on missing trees.
+
+Since the tree's directory does not exist the current working directory when running
+commands on missing trees using `--force` will be different.
+
+Using `garden <command> --force <query>` to run commands on missing trees will use the
+`${GARDEN_ROOT}` directory (`garden.root`) instead of the tree's `${TREE_PATH}`
+directory as the current working directory when commands are run.
+
 
 ## garden exec
 

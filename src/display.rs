@@ -3,21 +3,31 @@ use crate::{eval, git, model};
 // Color is an alias for yansi::Paint.
 pub(crate) type Color<T> = yansi::Paint<T>;
 
-pub(crate) fn display_missing_tree(tree: &model::Tree, path: &str, verbose: u8) -> String {
+pub(crate) fn display_missing_tree(
+    tree: &model::Tree,
+    path: &str,
+    verbose: u8,
+    force: bool,
+) -> String {
+    let skipped = if force {
+        String::new()
+    } else {
+        Color::black(" (skipped)").bold().to_string()
+    };
     if verbose > 0 {
         format!(
-            "{} {} {} {}",
+            "{} {} {}{}",
             Color::black("#").bold(),
             Color::black(tree.get_name()).bold(),
             Color::black(path).bold(),
-            Color::black("(skipped)").bold()
+            skipped
         )
     } else {
         format!(
-            "{} {} {}",
+            "{} {}{}",
             Color::black("#").bold(),
             Color::black(tree.get_name()).bold(),
-            Color::black("(skipped)").bold()
+            skipped
         )
     }
 }
@@ -79,20 +89,25 @@ pub(crate) fn print_tree(
     tree_branches: bool,
     verbose: u8,
     quiet: bool,
+    force: bool,
 ) -> bool {
     if let Ok(path) = tree.path_as_ref() {
         // Sparse gardens/missing trees are expected. Skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
             if !quiet {
-                eprintln!("{}", display_missing_tree(tree, path, verbose));
+                eprintln!("{}", display_missing_tree(tree, path, verbose, force));
             }
             return false;
         }
 
         print_tree_details(tree, tree_branches, verbose, quiet);
         return true;
-    } else if !quiet {
-        eprintln!("{}", display_missing_tree(tree, "(invalid-path)", verbose));
+    }
+    if !quiet {
+        eprintln!(
+            "{}",
+            display_missing_tree(tree, "(invalid-path)", verbose, force)
+        );
     }
 
     false

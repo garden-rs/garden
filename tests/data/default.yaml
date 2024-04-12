@@ -3,6 +3,8 @@ trees:
     path: ${GARDEN_CONFIG_DIR}
   prebuilt:
     path: trees/prebuilt
+  missing:
+    path: trees/missing
 
 commands:
   name: echo ${TREE_NAME}

@@ -2064,6 +2064,29 @@ fn cmd_custom_shell() {
     assert_eq!(output, "hello\nworld");
 }
 
+/// "garden <command>" can use custom shell per-command.
+#[test]
+fn cmd_custom_force_run() {
+    let output = garden_capture(&[
+        "--quiet",
+        "--config",
+        "tests/data/default.yaml",
+        "name",
+        "missing",
+    ]);
+    assert_eq!(output, "");
+
+    let output = garden_capture(&[
+        "--quiet",
+        "--config",
+        "tests/data/default.yaml",
+        "name",
+        "--force",
+        "missing",
+    ]);
+    assert_eq!(output, "missing");
+}
+
 /// "garden prune" prunes specific depths
 #[test]
 #[named]

@@ -26,6 +26,9 @@ pub struct CmdOptions {
     /// returns a non-zero exit code.
     #[arg(long = "no-errexit", short = 'n', default_value_t = true, action = clap::ArgAction::SetFalse)]
     exit_on_error: bool,
+    /// Run commands even when the tree does not exist.
+    #[arg(long, short)]
+    force: bool,
     /// Do not pass "-o shwordsplit" to zsh.
     /// Prevent the "shwordsplit" shell option from being set when using zsh.
     /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
@@ -64,6 +67,9 @@ pub struct CustomOptions {
     /// returns a non-zero exit code.
     #[arg(long = "no-errexit", short = 'n', default_value_t = true, action = clap::ArgAction::SetFalse)]
     exit_on_error: bool,
+    /// Run commands even when the tree does not exist.
+    #[arg(long, short)]
+    force: bool,
     /// Do not pass "-o shwordsplit" to zsh.
     /// Prevent the "shwordsplit" shell option from being set when using zsh.
     /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
@@ -112,6 +118,7 @@ pub struct CmdParams {
     queries: Vec<String>,
     tree_pattern: glob::Pattern,
     breadth_first: bool,
+    force: bool,
     keep_going: bool,
     #[derivative(Default(value = "true"))]
     exit_on_error: bool,
@@ -127,6 +134,7 @@ impl From<CmdOptions> for CmdParams {
             arguments: options.arguments.clone(),
             breadth_first: options.breadth_first,
             exit_on_error: options.exit_on_error,
+            force: options.force,
             keep_going: options.keep_going,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             word_split: options.word_split,
@@ -149,6 +157,7 @@ impl From<CustomOptions> for CmdParams {
             breadth_first: true,
             keep_going: options.keep_going,
             exit_on_error: options.exit_on_error,
+            force: options.force,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             word_split: options.word_split,
             ..Default::default()
@@ -266,11 +275,18 @@ fn run_cmd_breadth_first(
             let env = eval::environment(app_context, config, context);
 
             // Run each command in the tree's context
-            let path = tree.path_as_ref()?;
-            let _run_path = path.clone();
-            // Sparse gardens/missing trees are ok -> skip these entries.
-            if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
+            let Ok(mut path) = tree.path_as_ref() else {
                 continue;
+            };
+            let fallback_path;
+            // Sparse gardens/missing trees are ok -> skip these entries.
+            if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
+                if params.force {
+                    fallback_path = config.fallback_execdir_string();
+                    path = &fallback_path;
+                } else {
+                    continue;
+                }
             }
 
             // Expand one named command to include its pre-commands and post-commands.
@@ -398,10 +414,18 @@ fn run_cmd_depth_first(
         // Evaluate the tree environment
         let env = eval::environment(app_context, config, context);
         // Run each command in the tree's context
-        let path = tree.path_as_ref()?.to_string();
-        // Sparse gardens/missing trees are ok -> skip these entries.
-        if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
+        let fallback_path;
+        let Ok(mut path) = tree.path_as_ref() else {
             continue;
+        };
+        // Sparse gardens/missing trees are ok -> skip these entries.
+        if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
+            if params.force {
+                fallback_path = config.fallback_execdir_string();
+                path = &fallback_path;
+            } else {
+                continue;
+            }
         }
         // One invocation runs multiple commands
         for name in &params.commands {
@@ -416,7 +440,7 @@ fn run_cmd_depth_first(
                 app_context.get_root_config_mut().reset();
                 if let Err(cmd_status) = run_cmd_vec(
                     &app_context.options,
-                    &path,
+                    path,
                     &shell_params,
                     &env,
                     &cmd_seq_vec,

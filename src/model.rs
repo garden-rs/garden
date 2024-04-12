@@ -1002,6 +1002,19 @@ impl Configuration {
         }
     }
 
+    /// Return a path for running commands that should always exist.
+    pub(crate) fn fallback_execdir_string(&self) -> String {
+        if self.root_path.exists() {
+            return self.root_path.to_string_lossy().to_string();
+        }
+        if let Some(dirname) = self.dirname.as_ref() {
+            if dirname.exists() {
+                return dirname.to_string_lossy().to_string();
+            }
+        }
+        path::current_dir_string()
+    }
+
     /// Evaluate and resolve a path string and relative to the config directory.
     pub(crate) fn eval_config_path(&self, app_context: &ApplicationContext, path: &str) -> String {
         let value = eval::value(app_context, self, path);

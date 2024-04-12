@@ -129,7 +129,7 @@ where
             path = tree.path_as_ref()?;
 
             // Sparse gardens/missing trees are okay -> skip these entries.
-            if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
+            if !display::print_tree(tree, config.tree_branches, verbose, quiet, false) {
                 return Ok(());
             }
         } else {
@@ -139,7 +139,7 @@ where
         path = tree.path_as_ref()?;
 
         // Sparse gardens/missing trees are okay -> skip these entries.
-        if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
+        if !display::print_tree(tree, config.tree_branches, verbose, quiet, false) {
             return Ok(());
         }
     } else {

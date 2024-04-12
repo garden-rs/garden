@@ -4,6 +4,10 @@
 
 **Features**:
 
+- Custom commands skip missing trees by default. A new `-f | --force`
+option can be used to make `garden` run commands on missing trees.
+([#33](https://github.com/garden-rs/garden/-/issues/33))
+
 - `garden plant` now avoids updating the configuration when a tree is
 re-planted and its configuration contains expressions that evaluate
 to the same value as currently exist in git.
