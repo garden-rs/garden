@@ -24,6 +24,7 @@ fn init_adds_repository() -> Result<()> {
     let cfg = app_context.get_root_config();
     assert_eq!(1, cfg.trees.len());
     assert_eq!(function_name!(), cfg.trees[0].get_name());
+    assert_eq!("${GARDEN_CONFIG_DIR}", cfg.trees[0].get_path().get_expr());
 
     Ok(())
 }

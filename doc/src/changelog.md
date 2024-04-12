@@ -4,6 +4,10 @@
 
 **Features**:
 
+- Running `garden init` inside a Git repository will now record the
+current directory as a tree with its path set to  `${GARDEN_CONFIG_DIR}`.
+([#34](https://github.com/garden-rs/garden/-/pull/34))
+
 - Custom commands skip missing trees by default. A new `-f | --force`
 option can be used to make `garden` run commands on missing trees.
 ([#33](https://github.com/garden-rs/garden/-/issues/33))

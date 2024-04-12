@@ -101,7 +101,7 @@ pub(crate) fn plant_path(
     verbose: u8,
     raw_path: &str,
     trees: &mut yaml::Hash,
-) -> Result<()> {
+) -> Result<yaml::Yaml> {
     // Garden root path
     let root = config.root_path.canonicalize().map_err(|err| {
         errors::GardenError::ConfigurationError(format!(
@@ -184,10 +184,10 @@ pub(crate) fn plant_path(
         if let Some(tree_entry) = trees.get_mut(&key) {
             *tree_entry = Yaml::Hash(entry);
         } else {
-            trees.insert(key, Yaml::Hash(entry));
+            trees.insert(key.clone(), Yaml::Hash(entry));
         }
 
-        return Ok(());
+        return Ok(key);
     }
 
     let remotes_key = Yaml::String(constants::REMOTES.into());
@@ -355,10 +355,10 @@ pub(crate) fn plant_path(
             }
         }
     } else {
-        trees.insert(key, Yaml::Hash(entry));
+        trees.insert(key.clone(), Yaml::Hash(entry));
     }
 
-    Ok(())
+    Ok(key)
 }
 
 /// Return the currently configured evaluated value for a git remote.
