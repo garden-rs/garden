@@ -104,8 +104,21 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
             if let Yaml::Hash(ref mut doc_hash) = doc {
                 let trees_key = Yaml::String(constants::TREES.into());
                 if let Some(Yaml::Hash(trees)) = doc_hash.get_mut(&trees_key) {
-                    done =
-                        plant::plant_path(None, &config, options.verbose, &worktree, trees).is_ok();
+                    if let Ok(tree_name) =
+                        plant::plant_path(None, &config, options.verbose, &worktree, trees)
+                    {
+                        done = true;
+                        // If the config path is the same as the tree's worktree path then
+                        // set the tree's "path" field to ${GARDEN_CONFIG_DIR}.
+                        if config.root_path.to_string_lossy() == worktree {
+                            if let Some(Yaml::Hash(tree_entry)) = trees.get_mut(&tree_name) {
+                                tree_entry.insert(
+                                    Yaml::String(constants::PATH.to_string()),
+                                    Yaml::String(constants::GARDEN_CONFIG_DIR_EXPR.to_string()),
+                                );
+                            }
+                        }
+                    }
                 }
             }
         }
