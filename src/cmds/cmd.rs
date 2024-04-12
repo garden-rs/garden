@@ -266,7 +266,8 @@ fn run_cmd_breadth_first(
             let env = eval::environment(app_context, config, context);
 
             // Run each command in the tree's context
-            let path = tree.path_as_ref()?.to_string();
+            let path = tree.path_as_ref()?;
+            let _run_path = path.clone();
             // Sparse gardens/missing trees are ok -> skip these entries.
             if !display::print_tree(tree, config.tree_branches, verbose, quiet) {
                 continue;
@@ -284,7 +285,7 @@ fn run_cmd_breadth_first(
 
                 if let Err(cmd_status) = run_cmd_vec(
                     &app_context.options,
-                    &path,
+                    path,
                     &shell_params,
                     &env,
                     &cmd_seq_vec,

@@ -720,7 +720,7 @@ impl Configuration {
                 // If an absolute path was specified, or if the file exists,
                 // short-circuit the search; the config file might be missing but
                 // we shouldn't silently use a different config file.
-                self.set_path(config_path.to_path_buf());
+                self.set_path(&config_path);
                 found = true;
             } else {
                 // The specified path is a basename or relative path to be found
@@ -734,7 +734,7 @@ impl Configuration {
                 let mut candidate = entry.to_path_buf();
                 candidate.push(basename.clone());
                 if candidate.exists() {
-                    self.set_path(candidate);
+                    self.set_path(&candidate);
                     found = true;
                     break;
                 }
@@ -1056,12 +1056,13 @@ impl Configuration {
     }
 
     /// Set the config path and the dirname fields
-    pub(crate) fn set_path(&mut self, path: std::path::PathBuf) {
-        let mut dirname = path.clone();
+    pub(crate) fn set_path(&mut self, path: &dyn AsRef<std::path::Path>) {
+        let config_path = path.as_ref().to_path_buf();
+        let mut dirname = config_path.clone();
         dirname.pop();
 
         self.dirname = Some(dirname);
-        self.path = Some(path);
+        self.path = Some(config_path);
     }
 
     /// Get the config path if it is defined.
