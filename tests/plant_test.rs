@@ -259,7 +259,7 @@ fn plant_add_remote_to_oneline_tree() -> Result<()> {
     assert!(fixture.pathbuf(tree_name).exists());
 
     // Add a remote called "new-remote".
-    let oneline_path = fixture.path(&tree_name);
+    let oneline_path = fixture.path(tree_name);
     let cmd = ["git", "remote", "add", "new-remote", "new-url"];
     common::assert_cmd(&cmd, &oneline_path);
 
