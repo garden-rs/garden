@@ -5,7 +5,7 @@ use yaml_rust::{yaml, Yaml, YamlLoader};
 
 use crate::{constants, errors, eval, model, syntax};
 
-// Apply YAML Configuration from a string.
+/// Apply YAML Configuration from a string.
 pub fn parse(
     app_context: &model::ApplicationContext,
     string: &str,
@@ -15,6 +15,7 @@ pub fn parse(
     parse_recursive(app_context, string, config_verbose, config, None)
 }
 
+/// The recursive guts of `parse()`.
 fn parse_recursive(
     app_context: &model::ApplicationContext,
     string: &str,
@@ -271,12 +272,14 @@ fn parse_recursive(
     Ok(())
 }
 
+/// Print 4 spaces for every indent level.
 fn print_indent(indent: usize) {
     for _ in 0..indent {
         print!("    ");
     }
 }
 
+/// Dump a Yaml node for debugging purposes.
 fn dump_node(yaml: &Yaml, indent: usize, prefix: &str) {
     match yaml {
         Yaml::String(value) => {
@@ -309,7 +312,8 @@ fn dump_node(yaml: &Yaml, indent: usize, prefix: &str) {
     }
 }
 
-/// Yaml -> String
+/// Extract a `String` from `yaml`.
+/// Return `false` when `yaml` is not a `Yaml::String`.
 fn get_raw_str(yaml: &Yaml, string: &mut String) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
@@ -320,12 +324,14 @@ fn get_raw_str(yaml: &Yaml, string: &mut String) -> bool {
     }
 }
 
-/// Yaml ->String reader that false when the retrieved string is empty.
+/// Extract a `String` from `yaml`.
+/// Return `false` when the string is empty or `yaml` is not a `Yaml::String`.
 fn get_str(yaml: &Yaml, string: &mut String) -> bool {
     get_raw_str(yaml, string) && !string.is_empty()
 }
 
-/// Yaml -> String
+/// Extract a String from Yaml and trim the end of the value.
+/// Return `false` when the string is empty or `yaml` is not a `Yaml::String`.
 fn get_str_trimmed(yaml: &Yaml, string: &mut String) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
@@ -336,7 +342,7 @@ fn get_str_trimmed(yaml: &Yaml, string: &mut String) -> bool {
     }
 }
 
-/// Yaml -> i64
+/// Extract an `i64` from `yaml`. Return `false` when `yaml` is not a `Yaml::Integer`.
 fn get_i64(yaml: &Yaml, value: &mut i64) -> bool {
     match yaml {
         Yaml::Integer(yaml_integer) => {
@@ -347,7 +353,7 @@ fn get_i64(yaml: &Yaml, value: &mut i64) -> bool {
     }
 }
 
-/// Yaml -> bool
+/// Extract a `bool` from `yaml`. Return `false` when `yaml` is not a `Yaml::Boolean`.
 fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
     match yaml {
         Yaml::Boolean(yaml_bool) => {
@@ -358,7 +364,10 @@ fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
     }
 }
 
-/// Yaml::String or Yaml::Array<Yaml::String> -> Vec<String>
+/// Extract an `IndexSet<String>` from `Yaml::String` or `Yaml::Array<Yaml::String>`.
+/// Return `false` when `yaml` is not `Yaml::String` or `Yaml::Array<Yaml::String>`.
+/// This function promotes a scalar `Yaml::String` into a `IndexSet<String>`
+/// with a single entry.
 fn get_indexset_str(yaml: &Yaml, values: &mut IndexSet<String>) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
@@ -377,7 +386,7 @@ fn get_indexset_str(yaml: &Yaml, values: &mut IndexSet<String>) -> bool {
     }
 }
 
-/// Yaml::String or Yaml::Array<Yaml::String> -> Vec<Variable>
+/// Promote `Yaml::String` or `Yaml::Array<Yaml::String>` into a `Vec<Variable>`.
 fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
@@ -396,7 +405,7 @@ fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
     }
 }
 
-// Yaml::String -> Variable
+// Extract a `Variable` from `yaml`. Return `false` when `yaml` is not a `Yaml::String`.
 fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
@@ -407,7 +416,8 @@ fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
     }
 }
 
-/// Read variable definitions from a yaml::HashMap into a VariablesHashMap
+/// Extract variable definitions from a `yaml::Hash` into a `VariablesHashMap`.
+/// Return `false` when `yaml` is not a `Yaml::Hash`.
 fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> bool {
     match yaml {
         Yaml::Hash(hash) => {
@@ -467,7 +477,7 @@ fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> b
     }
 }
 
-/// Read MultiVariable definitions (commands, environment)
+/// Read `MultiVariable` definitions (e.g. "commands" and "environment").
 fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool {
     if let Yaml::Hash(hash) = yaml {
         for (k, v) in hash {
@@ -507,7 +517,7 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
     false
 }
 
-/// Read a mapping of String to Vec of Variables into a MultiVariableHashMap
+/// Read a `Yaml::Hash` of variable definitions into a `MultiVariableHashMap`.
 fn get_multivariables_hashmap(
     yaml: &Yaml,
     multivariables: &mut model::MultiVariableHashMap,
@@ -558,7 +568,7 @@ fn get_multivariables_hashmap(
     }
 }
 
-/// Read template definitions
+/// Read template definitions.
 fn get_templates(
     yaml: &Yaml,
     config_templates: &HashMap<String, model::Template>,
@@ -582,7 +592,7 @@ fn get_templates(
     }
 }
 
-/// Read a single template definition
+/// Read a single template definition.
 fn get_template(
     name: &Yaml,
     value: &Yaml,
@@ -605,7 +615,7 @@ fn get_template(
                 .insert(string!(constants::ORIGIN), model::Variable::new(url, None));
             return template;
         }
-        // If a <url> is configured then populate the "origin" remote.
+        // If a `<url>` is configured then populate the "origin" remote.
         // The first remote is "origin" by convention.
         if get_str(&value[constants::URL], &mut url) {
             template
@@ -650,7 +660,7 @@ fn get_template(
     template
 }
 
-/// Read tree definitions
+/// Read tree definitions.
 fn get_trees(
     app_context: &model::ApplicationContext,
     config: &mut model::Configuration,
@@ -694,7 +704,7 @@ fn get_trees(
     }
 }
 
-/// Return a tree from a simple "tree: <url>" entry
+/// Return a tree from a oneline `tree: <url>` entry.
 fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     let mut tree = model::Tree::default();
 
@@ -752,7 +762,7 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     tree.update_flags();
 }
 
-/// Read a single tree definition
+/// Read a single tree definition.
 fn get_tree(
     app_context: &model::ApplicationContext,
     config: &mut model::Configuration,
@@ -847,7 +857,7 @@ fn get_str_variables_hashmap(yaml: &Yaml, remotes: &mut model::VariableHashMap) 
     }
 }
 
-/// Read group definitions
+/// Read group definitions. Return `false` when `yaml` is not a `Yaml::Hash`.
 fn get_groups(yaml: &Yaml, groups: &mut IndexMap<model::GroupName, model::Group>) -> bool {
     match yaml {
         Yaml::Hash(hash) => {
@@ -863,7 +873,7 @@ fn get_groups(yaml: &Yaml, groups: &mut IndexMap<model::GroupName, model::Group>
     }
 }
 
-/// Read garden definitions
+/// Read garden definitions. Return `false` when `yaml` is not a `Yaml::Hash`.
 fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bool {
     match yaml {
         Yaml::Hash(hash) => {
@@ -884,7 +894,8 @@ fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bo
     }
 }
 
-/// Read a grafts: block into a Vec<Graft>.
+/// Read a "grafts" block from `yaml` into a `Vec<Graft>`.
+/// Return `false` when `yaml` is not a `Yaml::Hash`.
 fn get_grafts(yaml: &Yaml, grafts: &mut IndexMap<model::GardenName, model::Graft>) -> bool {
     match yaml {
         Yaml::Hash(yaml_hash) => {
@@ -898,6 +909,7 @@ fn get_grafts(yaml: &Yaml, grafts: &mut IndexMap<model::GardenName, model::Graft
     }
 }
 
+/// Read a Graft entry from `Yaml`.
 fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
     let mut graft_name = string!("");
     let mut config = string!("");
@@ -942,14 +954,13 @@ where
     Ok(docs[0].clone())
 }
 
-/// Return an empty hash table as a Yaml document.
+/// Return an empty `Yaml::Hash` as a `Yaml` document.
 pub fn empty_doc() -> Yaml {
     Yaml::Hash(yaml::Hash::new())
 }
 
 /// Add a top-level section to a Yaml configuration.
 pub(crate) fn add_section(key: &str, doc: &mut Yaml) -> Result<(), errors::GardenError> {
-    // Garden core
     let exists = doc[key].as_hash().is_some();
     if !exists {
         if let Yaml::Hash(doc_hash) = doc {
