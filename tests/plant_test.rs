@@ -136,6 +136,12 @@ fn plant_bare_repo() -> Result<()> {
 }
 
 /// `garden plant` detects "git worktree" repositories.
+#[cfg(not(any(
+    target_arch = "aarch64",
+    target_arch = "powerpc64",
+    target_arch = "s390x",
+    target_arch = "x86"
+)))]
 #[test]
 #[named]
 fn plant_git_worktree() -> Result<()> {

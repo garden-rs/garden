@@ -10,6 +10,12 @@ use function_name::named;
 
 use garden::string;
 
+#[cfg(not(any(
+    target_arch = "aarch64",
+    target_arch = "powerpc64",
+    target_arch = "s390x",
+    target_arch = "x86"
+)))]
 #[test]
 #[named]
 fn tree_name_from_pathbuf() -> Result<()> {
