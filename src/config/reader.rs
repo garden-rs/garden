@@ -911,9 +911,9 @@ fn get_grafts(yaml: &Yaml, grafts: &mut IndexMap<model::GardenName, model::Graft
 
 /// Read a Graft entry from `Yaml`.
 fn get_graft(name: &Yaml, graft: &Yaml) -> model::Graft {
-    let mut graft_name = string!("");
-    let mut config = string!("");
-    let mut root = string!("");
+    let mut graft_name = String::new();
+    let mut config = String::new();
+    let mut root = String::new();
 
     get_str(name, &mut graft_name);
 
