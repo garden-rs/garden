@@ -43,7 +43,8 @@ commands:
   diff: git diff "$@"
   diffs: git diff --staged "$@"
   doc: |
-    cargo doc --no-deps --package ${cargo_package} "$@"
+    env RUSTDOCFLAGS='-D warnings' \
+      cargo doc --no-deps --document-private-items --workspace "$@"
     cd doc
     mdbook build --dest-dir book.new
     rsync -r --delete --exclude=.git book.new/ book/
