@@ -18,6 +18,11 @@ to the same value as currently exist in git.
 ([#31](https://github.com/garden-rs/garden/-/issues/31))
 ([#32](https://github.com/garden-rs/garden/-/pull/32))
 
+**Packaging**:
+
+- [Prebuilt binaries](https://github.com/garden-rs/garden/releases)
+are now available!
+
 **Development**:
 
 - The original github repository under `davvid`'s namespace was transferred to the

@@ -13,7 +13,9 @@ variables:
   prefix: ~/.cargo
   bindir: ${prefix}/bin
   docdir: ${prefix}/share/doc/garden
-
+  target: x86_64-unknown-linux-musl
+  pkg: ${GARDEN_CONFIG_DIR}/pkg
+  debdir: ${pkg}/deb
 # usage:
 #   garden <cmd> [<tree-query>] [-- [<args>]]
 commands:
@@ -44,8 +46,8 @@ commands:
   diffs: git diff --staged "$@"
   doc: |
     env RUSTDOCFLAGS='-D warnings' \
-      cargo doc --no-deps --document-private-items --workspace "$@"
-    cd doc
+      cargo doc --no-deps --document-private-items --workspace
+    cd ./doc
     mdbook build --dest-dir book.new
     rsync -r --delete --exclude=.git book.new/ book/
     rm -rf book.new
@@ -57,6 +59,20 @@ commands:
   install-doc: |
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
+  pkg/deb>:
+    - pkg/deb/build
+    - pkg/deb/completion
+    - pkg/deb/doc
+    - pkg/deb/package
+  pkg/deb/build: |
+    cargo build --profile deb --target "${target}"
+  pkg/deb/completion: |
+    mkdir -p "${debdir}/completion"
+    "$0" completion bash >"${debdir}/completion/garden.bash"
+    "$0" completion fish >"${debdir}/completion/garden.fish"
+    "$0" completion zsh >"${debdir}/completion/_garden"
+  pkg/deb/doc: mdbook build --dest-dir "${debdir}/userguide" doc
+  pkg/deb/package: cargo deb --profile deb --target "${target}"
   push: git push "$@"
   setup: |
     git fetch -q pages 2>/dev/null || (

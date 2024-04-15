@@ -52,6 +52,8 @@ command-line tools.
 
 ## Links and Related Projects
 
+* [Garden prebuilt binaries](https://github.com/garden-rs/garden/releases)
+
 * [Garden on crates.io](https://crates.io/crates/garden-tools)
 
 * [Garden Homebrew formula](https://gitlab.com/garden-rs/homebrew-garden)

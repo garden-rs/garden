@@ -1,6 +1,7 @@
 /doc/book
 /doc/book.new
 /homebrew
+/pkg
 /result
 /target
 /*.html

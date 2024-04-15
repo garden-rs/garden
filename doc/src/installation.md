@@ -11,6 +11,15 @@ and prefer to install `garden` using Homebrew.
 and prefer to install `garden` using `pkgin` or the pkgsrc/NetBSD sources.
 
 
+## Prebuilt Binaries
+
+[Prebuilt Binaries are available](https://github.com/garden-rs/garden/releases)
+for Linux, macOS and Windows.
+
+[Nightly Builds for x86_64 Linux](https://gitlab.com/garden-rs/garden/-/artifacts)
+are also available from the `build:amd64` jobs.
+
+
 ## Rust and Cargo
 
 If you already have `cargo` installed then you can skip this section.
