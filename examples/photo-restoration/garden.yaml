@@ -1,57 +1,49 @@
 trees:
-    old-photos:
-        description: |
-          Restore old photos using machine-learning.
-          $ garden grow old-photos
-          $ garden setup old-photos
-          $ garden run old-photos -- --help
-
-        url: "https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life.git"
-        links:
-            - "https://colab.research.google.com/drive/1NEm6AsybIiC5TwTU_4DqDkQO0nFRB-uA?usp=sharing&authuser=2#scrollTo=32jCofdSr8AW"
-            - "http://raywzy.com/Old_Photo/"
-            - "https://news.ycombinator.com/item?id=25148253"
-
-        commands:
-            # "setup" uses ">" post-commands to run "setup/virtualenv" and "setup/download".
-            setup>:
-                - setup/virtualenv
-                - setup/download
-
-            setup/virtualenv: |
-                test -d ${env3} || (
-                    python3 -m venv ${env3}
-                    ${env3}/bin/pip install -r requirements.txt
-                )
-
-            setup/download: |
-                (
-                    cd ./Face_Detection
-                    test -f shape_predictor_68_face_landmarks.dat || (
-                        curl -L http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 \
-                            -o shape_predictor_68_face_landmarks.dat.bz2
-                        bzip2 -v -d shape_predictor_68_face_landmarks.dat.bz2
-                    )
-                )
-                (
-                    cd ./Face_Enhancement
-                    test -f checkpoints.zip ||
-                    curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/face_checkpoints.zip \
-                        -o checkpoints.zip
-                    test -d checkpoints || unzip checkpoints.zip
-                )
-                (
-                    cd ./Global
-                    test -f checkpoints.zip ||
-                    curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/global_checkpoints.zip \
-                        -o checkpoints.zip
-                    test -d checkpoints || unzip checkpoints.zip
-                )
-
-            run: ${env3}/bin/python3 run.py "$@"
-
-        environment:
-            PATH: "${TREE_PATH}/${env3}/bin"
+  old-photos:
+    description: |
+      Restore old photos using machine-learning.
+      $ garden grow old-photos
+      $ garden setup old-photos
+      $ garden run old-photos -- --help
+    url: "https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life.git"
+    links:
+      - "https://colab.research.google.com/drive/1NEm6AsybIiC5TwTU_4DqDkQO0nFRB-uA?usp=sharing&authuser=2#scrollTo=32jCofdSr8AW"
+      - "http://raywzy.com/Old_Photo/"
+      - "https://news.ycombinator.com/item?id=25148253"
+    environment:
+      PATH: "${TREE_PATH}/${env3}/bin"
+    commands:
+      # "setup" uses ">" post-commands to run "setup/virtualenv" and "setup/download-*".
+      setup>:
+        - setup/virtualenv
+        - setup/download-face-landmarks
+        - setup/download-face-checkpoints
+        - setup/download-global-checkpoints
+      setup/virtualenv: |
+        test -d ${env3} || (
+            python3 -m venv ${env3}
+            ${env3}/bin/pip install -r requirements.txt
+        )
+      setup/download-face-landmarks: |
+        cd ./Face_Detection
+        test -f shape_predictor_68_face_landmarks.dat || (
+            curl -L http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2 \
+                -o shape_predictor_68_face_landmarks.dat.bz2
+            bzip2 -v -d shape_predictor_68_face_landmarks.dat.bz2
+        )
+      setup/download-face-checkpoints: |
+        cd ./Face_Enhancement
+        test -f checkpoints.zip ||
+        curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/face_checkpoints.zip \
+            -o checkpoints.zip
+        test -d checkpoints || unzip checkpoints.zip
+      setup/download-global-checkpoints: |
+        cd ./Global
+        test -f checkpoints.zip ||
+        curl -L https://github.com/microsoft/Bringing-Old-Photos-Back-to-Life/releases/download/v1.0/global_checkpoints.zip \
+            -o checkpoints.zip
+        test -d checkpoints || unzip checkpoints.zip
+      run: ${env3}/bin/python3 run.py "$@"
 
 variables:
-    env3: $ python3 -c 'import sys; print("env%s%s" % sys.version_info[:2])'
+  env3: $ python3 -c 'import sys; print("env%s%s" % sys.version_info[:2])'

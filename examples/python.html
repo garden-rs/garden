@@ -193,30 +193,30 @@ garden hello -- cat
 <h2 id="gardenyaml"><a class="header" href="#gardenyaml">garden.yaml</a></h2>
 <pre><code class="language-yaml"># Demo using "python3" as the interpreter for custom commands.
 garden:
-    shell: python3
+  shell: python3
 
 commands:
-    hello: |
-        import sys
-        # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
-        args = sys.argv[1:]  # additional arguments specified after '--'
-        if args:
-            world = ' '.join(args)
-        else:
-            world = 'world'
-        print(f'hello {world}')
+  hello: |
+    import sys
+    # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
+    args = sys.argv[1:]  # additional arguments specified after '--'
+    if args:
+        world = ' '.join(args)
+    else:
+        world = 'world'
+    print(f'hello {world}')
 
-    info: |
-        import os
-        import sys
-        print(f'os.name = {os.name}')
-        print(f'sys.platform = {sys.platform}')
-        print(r'sys.int_info = {sys.int_info}')
-        print('uname = ${uname}')
+  info: |
+    import os
+    import sys
+    print(f'os.name = {os.name}')
+    print(f'sys.platform = {sys.platform}')
+    print(r'sys.int_info = {sys.int_info}')
+    print('uname = ${uname}')
 
 variables:
-    # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
-    uname: $ uname -a
+  # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
+  uname: $ uname -a
 </code></pre>
 
                     </main>

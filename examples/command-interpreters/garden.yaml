@@ -1,20 +1,19 @@
 # Demo using custom interpreters on a per-command basis.
 commands:
-    # The "#!" shebang line specifies the interpreter to use.
-    hello: |
-        #!python3 -c
-        import sys
-        # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
-        args = sys.argv[1:]  # additional arguments specified after '--'
-        if args:
-            world = ' '.join(args)
-        else:
-            world = 'world'
-        print(f'hello {world}')
-
-    # The default `garden.shell` is used when no shebang line is present.
-    info: echo ${uname}
+  # The "#!" shebang line specifies the interpreter to use.
+  hello: |
+    #!python3 -c
+    import sys
+    # dash_c = sys.argv[0]  # sys.argv[0] contains '-c'
+    args = sys.argv[1:]  # additional arguments specified after '--'
+    if args:
+        world = ' '.join(args)
+    else:
+        world = 'world'
+    print(f'hello {world}')
+  # The default `garden.shell` is used when no shebang line is present.
+  info: echo ${uname}
 
 # NOTE: exec expressions are always run using the system's default #!/bin/sh shell.
 variables:
-    uname: $ uname -a
+  uname: $ uname -a

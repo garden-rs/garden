@@ -182,14 +182,32 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
-<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<h2 id="v150"><a class="header" href="#v150">v1.5.0</a></h2>
+<p><em>Released 2024-04-14</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
-<li><code>garden plant</code> now avoids updating the configuration when a tree is
+<li>
+<p>Running <code>garden init</code> inside a Git repository will now record the
+current directory as a tree with its path set to  <code>${GARDEN_CONFIG_DIR}</code>.
+(<a href="https://github.com/garden-rs/garden/-/pull/34">#34</a>)</p>
+</li>
+<li>
+<p>Custom commands skip missing trees by default. A new <code>-f | --force</code>
+option can be used to make <code>garden</code> run commands on missing trees.
+(<a href="https://github.com/garden-rs/garden/-/issues/33">#33</a>)</p>
+</li>
+<li>
+<p><code>garden plant</code> now avoids updating the configuration when a tree is
 re-planted and its configuration contains expressions that evaluate
 to the same value as currently exist in git.
 (<a href="https://github.com/garden-rs/garden/-/issues/31">#31</a>)
-(<a href="https://github.com/garden-rs/garden/-/pull/32">#32</a>)</li>
+(<a href="https://github.com/garden-rs/garden/-/pull/32">#32</a>)</p>
+</li>
+</ul>
+<p><strong>Packaging</strong>:</p>
+<ul>
+<li><a href="https://github.com/garden-rs/garden/releases">Prebuilt binaries</a>
+are now available!</li>
 </ul>
 <p><strong>Development</strong>:</p>
 <ul>
