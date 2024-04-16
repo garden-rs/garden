@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Page not found - Garden User Guide</title>
-        <base href="/garden/">
+        <title>FAQ, Tips and Tricks - Garden User Guide</title>
 
 
         <!-- Custom HTML head -->
@@ -91,7 +90,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/command-interpreters.html"><strong aria-hidden="true">8.3.</strong> Command Interpreters</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.4.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.5.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="tips-and-tricks.html"><strong aria-hidden="true">9.</strong> FAQ, Tips and Tricks</a></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">10.</strong> Changelog</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html"><strong aria-hidden="true">1.</strong> Garden</a></li><li class="chapter-item expanded "><a href="glossary.html"><strong aria-hidden="true">2.</strong> Glossary</a></li><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">3.</strong> Installation</a></li><li class="chapter-item expanded "><a href="setup-and-usage.html"><strong aria-hidden="true">4.</strong> Setup and Usage</a></li><li class="chapter-item expanded "><a href="tree-queries.html"><strong aria-hidden="true">5.</strong> Tree Queries</a></li><li class="chapter-item expanded "><a href="commands.html"><strong aria-hidden="true">6.</strong> Commands</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">7.</strong> Configuration</a></li><li class="chapter-item expanded "><a href="examples.html"><strong aria-hidden="true">8.</strong> Examples</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="examples/photo-restoration.html"><strong aria-hidden="true">8.1.</strong> Photo Restoration</a></li><li class="chapter-item expanded "><a href="examples/git-cola.html"><strong aria-hidden="true">8.2.</strong> Git Cola</a></li><li class="chapter-item expanded "><a href="examples/command-interpreters.html"><strong aria-hidden="true">8.3.</strong> Command Interpreters</a></li><li class="chapter-item expanded "><a href="examples/python.html"><strong aria-hidden="true">8.4.</strong> Python</a></li><li class="chapter-item expanded "><a href="examples/node.html"><strong aria-hidden="true">8.5.</strong> Node</a></li></ol></li><li class="chapter-item expanded "><a href="tips-and-tricks.html" class="active"><strong aria-hidden="true">9.</strong> FAQ, Tips and Tricks</a></li><li class="chapter-item expanded "><a href="changelog.html"><strong aria-hidden="true">10.</strong> Changelog</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -153,6 +152,9 @@
                         <a href="https://gitlab.com/garden-rs/garden/tree/main/doc" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-gitlab"></i>
                         </a>
+                        <a href="https://gitlab.com/garden-rs/garden/edit/main/doc/src/tips-and-tricks.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
 
                     </div>
                 </div>
@@ -179,14 +181,45 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="document-not-found-404"><a class="header" href="#document-not-found-404">Document not found (404)</a></h1>
-<p>This URL is invalid, sorry. Please use the navigation bar or search to continue.</p>
+                        <h1 id="faq-tips-and-tricks"><a class="header" href="#faq-tips-and-tricks">FAQ, Tips and Tricks</a></h1>
+<h2 id="can-garden-print-out-each-command-in-a-multi-line-command-as-it-is-run"><a class="header" href="#can-garden-print-out-each-command-in-a-multi-line-command-as-it-is-run">Can garden print out each command in a multi-line command as it is run?</a></h2>
+<p>While <code>garden -vv</code> can be used to make <code>garden</code> print out the rendered command
+right before garden runs it, all of the commands in a multi-line command are
+printed at once before any command is run.</p>
+<p>You can enable "echo mode" in the command's shell to make it print out
+each command as it is run.</p>
+<p>Enable echo mode by calling <code>set -x</code> in your command.</p>
+<pre><code class="language-yaml">commands:
+  echo: |
+    set -x
+    echo hello
+    echo world
+</code></pre>
+<p>Calling <code>set -x</code> results in the following output from <code>garden echo</code>:</p>
+<pre><code class="language-bash">$ garden --quiet echo
++ echo hello
+hello
++ echo world
+world
+</code></pre>
+<p>Lines starting with <code>+</code> display the command being used.</p>
+<p>The following is printed instead when "echo mode" is not enabled.</p>
+<pre><code class="language-bash">$ garden --quiet echo
+hello
+world
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="examples/node.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
+                            <a rel="next prefetch" href="changelog.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -194,7 +227,13 @@
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="examples/node.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
+                    <a rel="next prefetch" href="changelog.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>
