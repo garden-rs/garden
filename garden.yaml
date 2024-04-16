@@ -16,12 +16,13 @@ variables:
   target: x86_64-unknown-linux-musl
   pkg: ${GARDEN_CONFIG_DIR}/pkg
   debdir: ${pkg}/deb
+
 # usage:
 #   garden <cmd> [<tree-query>] [-- [<args>]]
 commands:
   bench: cargo bench "$@"
   build: cargo build "$@"
-  check<:
+  check>:
     - check/fmt
     - check/audit
     - check/clippy
