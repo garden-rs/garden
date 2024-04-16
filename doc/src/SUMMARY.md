@@ -13,4 +13,5 @@
   - [Command Interpreters](examples/command-interpreters.md)
   - [Python](examples/python.md)
   - [Node](examples/node.md)
+- [FAQ, Tips and Tricks](tips-and-tricks.md)
 - [Changelog](changelog.md)
