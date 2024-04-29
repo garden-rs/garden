@@ -168,18 +168,20 @@ jobs:
         components: rustfmt clippy
     - name: Install cargo tools
       run: |
-        cargo install cargo-audit
-        cargo install cargo-deny
     - name: Install garden
-      run: cargo install --path .
+      run: cargo install garden-tools
     - name: Run format checks
       run: garden -vv check/fmt
-    - name: Audit dependencies
-      run: garden -vv check/audit
     - name: Run clippy checks
       run: garden -vv check/clippy
+    - name: Audit dependencies
+      run: |
+        cargo install cargo-audit
+        garden -vv check/audit
     - name: Audit licenses
-      run: garden -vv check/deny
+      run: |
+        cargo install cargo-deny
+        garden -vv check/deny
 
   docs:
     name: Documentation
