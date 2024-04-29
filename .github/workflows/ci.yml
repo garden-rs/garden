@@ -199,6 +199,6 @@ jobs:
           curl -sSL https://github.com/rust-lang/mdBook/releases/download/${version}/mdbook-${version}-x86_64-unknown-linux-gnu.tar.gz |
             tar -xz --directory=${HOME}/.cargo/bin
       - name: Install garden
-        run: cargo install --path .
+        run: cargo install garden-tools
       - name: Build documentation
         run: garden -vv doc
