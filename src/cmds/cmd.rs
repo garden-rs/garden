@@ -352,6 +352,10 @@ impl ShellParams {
                 shell_command.push(string!("-o"));
                 shell_command.push(string!("shwordsplit"));
             }
+            if is_zsh {
+                shell_command.push(string!("+o"));
+                shell_command.push(string!("nomatch"));
+            }
             if exit_on_error && is_shell {
                 shell_command.push(string!("-e"));
             }

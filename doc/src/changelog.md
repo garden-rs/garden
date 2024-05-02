@@ -1,5 +1,16 @@
 # Changelog
 
+## Upcoming
+
+**Features**:
+
+- `zsh` is now invoked using `zsh +o nomatch` for better portability across
+  shells. This prevents zsh from erroring when wildcard patterns find
+  no matches. Wildcards are commonly used, for example, to implement a
+  custom `clean` command that feeds `rm -f` using wildcard patterns.
+  The zsh `nomatch` option is a less useful option for non-interactive use
+  so we disable it unconditionally.
+
 ## v1.5.0
 
 *Released 2024-04-14*

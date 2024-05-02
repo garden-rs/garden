@@ -453,18 +453,18 @@ The following values for `garden.shell` are understood directly by `garden` and
 the following commands are used when `garden` detects that these shells are
 configured. Not applicable (N/A) is denoted by `-`.
 
-| garden.shell  | Command used for running commands | errexit=false | wordsplit=false       |
-|---------------|-----------------------------------|---------------|-----------------------|
-| `bun`         | `bun -e`                          | -             | -                     |
-| `bash`        | `bash -e -c`                      | Omit `-e`     | -                     |
-| `dash`        | `dash -e -c`                      | Omit `-e`     | -                     |
-| `ksh`         | `ksh -e -c`                       | Omit `-e`     | -                     |
-| `node`        | `node -e`                         | -             | -                     |
-| `nodejs`      | `nodejs -e`                       | -             | -                     |
-| `perl`        | `perl -e`                         | -             | -                     |
-| `ruby`        | `ruby -e`                         | -             | -                     |
-| `sh`          | `sh -e -c`                        | Omit `-e`     | -                     |
-| `zsh`         | `zsh -e -o shwordsplit -c`        | Omit `-e`     | Omit `-o shwordsplit` |
+| garden.shell  | Command used for running commands     | errexit=false | wordsplit=false       |
+|---------------|---------------------------------------|---------------|-----------------------|
+| `bun`         | `bun -e`                              | -             | -                     |
+| `bash`        | `bash -e -c`                          | Omit `-e`     | -                     |
+| `dash`        | `dash -e -c`                          | Omit `-e`     | -                     |
+| `ksh`         | `ksh -e -c`                           | Omit `-e`     | -                     |
+| `node`        | `node -e`                             | -             | -                     |
+| `nodejs`      | `nodejs -e`                           | -             | -                     |
+| `perl`        | `perl -e`                             | -             | -                     |
+| `ruby`        | `ruby -e`                             | -             | -                     |
+| `sh`          | `sh -e -c`                            | Omit `-e`     | -                     |
+| `zsh`         | `zsh -o shwordsplit +o nomatch -e -c` | Omit `-e`     | Omit `-o shwordsplit` |
 
 The following shells are not builtin, but they work as expected because they accept
 `-c <string>` arguments for running command strings.
