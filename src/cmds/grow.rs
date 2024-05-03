@@ -350,7 +350,7 @@ fn update_tree_from_context(
 
             let remote_for_branch = tree.get_remote_for_branch(eval_context, branch);
             if Some(remote) == remote_for_branch.as_ref() {
-                let command = ["git", "fetch", &remote];
+                let command = ["git", "fetch", remote];
                 if verbose > 1 {
                     print_command_str(&command.join(" "));
                 }

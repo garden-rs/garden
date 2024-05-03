@@ -299,7 +299,7 @@ pub(crate) fn plant_path(
         let command = ["git", "config", remote_url.as_str()];
         let exec = cmd::exec_in_dir(&command, &path);
         if let Ok(remote_url) = cmd::stdout_to_string(exec) {
-            url = remote_url.clone();
+            url.clone_from(&remote_url);
             if let Some(current_url) = app_context
                 .and_then(|ctx| get_url_for_remote(ctx, config, &tree_name, &default_remote))
             {

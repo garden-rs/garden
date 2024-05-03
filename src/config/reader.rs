@@ -317,7 +317,7 @@ fn dump_node(yaml: &Yaml, indent: usize, prefix: &str) {
 fn get_raw_str(yaml: &Yaml, string: &mut String) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
-            *string = yaml_string.clone();
+            string.clone_from(yaml_string);
             true
         }
         _ => false,

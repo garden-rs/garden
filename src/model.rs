@@ -366,7 +366,7 @@ impl Tree {
         }
         self.default_remote = tree.default_remote.to_string();
         self.description = tree.description.to_string();
-        self.links = tree.links.clone();
+        self.links.clone_from(&tree.links);
 
         self.update_flags();
     }

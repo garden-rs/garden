@@ -444,7 +444,7 @@ pub fn environment(
             }
 
             for var in &garden.environment {
-                vars.push((context.clone(), &var));
+                vars.push((context.clone(), var));
             }
             ready = true;
         }
@@ -528,7 +528,7 @@ pub fn environment(
             let mut exists = false;
             if let Some(map_value) = values.get(&name) {
                 // Use the existing value
-                current = map_value.clone();
+                current.clone_from(map_value);
                 exists = true;
             }
             if !exists {
@@ -798,7 +798,7 @@ fn environment_value(
             let mut current = String::new();
             let exists = if let Some(final_string_value) = final_value {
                 // Use the existing value
-                current = final_string_value.clone();
+                current.clone_from(&final_string_value);
                 true
             } else {
                 false
