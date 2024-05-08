@@ -29,6 +29,9 @@ pub struct CmdOptions {
     /// Run commands even when the tree does not exist.
     #[arg(long, short)]
     force: bool,
+    /// Increase verbosity level (default: 0)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
     /// Do not pass "-o shwordsplit" to zsh.
     /// Prevent the "shwordsplit" shell option from being set when using zsh.
     /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
@@ -70,6 +73,9 @@ pub struct CustomOptions {
     /// Run commands even when the tree does not exist.
     #[arg(long, short)]
     force: bool,
+    /// Increase verbosity level (default: 0)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
     /// Do not pass "-o shwordsplit" to zsh.
     /// Prevent the "shwordsplit" shell option from being set when using zsh.
     /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
@@ -122,6 +128,7 @@ pub struct CmdParams {
     keep_going: bool,
     #[derivative(Default(value = "true"))]
     exit_on_error: bool,
+    verbose: u8,
     #[derivative(Default(value = "true"))]
     word_split: bool,
 }
@@ -137,6 +144,7 @@ impl From<CmdOptions> for CmdParams {
             force: options.force,
             keep_going: options.keep_going,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
+            verbose: options.verbose,
             word_split: options.word_split,
             ..Default::default()
         }
@@ -159,6 +167,7 @@ impl From<CustomOptions> for CmdParams {
             exit_on_error: options.exit_on_error,
             force: options.force,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
+            verbose: options.verbose,
             word_split: options.word_split,
             ..Default::default()
         };
@@ -247,7 +256,7 @@ fn run_cmd_breadth_first(
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose;
+    let verbose = app_context.options.verbose + params.verbose;
     let shell = app_context.get_root_config().shell.as_str();
     let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each command, evaluate the tree environment,
@@ -394,7 +403,7 @@ fn run_cmd_depth_first(
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose;
+    let verbose = app_context.options.verbose + params.verbose;
     let shell = app_context.get_root_config().shell.as_str();
     let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each context, evaluate the tree environment and run the command.
