@@ -13,6 +13,9 @@ pub struct ListOptions {
     /// Do not list commands
     #[arg(long, short = 'c', default_value_t = false)]
     no_commands: bool,
+    /// Increase verbosity level (default: 0)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
     /// Display worktrees
     #[arg(short, long, default_value_t = false)]
     worktrees: bool,
@@ -37,7 +40,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let display_all = options.all;
     let display_worktrees = options.worktrees;
     let show_commands = !options.no_commands;
-    let verbose = app_context.options.verbose;
+    let verbose = app_context.options.verbose + options.verbose;
     let mut needs_newline = false;
 
     if app_context.options.debug_level(constants::DEBUG_LEVEL_LIST) > 0 {

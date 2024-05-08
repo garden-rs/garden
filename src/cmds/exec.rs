@@ -13,6 +13,9 @@ pub struct ExecOptions {
     /// Perform a trial run without executing any commands
     #[arg(long, short = 'n')]
     dry_run: bool,
+    /// Increase verbosity level (default: 0)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
     /// Tree query for the gardens, groups or trees to run the command
     #[arg(value_hint=ValueHint::Other)]
     query: String,
@@ -39,7 +42,7 @@ fn exec(
     exec_options: &ExecOptions,
 ) -> Result<()> {
     let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose;
+    let verbose = app_context.options.verbose + exec_options.verbose;
     let dry_run = exec_options.dry_run;
     let query = &exec_options.query;
     let tree_pattern = &exec_options.trees;

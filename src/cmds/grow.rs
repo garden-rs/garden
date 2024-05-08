@@ -12,6 +12,9 @@ type GitConfigMap = HashMap<String, HashSet<String>>;
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct GrowOptions {
+    /// Increase verbosity level (default: 0)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
     /// Filter trees by name post-query using a glob pattern
     #[arg(long, short, default_value = "*")]
     trees: String,
@@ -23,7 +26,7 @@ pub struct GrowOptions {
 /// Main entry point for the "garden grow" command
 pub fn main(app_context: &model::ApplicationContext, options: &GrowOptions) -> Result<()> {
     let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose;
+    let verbose = app_context.options.verbose + options.verbose;
     let mut exit_status = errors::EX_OK;
     let mut configured_worktrees: HashSet<String> = HashSet::new();
     for query in &options.queries {
