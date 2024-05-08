@@ -12,13 +12,14 @@
   The zsh `nomatch` option is a less useful option for non-interactive use
   so we disable it unconditionally.
 
-- The `--verbose` (`-v`) option can now be passed to custom commands.
+- The `--verbose` (`-v`) option can now be passed to custom and built-in commands.
 The `verbose` option was previously a global option that had to
 be specified before sub-commands. The following invocations are all
 equivalent now:
   - `garden -vv build`
   - `garden -v build -v`
   - `garden build -vv`
+([#36](https://github.com/garden-rs/garden/-/pull/36))
 
 
 ## v1.5.0

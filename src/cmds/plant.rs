@@ -14,6 +14,9 @@ pub struct PlantOptions {
     /// Sort all trees after planting new trees
     #[arg(long, short)]
     sort: bool,
+    /// Increase verbosity level (default: 0)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
     /// Trees to plant
     #[arg(required = true, value_hint=ValueHint::DirPath)]
     paths: Vec<String>,
@@ -21,7 +24,7 @@ pub struct PlantOptions {
 
 pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> Result<()> {
     // Read existing configuration
-    let verbose = app_context.options.verbose;
+    let verbose = app_context.options.verbose + options.verbose;
     let config = app_context.get_root_config();
     let mut doc = config::reader::read_yaml(config.get_path()?)?;
 

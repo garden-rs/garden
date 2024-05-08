@@ -7,6 +7,9 @@ use crate::{cmd, errors, eval, model, query};
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct ShellOptions {
+    /// Increase verbosity level (default: 0)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
     /// Query for trees to build an environment
     #[arg(default_value = ".")]
     query: String,
@@ -69,7 +72,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &ShellOptions) -> 
         context.garden.as_ref(),
     );
 
-    let verbose = app_context.options.verbose;
+    let verbose = app_context.options.verbose + options.verbose;
     let quiet = verbose == 0;
     if let Some(value) = shlex::split(&shell) {
         cmd::exec_in_context(
