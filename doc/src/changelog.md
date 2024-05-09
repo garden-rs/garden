@@ -19,7 +19,8 @@ equivalent now:
   - `garden -vv build`
   - `garden -v build -v`
   - `garden build -vv`
-([#36](https://github.com/garden-rs/garden/-/pull/36))
+
+  ([#36](https://github.com/garden-rs/garden/-/pull/36))
 
 
 ## v1.5.0
