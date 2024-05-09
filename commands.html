@@ -511,7 +511,7 @@ configured. Not applicable (N/A) is denoted by <code>-</code>.</p>
 <tr><td><code>perl</code></td><td><code>perl -e</code></td><td>-</td><td>-</td></tr>
 <tr><td><code>ruby</code></td><td><code>ruby -e</code></td><td>-</td><td>-</td></tr>
 <tr><td><code>sh</code></td><td><code>sh -e -c</code></td><td>Omit <code>-e</code></td><td>-</td></tr>
-<tr><td><code>zsh</code></td><td><code>zsh -e -o shwordsplit -c</code></td><td>Omit <code>-e</code></td><td>Omit <code>-o shwordsplit</code></td></tr>
+<tr><td><code>zsh</code></td><td><code>zsh -o shwordsplit +o nomatch -e -c</code></td><td>Omit <code>-e</code></td><td>Omit <code>-o shwordsplit</code></td></tr>
 </tbody></table>
 </div>
 <p>The following shells are not builtin, but they work as expected because they accept

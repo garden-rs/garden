@@ -189,7 +189,7 @@ and prefer to install <code>garden</code> using Homebrew.</p>
 <p><a href="#install-on-netbsd">Skip ahead to the NetBSD section</a> if you're on NetBSD
 and prefer to install <code>garden</code> using <code>pkgin</code> or the pkgsrc/NetBSD sources.</p>
 <h2 id="prebuilt-binaries"><a class="header" href="#prebuilt-binaries">Prebuilt Binaries</a></h2>
-<p><a href="https://github.com/garden-rs/garden/releases">Prebuilt Binaries are available</a>
+<p><a href="https://github.com/garden-rs/garden/releases">Pre-built Binaries are available</a>
 for Linux, macOS and Windows.</p>
 <p><a href="https://gitlab.com/garden-rs/garden/-/artifacts">Nightly Builds for x86_64 Linux</a>
 are also available from the <code>build:amd64</code> jobs.</p>
@@ -261,7 +261,7 @@ cargo build
 # Install $HOME/.cargo/bin/garden
 cargo install --path .
 </code></pre>
-<p>Running <code>cargo install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
+<p>This will install <code>garden</code> to <code>~/.cargo/bin/garden</code> by default.</p>
 <p>Once you have <code>garden</code> installed then you can use Garden's <code>garden.yaml</code> to run
 Garden's custom workflow commands.</p>
 <ul>
@@ -271,7 +271,7 @@ Garden's custom workflow commands.</p>
 <li><code>garden fmt</code> formats the source code.</li>
 <li><code>garden install-doc</code> installs the documentation.</li>
 </ul>
-<p>See Garden's <code>garden.yaml</code> for more details.</p>
+<p>See Garden's <a href="https://gitlab.com/garden-rs/garden/-/blob/main/garden.yaml"><code>garden.yaml</code></a> for more details.</p>
 <h2 id="nix-flakes"><a class="header" href="#nix-flakes">Nix Flakes</a></h2>
 <p><a href="https://nixos.wiki/wiki/Flakes">Nix Flakes</a> can be used to build, test and install <code>garden</code>.
 A <code>flake.nix</code> file is provided in the source tree.</p>

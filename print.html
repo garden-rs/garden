@@ -310,7 +310,7 @@ and prefer to install <code>garden</code> using Homebrew.</p>
 <p><a href="installation.html#install-on-netbsd">Skip ahead to the NetBSD section</a> if you're on NetBSD
 and prefer to install <code>garden</code> using <code>pkgin</code> or the pkgsrc/NetBSD sources.</p>
 <h2 id="prebuilt-binaries"><a class="header" href="#prebuilt-binaries">Prebuilt Binaries</a></h2>
-<p><a href="https://github.com/garden-rs/garden/releases">Prebuilt Binaries are available</a>
+<p><a href="https://github.com/garden-rs/garden/releases">Pre-built Binaries are available</a>
 for Linux, macOS and Windows.</p>
 <p><a href="https://gitlab.com/garden-rs/garden/-/artifacts">Nightly Builds for x86_64 Linux</a>
 are also available from the <code>build:amd64</code> jobs.</p>
@@ -382,7 +382,7 @@ cargo build
 # Install $HOME/.cargo/bin/garden
 cargo install --path .
 </code></pre>
-<p>Running <code>cargo install</code> with no arguments installs to <code>~/.cargo/bin/garden</code> by default.</p>
+<p>This will install <code>garden</code> to <code>~/.cargo/bin/garden</code> by default.</p>
 <p>Once you have <code>garden</code> installed then you can use Garden's <code>garden.yaml</code> to run
 Garden's custom workflow commands.</p>
 <ul>
@@ -392,7 +392,7 @@ Garden's custom workflow commands.</p>
 <li><code>garden fmt</code> formats the source code.</li>
 <li><code>garden install-doc</code> installs the documentation.</li>
 </ul>
-<p>See Garden's <code>garden.yaml</code> for more details.</p>
+<p>See Garden's <a href="https://gitlab.com/garden-rs/garden/-/blob/main/garden.yaml"><code>garden.yaml</code></a> for more details.</p>
 <h2 id="nix-flakes"><a class="header" href="#nix-flakes">Nix Flakes</a></h2>
 <p><a href="https://nixos.wiki/wiki/Flakes">Nix Flakes</a> can be used to build, test and install <code>garden</code>.
 A <code>flake.nix</code> file is provided in the source tree.</p>
@@ -863,7 +863,7 @@ configured. Not applicable (N/A) is denoted by <code>-</code>.</p>
 <tr><td><code>perl</code></td><td><code>perl -e</code></td><td>-</td><td>-</td></tr>
 <tr><td><code>ruby</code></td><td><code>ruby -e</code></td><td>-</td><td>-</td></tr>
 <tr><td><code>sh</code></td><td><code>sh -e -c</code></td><td>Omit <code>-e</code></td><td>-</td></tr>
-<tr><td><code>zsh</code></td><td><code>zsh -e -o shwordsplit -c</code></td><td>Omit <code>-e</code></td><td>Omit <code>-o shwordsplit</code></td></tr>
+<tr><td><code>zsh</code></td><td><code>zsh -o shwordsplit +o nomatch -e -c</code></td><td>Omit <code>-e</code></td><td>Omit <code>-o shwordsplit</code></td></tr>
 </tbody></table>
 </div>
 <p>The following shells are not builtin, but they work as expected because they accept
@@ -1680,7 +1680,7 @@ any differences in behavior.</p>
 <p>The <code>path</code> field can be used to name trees independently of directory on disk.
 The <code>path</code> value defaults to the same name as the tree, for example <code>git-scm</code>
 would be used as the directory without the <code>path: git</code> setting above.</p>
-<p>The <code>path: git</code> setting causes <code>garden grow git</code> to clone into a directory called
+<p>The <code>path: git</code> setting causes <code>garden grow git-scm</code> to clone into a directory called
 <code>git</code> instead of <code>git-scm</code>.</p>
 <p>Relative paths are assumed to be relative to the <code>${GARDEN_ROOT}</code>, typically the
 same directory as the <code>garden.yaml</code>.</p>
@@ -2288,6 +2288,31 @@ hello
 world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>
+<p><code>zsh</code> is now invoked using <code>zsh +o nomatch</code> for better portability across
+shells. This prevents zsh from erroring when wildcard patterns find
+no matches. Wildcards can be used, for example, to implement a
+custom <code>clean</code> command that feeds <code>rm -f</code> using wildcard patterns,
+but these commands would generate errors without disabling <code>nomatch</code>.
+The zsh <code>nomatch</code> option is a less useful option for non-interactive use
+so we disable it unconditionally.</p>
+</li>
+<li>
+<p>The <code>--verbose</code> (<code>-v</code>) option can now be passed to custom and built-in commands.
+The <code>verbose</code> option was previously a global option that had to
+be specified before sub-commands. The following invocations are all
+equivalent now:</p>
+<ul>
+<li><code>garden -vv build</code></li>
+<li><code>garden -v build -v</code></li>
+<li><code>garden build -vv</code>
+(<a href="https://github.com/garden-rs/garden/-/pull/36">#36</a>)</li>
+</ul>
+</li>
+</ul>
 <h2 id="v150"><a class="header" href="#v150">v1.5.0</a></h2>
 <p><em>Released 2024-04-14</em></p>
 <p><strong>Features</strong>:</p>
