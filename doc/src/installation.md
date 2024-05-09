@@ -13,7 +13,7 @@ and prefer to install `garden` using `pkgin` or the pkgsrc/NetBSD sources.
 
 ## Prebuilt Binaries
 
-[Prebuilt Binaries are available](https://github.com/garden-rs/garden/releases)
+[Pre-built Binaries are available](https://github.com/garden-rs/garden/releases)
 for Linux, macOS and Windows.
 
 [Nightly Builds for x86_64 Linux](https://gitlab.com/garden-rs/garden/-/artifacts)
@@ -137,7 +137,7 @@ cargo build
 cargo install --path .
 ```
 
-Running `cargo install` with no arguments installs to `~/.cargo/bin/garden` by default.
+This will install `garden` to `~/.cargo/bin/garden` by default.
 
 Once you have `garden` installed then you can use Garden's `garden.yaml` to run
 Garden's custom workflow commands.
