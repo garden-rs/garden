@@ -2,20 +2,13 @@
 
 Garden grows and cultivates collections of Git trees.
 
-Garden helps you define development workflows that operate over collections of
-self-contained and inter-dependent Git worktrees.
+Garden is a simple yet expressive command runner and multi-repo Git configuration tool.
+Garden helps you create development workflows over collections of self-contained,
+loosely-coupled and inter-dependent Git worktrees.
 
 ```bash
 cargo install garden-tools
 ```
-
-## Code Status
-
-[![Build status](https://gitlab.com/garden-rs/garden/badges/main/pipeline.svg)](https://gitlab.com/garden-rs/garden/-/pipelines)
-[![MIT License](https://img.shields.io/gitlab/license/garden-rs/garden.svg)](LICENSE)
-
-Garden is actively maintained and its core functionality is stable and feature-complete.
-
 
 ## Documentation
 
@@ -26,33 +19,29 @@ Read the [Garden API Documentation](https://docs.rs/garden-tools/)
 for details on how to use the Garden APIs for developing Garden.
 
 
-## Features
+## Installation
 
-Garden aids in common development setup steps such as setting environment
-variables, configuring search paths, and creating arbitrary groupings of
-repositories for development.
+* [Garden installation guide](https://garden-rs.gitlab.io/installation.html)
 
-* Bootstrap Git-based development environments from source.
+* [Garden pre-built binaries](https://github.com/garden-rs/garden/releases)
 
-* Define arbitrary collections of Git repositories for running commands.
 
-* Define environment variables scoped to specific projects or trees.
+## Use Cases
 
-* Define custom commands and workflows in a simple declarative config file.
+* Garden bootstraps Git-based multi-repo development environments from source.
+Garden can store and apply `git config` and `git remote` configuration to existing
+or new Git worktrees that Garden can "grow" (clone) into existence.
 
-* Develop, build and test interdependent projects in self-contained sandboxes.
+* Garden runs commands over collections of Git repositories.
+The simplicity of Garden's syntax and its dynamic expression variables
+makes it a viable replacement for `make` when used as a simple task runner.
 
-* Leverage your existing shell scripting knowledge. If you already know
-(bash/zsh/etc) shell then you can learn to use `garden` with minimal effort.
-
-* Configured using simple YAML files extended with a flexible expression syntax.
-Garden helps you define (multi-repository) workflows using the vast ecosystem of
-command-line tools.
+* Garden is configured using YAML files alongside a familiar UNIX shell syntax that
+leverages your existing shell knowledge. If you already know POSIX/bash/zsh shell then
+you can learn to use `garden` with minimal effort.
 
 
 ## Links and Related Projects
-
-* [Garden prebuilt binaries](https://github.com/garden-rs/garden/releases)
 
 * [Garden on crates.io](https://crates.io/crates/garden-tools)
 
@@ -63,7 +52,9 @@ command-line tools.
 * [Garden seeds](https://gitlab.com/garden-rs/garden-seeds) ~ reusable templates for garden.
 
 
-## Acknowledgements
+## Code Status
 
-The structure and content of the README and documentation was heavily inspired
-by the [mdbook documentation](https://github.com/rust-lang/mdBook).
+[![Build status](https://gitlab.com/garden-rs/garden/badges/main/pipeline.svg)](https://gitlab.com/garden-rs/garden/-/pipelines)
+[![MIT License](https://img.shields.io/gitlab/license/garden-rs/garden.svg)](LICENSE)
+
+Garden is actively maintained and its core functionality is stable and feature-complete.
