@@ -148,7 +148,7 @@ Garden's custom workflow commands.
 * `garden fmt` formats the source code.
 * `garden install-doc` installs the documentation.
 
-See Garden's `garden.yaml` for more details.
+See Garden's [`garden.yaml`](https://gitlab.com/garden-rs/garden/-/blob/main/garden.yaml) for more details.
 
 
 ## Nix Flakes
