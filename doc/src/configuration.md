@@ -423,7 +423,7 @@ The `path` field can be used to name trees independently of directory on disk.
 The `path` value defaults to the same name as the tree, for example `git-scm`
 would be used as the directory without the `path: git` setting above.
 
-The `path: git` setting causes `garden grow git` to clone into a directory called
+The `path: git` setting causes `garden grow git-scm` to clone into a directory called
 `git` instead of `git-scm`.
 
 Relative paths are assumed to be relative to the `${GARDEN_ROOT}`, typically the
