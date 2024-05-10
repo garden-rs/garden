@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
 use derivative::Derivative;
 
-use crate::{cli, cmd, constants, display, errors, eval, model, path, query, syntax};
+use crate::{cmd, constants, display, errors, eval, model, path, query, syntax};
 
 /// Run one or more custom commands over a tree query
 #[derive(Parser, Clone, Debug)]
@@ -107,7 +107,8 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
     if !app_context.get_root_config().shell_word_split {
         options.word_split = false;
     }
-    let params: CmdParams = options.clone().into();
+    let mut params: CmdParams = options.clone().into();
+    params.verbose += app_context.options.verbose;
     let exit_status = cmd(app_context, &options.query, &params)?;
 
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
@@ -214,6 +215,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
     let mut params: CmdParams = options.clone().into();
     params.commands.push(name.to_string());
+    params.verbose += app_context.options.verbose;
 
     cmds(app_context, &params)
 }
@@ -256,7 +258,6 @@ fn run_cmd_breadth_first(
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose + params.verbose;
     let shell = app_context.get_root_config().shell.as_str();
     let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each command, evaluate the tree environment,
@@ -289,7 +290,7 @@ fn run_cmd_breadth_first(
             };
             let fallback_path;
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
+            if !display::print_tree(tree, config.tree_branches, params.verbose, quiet, params.force) {
                 if params.force {
                     fallback_path = config.fallback_execdir_string();
                     path = &fallback_path;
@@ -309,7 +310,6 @@ fn run_cmd_breadth_first(
                 app_context.get_root_config_mut().reset();
 
                 if let Err(cmd_status) = run_cmd_vec(
-                    &app_context.options,
                     path,
                     &shell_params,
                     &env,
@@ -403,7 +403,6 @@ fn run_cmd_depth_first(
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
     let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose + params.verbose;
     let shell = app_context.get_root_config().shell.as_str();
     let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each context, evaluate the tree environment and run the command.
@@ -432,7 +431,7 @@ fn run_cmd_depth_first(
             continue;
         };
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
+        if !display::print_tree(tree, config.tree_branches, params.verbose, quiet, params.force) {
             if params.force {
                 fallback_path = config.fallback_execdir_string();
                 path = &fallback_path;
@@ -452,7 +451,6 @@ fn run_cmd_depth_first(
                 let cmd_seq_vec = eval::command(app_context, context, command_name);
                 app_context.get_root_config_mut().reset();
                 if let Err(cmd_status) = run_cmd_vec(
-                    &app_context.options,
                     path,
                     &shell_params,
                     &env,
@@ -480,7 +478,6 @@ fn run_cmd_depth_first(
 /// - cmd_seq_vec: Vector of vector of command strings to run.
 /// - arguments: Additional command line arguments available in $1, $2, $N.
 fn run_cmd_vec(
-    options: &cli::MainOptions,
     path: &str,
     shell_params: &ShellParams,
     env: &Vec<(String, String)>,
@@ -492,7 +489,7 @@ fn run_cmd_vec(
     let mut exit_status = errors::EX_OK;
     for cmd_seq in cmd_seq_vec {
         for cmd_str in cmd_seq {
-            if options.verbose > 1 {
+            if params.verbose > 1 {
                 println!(
                     "{} {}",
                     display::Color::cyan(":"),

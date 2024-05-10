@@ -25,12 +25,12 @@ pub struct ExecOptions {
 }
 
 /// Main entry point for the "garden exec" command
-pub fn main(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
+pub fn main(app_context: &model::ApplicationContext, exec_options: &mut ExecOptions) -> Result<()> {
+    exec_options.verbose += app_context.options.verbose;
     if app_context.options.debug_level(constants::DEBUG_LEVEL_EXEC) > 0 {
         debug!("query: {}", exec_options.query);
         debug!("command: {:?}", exec_options.command);
     }
-
     let config = app_context.get_root_config_mut();
     exec(app_context, config, exec_options)
 }
@@ -42,7 +42,7 @@ fn exec(
     exec_options: &ExecOptions,
 ) -> Result<()> {
     let quiet = app_context.options.quiet;
-    let verbose = app_context.options.verbose + exec_options.verbose;
+    let verbose = exec_options.verbose;
     let dry_run = exec_options.dry_run;
     let query = &exec_options.query;
     let tree_pattern = &exec_options.trees;

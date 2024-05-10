@@ -36,7 +36,7 @@ fn cmd_main() -> Result<()> {
         cli::Command::Completion(_) => Ok(()), // Handled above
         cli::Command::Custom(args) => cmds::cmd::main_custom(&app, &args),
         cli::Command::Eval(eval) => cmds::eval::main(&app, &eval),
-        cli::Command::Exec(exec) => cmds::exec::main(&app, &exec),
+        cli::Command::Exec(mut exec) => cmds::exec::main(&app, &mut exec),
         cli::Command::Grow(grow) => cmds::grow::main(&app, &grow),
         cli::Command::Init(_) => Ok(()), // Handled above
         cli::Command::List(mut list) => cmds::list::main(&app, &mut list),
