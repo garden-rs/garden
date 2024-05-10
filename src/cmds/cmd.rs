@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
 use derivative::Derivative;
 
-use crate::{cmd, constants, display, errors, eval, model, path, query, syntax};
+use crate::{cli, cmd, constants, display, errors, eval, model, path, query, syntax};
 
 /// Run one or more custom commands over a tree query
 #[derive(Parser, Clone, Debug)]
@@ -29,6 +29,9 @@ pub struct CmdOptions {
     /// Run commands even when the tree does not exist.
     #[arg(long, short)]
     force: bool,
+    /// Be quiet
+    #[arg(short, long)]
+    quiet: bool,
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
@@ -73,6 +76,9 @@ pub struct CustomOptions {
     /// Run commands even when the tree does not exist.
     #[arg(long, short)]
     force: bool,
+    /// Be quiet
+    #[arg(short, long)]
+    quiet: bool,
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
@@ -108,7 +114,7 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
         options.word_split = false;
     }
     let mut params: CmdParams = options.clone().into();
-    params.verbose += app_context.options.verbose;
+    params.update(&app_context.options);
     let exit_status = cmd(app_context, &options.query, &params)?;
 
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
@@ -129,6 +135,7 @@ pub struct CmdParams {
     keep_going: bool,
     #[derivative(Default(value = "true"))]
     exit_on_error: bool,
+    quiet: bool,
     verbose: u8,
     #[derivative(Default(value = "true"))]
     word_split: bool,
@@ -145,6 +152,7 @@ impl From<CmdOptions> for CmdParams {
             force: options.force,
             keep_going: options.keep_going,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
+            quiet: options.quiet,
             verbose: options.verbose,
             word_split: options.word_split,
             ..Default::default()
@@ -168,6 +176,7 @@ impl From<CustomOptions> for CmdParams {
             exit_on_error: options.exit_on_error,
             force: options.force,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
+            quiet: options.quiet,
             verbose: options.verbose,
             word_split: options.word_split,
             ..Default::default()
@@ -179,6 +188,14 @@ impl From<CustomOptions> for CmdParams {
         }
 
         params
+    }
+}
+
+impl CmdParams {
+    /// Apply the opt-level MainOptions onto the CmdParams.
+    fn update(&mut self, options: &cli::MainOptions) {
+        self.quiet |= options.quiet;
+        self.verbose += options.verbose;
     }
 }
 
@@ -214,8 +231,8 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
 
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
     let mut params: CmdParams = options.clone().into();
+    params.update(&app_context.options);
     params.commands.push(name.to_string());
-    params.verbose += app_context.options.verbose;
 
     cmds(app_context, &params)
 }
@@ -257,7 +274,8 @@ fn run_cmd_breadth_first(
     params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
-    let quiet = app_context.options.quiet;
+    let quiet = params.quiet;
+    let verbose = params.verbose;
     let shell = app_context.get_root_config().shell.as_str();
     let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each command, evaluate the tree environment,
@@ -290,7 +308,7 @@ fn run_cmd_breadth_first(
             };
             let fallback_path;
             // Sparse gardens/missing trees are ok -> skip these entries.
-            if !display::print_tree(tree, config.tree_branches, params.verbose, quiet, params.force) {
+            if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
                 if params.force {
                     fallback_path = config.fallback_execdir_string();
                     path = &fallback_path;
@@ -402,7 +420,8 @@ fn run_cmd_depth_first(
     params: &CmdParams,
 ) -> Result<i32> {
     let mut exit_status: i32 = errors::EX_OK;
-    let quiet = app_context.options.quiet;
+    let quiet = params.quiet;
+    let verbose = params.verbose;
     let shell = app_context.get_root_config().shell.as_str();
     let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each context, evaluate the tree environment and run the command.
@@ -431,7 +450,7 @@ fn run_cmd_depth_first(
             continue;
         };
         // Sparse gardens/missing trees are ok -> skip these entries.
-        if !display::print_tree(tree, config.tree_branches, params.verbose, quiet, params.force) {
+        if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
             if params.force {
                 fallback_path = config.fallback_execdir_string();
                 path = &fallback_path;

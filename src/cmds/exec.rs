@@ -13,6 +13,9 @@ pub struct ExecOptions {
     /// Perform a trial run without executing any commands
     #[arg(long, short = 'n')]
     dry_run: bool,
+    /// Be quiet
+    #[arg(short, long)]
+    quiet: bool,
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
@@ -32,6 +35,7 @@ pub fn main(app_context: &model::ApplicationContext, exec_options: &mut ExecOpti
         debug!("command: {:?}", exec_options.command);
     }
     let config = app_context.get_root_config_mut();
+    exec_options.quiet |= app_context.options.quiet;
     exec(app_context, config, exec_options)
 }
 
@@ -41,7 +45,7 @@ fn exec(
     config: &model::Configuration,
     exec_options: &ExecOptions,
 ) -> Result<()> {
-    let quiet = app_context.options.quiet;
+    let quiet = exec_options.quiet;
     let verbose = exec_options.verbose;
     let dry_run = exec_options.dry_run;
     let query = &exec_options.query;
