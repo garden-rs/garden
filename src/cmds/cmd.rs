@@ -327,13 +327,9 @@ fn run_cmd_breadth_first(
                 let cmd_seq_vec = eval::command(app_context, context, command_name);
                 app_context.get_root_config_mut().reset();
 
-                if let Err(cmd_status) = run_cmd_vec(
-                    path,
-                    &shell_params,
-                    &env,
-                    &cmd_seq_vec,
-                    params,
-                ) {
+                if let Err(cmd_status) =
+                    run_cmd_vec(path, &shell_params, &env, &cmd_seq_vec, params)
+                {
                     exit_status = cmd_status;
                     if !params.keep_going {
                         return Ok(cmd_status);
@@ -469,13 +465,9 @@ fn run_cmd_depth_first(
                 // its matching commands are appended to the end.
                 let cmd_seq_vec = eval::command(app_context, context, command_name);
                 app_context.get_root_config_mut().reset();
-                if let Err(cmd_status) = run_cmd_vec(
-                    path,
-                    &shell_params,
-                    &env,
-                    &cmd_seq_vec,
-                    params,
-                ) {
+                if let Err(cmd_status) =
+                    run_cmd_vec(path, &shell_params, &env, &cmd_seq_vec, params)
+                {
                     exit_status = cmd_status;
                     if !params.keep_going {
                         return Ok(cmd_status);
