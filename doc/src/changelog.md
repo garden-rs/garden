@@ -22,6 +22,16 @@ equivalent now:
 
   ([#36](https://github.com/garden-rs/garden/-/pull/36))
 
+**Packaging**:
+
+- The nix flake was updated to use Fenix for the latest stable rustc 1.78.0.
+  ([#37](https://github.com/garden-rs/garden/-/pull/37))
+
+**Development**:
+
+- An `.envrc` file was added to enable the nix flake for direnv users.
+  ([#37](https://github.com/garden-rs/garden/-/pull/37))
+
 
 ## v1.5.0
 
