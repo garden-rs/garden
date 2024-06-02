@@ -275,8 +275,8 @@ fn command_overrides() -> Result<()> {
     let app_context = common::garden_context_from_string(&string)?;
     let config = app_context.get_root_config();
     assert_eq!(config.commands.len(), 2);
-    assert!(config.commands.get("echo").is_some());
-    assert!(config.commands.get("test").is_some());
+    assert!(config.commands.contains_key("echo"));
+    assert!(config.commands.contains_key("test"));
 
     let echo_cmd = config.commands.get("echo").context("echo")?;
     assert_eq!(1, echo_cmd.len());
@@ -307,8 +307,8 @@ fn command_overrides() -> Result<()> {
     let app_context = common::garden_context_from_string(&string)?;
     let config = app_context.get_root_config();
     assert_eq!(config.commands.len(), 2);
-    assert!(config.commands.get("echo").is_some());
-    assert!(config.commands.get("test").is_some());
+    assert!(config.commands.contains_key("echo"));
+    assert!(config.commands.contains_key("test"));
 
     let echo_cmd = config.commands.get("echo").context("echo")?;
     assert_eq!(1, echo_cmd.len());
@@ -332,8 +332,8 @@ fn command_overrides() -> Result<()> {
     let app_context = common::garden_context_from_string(&string)?;
     let config = app_context.get_root_config();
     assert_eq!(config.commands.len(), 2);
-    assert!(config.commands.get("echo").is_some());
-    assert!(config.commands.get("test").is_some());
+    assert!(config.commands.contains_key("echo"));
+    assert!(config.commands.contains_key("test"));
 
     let echo_cmd = config.commands.get("echo").context("echo")?;
     assert_eq!(1, echo_cmd.len());

@@ -85,7 +85,7 @@ fn commands() -> Result<()> {
     let config = app_context.get_root_config();
     assert_eq!(2, config.commands.len());
 
-    assert!(config.commands.get("test_cmd").is_some());
+    assert!(config.commands.contains_key("test_cmd"));
     assert_eq!(
         1,
         config
@@ -195,7 +195,7 @@ fn groups() -> Result<()> {
     let app_context = common::garden_context()?;
     let config = app_context.get_root_config();
     assert!(config.groups.len() >= 2);
-    assert!(config.groups.get("cola").is_some());
+    assert!(config.groups.contains_key("cola"));
     assert_eq!(
         "cola",
         config
@@ -336,9 +336,9 @@ fn trees() -> Result<()> {
 
     assert_eq!(3, tree1.commands.len());
     // From the tree
-    assert!(tree1.commands.get("build").is_some());
-    assert!(tree1.commands.get("install").is_some());
-    assert!(tree1.commands.get("test").is_some());
+    assert!(tree1.commands.contains_key("build"));
+    assert!(tree1.commands.contains_key("install"));
+    assert!(tree1.commands.contains_key("test"));
     // From the template
     let test_cmd = tree1.commands.get("test").context("test")?;
     assert_eq!(2, test_cmd.len());
