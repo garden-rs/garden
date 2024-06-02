@@ -1,16 +1,18 @@
 # Changelog
 
-## Upcoming
+## v1.6.0
+
+*Released 2024-06-02*
 
 **Features**:
 
 - `zsh` is now invoked using `zsh +o nomatch` for better portability across
-  shells. This prevents zsh from erroring when wildcard patterns find
-  no matches. Wildcards can be used, for example, to implement a
-  custom `clean` command that feeds `rm -f` using wildcard patterns,
-  but these commands would generate errors without disabling `nomatch`.
-  The zsh `nomatch` option is a less useful option for non-interactive use
-  so we disable it unconditionally.
+shells. This prevents zsh from erroring when wildcard patterns find
+no matches. Wildcards can be used, for example, to implement a
+custom `clean` command that feeds `rm -f` using wildcard patterns,
+but these commands would generate errors without disabling `nomatch`.
+The zsh `nomatch` option is a less useful option for non-interactive use
+so we disable it unconditionally.
 
 - The `--verbose` (`-v`) option can now be passed to custom and built-in commands.
 The `verbose` option was previously a global option that had to
