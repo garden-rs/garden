@@ -21,11 +21,14 @@
   outputs = { self, nixpkgs, crane, fenix, flake-utils, advisory-db, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        overlays = [ fenix.overlays.default ];
+        pkgs = import nixpkgs {
+          inherit system overlays;
+        };
 
         inherit (pkgs) lib;
 
-        craneLib = crane.lib.${system};
+        craneLib = (crane.mkLib pkgs).overrideToolchain fenix.packages.${system}.stable.toolchain;
 
         # Include *.yaml and *.sh files for the test suite.
         src = lib.cleanSourceWith {
@@ -50,7 +53,7 @@
           ];
         };
         craneLibLLvmTools = craneLib.overrideToolchain
-          (fenix.packages.${system}.complete.withComponents [
+          (pkgs.${system}.complete.withComponents [
             "cargo"
             "llvm-tools"
             "rustc"
