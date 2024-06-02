@@ -55,7 +55,6 @@
         craneLibLLvmTools = craneLib.overrideToolchain
           (pkgs.${system}.complete.withComponents [
             "cargo"
-            "llvm-tools"
             "rustc"
           ]);
 
@@ -101,9 +100,6 @@
 
         packages = {
           default = garden;
-          garden-llvm-coverage = craneLibLLvmTools.cargoLlvmCov (commonArgs // {
-            inherit cargoArtifacts;
-          });
         };
 
         apps.default = flake-utils.lib.mkApp {
