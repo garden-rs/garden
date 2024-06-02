@@ -210,20 +210,10 @@ fn plant_keep_variables_oneline() -> Result<()> {
         assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
     }
     // Grow the tree.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "grow",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "grow", tree_name])?;
     assert!(fixture.pathbuf(tree_name).exists());
     // Re-plant the tree and ensure that the variables are retained.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "plant",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "plant", tree_name])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
             &fixture_config_pathbuf,
@@ -310,20 +300,10 @@ fn plant_keep_variables_simple() -> Result<()> {
         assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
     }
     // Grow the tree.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "grow",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "grow", tree_name])?;
     assert!(fixture.pathbuf(tree_name).exists());
     // Re-plant the tree and ensure that the variables are retained.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "plant",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "plant", tree_name])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
             &fixture_config_pathbuf,
@@ -364,21 +344,11 @@ fn plant_keep_variables_with_remotes() -> Result<()> {
         );
     }
     // Grow the tree.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "grow",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "grow", tree_name])?;
 
     assert!(fixture.pathbuf(tree_name).exists());
     // Re-plant the tree and ensure that the variables are retained.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "plant",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "plant", tree_name])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
             &fixture_config_pathbuf,
@@ -422,20 +392,10 @@ fn plant_keep_variables_with_templates() -> Result<()> {
         );
     }
     // Grow the tree.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "grow",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "grow", tree_name])?;
     assert!(fixture.pathbuf(tree_name).exists());
     // Re-plant the tree and ensure that the variables are retained.
-    common::exec_garden(&[
-        "--chdir",
-        &fixture_root,
-        "plant",
-        tree_name,
-    ])?;
+    common::exec_garden(&["--chdir", &fixture_root, "plant", tree_name])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
             &fixture_config_pathbuf,
