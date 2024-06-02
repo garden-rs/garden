@@ -106,6 +106,7 @@ trees:
     remotes:
       davvid: "git@gitlab.com:davvid/garden.git"
       github: "git@github.com:garden-rs/garden.git"
+      jordilin: "git@github.com:jordilin/garden.git"
       jtietema: "git@github.com:jtietema/garden.git"
       slackline: "git@github.com:slackline/garden.git"
       pages: "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
