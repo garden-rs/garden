@@ -192,12 +192,17 @@ fn plant_git_worktree() -> Result<()> {
 fn plant_keep_variables_oneline() -> Result<()> {
     let tree_name = "example/oneline";
     let config_path = "tests/data/plant.yaml";
-    let config_pathbuf = std::path::PathBuf::from(config_path);
     let fixture = common::BareRepoFixture::new(function_name!());
+    let fixture_root = fixture.root();
+    // Copy plant.yaml to "garden.yaml" in the temporary root.
+    let mut fixture_config_pathbuf = fixture.root_pathbuf();
+    fixture_config_pathbuf.push("garden.yaml");
+    std::fs::copy(config_path, &fixture_config_pathbuf)?;
+
     // Check that the config uses ${storage} variables for url and remotes.
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -206,10 +211,8 @@ fn plant_keep_variables_oneline() -> Result<()> {
     }
     // Grow the tree.
     common::exec_garden(&[
-        "--root",
-        &fixture.root(),
-        "--config",
-        config_path,
+        "--chdir",
+        &fixture_root,
         "grow",
         tree_name,
     ])?;
@@ -217,15 +220,13 @@ fn plant_keep_variables_oneline() -> Result<()> {
     // Re-plant the tree and ensure that the variables are retained.
     common::exec_garden(&[
         "--chdir",
-        &fixture.root(),
-        "--config",
-        config_path,
+        &fixture_root,
         "plant",
         tree_name,
     ])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -242,18 +243,16 @@ fn plant_keep_variables_oneline() -> Result<()> {
 fn plant_add_remote_to_oneline_tree() -> Result<()> {
     let tree_name = "example/oneline";
     let fixture = common::BareRepoFixture::new(function_name!());
-
-    let mut garden_yaml = fixture.root_pathbuf();
-    garden_yaml.push("garden.yaml");
-    std::fs::copy("tests/data/plant.yaml", &garden_yaml)?;
-
-    let config_path = fixture.path("garden.yaml");
-    let config_pathbuf = std::path::PathBuf::from(config_path);
-
+    let fixture_root = fixture.root();
+    let config_path = "tests/data/plant.yaml";
+    // Copy plant.yaml to "garden.yaml" in the temporary root.
+    let mut fixture_config_pathbuf = fixture.root_pathbuf();
+    fixture_config_pathbuf.push("garden.yaml");
+    std::fs::copy(config_path, &fixture_config_pathbuf)?;
     // Check that the config uses ${storage} variables for url and remotes.
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -261,7 +260,7 @@ fn plant_add_remote_to_oneline_tree() -> Result<()> {
         assert_eq!(tree.remotes.get("origin").unwrap().get_expr(), "${storage}");
     }
     // Grow the tree.
-    common::exec_garden(&["--chdir", &fixture.root(), "grow", tree_name])?;
+    common::exec_garden(&["--chdir", &fixture_root, "grow", tree_name])?;
     assert!(fixture.pathbuf(tree_name).exists());
 
     // Add a remote called "new-remote".
@@ -270,10 +269,10 @@ fn plant_add_remote_to_oneline_tree() -> Result<()> {
     common::assert_cmd(&cmd, &oneline_path);
 
     // Re-plant the tree and ensure that variables are retained and the new remote is recorded.
-    common::exec_garden(&["--chdir", &fixture.root(), "plant", tree_name])?;
+    common::exec_garden(&["--chdir", &fixture_root, "plant", tree_name])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -294,12 +293,16 @@ fn plant_add_remote_to_oneline_tree() -> Result<()> {
 fn plant_keep_variables_simple() -> Result<()> {
     let tree_name = "example/main";
     let config_path = "tests/data/plant.yaml";
-    let config_pathbuf = std::path::PathBuf::from(config_path);
     let fixture = common::BareRepoFixture::new(function_name!());
+    let fixture_root = fixture.root();
+    // Copy plant.yaml to "garden.yaml" in the temporary root.
+    let mut fixture_config_pathbuf = fixture.root_pathbuf();
+    fixture_config_pathbuf.push("garden.yaml");
+    std::fs::copy(config_path, &fixture_config_pathbuf)?;
     // Check that the config uses ${storage} variables for url and remotes.
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -308,10 +311,8 @@ fn plant_keep_variables_simple() -> Result<()> {
     }
     // Grow the tree.
     common::exec_garden(&[
-        "--root",
-        &fixture.root(),
-        "--config",
-        config_path,
+        "--chdir",
+        &fixture_root,
         "grow",
         tree_name,
     ])?;
@@ -319,15 +320,13 @@ fn plant_keep_variables_simple() -> Result<()> {
     // Re-plant the tree and ensure that the variables are retained.
     common::exec_garden(&[
         "--chdir",
-        &fixture.root(),
-        "--config",
-        config_path,
+        &fixture_root,
         "plant",
         tree_name,
     ])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -344,12 +343,16 @@ fn plant_keep_variables_simple() -> Result<()> {
 fn plant_keep_variables_with_remotes() -> Result<()> {
     let tree_name = "example/variables";
     let config_path = "tests/data/plant.yaml";
-    let config_pathbuf = std::path::PathBuf::from(config_path);
     let fixture = common::BareRepoFixture::new(function_name!());
+    let fixture_root = fixture.root();
+    // Copy plant.yaml to "garden.yaml" in the temporary root.
+    let mut fixture_config_pathbuf = fixture.root_pathbuf();
+    fixture_config_pathbuf.push("garden.yaml");
+    std::fs::copy(config_path, &fixture_config_pathbuf)?;
     // Check that the config uses ${storage} variables for url and remotes.
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -362,26 +365,23 @@ fn plant_keep_variables_with_remotes() -> Result<()> {
     }
     // Grow the tree.
     common::exec_garden(&[
-        "--root",
-        &fixture.root(),
-        "--config",
-        config_path,
+        "--chdir",
+        &fixture_root,
         "grow",
         tree_name,
     ])?;
+
     assert!(fixture.pathbuf(tree_name).exists());
     // Re-plant the tree and ensure that the variables are retained.
     common::exec_garden(&[
         "--chdir",
-        &fixture.root(),
-        "--config",
-        config_path,
+        &fixture_root,
         "plant",
         tree_name,
     ])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -402,12 +402,15 @@ fn plant_keep_variables_with_remotes() -> Result<()> {
 fn plant_keep_variables_with_templates() -> Result<()> {
     let tree_name = "example/template";
     let config_path = "tests/data/plant.yaml";
-    let config_pathbuf = std::path::PathBuf::from(config_path);
     let fixture = common::BareRepoFixture::new(function_name!());
+    let fixture_root = fixture.root();
+    let mut fixture_config_pathbuf = fixture.root_pathbuf();
+    fixture_config_pathbuf.push("garden.yaml");
+    std::fs::copy(config_path, &fixture_config_pathbuf)?;
     // Check that the config uses ${storage} variables for url and remotes.
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
@@ -420,10 +423,8 @@ fn plant_keep_variables_with_templates() -> Result<()> {
     }
     // Grow the tree.
     common::exec_garden(&[
-        "--root",
-        &fixture.root(),
-        "--config",
-        config_path,
+        "--chdir",
+        &fixture_root,
         "grow",
         tree_name,
     ])?;
@@ -431,15 +432,13 @@ fn plant_keep_variables_with_templates() -> Result<()> {
     // Re-plant the tree and ensure that the variables are retained.
     common::exec_garden(&[
         "--chdir",
-        &fixture.root(),
-        "--config",
-        config_path,
+        &fixture_root,
         "plant",
         tree_name,
     ])?;
     {
         let app_context = garden::model::ApplicationContext::from_path_and_root(
-            &config_pathbuf,
+            &fixture_config_pathbuf,
             Some(&fixture.root_pathbuf()),
         )?;
         let cfg = app_context.get_root_config();
