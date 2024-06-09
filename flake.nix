@@ -53,9 +53,10 @@
           ];
         };
         craneLibLLvmTools = craneLib.overrideToolchain
-          (pkgs.${system}.complete.withComponents [
+          (fenix.packages.${system}.complete.withComponents [
             "cargo"
             "rustc"
+            "llvm-tools"
           ]);
 
         # Build cargo dependencies to be reused via cachix when running in CI.
@@ -100,6 +101,10 @@
 
         packages = {
           default = garden;
+          garden-llvm-coverage = craneLibLLvmTools.cargoLlvmCov (commonArgs // {
+            inherit cargoArtifacts;
+          });
+
         };
 
         apps.default = flake-utils.lib.mkApp {

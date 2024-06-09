@@ -1,5 +1,13 @@
 # Changelog
 
+## Upcoming
+
+**Packaging**:
+
+- The nix flake was updated to re-enable llvm coverage.
+  ([#38](https://github.com/garden-rs/garden/-/pull/38))
+
+
 ## v1.6.0
 
 *Released 2024-06-02*
