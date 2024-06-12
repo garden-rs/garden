@@ -5,7 +5,7 @@
 **Packaging**:
 
 - The nix flake was updated to re-enable llvm coverage.
-  ([#38](https://github.com/garden-rs/garden/-/pull/38))
+([#38](https://github.com/garden-rs/garden/-/pull/38))
 
 
 ## v1.6.0
@@ -35,12 +35,12 @@ equivalent now:
 **Packaging**:
 
 - The nix flake was updated to use Fenix for the latest stable rustc 1.78.0.
-  ([#37](https://github.com/garden-rs/garden/-/pull/37))
+([#37](https://github.com/garden-rs/garden/-/pull/37))
 
 **Development**:
 
 - An `.envrc` file was added to enable the nix flake for direnv users.
-  ([#37](https://github.com/garden-rs/garden/-/pull/37))
+([#37](https://github.com/garden-rs/garden/-/pull/37))
 
 
 ## v1.5.0
