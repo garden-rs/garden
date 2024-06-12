@@ -166,17 +166,27 @@ The following commands are available once installed.
 
 * `nix build` builds the `garden` package.
 * `nix shell` opens a shell with `garden` installed.
+* `nix run` directly run `garden`.
 * `nix develop` opens a development shell with `garden` and `cargo` installed.
 * `nix flake check` builds `garden` and runs the test suite.
 
 ### Activating Garden's Nix Package
 
-The `nix shell` command above only works when run from `garden`'s source tree.
-A separate `nix-shell` command can be used to get a shell with `garden` from any
-directory by using the package's [Nix Store](https://nixos.org/manual/nix/stable/store/)
-location. To do this we need to get the package's nix store output path.
+You can open a nix shell with garden installed by issuing the following command
+from any directory:
 
-Garden's nix derivation can be inspected using `nix derivation show`.
+```bash
+nix shell github:garden-rs/garden
+```
+
+Alternatively, you can also run garden directly by issuing `nix run` as follows:
+
+```bash
+nix run github:garden-rs/garden -- --help
+```
+
+Inside Garden's git repository, you can inspect its derivation by issuing `nix
+derivation show`.
 The `output.path` field contains the Nix Store location of the `nix` package.
 For example, `nix derivation show` will contain output that looks like the following:
 
