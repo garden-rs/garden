@@ -7,6 +7,10 @@
 - The nix flake was updated to re-enable llvm coverage.
 ([#38](https://github.com/garden-rs/garden/-/pull/38))
 
+- `nix run` can now be used to run `garden` and `nix shell` can now be used to
+open a nix shell with garden installed.
+([#40](https://github.com/garden-rs/garden/-/pull/40))
+
 
 ## v1.6.0
 
