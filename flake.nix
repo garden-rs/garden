@@ -63,6 +63,7 @@
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
         # Build the crate while reusing the dependency artifacts from above.
         garden = craneLib.buildPackage (commonArgs // {
+          pname = "garden";
           inherit cargoArtifacts;
         });
       in
