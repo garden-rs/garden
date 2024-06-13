@@ -284,15 +284,19 @@ to install flakes.</p>
 <ul>
 <li><code>nix build</code> builds the <code>garden</code> package.</li>
 <li><code>nix shell</code> opens a shell with <code>garden</code> installed.</li>
+<li><code>nix run</code> directly run <code>garden</code>.</li>
 <li><code>nix develop</code> opens a development shell with <code>garden</code> and <code>cargo</code> installed.</li>
 <li><code>nix flake check</code> builds <code>garden</code> and runs the test suite.</li>
 </ul>
 <h3 id="activating-gardens-nix-package"><a class="header" href="#activating-gardens-nix-package">Activating Garden's Nix Package</a></h3>
-<p>The <code>nix shell</code> command above only works when run from <code>garden</code>'s source tree.
-A separate <code>nix-shell</code> command can be used to get a shell with <code>garden</code> from any
-directory by using the package's <a href="https://nixos.org/manual/nix/stable/store/">Nix Store</a>
-location. To do this we need to get the package's nix store output path.</p>
-<p>Garden's nix derivation can be inspected using <code>nix derivation show</code>.
+<p>You can open a nix shell with garden installed by issuing the following command
+from any directory:</p>
+<pre><code class="language-bash">nix shell github:garden-rs/garden
+</code></pre>
+<p>Alternatively, you can also run garden directly by issuing <code>nix run</code> as follows:</p>
+<pre><code class="language-bash">nix run github:garden-rs/garden -- --help
+</code></pre>
+<p>Inside Garden's git repository, you can inspect its derivation by issuing <code>nix derivation show</code>.
 The <code>output.path</code> field contains the Nix Store location of the <code>nix</code> package.
 For example, <code>nix derivation show</code> will contain output that looks like the following:</p>
 <pre><code class="language-yaml">{

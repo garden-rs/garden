@@ -182,6 +182,45 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>
+<p><code>garden ls</code> now has a <code>--commands | -c</code> option to display just commands.
+The related <code>--no-commands | -C</code> option is used to omit commands from being displayed.
+(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+</li>
+<li>
+<p><code>garden cmd</code> and <code>garden &lt;custom-command&gt;</code> now support a <code>--dry-run | -N</code> option
+to perform trial runs without actually running any commands.
+(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+</li>
+<li>
+<p><code>garden exec</code> made <code>-N</code> the short option for its <code>--dry-run</code> option and the original
+<code>-n</code> short option was made an undocumented alias for compatibility.
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+</li>
+</ul>
+<p><strong>Fixes</strong>:</p>
+<ul>
+<li><code>garden ls</code> now prints the list of commands in the same order as they appear in <code>garden.yaml</code>.
+(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</li>
+</ul>
+<p><strong>Packaging</strong>:</p>
+<ul>
+<li>
+<p>The nix flake was updated to re-enable llvm coverage.
+(<a href="https://github.com/garden-rs/garden/-/pull/38">#38</a>)</p>
+</li>
+<li>
+<p><code>nix run</code> can now be used to run <code>garden</code> and <code>nix shell</code> can now be used to
+open a nix shell with garden installed.
+(<a href="https://github.com/garden-rs/garden/-/pull/40">#40</a>)</p>
+</li>
+</ul>
 <h2 id="v160"><a class="header" href="#v160">v1.6.0</a></h2>
 <p><em>Released 2024-06-02</em></p>
 <p><strong>Features</strong>:</p>
@@ -196,7 +235,7 @@ The zsh <code>nomatch</code> option is a less useful option for non-interactive 
 so we disable it unconditionally.</p>
 </li>
 <li>
-<p>The <code>--verbose</code> (<code>-v</code>) option can now be passed to custom and built-in commands.
+<p>The <code>--verbose | -v</code> option can now be passed to custom and built-in commands.
 The <code>verbose</code> option was previously a global option that had to
 be specified before sub-commands. The following invocations are all
 equivalent now:</p>

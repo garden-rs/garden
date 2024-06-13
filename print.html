@@ -405,15 +405,19 @@ to install flakes.</p>
 <ul>
 <li><code>nix build</code> builds the <code>garden</code> package.</li>
 <li><code>nix shell</code> opens a shell with <code>garden</code> installed.</li>
+<li><code>nix run</code> directly run <code>garden</code>.</li>
 <li><code>nix develop</code> opens a development shell with <code>garden</code> and <code>cargo</code> installed.</li>
 <li><code>nix flake check</code> builds <code>garden</code> and runs the test suite.</li>
 </ul>
 <h3 id="activating-gardens-nix-package"><a class="header" href="#activating-gardens-nix-package">Activating Garden's Nix Package</a></h3>
-<p>The <code>nix shell</code> command above only works when run from <code>garden</code>'s source tree.
-A separate <code>nix-shell</code> command can be used to get a shell with <code>garden</code> from any
-directory by using the package's <a href="https://nixos.org/manual/nix/stable/store/">Nix Store</a>
-location. To do this we need to get the package's nix store output path.</p>
-<p>Garden's nix derivation can be inspected using <code>nix derivation show</code>.
+<p>You can open a nix shell with garden installed by issuing the following command
+from any directory:</p>
+<pre><code class="language-bash">nix shell github:garden-rs/garden
+</code></pre>
+<p>Alternatively, you can also run garden directly by issuing <code>nix run</code> as follows:</p>
+<pre><code class="language-bash">nix run github:garden-rs/garden -- --help
+</code></pre>
+<p>Inside Garden's git repository, you can inspect its derivation by issuing <code>nix derivation show</code>.
 The <code>output.path</code> field contains the Nix Store location of the <code>nix</code> package.
 For example, <code>nix derivation show</code> will contain output that looks like the following:</p>
 <pre><code class="language-yaml">{
@@ -758,6 +762,9 @@ garden test git-cola vx
 
 # Use "--" to forward arguments to the custom commands
 garden test git-cola -- --verbose
+
+# Print what would get run without running anything
+garden test --dry-run -vv git-cola
 </code></pre>
 <p>Custom commands can be defined at either the tree or garden scope.
 Commands defined at the garden scope extend commands defined on a tree.
@@ -773,6 +780,9 @@ used to rerun garden from within a garden command.</p>
 <p>Additional arguments are available to command strings by using the traditional
 <code>"$@"</code> shell syntax.  When additional arguments are present <code>"$1"</code>, <code>"$2"</code>, and
 subsequent variables will be set according to each argument.</p>
+<p>The <code>-N | --dry-run</code> option performs a trial run without running any commands.
+Combine this option with the <code>-vv</code> extra-verbose mode to print the commands that
+would be run without running them.</p>
 <pre><code class="language-yaml"># Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via "String to List Promotion".
 # The YAML reader accepts multi-line strings using the "|" pipe syntax.
@@ -949,6 +959,10 @@ in shell commands. The <code>$${...}</code> braced double-dollar syntax can be u
 escape a braced value and disable evaluation by <code>garden</code>.</p>
 <p>Double-<code>$</code> can generally be used to escape literal <code>$</code> values in commands, but
 escaping is handled automatically for regular <code>$shell</code> variables.</p>
+<h3 id="tree-traversal-order"><a class="header" href="#tree-traversal-order">Tree Traversal Order</a></h3>
+<p>Garden traverses trees in the same order that appear in the <code>gardens</code>, <code>groups</code>,
+and <code>trees</code> blocks in your <code>garden.yaml</code> files. You can affect the order that trees and
+commands are traversed by ordering the entries in the Garden file accordingly.</p>
 <h3 id="depth-first-and-breadth-first-tree-traversal"><a class="header" href="#depth-first-and-breadth-first-tree-traversal">Depth-first and Breadth-first Tree Traversal</a></h3>
 <p>The following two invocations run commands in a different order:</p>
 <pre><code class="language-bash"># Depth-first (default)
@@ -975,9 +989,9 @@ This form allows you to specify multiple queries rather than multiple commands.<
 <p>When no builtin command exists by the specified name then garden will
 use custom commands defined in a <code>commands</code> block at the corresponding
 garden or tree scope.</p>
-<p><code>garden &lt;command&gt; &lt;query&gt;...</code> is complementary to <code>garden cmd &lt;query&gt; &lt;command&gt;...</code>.</p>
-<p><code>garden cmd ...</code> runs multiple commands over a single query.</p>
-<p><code>garden &lt;command&gt; ...</code> runs a command over multiple queries.</p>
+<p><code>garden &lt;command&gt; [&lt;query&gt;...]</code> is complementary to <code>garden cmd &lt;query&gt; &lt;command&gt;...</code>.</p>
+<p><code>garden cmd &lt;query&gt; &lt;command&gt;...</code> runs multiple commands over a single query.</p>
+<p><code>garden &lt;command&gt; [&lt;query&gt;...]</code> runs a single command over multiple queries.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
@@ -1057,7 +1071,7 @@ When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environme
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
-<p>Use the <code>--dry-run</code> / <code>-n</code> option to perform a trial run without running any commands.</p>
+<p>Use the <code>-N | --dry-run</code> option to perform a trial run without running any commands.</p>
 <p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.
 This lets you activate a garden and its environment variables while only running
@@ -2288,6 +2302,45 @@ hello
 world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>
+<p><code>garden ls</code> now has a <code>--commands | -c</code> option to display just commands.
+The related <code>--no-commands | -C</code> option is used to omit commands from being displayed.
+(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+</li>
+<li>
+<p><code>garden cmd</code> and <code>garden &lt;custom-command&gt;</code> now support a <code>--dry-run | -N</code> option
+to perform trial runs without actually running any commands.
+(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+</li>
+<li>
+<p><code>garden exec</code> made <code>-N</code> the short option for its <code>--dry-run</code> option and the original
+<code>-n</code> short option was made an undocumented alias for compatibility.
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+</li>
+</ul>
+<p><strong>Fixes</strong>:</p>
+<ul>
+<li><code>garden ls</code> now prints the list of commands in the same order as they appear in <code>garden.yaml</code>.
+(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</li>
+</ul>
+<p><strong>Packaging</strong>:</p>
+<ul>
+<li>
+<p>The nix flake was updated to re-enable llvm coverage.
+(<a href="https://github.com/garden-rs/garden/-/pull/38">#38</a>)</p>
+</li>
+<li>
+<p><code>nix run</code> can now be used to run <code>garden</code> and <code>nix shell</code> can now be used to
+open a nix shell with garden installed.
+(<a href="https://github.com/garden-rs/garden/-/pull/40">#40</a>)</p>
+</li>
+</ul>
 <h2 id="v160"><a class="header" href="#v160">v1.6.0</a></h2>
 <p><em>Released 2024-06-02</em></p>
 <p><strong>Features</strong>:</p>
@@ -2302,7 +2355,7 @@ The zsh <code>nomatch</code> option is a less useful option for non-interactive 
 so we disable it unconditionally.</p>
 </li>
 <li>
-<p>The <code>--verbose</code> (<code>-v</code>) option can now be passed to custom and built-in commands.
+<p>The <code>--verbose | -v</code> option can now be passed to custom and built-in commands.
 The <code>verbose</code> option was previously a global option that had to
 be specified before sub-commands. The following invocations are all
 equivalent now:</p>

@@ -406,6 +406,9 @@ garden test git-cola vx
 
 # Use "--" to forward arguments to the custom commands
 garden test git-cola -- --verbose
+
+# Print what would get run without running anything
+garden test --dry-run -vv git-cola
 </code></pre>
 <p>Custom commands can be defined at either the tree or garden scope.
 Commands defined at the garden scope extend commands defined on a tree.
@@ -421,6 +424,9 @@ used to rerun garden from within a garden command.</p>
 <p>Additional arguments are available to command strings by using the traditional
 <code>"$@"</code> shell syntax.  When additional arguments are present <code>"$1"</code>, <code>"$2"</code>, and
 subsequent variables will be set according to each argument.</p>
+<p>The <code>-N | --dry-run</code> option performs a trial run without running any commands.
+Combine this option with the <code>-vv</code> extra-verbose mode to print the commands that
+would be run without running them.</p>
 <pre><code class="language-yaml"># Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via "String to List Promotion".
 # The YAML reader accepts multi-line strings using the "|" pipe syntax.
@@ -597,6 +603,10 @@ in shell commands. The <code>$${...}</code> braced double-dollar syntax can be u
 escape a braced value and disable evaluation by <code>garden</code>.</p>
 <p>Double-<code>$</code> can generally be used to escape literal <code>$</code> values in commands, but
 escaping is handled automatically for regular <code>$shell</code> variables.</p>
+<h3 id="tree-traversal-order"><a class="header" href="#tree-traversal-order">Tree Traversal Order</a></h3>
+<p>Garden traverses trees in the same order that appear in the <code>gardens</code>, <code>groups</code>,
+and <code>trees</code> blocks in your <code>garden.yaml</code> files. You can affect the order that trees and
+commands are traversed by ordering the entries in the Garden file accordingly.</p>
 <h3 id="depth-first-and-breadth-first-tree-traversal"><a class="header" href="#depth-first-and-breadth-first-tree-traversal">Depth-first and Breadth-first Tree Traversal</a></h3>
 <p>The following two invocations run commands in a different order:</p>
 <pre><code class="language-bash"># Depth-first (default)
@@ -623,9 +633,9 @@ This form allows you to specify multiple queries rather than multiple commands.<
 <p>When no builtin command exists by the specified name then garden will
 use custom commands defined in a <code>commands</code> block at the corresponding
 garden or tree scope.</p>
-<p><code>garden &lt;command&gt; &lt;query&gt;...</code> is complementary to <code>garden cmd &lt;query&gt; &lt;command&gt;...</code>.</p>
-<p><code>garden cmd ...</code> runs multiple commands over a single query.</p>
-<p><code>garden &lt;command&gt; ...</code> runs a command over multiple queries.</p>
+<p><code>garden &lt;command&gt; [&lt;query&gt;...]</code> is complementary to <code>garden cmd &lt;query&gt; &lt;command&gt;...</code>.</p>
+<p><code>garden cmd &lt;query&gt; &lt;command&gt;...</code> runs multiple commands over a single query.</p>
+<p><code>garden &lt;command&gt; [&lt;query&gt;...]</code> runs a single command over multiple queries.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
@@ -705,7 +715,7 @@ When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environme
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
 <p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
-<p>Use the <code>--dry-run</code> / <code>-n</code> option to perform a trial run without running any commands.</p>
+<p>Use the <code>-N | --dry-run</code> option to perform a trial run without running any commands.</p>
 <p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.
 This lets you activate a garden and its environment variables while only running
