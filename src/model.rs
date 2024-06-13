@@ -1,9 +1,7 @@
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::str::FromStr;
 
 use derivative::Derivative;
-use indexmap::{IndexMap, IndexSet};
 use indextree::{Arena, NodeId};
 use is_terminal::IsTerminal;
 use strum::VariantNames;
@@ -11,6 +9,9 @@ use strum_macros;
 use which::which;
 
 use crate::{cli, collections, config, constants, errors, eval, path, syntax};
+
+pub(crate) type IndexMap<K, V> = indexmap::IndexMap<K, V>;
+pub(crate) type IndexSet<V> = indexmap::IndexSet<V>;
 
 /// TreeName keys into config.trees
 pub type TreeName = String;
@@ -108,7 +109,7 @@ impl Variable {
 }
 
 /// An unordered mapping of names to a vector of Variables.
-pub type MultiVariableHashMap = HashMap<String, Vec<Variable>>;
+pub type MultiVariableHashMap = IndexMap<String, Vec<Variable>>;
 
 /// Reset the variables held inside a MultiVariableHashMap.
 fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
@@ -120,7 +121,7 @@ fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
 }
 
 /// An unordered mapping of name to Variable.
-pub type VariableHashMap = HashMap<String, Variable>;
+pub type VariableHashMap = IndexMap<String, Variable>;
 
 // Named variables with a single value
 #[derive(Clone, Debug)]
@@ -598,7 +599,7 @@ fn get_default_shell() -> String {
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
     pub commands: MultiVariableHashMap,
-    pub debug: HashMap<String, u8>,
+    pub debug: IndexMap<String, u8>,
     pub environment: Vec<MultiVariable>,
     pub gardens: GardenMap,
     pub grafts: IndexMap<GraftName, Graft>,
@@ -610,7 +611,7 @@ pub struct Configuration {
     pub root_path: std::path::PathBuf,
     pub shell: String,
     pub interactive_shell: String,
-    pub templates: HashMap<String, Template>,
+    pub templates: IndexMap<String, Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: IndexMap<TreeName, Tree>,
     pub variables: VariableHashMap,

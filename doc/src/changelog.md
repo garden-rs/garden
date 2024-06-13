@@ -2,6 +2,28 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden ls` now has a `--commands | -c` option to display just commands.
+The related `--no-commands | -C` option is used to omit commands from being displayed.
+([#39](https://github.com/garden-rs/garden/-/issues/39))
+([#41](https://github.com/garden-rs/garden/-/pull/41))
+
+- `garden cmd` and `garden <custom-command>` now support a `--dry-run | -N` option
+to perform trial runs without actually running any commands.
+([#39](https://github.com/garden-rs/garden/-/issues/39))
+([#41](https://github.com/garden-rs/garden/-/pull/41))
+
+- `garden exec` made `-N` the short option for its `--dry-run` option and the original
+`-n` short option was made an undocumented alias for compatibility.
+([#41](https://github.com/garden-rs/garden/-/pull/41))
+
+**Fixes**:
+
+- `garden ls` now prints the list of commands in the same order as they appear in `garden.yaml`.
+([#39](https://github.com/garden-rs/garden/-/issues/39))
+([#41](https://github.com/garden-rs/garden/-/pull/41))
+
 **Packaging**:
 
 - The nix flake was updated to re-enable llvm coverage.
@@ -26,7 +48,7 @@ but these commands would generate errors without disabling `nomatch`.
 The zsh `nomatch` option is a less useful option for non-interactive use
 so we disable it unconditionally.
 
-- The `--verbose` (`-v`) option can now be passed to custom and built-in commands.
+- The `--verbose | -v` option can now be passed to custom and built-in commands.
 The `verbose` option was previously a global option that had to
 be specified before sub-commands. The following invocations are all
 equivalent now:

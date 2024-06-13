@@ -1,6 +1,4 @@
-use indexmap::IndexSet;
-
-use std::collections::HashMap;
+use crate::model::{IndexMap, IndexSet};
 
 /// Update a IndexSet "a" with the values from "b"
 #[inline]
@@ -15,7 +13,7 @@ where
 
 /// Update a Hashmap "a" with the values from "b".
 #[inline]
-pub(crate) fn append_hashmap<K, V>(a: &mut HashMap<K, V>, b: &HashMap<K, V>)
+pub(crate) fn append_hashmap<K, V>(a: &mut IndexMap<K, V>, b: &IndexMap<K, V>)
 where
     K: Clone + Eq + Ord + std::hash::Hash,
     V: Clone,

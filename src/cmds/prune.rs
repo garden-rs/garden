@@ -1,11 +1,10 @@
-use std::collections::HashSet;
 use std::io::prelude::*;
 
 use anyhow::Result;
 use clap::Parser;
 use rayon::prelude::*;
 
-use crate::{cmd, display::Color, errors, model};
+use crate::{cmd, display::Color, errors, model, model::IndexSet};
 
 /// Get the default number of prune jobs to run in parallel
 fn default_num_jobs() -> usize {
@@ -92,7 +91,7 @@ struct TraverseFilesystem<'a> {
     send_repo_path: crossbeam::channel::Sender<PathBufMessage>,
     root_path: std::path::PathBuf,
     path_filters: &'a Vec<std::path::PathBuf>,
-    configured_tree_paths: &'a HashSet<std::path::PathBuf>,
+    configured_tree_paths: &'a IndexSet<std::path::PathBuf>,
 }
 
 impl TraverseFilesystem<'_> {
@@ -503,9 +502,9 @@ pub fn prune(
     let (send_remove_path, recv_remove_path) = crossbeam::channel::unbounded();
     let (send_finished_path, recv_finished_path) = crossbeam::channel::unbounded();
 
-    // Existing trees are never removed. Create a HashSet containing all of the current
+    // Existing trees are never removed. Create an IndexSet containing all of the current
     // tree paths so that we can skip them while traversing.
-    let mut configured_tree_paths = HashSet::new();
+    let mut configured_tree_paths = IndexSet::new();
     {
         for tree in config.trees.values() {
             if let Some(pathbuf) = tree.canonical_pathbuf() {

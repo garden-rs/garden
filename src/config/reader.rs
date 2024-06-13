@@ -1,9 +1,10 @@
-use std::collections::HashMap;
-
-use indexmap::{IndexMap, IndexSet};
 use yaml_rust::{yaml, Yaml, YamlLoader};
 
-use crate::{constants, errors, eval, model, syntax};
+use crate::{
+    constants, errors, eval, model,
+    model::{IndexMap, IndexSet},
+    syntax,
+};
 
 /// Apply YAML Configuration from a string.
 pub fn parse(
@@ -571,8 +572,8 @@ fn get_multivariables_hashmap(
 /// Read template definitions.
 fn get_templates(
     yaml: &Yaml,
-    config_templates: &HashMap<String, model::Template>,
-    templates: &mut HashMap<String, model::Template>,
+    config_templates: &IndexMap<String, model::Template>,
+    templates: &mut IndexMap<String, model::Template>,
 ) -> bool {
     match yaml {
         Yaml::Hash(hash) => {
@@ -596,7 +597,7 @@ fn get_templates(
 fn get_template(
     name: &Yaml,
     value: &Yaml,
-    config_templates: &HashMap<String, model::Template>,
+    config_templates: &IndexMap<String, model::Template>,
     templates: &Yaml,
 ) -> model::Template {
     let mut template = model::Template::default();

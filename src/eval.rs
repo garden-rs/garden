@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use crate::{cmd, constants, model, path, query, syntax};
+use crate::{cmd, constants, model, model::IndexMap, path, query, syntax};
 
 /// Expand variables across all scopes (garden, tree, and global).
 /// - `app_context`: reference to the top-level ApplicationContext.
@@ -504,7 +502,7 @@ pub fn environment(
     // in values; if not, check the environment and bootstrap values.
     // If still nothing, initialize it with the value and update the
     // values hashmap.
-    let mut values: HashMap<String, String> = HashMap::new();
+    let mut values: IndexMap<String, String> = IndexMap::new();
 
     for (var_name, env_values) in &var_values {
         let mut name = var_name.clone();

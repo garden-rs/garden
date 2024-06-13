@@ -1,12 +1,10 @@
-use std::collections::HashSet;
-
 /// YAML reader
 pub mod reader;
 
 /// YAML writer
 pub mod writer;
 
-use crate::{errors, model, path};
+use crate::{errors, model, model::IndexSet, path};
 
 /// Search for configuration in the following locations:
 ///  .
@@ -64,7 +62,7 @@ pub(crate) fn search_path() -> Vec<std::path::PathBuf> {
     }
 
     // Calculate ceiling directories above which no commands should be run.
-    let mut ceiling_dirs: HashSet<String> = HashSet::new();
+    let mut ceiling_dirs: IndexSet<String> = IndexSet::new();
     // GARDEN_CEILING_DIRS completely overrides GIT_CEILING_DIRS.
     if let Ok(garden_ceiling_dirs) = std::env::var("GARDEN_CEILING_DIRS") {
         for dirname in garden_ceiling_dirs.split(':') {

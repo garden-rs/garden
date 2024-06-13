@@ -330,6 +330,9 @@ garden test git-cola vx
 
 # Use "--" to forward arguments to the custom commands
 garden test git-cola -- --verbose
+
+# Print what would get run without running anything
+garden test --dry-run -vv git-cola
 ```
 
 Custom commands can be defined at either the tree or garden scope.
@@ -350,6 +353,10 @@ used to rerun garden from within a garden command.
 Additional arguments are available to command strings by using the traditional
 `"$@"` shell syntax.  When additional arguments are present `"$1"`, `"$2"`, and
 subsequent variables will be set according to each argument.
+
+The `-N | --dry-run` option performs a trial run without running any commands.
+Combine this option with the `-vv` extra-verbose mode to print the commands that
+would be run without running them.
 
 ```yaml
 # Commands can be defined in multiple ways.
@@ -571,6 +578,12 @@ escape a braced value and disable evaluation by `garden`.
 Double-`$` can generally be used to escape literal `$` values in commands, but
 escaping is handled automatically for regular `$shell` variables.
 
+### Tree Traversal Order
+
+Garden traverses trees in the same order that appear in the `gardens`, `groups`,
+and `trees` blocks in your `garden.yaml` files. You can affect the order that trees and
+commands are traversed by ordering the entries in the Garden file accordingly.
+
 ### Depth-first and Breadth-first Tree Traversal
 
 The following two invocations run commands in a different order:
@@ -608,11 +621,11 @@ When no builtin command exists by the specified name then garden will
 use custom commands defined in a `commands` block at the corresponding
 garden or tree scope.
 
-`garden <command> <query>...` is complementary to `garden cmd <query> <command>...`.
+`garden <command> [<query>...]` is complementary to `garden cmd <query> <command>...`.
 
-`garden cmd ...` runs multiple commands over a single query.
+`garden cmd <query> <command>...` runs multiple commands over a single query.
 
-`garden <command> ...` runs a command over multiple queries.
+`garden <command> [<query>...]` runs a single command over multiple queries.
 
 For example, `garden build treesitters catsitters` will run a user-defined `build`
 command over both the `treesitters`  and `catsitters` groups.
@@ -710,7 +723,7 @@ custom commands from both the tree and the garden.
 
 Use the `garden -vv` extra-verbose option to display the command being run.
 
-Use the `--dry-run` / `-n` option to perform a trial run without running any commands.
+Use the `-N | --dry-run` option to perform a trial run without running any commands.
 
 Use the `-t | --trees` option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.

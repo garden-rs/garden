@@ -11,7 +11,7 @@ pub struct ExecOptions {
     #[arg(long, short, default_value = "*")]
     trees: String,
     /// Perform a trial run without executing any commands
-    #[arg(long, short = 'n')]
+    #[arg(long, short = 'N', short_alias = 'n')]
     dry_run: bool,
     /// Be quiet
     #[arg(short, long)]
