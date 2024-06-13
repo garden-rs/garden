@@ -8,6 +8,9 @@
 to perform trial runs without actually running any commands.
 ([#39](https://github.com/garden-rs/garden/-/pull/38))
 
+- `garden exec` made `-N` the short option for its `--dry-run` option and the original
+`-n` short option was made an undocumented alias for compatibility.
+
 **Packaging**:
 
 - The nix flake was updated to re-enable llvm coverage.
