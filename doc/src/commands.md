@@ -608,11 +608,11 @@ When no builtin command exists by the specified name then garden will
 use custom commands defined in a `commands` block at the corresponding
 garden or tree scope.
 
-`garden <command> <query>...` is complementary to `garden cmd <query> <command>...`.
+`garden <command> [<query>...]` is complementary to `garden cmd <query> <command>...`.
 
-`garden cmd ...` runs multiple commands over a single query.
+`garden cmd <query> <command>...` runs multiple commands over a single query.
 
-`garden <command> ...` runs a command over multiple queries.
+`garden <command> [<query>...]` runs a single command over multiple queries.
 
 For example, `garden build treesitters catsitters` will run a user-defined `build`
 command over both the `treesitters`  and `catsitters` groups.
