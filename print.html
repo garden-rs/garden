@@ -2308,37 +2308,37 @@ world
 <li>
 <p><code>garden ls</code> now has a <code>--commands | -c</code> option to display just commands.
 The related <code>--no-commands | -C</code> option is used to omit commands from being displayed.
-(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
-(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/pull/41">#41</a>)</p>
 </li>
 <li>
 <p><code>garden cmd</code> and <code>garden &lt;custom-command&gt;</code> now support a <code>--dry-run | -N</code> option
 to perform trial runs without actually running any commands.
-(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
-(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/pull/41">#41</a>)</p>
 </li>
 <li>
 <p><code>garden exec</code> made <code>-N</code> the short option for its <code>--dry-run</code> option and the original
 <code>-n</code> short option was made an undocumented alias for compatibility.
-(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/41">#41</a>)</p>
 </li>
 </ul>
 <p><strong>Fixes</strong>:</p>
 <ul>
 <li><code>garden ls</code> now prints the list of commands in the same order as they appear in <code>garden.yaml</code>.
-(<a href="https://github.com/garden-rs/garden/-/issues/39">#39</a>)
-(<a href="https://github.com/garden-rs/garden/-/pull/41">#41</a>)</li>
+(<a href="https://github.com/garden-rs/garden/issues/39">#39</a>)
+(<a href="https://github.com/garden-rs/garden/pull/41">#41</a>)</li>
 </ul>
 <p><strong>Packaging</strong>:</p>
 <ul>
 <li>
 <p>The nix flake was updated to re-enable llvm coverage.
-(<a href="https://github.com/garden-rs/garden/-/pull/38">#38</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/38">#38</a>)</p>
 </li>
 <li>
 <p><code>nix run</code> can now be used to run <code>garden</code> and <code>nix shell</code> can now be used to
 open a nix shell with garden installed.
-(<a href="https://github.com/garden-rs/garden/-/pull/40">#40</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/40">#40</a>)</p>
 </li>
 </ul>
 <h2 id="v160"><a class="header" href="#v160">v1.6.0</a></h2>
@@ -2364,18 +2364,18 @@ equivalent now:</p>
 <li><code>garden -v build -v</code></li>
 <li><code>garden build -vv</code></li>
 </ul>
-<p>(<a href="https://github.com/garden-rs/garden/-/pull/36">#36</a>)</p>
+<p>(<a href="https://github.com/garden-rs/garden/pull/36">#36</a>)</p>
 </li>
 </ul>
 <p><strong>Packaging</strong>:</p>
 <ul>
 <li>The nix flake was updated to use Fenix for the latest stable rustc 1.78.0.
-(<a href="https://github.com/garden-rs/garden/-/pull/37">#37</a>)</li>
+(<a href="https://github.com/garden-rs/garden/pull/37">#37</a>)</li>
 </ul>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>An <code>.envrc</code> file was added to enable the nix flake for direnv users.
-(<a href="https://github.com/garden-rs/garden/-/pull/37">#37</a>)</li>
+(<a href="https://github.com/garden-rs/garden/pull/37">#37</a>)</li>
 </ul>
 <h2 id="v150"><a class="header" href="#v150">v1.5.0</a></h2>
 <p><em>Released 2024-04-14</em></p>
@@ -2384,19 +2384,19 @@ equivalent now:</p>
 <li>
 <p>Running <code>garden init</code> inside a Git repository will now record the
 current directory as a tree with its path set to  <code>${GARDEN_CONFIG_DIR}</code>.
-(<a href="https://github.com/garden-rs/garden/-/pull/34">#34</a>)</p>
+(<a href="https://github.com/garden-rs/garden/pull/34">#34</a>)</p>
 </li>
 <li>
 <p>Custom commands skip missing trees by default. A new <code>-f | --force</code>
 option can be used to make <code>garden</code> run commands on missing trees.
-(<a href="https://github.com/garden-rs/garden/-/issues/33">#33</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/33">#33</a>)</p>
 </li>
 <li>
 <p><code>garden plant</code> now avoids updating the configuration when a tree is
 re-planted and its configuration contains expressions that evaluate
 to the same value as currently exist in git.
-(<a href="https://github.com/garden-rs/garden/-/issues/31">#31</a>)
-(<a href="https://github.com/garden-rs/garden/-/pull/32">#32</a>)</p>
+(<a href="https://github.com/garden-rs/garden/issues/31">#31</a>)
+(<a href="https://github.com/garden-rs/garden/pull/32">#32</a>)</p>
 </li>
 </ul>
 <p><strong>Packaging</strong>:</p>
