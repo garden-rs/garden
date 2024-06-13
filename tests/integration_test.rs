@@ -623,6 +623,16 @@ fn grow_branch_from_non_default_remote() -> Result<()> {
     Ok(())
 }
 
+/// Dry-run mode for commands
+#[test]
+fn cmd_dry_run() {
+    let output = garden_capture(&["--quiet", "--chdir", "tests/data", "basename"]);
+    assert_eq!(output, "data");
+
+    let output = garden_capture(&["--quiet", "--chdir", "tests/data", "basename", "--dry-run"]);
+    assert_eq!(output, "");
+}
+
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
 fn eval_garden_config_dir() {
