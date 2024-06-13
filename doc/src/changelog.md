@@ -6,32 +6,32 @@
 
 - `garden ls` now has a `--commands | -c` option to display just commands.
 The related `--no-commands | -C` option is used to omit commands from being displayed.
-([#39](https://github.com/garden-rs/garden/-/issues/39))
-([#41](https://github.com/garden-rs/garden/-/pull/41))
+([#39](https://github.com/garden-rs/garden/issues/39))
+([#41](https://github.com/garden-rs/garden/pull/41))
 
 - `garden cmd` and `garden <custom-command>` now support a `--dry-run | -N` option
 to perform trial runs without actually running any commands.
-([#39](https://github.com/garden-rs/garden/-/issues/39))
-([#41](https://github.com/garden-rs/garden/-/pull/41))
+([#39](https://github.com/garden-rs/garden/issues/39))
+([#41](https://github.com/garden-rs/garden/pull/41))
 
 - `garden exec` made `-N` the short option for its `--dry-run` option and the original
 `-n` short option was made an undocumented alias for compatibility.
-([#41](https://github.com/garden-rs/garden/-/pull/41))
+([#41](https://github.com/garden-rs/garden/pull/41))
 
 **Fixes**:
 
 - `garden ls` now prints the list of commands in the same order as they appear in `garden.yaml`.
-([#39](https://github.com/garden-rs/garden/-/issues/39))
-([#41](https://github.com/garden-rs/garden/-/pull/41))
+([#39](https://github.com/garden-rs/garden/issues/39))
+([#41](https://github.com/garden-rs/garden/pull/41))
 
 **Packaging**:
 
 - The nix flake was updated to re-enable llvm coverage.
-([#38](https://github.com/garden-rs/garden/-/pull/38))
+([#38](https://github.com/garden-rs/garden/pull/38))
 
 - `nix run` can now be used to run `garden` and `nix shell` can now be used to
 open a nix shell with garden installed.
-([#40](https://github.com/garden-rs/garden/-/pull/40))
+([#40](https://github.com/garden-rs/garden/pull/40))
 
 
 ## v1.6.0
@@ -56,17 +56,17 @@ equivalent now:
   - `garden -v build -v`
   - `garden build -vv`
 
-  ([#36](https://github.com/garden-rs/garden/-/pull/36))
+  ([#36](https://github.com/garden-rs/garden/pull/36))
 
 **Packaging**:
 
 - The nix flake was updated to use Fenix for the latest stable rustc 1.78.0.
-([#37](https://github.com/garden-rs/garden/-/pull/37))
+([#37](https://github.com/garden-rs/garden/pull/37))
 
 **Development**:
 
 - An `.envrc` file was added to enable the nix flake for direnv users.
-([#37](https://github.com/garden-rs/garden/-/pull/37))
+([#37](https://github.com/garden-rs/garden/pull/37))
 
 
 ## v1.5.0
@@ -77,17 +77,17 @@ equivalent now:
 
 - Running `garden init` inside a Git repository will now record the
 current directory as a tree with its path set to  `${GARDEN_CONFIG_DIR}`.
-([#34](https://github.com/garden-rs/garden/-/pull/34))
+([#34](https://github.com/garden-rs/garden/pull/34))
 
 - Custom commands skip missing trees by default. A new `-f | --force`
 option can be used to make `garden` run commands on missing trees.
-([#33](https://github.com/garden-rs/garden/-/issues/33))
+([#33](https://github.com/garden-rs/garden/issues/33))
 
 - `garden plant` now avoids updating the configuration when a tree is
 re-planted and its configuration contains expressions that evaluate
 to the same value as currently exist in git.
-([#31](https://github.com/garden-rs/garden/-/issues/31))
-([#32](https://github.com/garden-rs/garden/-/pull/32))
+([#31](https://github.com/garden-rs/garden/issues/31))
+([#32](https://github.com/garden-rs/garden/pull/32))
 
 **Packaging**:
 
