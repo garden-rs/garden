@@ -578,6 +578,12 @@ escape a braced value and disable evaluation by `garden`.
 Double-`$` can generally be used to escape literal `$` values in commands, but
 escaping is handled automatically for regular `$shell` variables.
 
+### Tree Traversal Order
+
+Garden traverses trees in the same order that appear in the `gardens`, `groups`,
+and `trees` blocks in your `garden.yaml` files. You can affect the order that trees and
+commands are traversed by ordering the entries in the Garden file accordingly.
+
 ### Depth-first and Breadth-first Tree Traversal
 
 The following two invocations run commands in a different order:
