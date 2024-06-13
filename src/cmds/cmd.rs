@@ -11,6 +11,9 @@ pub struct CmdOptions {
     /// Run a command in all trees before running the next command
     #[arg(long, short)]
     breadth_first: bool,
+    /// Perform a trial run without running commands
+    #[arg(long, short = 'N')]
+    dry_run: bool,
     /// Continue to the next tree when errors occur
     #[arg(long, short)]
     keep_going: bool,
@@ -58,6 +61,9 @@ pub struct CmdOptions {
 #[derive(Parser, Clone, Debug)]
 #[command(bin_name = constants::GARDEN)]
 pub struct CustomOptions {
+    /// Perform a trial run without running commands
+    #[arg(long, short = 'N')]
+    dry_run: bool,
     /// Continue to the next tree when errors occur
     #[arg(long, short)]
     keep_going: bool,
@@ -131,6 +137,7 @@ pub struct CmdParams {
     queries: Vec<String>,
     tree_pattern: glob::Pattern,
     breadth_first: bool,
+    dry_run: bool,
     force: bool,
     keep_going: bool,
     #[derivative(Default(value = "true"))]
@@ -148,6 +155,7 @@ impl From<CmdOptions> for CmdParams {
             commands: options.commands.clone(),
             arguments: options.arguments.clone(),
             breadth_first: options.breadth_first,
+            dry_run: options.dry_run,
             exit_on_error: options.exit_on_error,
             force: options.force,
             keep_going: options.keep_going,
@@ -172,6 +180,7 @@ impl From<CustomOptions> for CmdParams {
             // use breadth-first because it retains the original implementation/behavior from before
             // --breadth-first was added to "garden cmd" and made opt-in.
             breadth_first: true,
+            dry_run: options.dry_run,
             keep_going: options.keep_going,
             exit_on_error: options.exit_on_error,
             force: options.force,
@@ -506,6 +515,9 @@ fn run_cmd_vec(
                     display::Color::cyan(":"),
                     display::Color::green(&cmd_str),
                 );
+            }
+            if params.dry_run {
+                continue;
             }
             // Create a custom ShellParams when "#!" is used.
             let cmd_shell_params;

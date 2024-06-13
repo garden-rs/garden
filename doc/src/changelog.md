@@ -2,6 +2,12 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden cmd` and `garden <custom-command>` now support a `--dry-run` (`-N`) option
+to perform trial runs without actually running any commands.
+([#39](https://github.com/garden-rs/garden/-/pull/38))
+
 **Packaging**:
 
 - The nix flake was updated to re-enable llvm coverage.
