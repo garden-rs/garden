@@ -330,6 +330,9 @@ garden test git-cola vx
 
 # Use "--" to forward arguments to the custom commands
 garden test git-cola -- --verbose
+
+# Print what would get run without running anything
+garden test --dry-run -vv git-cola
 ```
 
 Custom commands can be defined at either the tree or garden scope.
@@ -350,6 +353,10 @@ used to rerun garden from within a garden command.
 Additional arguments are available to command strings by using the traditional
 `"$@"` shell syntax.  When additional arguments are present `"$1"`, `"$2"`, and
 subsequent variables will be set according to each argument.
+
+The `-N | --dry-run` option performs a trial run without running any commands.
+Combine this option with the `-vv` extra-verbose mode to print the commands that
+would be run without running them.
 
 ```yaml
 # Commands can be defined in multiple ways.
@@ -710,7 +717,7 @@ custom commands from both the tree and the garden.
 
 Use the `garden -vv` extra-verbose option to display the command being run.
 
-Use the `--dry-run` / `-n` option to perform a trial run without running any commands.
+Use the `-N | --dry-run` option to perform a trial run without running any commands.
 
 Use the `-t | --trees` option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.
