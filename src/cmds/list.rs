@@ -10,9 +10,12 @@ pub struct ListOptions {
     /// Display details for all trees, including missing trees
     #[arg(short, long, default_value_t = false)]
     all: bool,
-    /// Do not list commands
-    #[arg(long, short = 'c', default_value_t = false)]
+    /// Do not show commands
+    #[arg(long, short = 'C', default_value_t = false)]
     no_commands: bool,
+    /// Display commands. Omits descriptions, remotes and links so that commands are more visible
+    #[arg(long = "commands", short = 'c', default_value_t = false)]
+    only_commands: bool,
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
@@ -40,6 +43,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let display_all = options.all;
     let display_worktrees = options.worktrees;
     let show_commands = !options.no_commands;
+    let only_commands = options.only_commands;
     let verbose = app_context.options.verbose + options.verbose;
     let mut needs_newline = false;
 
@@ -71,12 +75,14 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
                 }
                 display::print_missing_tree(tree, path, verbose);
                 if display_all {
-                    display::print_tree_extended_details(
-                        app_context,
-                        context,
-                        tree,
-                        display_worktrees,
-                    );
+                    if !only_commands {
+                        display::print_tree_extended_details(
+                            app_context,
+                            context,
+                            tree,
+                            display_worktrees,
+                        );
+                    }
                     if show_commands && !tree.commands.is_empty() {
                         display::print_commands(&tree.commands);
                     }
@@ -98,7 +104,9 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
                 println!();
             }
             display::print_tree(tree, config.tree_branches, verbose, false, false);
-            display::print_tree_extended_details(app_context, context, tree, display_worktrees);
+            if !only_commands {
+                display::print_tree_extended_details(app_context, context, tree, display_worktrees);
+            }
             if show_commands && !tree.commands.is_empty() {
                 display::print_commands(&tree.commands);
             }
@@ -106,12 +114,12 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
         }
     }
 
-    if !config.groups.is_empty() {
+    if !only_commands && !config.groups.is_empty() {
         println!();
         display::print_groups(&config.groups);
     }
 
-    if !config.gardens.is_empty() {
+    if !only_commands && !config.gardens.is_empty() {
         println!();
         display::print_gardens(&config.gardens);
     }
