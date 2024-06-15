@@ -393,6 +393,43 @@ gardens:
       print-pwd: pwd
 ```
 
+#### Forwarding arguments using the double-dash `--` end-of-options marker
+
+Use `--` (double-dash) to forward arguments to custom commands.
+Everything specified after `--` on the command-line will be present in the `"$@"` array.
+
+```yaml
+commands:
+  test: cargo test -v "$@"
+```
+
+If the wrapped command also uses `--` then you have to specify `--` twice in order for
+the inner command to see a `--` marker.
+
+The `cargo test` command uses `--` in order to pass options to the inner test commands.
+To pass options to the inner test command we'd have to use `--` twice.
+
+```bash
+garden test -- -- --list
+# Runs "cargo test -v -- --list". The first "--" is consumed by "garden".
+```
+
+If you always pass arguments to inner commands after their `--` marker then
+you can simplify the command's usage by embedding `--` into the command definition.
+
+```yaml
+commands:
+  test: cargo test -v -- "$@"
+```
+
+Using `--` in the command lets us use a single `--` to pass arguments to the innermost
+tests instead of two.
+
+```bash
+garden test -- --list
+# Runs "cargo test -v -- --list".
+```
+
 #### Shebang (#!) Commands
 
 Custom command shells can be used on a per-command basis by using a `#!<command>`
