@@ -2,7 +2,7 @@ use crate::model::{IndexMap, IndexSet};
 
 /// Update a IndexSet "a" with the values from "b"
 #[inline]
-pub(crate) fn append_indexset<T>(a: &mut IndexSet<T>, b: &IndexSet<T>)
+pub(crate) fn append_set<T>(a: &mut IndexSet<T>, b: &IndexSet<T>)
 where
     T: Clone + Eq + Ord + std::hash::Hash,
 {
@@ -11,9 +11,9 @@ where
     }
 }
 
-/// Update a Hashmap "a" with the values from "b".
+/// Update a map "a" with the values from "b".
 #[inline]
-pub(crate) fn append_hashmap<K, V>(a: &mut IndexMap<K, V>, b: &IndexMap<K, V>)
+pub(crate) fn append_map<K, V>(a: &mut IndexMap<K, V>, b: &IndexMap<K, V>)
 where
     K: Clone + Eq + Ord + std::hash::Hash,
     V: Clone,

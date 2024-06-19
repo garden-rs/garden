@@ -17,10 +17,10 @@ use crate::{errors, model, model::IndexSet, path};
 ///
 ///  Traversal continues up file system until the root is reached.
 ///  GARDEN_CEILING_DIRS and GIT_CEILING_DIRS can be used to define
-///  directories into which garden should not travrse.
+///  directories into which garden should not traverse.
 
 pub(crate) fn search_path() -> Vec<std::path::PathBuf> {
-    // Result: Vec<PathBufs> in priority order
+    // Result: Vec<PathBuf> in priority order
     let mut paths: Vec<std::path::PathBuf> = Vec::new();
 
     let current_dir = path::current_dir();

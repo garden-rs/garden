@@ -501,7 +501,7 @@ pub fn environment(
     // the values dict.  For "FOO" append values, check if it exists
     // in values; if not, check the environment and bootstrap values.
     // If still nothing, initialize it with the value and update the
-    // values hashmap.
+    // values map.
     let mut values: IndexMap<String, String> = IndexMap::new();
 
     for (var_name, env_values) in &var_values {
@@ -772,7 +772,7 @@ fn environment_value(
     // the values dict.  For "FOO" append values, check if it exists
     // in values; if not, check the environment and bootstrap values.
     // If still nothing, initialize it with the value and update the
-    // values hashmap.
+    // values map.
     let mut final_value: Option<String> = None;
 
     for (var_name, env_values) in var_values {

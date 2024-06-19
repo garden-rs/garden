@@ -4,11 +4,11 @@ use clap::Parser;
 
 use crate::{
     cmd, constants, display, errors, git, model,
-    model::{IndexMap, IndexSet},
+    model::{IndexMap, IndexSet, StringSet},
     query,
 };
 
-type GitConfigMap = IndexMap<String, IndexSet<String>>;
+type GitConfigMap = IndexMap<String, StringSet>;
 
 /// Options for the "garden grow" command
 #[derive(Parser, Clone, Debug)]
@@ -30,7 +30,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &GrowOptions) -> R
     let quiet = app_context.options.quiet;
     let verbose = app_context.options.verbose + options.verbose;
     let mut exit_status = errors::EX_OK;
-    let mut configured_worktrees: IndexSet<String> = IndexSet::new();
+    let mut configured_worktrees: StringSet = IndexSet::new();
     for query in &options.queries {
         let status = grow(
             app_context,
@@ -52,7 +52,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &GrowOptions) -> R
 /// Create/update trees in the evaluated tree query.
 fn grow(
     app_context: &model::ApplicationContext,
-    configured_worktrees: &mut IndexSet<String>,
+    configured_worktrees: &mut StringSet,
     quiet: bool,
     verbose: u8,
     query: &str,
@@ -78,7 +78,7 @@ fn grow(
 /// Trees without remotes are silently ignored.
 fn grow_tree_from_context(
     eval_context: &model::EvalContext,
-    configured_worktrees: &mut IndexSet<String>,
+    configured_worktrees: &mut StringSet,
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
@@ -251,7 +251,7 @@ fn print_command_str(cmd: &str) {
 /// Add remotes that do not already exist and synchronize .git/config values.
 fn update_tree_from_context(
     eval_context: &model::EvalContext,
-    configured_worktrees: &mut IndexSet<String>,
+    configured_worktrees: &mut StringSet,
     path: &dyn AsRef<std::path::Path>,
     branch: &str,
     checkout: bool,
@@ -310,7 +310,7 @@ fn update_tree_from_context(
         set_gitconfig_value("checkout.defaultRemoteName", &tree.default_remote, path);
     }
 
-    let mut fetched_remotes: IndexSet<String> = IndexSet::new();
+    let mut fetched_remotes: StringSet = IndexSet::new();
     fetched_remotes.insert(tree.default_remote.to_string());
 
     // Loop over remotes and add/update the git remote configuration.
@@ -494,7 +494,7 @@ fn set_gitconfig_value(name: &str, value: &str, path: &dyn AsRef<std::path::Path
 /// Grow the parent worktree first and then create our worktree.
 fn grow_tree_from_context_as_worktree(
     eval_context: &model::EvalContext,
-    configured_worktrees: &mut IndexSet<String>,
+    configured_worktrees: &mut StringSet,
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {

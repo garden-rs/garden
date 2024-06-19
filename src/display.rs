@@ -225,7 +225,7 @@ pub(crate) fn print_tree_extended_details(
 }
 
 /// Print a list of commands
-pub(crate) fn print_commands(commands: &model::MultiVariableHashMap) {
+pub(crate) fn print_commands(commands: &model::MultiVariableMap) {
     println!("{}", Color::blue("commands:"));
     for cmd in commands.keys() {
         println!("  {} {}", Color::blue("-"), Color::yellow(cmd));

@@ -2,7 +2,7 @@ use yaml_rust::{yaml, Yaml, YamlLoader};
 
 use crate::{
     constants, errors, eval, model,
-    model::{IndexMap, IndexSet},
+    model::{IndexMap, StringSet},
     syntax,
 };
 
@@ -157,9 +157,7 @@ fn parse_recursive(
 
     // Variables are read early to make them available to config.eval_config_pathbuf_from_include().
     // Variables are reloaded after "includes" to give the current garden file the highest priority.
-    if !get_variables_hashmap(&doc[constants::VARIABLES], &mut config.variables)
-        && config_verbose > 1
-    {
+    if !get_variables_map(&doc[constants::VARIABLES], &mut config.variables) && config_verbose > 1 {
         debug!("config: no variables");
     }
 
@@ -206,7 +204,7 @@ fn parse_recursive(
 
         // Reload variables after processing includes. This gives the local garden file the highest priority
         // when defining variables while also making variables available to the "includes" lines.
-        if !get_variables_hashmap(&doc[constants::VARIABLES], &mut config.variables)
+        if !get_variables_map(&doc[constants::VARIABLES], &mut config.variables)
             && config_verbose > 1
         {
             debug!("config: no reloaded variables");
@@ -227,7 +225,7 @@ fn parse_recursive(
     if config_verbose > 1 {
         debug!("config: commands");
     }
-    if !get_multivariables_hashmap(&doc[constants::COMMANDS], &mut config.commands)
+    if !get_multivariables_map(&doc[constants::COMMANDS], &mut config.commands)
         && config_verbose > 1
     {
         debug!("config: no commands");
@@ -365,11 +363,11 @@ fn get_bool(yaml: &Yaml, value: &mut bool) -> bool {
     }
 }
 
-/// Extract an `IndexSet<String>` from `Yaml::String` or `Yaml::Array<Yaml::String>`.
+/// Extract a `StringSet` from `Yaml::String` or `Yaml::Array<Yaml::String>`.
 /// Return `false` when `yaml` is not `Yaml::String` or `Yaml::Array<Yaml::String>`.
-/// This function promotes a scalar `Yaml::String` into a `IndexSet<String>`
+/// This function promotes a scalar `Yaml::String` into a `StringSet`
 /// with a single entry.
-fn get_indexset_str(yaml: &Yaml, values: &mut IndexSet<String>) -> bool {
+fn get_indexset_str(yaml: &Yaml, values: &mut StringSet) -> bool {
     match yaml {
         Yaml::String(yaml_string) => {
             values.insert(yaml_string.clone());
@@ -417,9 +415,9 @@ fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
     }
 }
 
-/// Extract variable definitions from a `yaml::Hash` into a `VariablesHashMap`.
+/// Extract variable definitions from a `yaml::Hash` into a `VariablesMap`.
 /// Return `false` when `yaml` is not a `Yaml::Hash`.
-fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> bool {
+fn get_variables_map(yaml: &Yaml, map: &mut model::VariableMap) -> bool {
     match yaml {
         Yaml::Hash(hash) => {
             for (k, v) in hash {
@@ -431,12 +429,12 @@ fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> b
                 };
                 match v {
                     Yaml::String(yaml_str) => {
-                        hashmap.insert(key, model::Variable::new(yaml_str.clone(), None));
+                        map.insert(key, model::Variable::new(yaml_str.clone(), None));
                     }
                     Yaml::Array(yaml_array) => {
                         for value in yaml_array {
                             if let Yaml::String(yaml_str) = value {
-                                hashmap.insert(
+                                map.insert(
                                     key.to_owned(),
                                     model::Variable::new(
                                         yaml_str.clone(),
@@ -448,7 +446,7 @@ fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> b
                     }
                     Yaml::Integer(yaml_int) => {
                         let value = yaml_int.to_string();
-                        hashmap.insert(
+                        map.insert(
                             key,
                             model::Variable::new(
                                 value.clone(),
@@ -458,7 +456,7 @@ fn get_variables_hashmap(yaml: &Yaml, hashmap: &mut model::VariableHashMap) -> b
                     }
                     Yaml::Boolean(yaml_bool) => {
                         let value = syntax::bool_to_string(*yaml_bool);
-                        hashmap.insert(
+                        map.insert(
                             key,
                             model::Variable::new(
                                 value.clone(),
@@ -518,11 +516,8 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
     false
 }
 
-/// Read a `Yaml::Hash` of variable definitions into a `MultiVariableHashMap`.
-fn get_multivariables_hashmap(
-    yaml: &Yaml,
-    multivariables: &mut model::MultiVariableHashMap,
-) -> bool {
+/// Read a `Yaml::Hash` of variable definitions into a `MultiVariableMap`.
+fn get_multivariables_map(yaml: &Yaml, multivariables: &mut model::MultiVariableMap) -> bool {
     match yaml {
         Yaml::Hash(hash) => {
             for (k, v) in hash {
@@ -730,18 +725,18 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
 /// Read fields common to trees and templates.
 #[inline]
 fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
-    get_variables_hashmap(&value[constants::VARIABLES], &mut tree.variables);
-    get_multivariables_hashmap(&value[constants::GITCONFIG], &mut tree.gitconfig);
+    get_variables_map(&value[constants::VARIABLES], &mut tree.variables);
+    get_multivariables_map(&value[constants::GITCONFIG], &mut tree.gitconfig);
     get_str(&value[constants::DEFAULT_REMOTE], &mut tree.default_remote);
     get_str_trimmed(&value[constants::DESCRIPTION], &mut tree.description);
-    get_str_variables_hashmap(&value[constants::REMOTES], &mut tree.remotes);
+    get_str_variables_map(&value[constants::REMOTES], &mut tree.remotes);
     get_vec_variables(&value[constants::LINKS], &mut tree.links);
 
     get_multivariables(&value[constants::ENVIRONMENT], &mut tree.environment);
-    get_multivariables_hashmap(&value[constants::COMMANDS], &mut tree.commands);
+    get_multivariables_map(&value[constants::COMMANDS], &mut tree.commands);
 
     get_variable(&value[constants::BRANCH], &mut tree.branch);
-    get_variables_hashmap(&value[constants::BRANCHES], &mut tree.branches);
+    get_variables_map(&value[constants::BRANCHES], &mut tree.branches);
     get_variable(&value[constants::SYMLINK], &mut tree.symlink);
     get_variable(&value[constants::WORKTREE], &mut tree.worktree);
 
@@ -842,8 +837,8 @@ fn get_tree(
     tree
 }
 
-/// Read simple string values into a garden::model::VariableHashMap.
-fn get_str_variables_hashmap(yaml: &Yaml, remotes: &mut model::VariableHashMap) {
+/// Read simple string values into a garden::model::VariableMap.
+fn get_str_variables_map(yaml: &Yaml, remotes: &mut model::VariableMap) {
     let hash = match yaml {
         Yaml::Hash(hash) => hash,
         _ => return,
@@ -883,10 +878,10 @@ fn get_gardens(yaml: &Yaml, gardens: &mut IndexMap<String, model::Garden>) -> bo
                 get_str(name, garden.get_name_mut());
                 get_indexset_str(&value[constants::GROUPS], &mut garden.groups);
                 get_indexset_str(&value[constants::TREES], &mut garden.trees);
-                get_multivariables_hashmap(&value[constants::GITCONFIG], &mut garden.gitconfig);
-                get_variables_hashmap(&value[constants::VARIABLES], &mut garden.variables);
+                get_multivariables_map(&value[constants::GITCONFIG], &mut garden.gitconfig);
+                get_variables_map(&value[constants::VARIABLES], &mut garden.variables);
                 get_multivariables(&value[constants::ENVIRONMENT], &mut garden.environment);
-                get_multivariables_hashmap(&value[constants::COMMANDS], &mut garden.commands);
+                get_multivariables_map(&value[constants::COMMANDS], &mut garden.commands);
                 gardens.insert(garden.get_name().to_string(), garden);
             }
             true

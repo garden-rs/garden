@@ -12,6 +12,7 @@ use crate::{cli, collections, config, constants, errors, eval, path, syntax};
 
 pub(crate) type IndexMap<K, V> = indexmap::IndexMap<K, V>;
 pub(crate) type IndexSet<V> = indexmap::IndexSet<V>;
+pub(crate) type StringSet = indexmap::IndexSet<String>;
 
 /// TreeName keys into config.trees
 pub type TreeName = String;
@@ -109,10 +110,10 @@ impl Variable {
 }
 
 /// An unordered mapping of names to a vector of Variables.
-pub(crate) type MultiVariableHashMap = IndexMap<String, Vec<Variable>>;
+pub(crate) type MultiVariableMap = IndexMap<String, Vec<Variable>>;
 
-/// Reset the variables held inside a MultiVariableHashMap.
-fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
+/// Reset the variables held inside a MultiVariableMap.
+fn reset_map_variables(vec_variables: &MultiVariableMap) {
     for variables in vec_variables.values() {
         for variable in variables {
             variable.reset();
@@ -121,7 +122,7 @@ fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
 }
 
 /// An unordered mapping of name to Variable.
-pub(crate) type VariableHashMap = IndexMap<String, Variable>;
+pub(crate) type VariableMap = IndexMap<String, Variable>;
 
 // Named variables with multiple values
 #[derive(Clone, Debug)]
@@ -168,15 +169,15 @@ impl MultiVariable {
 #[derive(Clone, Debug, Derivative)]
 #[derivative(Default)]
 pub struct Tree {
-    pub commands: MultiVariableHashMap,
+    pub commands: MultiVariableMap,
     pub environment: Vec<MultiVariable>,
-    pub gitconfig: MultiVariableHashMap,
-    pub remotes: VariableHashMap,
+    pub gitconfig: MultiVariableMap,
+    pub remotes: VariableMap,
     pub(crate) symlink: Variable,
-    pub templates: IndexSet<String>,
-    pub variables: VariableHashMap,
+    pub templates: StringSet,
+    pub variables: VariableMap,
     pub branch: Variable,
-    pub(crate) branches: VariableHashMap,
+    pub(crate) branches: VariableMap,
     pub worktree: Variable,
     #[derivative(Default(value = r#""origin".to_string()"#))]
     pub(crate) default_remote: String,
@@ -284,17 +285,17 @@ impl Tree {
             env.reset();
         }
 
-        reset_hashmap_variables(&self.gitconfig);
-        reset_hashmap_variables(&self.commands);
+        reset_map_variables(&self.gitconfig);
+        reset_map_variables(&self.commands);
     }
 
     /// Copy the guts of another tree into the current tree.
     pub(crate) fn clone_from_tree(&mut self, tree: &Tree) {
-        collections::append_hashmap(&mut self.commands, &tree.commands);
-        collections::append_hashmap(&mut self.gitconfig, &tree.gitconfig);
-        collections::append_hashmap(&mut self.variables, &tree.variables);
-        collections::append_hashmap(&mut self.remotes, &tree.remotes);
-        collections::append_indexset(&mut self.templates, &tree.templates);
+        collections::append_map(&mut self.commands, &tree.commands);
+        collections::append_map(&mut self.gitconfig, &tree.gitconfig);
+        collections::append_map(&mut self.variables, &tree.variables);
+        collections::append_map(&mut self.remotes, &tree.remotes);
+        collections::append_set(&mut self.templates, &tree.templates);
 
         // "environment" follow last-set-wins semantics.
         self.environment.append(&mut tree.environment.clone());
@@ -462,7 +463,7 @@ impl Tree {
 #[derive(Clone, Debug, Default)]
 pub struct Group {
     name: String,
-    pub members: IndexSet<String>,
+    pub members: StringSet,
 }
 
 impl_display!(Group);
@@ -491,7 +492,7 @@ pub type GroupMap = IndexMap<GroupName, Group>;
 #[derive(Clone, Debug, Default)]
 pub struct Template {
     pub tree: Tree,
-    pub extend: IndexSet<String>,
+    pub extend: StringSet,
     name: String,
 }
 
@@ -515,12 +516,12 @@ impl Template {
 // Gardens aggregate trees
 #[derive(Clone, Debug, Default)]
 pub struct Garden {
-    pub commands: MultiVariableHashMap,
+    pub commands: MultiVariableMap,
     pub environment: Vec<MultiVariable>,
-    pub gitconfig: MultiVariableHashMap,
-    pub groups: IndexSet<String>,
-    pub trees: IndexSet<String>,
-    pub variables: VariableHashMap,
+    pub gitconfig: MultiVariableMap,
+    pub groups: StringSet,
+    pub trees: StringSet,
+    pub variables: VariableMap,
     name: GardenName,
 }
 
@@ -556,7 +557,7 @@ fn get_default_shell() -> String {
 /// Configuration represents an instantiated garden configuration
 #[derive(Clone, Debug, Default)]
 pub struct Configuration {
-    pub commands: MultiVariableHashMap,
+    pub commands: MultiVariableMap,
     pub debug: IndexMap<String, u8>,
     pub environment: Vec<MultiVariable>,
     pub gardens: GardenMap,
@@ -572,10 +573,10 @@ pub struct Configuration {
     pub templates: IndexMap<String, Template>,
     pub tree_search_path: Vec<std::path::PathBuf>,
     pub trees: IndexMap<TreeName, Tree>,
-    pub variables: VariableHashMap,
+    pub variables: VariableMap,
     /// Variables defined on the command-line using "-D name=value" have the
     /// highest precedence and override variables defined by any configuration or tree.
-    pub override_variables: VariableHashMap,
+    pub override_variables: VariableMap,
     pub config_verbose: u8,
     pub quiet: bool,
     pub verbose: u8,
@@ -1006,7 +1007,7 @@ impl Configuration {
             env.reset();
         }
 
-        reset_hashmap_variables(&self.commands);
+        reset_map_variables(&self.commands);
 
         for tree in self.trees.values() {
             tree.reset_variables();

@@ -33,6 +33,12 @@ to perform trial runs without actually running any commands.
 open a nix shell with garden installed.
 ([#40](https://github.com/garden-rs/garden/pull/40))
 
+**Development**:
+
+- More structs, functions and methods were made private.
+
+- Several types were renamed from "HashMap" to "Map".
+
 
 ## v1.6.0
 
