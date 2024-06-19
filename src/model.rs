@@ -52,7 +52,7 @@ pub struct Variable {
 impl_display_brief!(Variable);
 
 impl Variable {
-    pub fn new(expr: String, value: Option<String>) -> Self {
+    pub(crate) fn new(expr: String, value: Option<String>) -> Self {
         Variable {
             expr,
             value: RefCell::new(value),
@@ -61,18 +61,18 @@ impl Variable {
     }
 
     /// Does this variable have a value?
-    pub fn is_empty(&self) -> bool {
+    pub(crate) fn is_empty(&self) -> bool {
         self.expr.is_empty()
     }
 
     /// Is this variable currently being evaluated?
     /// This is a guard variable to avoid infinite loops when evaluating.
-    pub fn is_evaluating(&self) -> bool {
+    pub(crate) fn is_evaluating(&self) -> bool {
         *self.evaluating.borrow()
     }
 
     /// Set the evaluation state.
-    pub fn set_evaluating(&self, value: bool) {
+    pub(crate) fn set_evaluating(&self, value: bool) {
         *self.evaluating.borrow_mut() = value;
     }
 
@@ -82,17 +82,17 @@ impl Variable {
     }
 
     /// Return a mutable reference to the underlying raw expression.
-    pub fn get_expr_mut(&mut self) -> &mut String {
+    pub(crate) fn get_expr_mut(&mut self) -> &mut String {
         &mut self.expr
     }
 
     /// Set the expression for this variable.
-    pub fn set_expr(&mut self, expr: String) {
+    pub(crate) fn set_expr(&mut self, expr: String) {
         self.expr = expr;
     }
 
     /// Store the cached result of evaluating the expression.
-    pub fn set_value(&self, value: String) {
+    pub(crate) fn set_value(&self, value: String) {
         *self.value.borrow_mut() = Some(value);
     }
 
@@ -103,13 +103,13 @@ impl Variable {
     }
 
     /// Reset the variable.
-    pub fn reset(&self) {
+    pub(crate) fn reset(&self) {
         *self.value.borrow_mut() = None;
     }
 }
 
 /// An unordered mapping of names to a vector of Variables.
-pub type MultiVariableHashMap = IndexMap<String, Vec<Variable>>;
+pub(crate) type MultiVariableHashMap = IndexMap<String, Vec<Variable>>;
 
 /// Reset the variables held inside a MultiVariableHashMap.
 fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
@@ -121,49 +121,7 @@ fn reset_hashmap_variables(vec_variables: &MultiVariableHashMap) {
 }
 
 /// An unordered mapping of name to Variable.
-pub type VariableHashMap = IndexMap<String, Variable>;
-
-// Named variables with a single value
-#[derive(Clone, Debug)]
-pub struct NamedVariable {
-    name: String,
-    variable: Variable,
-}
-
-impl_display_brief!(NamedVariable);
-
-impl NamedVariable {
-    pub fn new(name: String, expr: String, value: Option<String>) -> Self {
-        NamedVariable {
-            name,
-            variable: Variable::new(expr, value),
-        }
-    }
-
-    pub fn get_name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn get_expr(&self) -> &String {
-        self.variable.get_expr()
-    }
-
-    pub fn set_expr(&mut self, expr: String) {
-        self.variable.set_expr(expr);
-    }
-
-    pub fn set_value(&self, value: String) {
-        self.variable.set_value(value);
-    }
-
-    pub fn get_value(&self) -> Option<&String> {
-        self.variable.get_value()
-    }
-
-    pub fn reset(&self) {
-        self.variable.reset();
-    }
-}
+pub(crate) type VariableHashMap = IndexMap<String, Variable>;
 
 // Named variables with multiple values
 #[derive(Clone, Debug)]
@@ -175,7 +133,7 @@ pub struct MultiVariable {
 impl_display!(MultiVariable);
 
 impl MultiVariable {
-    pub fn new(name: String, variables: Vec<Variable>) -> Self {
+    pub(crate) fn new(name: String, variables: Vec<Variable>) -> Self {
         MultiVariable { name, variables }
     }
 
