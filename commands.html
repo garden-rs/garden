@@ -460,6 +460,29 @@ gardens:
     commands:
       print-pwd: pwd
 </code></pre>
+<h4 id="forwarding-arguments-using-the-double-dash----end-of-options-marker"><a class="header" href="#forwarding-arguments-using-the-double-dash----end-of-options-marker">Forwarding arguments using the double-dash <code>--</code> end-of-options marker</a></h4>
+<p>Use <code>--</code> (double-dash) to forward arguments to custom commands.
+Everything specified after <code>--</code> on the command-line will be present in the <code>"$@"</code> array.</p>
+<pre><code class="language-yaml">commands:
+  test: cargo test -v "$@"
+</code></pre>
+<p>If the wrapped command also uses <code>--</code> then you have to specify <code>--</code> twice in order for
+the inner command to see a <code>--</code> marker.</p>
+<p>The <code>cargo test</code> command uses <code>--</code> in order to pass options to the inner test commands.
+To pass options to the inner test command we'd have to use <code>--</code> twice.</p>
+<pre><code class="language-bash">garden test -- -- --list
+# Runs "cargo test -v -- --list". The first "--" is consumed by "garden".
+</code></pre>
+<p>If you always pass arguments to inner commands after their <code>--</code> marker then
+you can simplify the command's usage by embedding <code>--</code> into the command definition.</p>
+<pre><code class="language-yaml">commands:
+  test: cargo test -v -- "$@"
+</code></pre>
+<p>Using <code>--</code> in the command lets us use a single <code>--</code> to pass arguments to the innermost
+tests instead of two.</p>
+<pre><code class="language-bash">garden test -- --list
+# Runs "cargo test -v -- --list".
+</code></pre>
 <h4 id="shebang--commands"><a class="header" href="#shebang--commands">Shebang (#!) Commands</a></h4>
 <p>Custom command shells can be used on a per-command basis by using a <code>#!&lt;command&gt;</code>
 shebang line as the start of a multi-line command.</p>

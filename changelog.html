@@ -202,6 +202,11 @@ to perform trial runs without actually running any commands.
 <code>-n</code> short option was made an undocumented alias for compatibility.
 (<a href="https://github.com/garden-rs/garden/pull/41">#41</a>)</p>
 </li>
+<li>
+<p>The <code>garden eval</code>, <code>garden exec</code>, <code>garden cmd</code> and custom sub-commands
+now accept the same <code>--define | -D name=value</code> override options as the root
+<code>garden</code> command.</p>
+</li>
 </ul>
 <p><strong>Fixes</strong>:</p>
 <ul>
@@ -219,6 +224,15 @@ to perform trial runs without actually running any commands.
 <p><code>nix run</code> can now be used to run <code>garden</code> and <code>nix shell</code> can now be used to
 open a nix shell with garden installed.
 (<a href="https://github.com/garden-rs/garden/pull/40">#40</a>)</p>
+</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p>More structs, functions and methods were made private.</p>
+</li>
+<li>
+<p>Several types were renamed from "HashMap" to "Map".</p>
 </li>
 </ul>
 <h2 id="v160"><a class="header" href="#v160">v1.6.0</a></h2>
