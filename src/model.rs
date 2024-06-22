@@ -737,7 +737,14 @@ impl Configuration {
             let current = *self.debug.get(key).unwrap_or(&0);
             self.debug.insert(key.into(), current + 1);
         }
-        for k_eq_v in &options.define {
+        self.apply_defines(&options.define);
+
+        Ok(())
+    }
+
+    // Apply --define name=value options.
+    pub(crate) fn apply_defines(&mut self, defines: &Vec<String>) {
+        for k_eq_v in defines {
             let name: String;
             let expr: String;
             let values: Vec<&str> = k_eq_v.splitn(2, '=').collect();
@@ -773,8 +780,6 @@ impl Configuration {
                 }
             }
         }
-
-        Ok(())
     }
 
     pub(crate) fn reset(&mut self) {
