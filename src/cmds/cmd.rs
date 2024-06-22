@@ -20,6 +20,9 @@ pub struct CmdOptions {
     /// Filter trees by name post-query using a glob pattern
     #[arg(long, short, default_value = "*")]
     trees: String,
+    /// Set variables using 'name=value' expressions
+    #[arg(long, short = 'D')]
+    define: Vec<String>,
     /// Do not pass "-e" to the shell.
     /// Prevent the "errexit" shell option from being set. By default, the "-e" option
     /// is passed to the configured shell so that multi-line and multi-statement
@@ -61,6 +64,9 @@ pub struct CmdOptions {
 #[derive(Parser, Clone, Debug)]
 #[command(bin_name = constants::GARDEN)]
 pub struct CustomOptions {
+    /// Set variables using 'name=value' expressions
+    #[arg(long, short = 'D')]
+    define: Vec<String>,
     /// Perform a trial run without running commands
     #[arg(long, short = 'N')]
     dry_run: bool,
@@ -107,6 +113,9 @@ pub struct CustomOptions {
 
 /// Main entry point for `garden cmd <query> <command>...`.
 pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOptions) -> Result<()> {
+    app_context
+        .get_root_config_mut()
+        .apply_defines(&options.define);
     if app_context.options.debug_level(constants::DEBUG_LEVEL_CMD) > 0 {
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
@@ -224,6 +233,9 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
 
     let mut options = <CustomOptions as FromArgMatches>::from_arg_matches(&matches)
         .map_err(format_error::<CustomOptions>)?;
+    app_context
+        .get_root_config_mut()
+        .apply_defines(&options.define);
     if !app_context.get_root_config().shell_exit_on_error {
         options.exit_on_error = false;
     }

@@ -633,6 +633,32 @@ fn cmd_dry_run() {
     assert_eq!(output, "");
 }
 
+/// Sub-commands honor --define name=value
+#[test]
+fn cmd_override_variables() {
+    let output = garden_capture(&["--quiet", "--chdir", "tests/data/commands", "echo-name"]);
+    assert_eq!(output, "default-name");
+
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data/commands",
+        "--quiet",
+        "--define",
+        "name=test",
+        "echo-name",
+    ]);
+    assert_eq!(output, "test");
+    let output = garden_capture(&[
+        "--chdir",
+        "tests/data/commands",
+        "echo-name",
+        "--quiet",
+        "--define",
+        "name=test",
+    ]);
+    assert_eq!(output, "test");
+}
+
 /// `garden eval` evaluates ${GARDEN_CONFIG_DIR}
 #[test]
 fn eval_garden_config_dir() {
@@ -746,6 +772,26 @@ fn eval_override_variables() {
         "eval",
         "${tree_value}",
         "current",
+    ]);
+    assert_eq!(output, "test");
+    // Defines override evaluation when no tree is present in the query.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/variables.yaml",
+        "--define",
+        "var_0=test",
+        "eval",
+        "${var_0}",
+    ]);
+    assert_eq!(output, "test");
+    // The "--define" flag can be specified to sub-commands.
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/variables.yaml",
+        "eval",
+        "--define",
+        "var_0=test",
+        "${var_0}",
     ]);
     assert_eq!(output, "test");
 }
@@ -1266,20 +1312,6 @@ fn eval_grafted_builtin_variables() {
         output.ends_with(expect),
         "Grafted GARDEN_ROOT ({output}) must use {expect} from the current directory"
     );
-}
-
-/// Defines override evaluation when no tree is present in the query.
-#[test]
-fn eval_define_override_without_tree() {
-    let output = garden_capture(&[
-        "--config",
-        "test/data/variables.yaml",
-        "--define",
-        "var_0=test",
-        "eval",
-        "${var_0}",
-    ]);
-    assert_eq!(output, "test");
 }
 
 /// Test dash-dash arguments in custom commands via "garden cmd ..."

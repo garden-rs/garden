@@ -1,3 +1,7 @@
 commands:
   pwd: pwd
   echo: echo "$@"
+  echo-name: echo ${name}
+
+variables:
+  name: default-name

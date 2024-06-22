@@ -18,6 +18,10 @@ to perform trial runs without actually running any commands.
 `-n` short option was made an undocumented alias for compatibility.
 ([#41](https://github.com/garden-rs/garden/pull/41))
 
+- The `garden eval`, `garden exec`, `garden cmd` and custom sub-commands
+now accept the same `--define | -D name=value` override options as the root
+`garden` command.
+
 **Fixes**:
 
 - `garden ls` now prints the list of commands in the same order as they appear in `garden.yaml`.
