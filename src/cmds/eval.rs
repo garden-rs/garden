@@ -7,6 +7,9 @@ use crate::{eval, model, query};
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct EvalOptions {
+    /// Set variables using 'name=value' expressions
+    #[arg(long, short = 'D')]
+    define: Vec<String>,
     /// Expression to evaluate
     expr: String,
     /// Tree within which to evaluate
@@ -17,6 +20,9 @@ pub struct EvalOptions {
 
 /// Evaluate a garden expression using the Eval parameters
 pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Result<()> {
+    app_context
+        .get_root_config_mut()
+        .apply_defines(&eval.define);
     match eval.tree.as_ref() {
         None => {
             // Evaluate and print the expression in global scope. No trees or gardens
