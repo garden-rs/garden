@@ -195,6 +195,10 @@ fn expand_vars(
     if syntax::is_digit(name) {
         return Some(format!("${name}"));
     }
+    // Check for the variable in override scope defined by "garden -D name=value".
+    if let Some(var) = config.override_variables.get(name) {
+        return Some(variable(app_context, config, var));
+    }
 
     if syntax::is_graft(name) {
         let (graft_id, remainder) = match config.get_graft_id(name) {

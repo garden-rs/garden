@@ -1268,6 +1268,20 @@ fn eval_grafted_builtin_variables() {
     );
 }
 
+/// Defines override evaluation when no tree is present in the query.
+#[test]
+fn eval_define_override_without_tree() {
+    let output = garden_capture(&[
+        "--config",
+        "test/data/variables.yaml",
+        "--define",
+        "var_0=test",
+        "eval",
+        "${var_0}",
+    ]);
+    assert_eq!(output, "test");
+}
+
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
 fn cmd_dash_dash_arguments() {
