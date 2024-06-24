@@ -100,6 +100,16 @@ where
     exec_cmd(command).cwd(path).env(constants::ENV_PWD, path)
 }
 
+/// Return the exit status from running a command using `subprocess::Exec`
+/// in the specified directory.
+pub(crate) fn run_command<P, S>(command: &[S], path: &P) -> i32
+where
+    P: AsRef<std::path::Path> + std::convert::AsRef<std::ffi::OsStr> + ?Sized,
+    S: AsRef<std::ffi::OsStr>,
+{
+    status(exec_in_dir(command, path))
+}
+
 /// Run a command in the specified tree context.
 /// Parameters:
 /// - config: Mutable reference to a Configuration.

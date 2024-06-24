@@ -307,7 +307,12 @@ fn update_tree_from_context(
 
     // The "default-remote" field is used to change the name of the default "origin" remote.
     if tree.default_remote != constants::ORIGIN {
-        set_gitconfig_value("checkout.defaultRemoteName", &tree.default_remote, path);
+        set_gitconfig_value(
+            "checkout.defaultRemoteName",
+            &tree.default_remote,
+            path,
+            verbose,
+        );
     }
 
     let mut fetched_remotes: StringSet = IndexSet::new();
@@ -318,12 +323,7 @@ fn update_tree_from_context(
         let url = eval_context.tree_variable(var);
         if existing_remotes.contains(remote) {
             let remote_key = format!("remote.{remote}.url");
-            let command = ["git", "config", remote_key.as_ref(), url.as_ref()];
-            if verbose > 1 {
-                print_command_str(&command.join(" "));
-            }
-            let exec = cmd::exec_in_dir(&command, path.as_ref());
-            let status = cmd::status(exec);
+            let status = set_gitconfig_value(&remote_key, &url, path, verbose);
             if status != errors::EX_OK {
                 exit_status = status;
             }
@@ -332,20 +332,14 @@ fn update_tree_from_context(
             if verbose > 1 {
                 print_command_str(&command.join(" "));
             }
-            let exec = cmd::exec_in_dir(&command, path.as_ref());
-            let status = cmd::status(exec);
+            let status = cmd::run_command(&command, path.as_ref());
             if status != errors::EX_OK {
                 exit_status = status;
             }
 
             // git config remote.<name>.tagopt --no-tags
             let key = format!("remote.{}.tagopt", remote);
-            let command = ["git", "config", key.as_ref(), "--no-tags"];
-            if verbose > 1 {
-                print_command_str(&command.join(" "));
-            }
-            let exec = cmd::exec_in_dir(&command, path.as_ref());
-            let status = cmd::status(exec);
+            let status = set_gitconfig_value(&key, "--no-tags", path, verbose);
             if status != errors::EX_OK {
                 exit_status = status;
             }
@@ -357,8 +351,7 @@ fn update_tree_from_context(
                     print_command_str(&command.join(" "));
                 }
                 fetched_remotes.insert(remote.to_string());
-                let exec = cmd::exec_in_dir(&command, path.as_ref());
-                let status = cmd::status(exec);
+                let status = cmd::run_command(&command, path.as_ref());
                 if status != errors::EX_OK {
                     exit_status = status;
                 }
@@ -380,7 +373,7 @@ fn update_tree_from_context(
                 append_gitconfig_value(&name, &value, path, &mut gitconfig_cache)
             } else {
                 // Single values are set directly using "git config <name> <value>".
-                set_gitconfig_value(&name, &value, path)
+                set_gitconfig_value(&name, &value, path, verbose)
             };
             if status != errors::EX_OK {
                 exit_status = status;
@@ -406,8 +399,7 @@ fn update_tree_from_context(
                         if verbose > 1 {
                             print_command_str(&command.join(" "));
                         }
-                        let exec = cmd::exec_in_dir(&command, path.as_ref());
-                        let status = cmd::status(exec);
+                        let status = cmd::run_command(&command, path.as_ref());
                         if status != errors::EX_OK {
                             exit_status = status;
                         }
@@ -417,8 +409,7 @@ fn update_tree_from_context(
                 if verbose > 1 {
                     print_command_str(&command.join(" "));
                 }
-                let exec = cmd::exec_in_dir(&command, path.as_ref());
-                let status = cmd::status(exec);
+                let status = cmd::run_command(&command, path.as_ref());
                 if status != errors::EX_OK {
                     exit_status = status;
                 }
@@ -429,8 +420,7 @@ fn update_tree_from_context(
     // Checkout the configured branch if we are creating the repository initially.
     if checkout && !branch.is_empty() && tree.branches.contains_key(branch) {
         let command = ["git", "checkout", branch, "--"];
-        let exec = cmd::exec_in_dir(&command, path.as_ref());
-        let status = cmd::status(exec);
+        let status = cmd::run_command(&command, path.as_ref());
         if status != errors::EX_OK {
             exit_status = status;
         }
@@ -471,8 +461,7 @@ fn append_gitconfig_value(
         if !values.contains(value) {
             values.insert(value.to_string());
             let command = ["git", "config", "--add", name, value];
-            let exec = cmd::exec_in_dir(&command, path.as_ref());
-            status = cmd::status(exec)
+            status = cmd::run_command(&command, path.as_ref());
         }
     }
 
@@ -480,11 +469,18 @@ fn append_gitconfig_value(
 }
 
 /// Set a simple gitconfig value.
-fn set_gitconfig_value(name: &str, value: &str, path: &dyn AsRef<std::path::Path>) -> i32 {
+fn set_gitconfig_value(
+    name: &str,
+    value: &str,
+    path: &dyn AsRef<std::path::Path>,
+    verbose: u8,
+) -> i32 {
     let command = ["git", "config", name, value];
-    let exec = cmd::exec_in_dir(&command, path.as_ref());
+    if verbose > 1 {
+        print_command_str(&command.join(" "));
+    }
 
-    cmd::status(exec)
+    cmd::run_command(&command, path.as_ref())
 }
 
 /// Use "git worktree" to create a worktree.
@@ -586,8 +582,7 @@ fn grow_tree_from_context_as_worktree(
     if verbose > 1 {
         print_quoted_command(&cmd);
     }
-    let exec = cmd::exec_in_dir(&cmd, parent_path);
-    exit_status = cmd::status(exec);
+    exit_status = cmd::run_command(&cmd, parent_path);
     if exit_status != 0 {
         return Err(errors::GardenError::WorktreeGitCheckoutError {
             tree: tree.get_name().clone(),
