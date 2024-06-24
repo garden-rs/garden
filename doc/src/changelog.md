@@ -22,6 +22,9 @@ to perform trial runs without actually running any commands.
 now accept the same `--define | -D name=value` override options as the root
 `garden` command.
 
+- `garden grow` reports more details about the commands it runs and no
+longer prints redundant `git config` commands.
+
 **Fixes**:
 
 - `garden ls` now prints the list of commands in the same order as they appear in `garden.yaml`.
