@@ -323,9 +323,6 @@ fn update_tree_from_context(
                 print_command_str(&command.join(" "));
             }
             let exec = cmd::exec_in_dir(&command, path.as_ref());
-            if verbose > 1 {
-                print_command_str(&command.join(" "));
-            }
             let status = cmd::status(exec);
             if status != errors::EX_OK {
                 exit_status = status;
