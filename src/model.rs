@@ -1311,7 +1311,7 @@ impl TreeQuery {
     Eq,
     strum_macros::EnumString,
     strum_macros::Display,
-    strum_macros::EnumVariantNames,
+    strum_macros::VariantNames,
 )]
 #[strum(ascii_case_insensitive, serialize_all = "kebab-case")]
 pub enum ColorMode {
