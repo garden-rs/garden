@@ -1366,7 +1366,7 @@ impl ColorMode {
         }
 
         if *self == ColorMode::Off {
-            yansi::Paint::disable();
+            yansi::disable();
         }
     }
 }

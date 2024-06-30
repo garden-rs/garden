@@ -1,6 +1,7 @@
 use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
 use derivative::Derivative;
+use yansi::Paint;
 
 use crate::{cli, cmd, constants, display, errors, eval, model, path, query, syntax};
 
@@ -522,11 +523,7 @@ fn run_cmd_vec(
     for cmd_seq in cmd_seq_vec {
         for cmd_str in cmd_seq {
             if params.verbose > 1 {
-                println!(
-                    "{} {}",
-                    display::Color::cyan(":"),
-                    display::Color::green(&cmd_str),
-                );
+                println!("{} {}", ":".cyan(), &cmd_str.green());
             }
             if params.dry_run {
                 continue;

@@ -3,8 +3,9 @@ use std::io::prelude::*;
 use anyhow::Result;
 use clap::Parser;
 use rayon::prelude::*;
+use yansi::Paint;
 
-use crate::{cmd, display::Color, errors, model, model::IndexSet};
+use crate::{cmd, errors, model, model::IndexSet};
 
 /// Get the default number of prune jobs to run in parallel
 fn default_num_jobs() -> usize {
@@ -286,7 +287,6 @@ enum PromptResponse {
 fn prompt_for_deletion(pathbuf: &dyn AsRef<std::path::Path>) -> PromptResponse {
     let stdin = std::io::stdin();
     let mut stdout = std::io::stdout();
-    let mut buffer = String::new();
     let answer;
 
     loop {
@@ -298,36 +298,36 @@ fn prompt_for_deletion(pathbuf: &dyn AsRef<std::path::Path>) -> PromptResponse {
 
         println!();
         // # <path>
-        println!("{} {}", Color::cyan("#"), Color::blue(path_string).bold());
+        println!("{} {}", "#".cyan(), path_string.blue().bold());
         // # Delete the "xyz" repository?
         println!(
             "{}",
-            Color::yellow(format!("Delete the \"{path_basename}\" repository?")),
+            format!("Delete the \"{path_basename}\" repository?").yellow()
         );
         // # "all" deletes "..." and all subsequent repositories.
         println!(
             "{}: \"{}\" deletes \"{}\" and {} subsequent repositories!",
-            Color::red("WARNING").bold(),
-            Color::yellow("all"),
+            "WARNING".red().bold(),
+            "all".yellow(),
             path_basename,
-            Color::red("ALL").bold(),
+            "ALL".red().bold(),
         );
         // # (yes, no, all, quit) [y,n,a,q]?
         print!(
             "Choices: {}, {}, {}, {} [{},{},{},{}]? ",
-            Color::blue("yes"),
-            Color::blue("no"),
-            Color::yellow("all"),
-            Color::green("quit"),
-            Color::blue("y"),
-            Color::blue("n"),
-            Color::yellow("all"),
-            Color::green("q"),
+            "yes".blue(),
+            "no".blue(),
+            "all".yellow(),
+            "quit".green(),
+            "y".blue(),
+            "n".blue(),
+            "all".yellow(),
+            "q".green(),
         );
 
         stdout.flush().unwrap_or(());
 
-        buffer.clear();
+        let mut buffer = String::new();
         if stdin.read_line(&mut buffer).is_ok() {
             match buffer.trim().to_lowercase().as_str() {
                 // "all" is dangerous so it has no shorthand aliases.
@@ -445,9 +445,9 @@ impl PromptUser {
 fn print_deleted_pathbuf(pathbuf: &std::path::Path) {
     println!(
         "{} {}: {}",
-        Color::cyan("#"),
-        Color::green("Deleted"),
-        Color::blue(pathbuf.to_string_lossy()).bold(),
+        "#".cyan(),
+        "Deleted".green(),
+        pathbuf.to_string_lossy().blue().bold(),
     );
 }
 
@@ -462,9 +462,9 @@ pub fn prune(
 
     if !options.remove {
         let msg = "NOTE: Safe mode enabled. Repositories will not be deleted.";
-        println!("{}", Color::green(msg));
+        println!("{}", msg.green());
         let msg = "Use '--rm' to enable deletion.";
-        println!("{}", Color::green(msg));
+        println!("{}", msg.green());
     }
 
     // Initialize the global thread pool.
