@@ -1,7 +1,5 @@
 use crate::{eval, git, model};
-
-// Color is an alias for yansi::Paint.
-pub(crate) type Color<T> = yansi::Paint<T>;
+use yansi::Paint;
 
 pub(crate) fn display_missing_tree(
     tree: &model::Tree,
@@ -12,21 +10,21 @@ pub(crate) fn display_missing_tree(
     let skipped = if force {
         String::new()
     } else {
-        Color::black(" (skipped)").bold().to_string()
+        " (skipped)".bold().to_string()
     };
     if verbose > 0 {
         format!(
             "{} {} {}{}",
-            Color::black("#").bold(),
-            Color::black(tree.get_name()).bold(),
-            Color::black(path).bold(),
+            "#".black().bold(),
+            tree.get_name().black().bold(),
+            path.black().bold(),
             skipped
         )
     } else {
         format!(
             "{} {}{}",
-            Color::black("#").bold(),
-            Color::black(tree.get_name()).bold(),
+            "#".black().bold(),
+            tree.get_name().black().bold(),
             skipped
         )
     }
@@ -44,21 +42,21 @@ pub(crate) fn display_tree(
                 if let Some(branch) = git::branch(&path) {
                     return format!(
                         "{} {} {}{}{} {}",
-                        Color::cyan("#"),
-                        Color::blue(tree.get_name()).bold(),
-                        Color::blue("["),
-                        Color::green(&branch).bold(),
-                        Color::blue("]"),
-                        Color::blue(&path_str)
+                        "#".cyan(),
+                        tree.get_name().blue().bold(),
+                        "[".blue(),
+                        branch.green().bold(),
+                        "]".blue(),
+                        path_str.blue()
                     );
                 }
             }
         }
         format!(
             "{} {} {}",
-            Color::cyan("#"),
-            Color::blue(tree.get_name()).bold(),
-            Color::blue(path_str)
+            "#".cyan(),
+            tree.get_name().blue().bold(),
+            path_str.blue()
         )
     } else {
         if tree_branches {
@@ -66,20 +64,16 @@ pub(crate) fn display_tree(
                 if let Some(branch) = git::branch(&path) {
                     return format!(
                         "{} {} {}{}{}",
-                        Color::cyan("#"),
-                        Color::blue(tree.get_name()).bold(),
-                        Color::blue("["),
-                        Color::green(&branch).bold(),
-                        Color::blue("]")
+                        "#".cyan(),
+                        tree.get_name().blue().bold(),
+                        "[".blue(),
+                        branch.green().bold(),
+                        "]".blue()
                     );
                 }
             }
         }
-        format!(
-            "{} {}",
-            Color::cyan("#"),
-            Color::blue(tree.get_name()).bold()
-        )
+        format!("{} {}", "#".cyan(), tree.get_name().blue().bold())
     }
 }
 
@@ -133,16 +127,12 @@ pub(crate) fn print_missing_tree(tree: &model::Tree, path: &str, verbose: u8) {
     if verbose > 0 {
         println!(
             "{} {} {}",
-            Color::red("#-").dimmed(),
-            Color::red(tree.get_name()),
-            Color::red(path).dimmed()
+            "#-".red().dim(),
+            tree.get_name().red(),
+            path.red().dim()
         );
     } else {
-        println!(
-            "{} {}",
-            Color::red("#-").dimmed(),
-            Color::red(tree.get_name())
-        );
+        println!("{} {}", "#-".red().dim(), tree.get_name().red());
     }
 }
 
@@ -155,19 +145,19 @@ pub(crate) fn print_symlink_tree_entry(tree: &model::Tree, path: &str, verbose: 
     if verbose > 0 {
         println!(
             "{} {} {} {} {}",
-            Color::cyan("#+"),
-            Color::blue(tree.get_name()).bold(),
-            Color::green(path),
-            Color::green("->"),
-            Color::yellow(symlink)
+            "#+".cyan(),
+            tree.get_name().blue().bold(),
+            path.green(),
+            "->".green(),
+            symlink.yellow()
         );
     } else {
         println!(
             "{} {} {} {}",
-            Color::cyan("#"),
-            Color::blue(tree.get_name()).bold(),
-            Color::green("->"),
-            Color::yellow(symlink)
+            "#".cyan(),
+            tree.get_name().blue().bold(),
+            "->".green(),
+            symlink.yellow()
         );
     }
 }
@@ -184,13 +174,13 @@ pub(crate) fn print_tree_extended_details(
         None => app_context.get_root_config(),
     };
     if !tree.description.is_empty() {
-        println!("{}", Color::green(&tree.description));
+        println!("{}", tree.description.green());
     }
     if tree.is_worktree && !display_worktrees {
         return;
     }
     if !tree.remotes.is_empty() {
-        println!("{}", Color::blue("remotes:"));
+        println!("{}", "remotes:".blue());
         for (name, remote) in &tree.remotes {
             let value = eval::tree_variable(
                 app_context,
@@ -200,16 +190,11 @@ pub(crate) fn print_tree_extended_details(
                 context.garden.as_ref(),
                 remote,
             );
-            println!(
-                "  {}{} {}",
-                Color::blue(name),
-                Color::blue(":"),
-                Color::yellow(value)
-            );
+            println!("  {}{} {}", name.blue(), ":".blue(), value.yellow());
         }
     }
     if !tree.links.is_empty() {
-        println!("{}", Color::blue("links:"));
+        println!("{}", "links:".blue());
         for link in &tree.links {
             let value = eval::tree_variable(
                 app_context,
@@ -219,32 +204,32 @@ pub(crate) fn print_tree_extended_details(
                 context.garden.as_ref(),
                 link,
             );
-            println!("  {} {}", Color::blue("-"), Color::yellow(value));
+            println!("  {} {}", "-".blue(), value.yellow());
         }
     }
 }
 
 /// Print a list of commands
 pub(crate) fn print_commands(commands: &model::MultiVariableMap) {
-    println!("{}", Color::blue("commands:"));
+    println!("{}", "commands:".blue());
     for cmd in commands.keys() {
-        println!("  {} {}", Color::blue("-"), Color::yellow(cmd));
+        println!("  {} {}", "-".blue(), cmd.yellow());
     }
 }
 
 /// Print groups
 pub(crate) fn print_groups(groups: &model::GroupMap) {
-    println!("{}", Color::blue("groups:"));
+    println!("{}", "groups:".blue());
     for group in groups.keys() {
-        println!("  {} {}", Color::blue("-"), Color::yellow(group));
+        println!("  {} {}", "-".blue(), group.yellow());
     }
 }
 
 /// Print gardens
 pub(crate) fn print_gardens(gardens: &model::GardenMap) {
-    println!("{}", Color::blue("gardens:"));
+    println!("{}", "gardens:".blue());
     for garden in gardens.keys() {
-        println!("  {} {}", Color::blue("-"), Color::yellow(garden));
+        println!("  {} {}", "-".blue(), garden.yellow());
     }
 }
 
@@ -252,7 +237,7 @@ pub(crate) fn print_gardens(gardens: &model::GardenMap) {
 pub fn print_command_vec(command: &[&str]) {
     // Shell quote the list of commands.
     let cmd_str = shell_words::join(command);
-    println!("{} {}", Color::cyan(":"), Color::green(&cmd_str),);
+    println!("{} {}", ":".cyan(), cmd_str.green(),);
 }
 
 /// Print a string command argument list

@@ -1,6 +1,7 @@
 /// Grow garden worktrees
 use anyhow::Result;
 use clap::Parser;
+use yansi::Paint;
 
 use crate::{
     cmd, constants, display, errors, git, model,
@@ -241,11 +242,7 @@ fn print_quoted_command(command: &[&str]) {
 
 /// Print a single command from a string.
 fn print_command_str(cmd: &str) {
-    println!(
-        "{} {}",
-        display::Color::cyan(":"),
-        display::Color::green(cmd),
-    )
+    println!("{} {}", ":".cyan(), cmd.green())
 }
 
 /// Add remotes that do not already exist and synchronize .git/config values.

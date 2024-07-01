@@ -1,5 +1,14 @@
 # Changelog
 
+## Upcoming
+
+**Development**:
+
+- The `which`, `yansi` and `strum` dependencies were upgraded. `yansi` was a new major version
+and required a fair amount of changes. `strum` involved minor changes.
+([#42](https://github.com/garden-rs/garden/pull/42))
+
+
 ## v1.7.0
 
 *Released 2024-06-29*

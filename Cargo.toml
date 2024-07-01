@@ -1,6 +1,6 @@
 [package]
 name = "garden-tools"
-version = "1.7.0"
+version = "1.7.1-beta0"
 edition = "2021"
 description = """
 Garden grows and cultivates collections of Git trees
@@ -40,14 +40,14 @@ rm_rf = "0.6.2"
 shellexpand = { version = "3.1.0", features = ["full"] }
 shell-words = "1.1.0"
 shlex = "1.3.0"
-strum = "0.25.0"
-strum_macros = "0.25.3"
+strum = "0.26.3"
+strum_macros = "0.26.3"
 subprocess = "0.2.9"
 thiserror = "1.0.56"
-which = "5.0.0"
+which = "6.0.1"
 xdg = "2.5.2"
-yaml-rust = { version = "0.8", package = "yaml-rust2" }
-yansi = "0.5.1"
+yaml-rust = { version = "0.8.1", package = "yaml-rust2" }
+yansi = "1.0"
 
 [dev-dependencies]
 assert_cmd = "2.0.13"
