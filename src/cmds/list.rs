@@ -56,7 +56,8 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
 
     for query in &options.queries {
         // Resolve the tree query into a vector of tree contexts.
-        let mut contexts = query::resolve_and_filter_trees(app_context, config, query, &options.trees);
+        let mut contexts =
+            query::resolve_and_filter_trees(app_context, config, query, &options.trees);
         if options.reverse {
             contexts.reverse();
         }
