@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden ls` now has a `--reverse | -r` option to display trees in reverse order.
+([#44](https://github.com/garden-rs/garden/pull/44))
+
 **Development**:
 
 - The `which`, `yansi` and `strum` dependencies were upgraded. `yansi` was a new major version

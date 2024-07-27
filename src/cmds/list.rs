@@ -16,6 +16,9 @@ pub struct ListOptions {
     /// Display commands. Omits descriptions, remotes and links so that commands are more visible
     #[arg(long = "commands", short = 'c', default_value_t = false)]
     only_commands: bool,
+    /// Print trees in reverse order
+    #[arg(short, long, default_value_t = false)]
+    reverse: bool,
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
@@ -53,7 +56,10 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
 
     for query in &options.queries {
         // Resolve the tree query into a vector of tree contexts.
-        let contexts = query::resolve_and_filter_trees(app_context, config, query, &options.trees);
+        let mut contexts = query::resolve_and_filter_trees(app_context, config, query, &options.trees);
+        if options.reverse {
+            contexts.reverse();
+        }
         // Loop over each context and display the tree.
         for (idx, context) in contexts.iter().enumerate() {
             let config = match context.config {
