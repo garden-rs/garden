@@ -5,6 +5,7 @@ use crate::{constants, errors, eval, model, path, query, syntax};
 /// Parameters:
 /// - `config`: `&garden::model::Configuration`.
 /// - `query`: Tree query `&str`.
+///
 /// Returns:
 /// - `Vec<garden::model::TreeContext>`
 
@@ -106,6 +107,7 @@ pub fn resolve_trees(
 /// - `config`: `&garden::model::Configuration`.
 /// - `query`: Tree query `&str`.
 /// - `pattern`: Tree name glob pattern used to filter the results.
+///
 /// Returns:
 /// - `Vec<garden::model::TreeContext>`
 pub(crate) fn resolve_and_filter_trees(
