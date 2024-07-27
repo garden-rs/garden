@@ -32,7 +32,7 @@ pub struct ListOptions {
 /// Main entry point for the "garden ls" command
 pub fn main(app_context: &model::ApplicationContext, options: &mut ListOptions) -> Result<()> {
     if options.queries.is_empty() {
-        options.queries.push("@*".into());
+        options.queries.push(string!("@*"));
     }
     list(app_context, options)
 }
