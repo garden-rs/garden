@@ -198,7 +198,7 @@ jobs:
           toolchain: stable
       - name: Install mdbook
         run: |
-          version=v0.4.37
+          version=v0.4.40
           curl -sSL https://github.com/rust-lang/mdBook/releases/download/${version}/mdbook-${version}-x86_64-unknown-linux-gnu.tar.gz |
             tar -xz --directory=${HOME}/.cargo/bin
       - name: Install garden
