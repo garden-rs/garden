@@ -179,9 +179,8 @@ jobs:
         cargo install cargo-audit
         garden -vv check/audit
     - name: Audit licenses
-      # cargo-deny requires --locked as of 2024-04-27 due to a goblin dependency change.
       run: |
-        cargo install --locked cargo-deny@0.14.20
+        cargo install cargo-deny
         garden -vv check/deny
 
   docs:
