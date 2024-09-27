@@ -7,20 +7,12 @@ use yansi::Paint;
 
 use crate::{cmd, errors, model, model::IndexSet};
 
-/// Get the default number of prune jobs to run in parallel
-fn default_num_jobs() -> usize {
-    match std::thread::available_parallelism() {
-        Ok(value) => std::cmp::max(value.get(), 3),
-        Err(_) => 4,
-    }
-}
-
 /// Remove unreferenced Git repositories
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct PruneOptions {
     /// Number of parallel jobs
-    #[arg(short = 'j', long = "jobs", default_value_t = default_num_jobs())]
+    #[arg(short = 'j', long = "jobs", default_value_t = cmd::default_num_jobs())]
     num_jobs: usize,
     /// Set the maximum prune depth
     #[arg(long, short = 'd', default_value_t = -1)]
@@ -467,10 +459,7 @@ pub fn prune(
         println!("{}", msg.green());
     }
 
-    // Initialize the global thread pool.
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(options.num_jobs)
-        .build_global()?;
+    cmd::initialize_threads(options.num_jobs)?;
 
     // Channels are used to exchange PathBufMessage messages.
     // These channels are used to emit repositories that are discovered through a

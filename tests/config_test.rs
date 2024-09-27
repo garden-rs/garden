@@ -54,8 +54,8 @@ fn variables() -> Result<()> {
     let root_var = config.variables.get("GARDEN_ROOT").context("GARDEN_ROOT")?;
     assert_eq!("/home/test/src", root_var.get_expr());
     assert_eq!(
-        Some("/home/test/src"),
-        root_var.get_value().map(|x| x.as_str())
+        Some("/home/test/src".to_string()),
+        root_var.get_value().cloned()
     );
 
     let foo_var = config.variables.get("foo").context("foo")?;
@@ -525,18 +525,15 @@ fn tree_path() -> Result<()> {
     let config = app_context.get_root_config();
     assert!(config.trees.len() >= 4);
 
-    assert_eq!(
-        "/home/test/src/git",
-        *config.trees[0].path_as_ref().unwrap()
-    );
+    assert_eq!("/home/test/src/git", config.trees[0].path_as_ref().unwrap());
     // cola is in the "git-cola" subdirectory
     assert_eq!(
         "/home/test/src/git-cola",
-        *config.trees[1].path_as_ref().unwrap()
+        config.trees[1].path_as_ref().unwrap()
     );
     assert_eq!(
         "/home/test/src/python/qtpy",
-        *config.trees[2].path_as_ref().unwrap()
+        config.trees[2].path_as_ref().unwrap()
     );
 
     Ok(())

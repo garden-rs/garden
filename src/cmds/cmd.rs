@@ -1,6 +1,9 @@
+use std::sync::atomic;
+
 use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
 use derivative::Derivative;
+use rayon::prelude::*;
 use yansi::Paint;
 
 use crate::{cli, cmd, constants, display, errors, eval, model, path, query, syntax};
@@ -36,6 +39,16 @@ pub struct CmdOptions {
     /// Run commands even when the tree does not exist.
     #[arg(long, short)]
     force: bool,
+    /// Run commands in parallel using the specified number of jobs.
+    #[arg(
+        long = "jobs",
+        short = 'j',
+        require_equals = false,
+        num_args = 0..=1,
+        default_missing_value = "0",
+        value_name = "JOBS",
+    )]
+    num_jobs: Option<usize>,
     /// Be quiet
     #[arg(short, long)]
     quiet: bool,
@@ -89,6 +102,16 @@ pub struct CustomOptions {
     /// Run commands even when the tree does not exist.
     #[arg(long, short)]
     force: bool,
+    /// Run commands in parallel using the specified number of jobs.
+    #[arg(
+        long = "jobs",
+        short = 'j',
+        require_equals = false,
+        num_args = 0..=1,
+        default_missing_value = "0",
+        value_name = "JOBS",
+    )]
+    num_jobs: Option<usize>,
     /// Be quiet
     #[arg(short, long)]
     quiet: bool,
@@ -118,6 +141,7 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
         .get_root_config_mut()
         .apply_defines(&options.define);
     if app_context.options.debug_level(constants::DEBUG_LEVEL_CMD) > 0 {
+        debug!("jobs: {:?}", options.num_jobs);
         debug!("query: {}", options.query);
         debug!("commands: {:?}", options.commands);
         debug!("arguments: {:?}", options.arguments);
@@ -130,8 +154,13 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
         options.word_split = false;
     }
     let mut params: CmdParams = options.clone().into();
-    params.update(&app_context.options);
-    let exit_status = cmd(app_context, &options.query, &params)?;
+    params.update(&app_context.options)?;
+
+    let exit_status = if options.num_jobs.is_some() {
+        cmd_parallel(app_context, &options.query, &params)?
+    } else {
+        cmd(app_context, &options.query, &params)?
+    };
 
     cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
 }
@@ -150,6 +179,7 @@ pub struct CmdParams {
     dry_run: bool,
     force: bool,
     keep_going: bool,
+    num_jobs: Option<usize>,
     #[derivative(Default(value = "true"))]
     exit_on_error: bool,
     quiet: bool,
@@ -169,6 +199,7 @@ impl From<CmdOptions> for CmdParams {
             exit_on_error: options.exit_on_error,
             force: options.force,
             keep_going: options.keep_going,
+            num_jobs: options.num_jobs,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             quiet: options.quiet,
             verbose: options.verbose,
@@ -189,11 +220,15 @@ impl From<CustomOptions> for CmdParams {
             // practice because "garden <custom-cmd> ..." is only able to run a single command, but we
             // use breadth-first because it retains the original implementation/behavior from before
             // --breadth-first was added to "garden cmd" and made opt-in.
-            breadth_first: true,
+            //
+            // On the other hand, we want "garden <cmd> <query>" to paralellize over all of the
+            // resolved TreeContexts, so we use depth-first traversal when running in paralle.
+            breadth_first: options.num_jobs.is_none(),
             dry_run: options.dry_run,
             keep_going: options.keep_going,
             exit_on_error: options.exit_on_error,
             force: options.force,
+            num_jobs: options.num_jobs,
             tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             quiet: options.quiet,
             verbose: options.verbose,
@@ -212,9 +247,12 @@ impl From<CustomOptions> for CmdParams {
 
 impl CmdParams {
     /// Apply the opt-level MainOptions onto the CmdParams.
-    fn update(&mut self, options: &cli::MainOptions) {
+    fn update(&mut self, options: &cli::MainOptions) -> Result<()> {
         self.quiet |= options.quiet;
         self.verbose += options.verbose;
+        cmd::initialize_threads_option(self.num_jobs)?;
+
+        Ok(())
     }
 }
 
@@ -245,6 +283,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
     }
 
     if app_context.options.debug_level(constants::DEBUG_LEVEL_CMD) > 0 {
+        debug!("jobs: {:?}", options.num_jobs);
         debug!("command: {}", name);
         debug!("queries: {:?}", options.queries);
         debug!("arguments: {:?}", options.arguments);
@@ -253,13 +292,15 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
 
     // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
     let mut params: CmdParams = options.clone().into();
-    params.update(&app_context.options);
+    params.update(&app_context.options)?;
     params.commands.push(name.to_string());
 
     cmds(app_context, &params)
 }
 
-/// Strategy: resolve the trees down to a set of tree indexes paired with
+/// Run commands across trees.
+///
+/// Resolve the trees queries down to a set of tree indexes paired with
 /// an optional garden context.
 ///
 /// If the names resolve to gardens, each garden is processed independently.
@@ -279,6 +320,21 @@ fn cmd(app_context: &model::ApplicationContext, query: &str, params: &CmdParams)
     }
 }
 
+/// Run commands in parallel. This is the parallel version of fn cmd().
+fn cmd_parallel(
+    app_context: &model::ApplicationContext,
+    query: &str,
+    params: &CmdParams,
+) -> Result<i32> {
+    let config = app_context.get_root_config_mut();
+    let contexts = query::resolve_trees(app_context, config, None, query);
+    if params.breadth_first {
+        run_cmd_breadth_first_parallel(app_context, &contexts, params)
+    } else {
+        run_cmd_depth_first_parallel(app_context, &contexts, params)
+    }
+}
+
 /// Split the configured shell into command-line arguments.
 fn shlex_split(shell: &str) -> Vec<String> {
     match shlex::split(shell) {
@@ -287,82 +343,6 @@ fn shlex_split(shell: &str) -> Vec<String> {
             vec![shell.to_string()]
         }
     }
-}
-
-/// Run commands breadth-first. Each command is run in all trees before running the next command.
-fn run_cmd_breadth_first(
-    app_context: &model::ApplicationContext,
-    contexts: &[model::TreeContext],
-    params: &CmdParams,
-) -> Result<i32> {
-    let mut exit_status: i32 = errors::EX_OK;
-    let quiet = params.quiet;
-    let verbose = params.verbose;
-    let shell = app_context.get_root_config().shell.as_str();
-    let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
-    // Loop over each command, evaluate the tree environment,
-    // and run the command in each context.
-    for name in &params.commands {
-        // One invocation runs multiple commands
-        for context in contexts {
-            // Skip filtered trees.
-            if !params.tree_pattern.matches(&context.tree) {
-                continue;
-            }
-            // Skip symlink trees.
-            let config = match context.config {
-                Some(config_id) => app_context.get_config(config_id),
-                None => app_context.get_root_config(),
-            };
-            let tree = match config.trees.get(&context.tree) {
-                Some(tree) => tree,
-                None => continue,
-            };
-            if tree.is_symlink {
-                continue;
-            }
-            // Evaluate the tree environment
-            let env = eval::environment(app_context, config, context);
-
-            // Run each command in the tree's context
-            let Ok(mut path) = tree.path_as_ref() else {
-                continue;
-            };
-            let fallback_path;
-            // Sparse gardens/missing trees are ok -> skip these entries.
-            if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
-                if params.force {
-                    fallback_path = config.fallback_execdir_string();
-                    path = &fallback_path;
-                } else {
-                    continue;
-                }
-            }
-
-            // Expand one named command to include its pre-commands and post-commands.
-            let command_names = cmd::expand_command_names(app_context, context, name);
-            for command_name in command_names.iter() {
-                // One command maps to multiple command sequences.
-                // When the scope is tree, only the tree's commands
-                // are included.  When the scope includes a gardens,
-                // its matching commands are appended to the end.
-                let cmd_seq_vec = eval::command(app_context, context, command_name);
-                app_context.get_root_config_mut().reset();
-
-                if let Err(cmd_status) =
-                    run_cmd_vec(path, &shell_params, &env, &cmd_seq_vec, params)
-                {
-                    exit_status = cmd_status;
-                    if !params.keep_going {
-                        return Ok(cmd_status);
-                    }
-                }
-            }
-        }
-    }
-
-    // Return the last non-zero exit status.
-    Ok(exit_status)
 }
 
 /// The configured shell state.
@@ -431,7 +411,170 @@ impl ShellParams {
     }
 }
 
-/// Run commands depth-first. All commands are run in each tree before visiting the next tree.
+/// Check whether the TreeContext is relevant to the current CmdParams.
+/// Returns None when the extracted details are not applicable.
+fn extract_context_state<'a>(
+    app_context: &'a model::ApplicationContext,
+    context: &model::TreeContext,
+    params: &CmdParams,
+) -> Option<(&'a model::Configuration, &'a model::Tree)> {
+    // Skip filtered trees.
+    if !params.tree_pattern.matches(&context.tree) {
+        return None;
+    }
+    // Skip symlink trees.
+    let config = match context.config {
+        Some(config_id) => app_context.get_config(config_id),
+        None => app_context.get_root_config(),
+    };
+    let tree = match config.trees.get(&context.tree) {
+        Some(tree) => tree,
+        None => return None,
+    };
+    if tree.is_symlink {
+        return None;
+    }
+
+    Some((config, tree))
+}
+
+/// Run commands breadth-first. Each command is run in all trees before running the next command.
+fn run_cmd_breadth_first(
+    app_context: &model::ApplicationContext,
+    contexts: &[model::TreeContext],
+    params: &CmdParams,
+) -> Result<i32> {
+    let mut exit_status: i32 = errors::EX_OK;
+    let quiet = params.quiet;
+    let verbose = params.verbose;
+    let shell = app_context.get_root_config().shell.as_str();
+    let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
+    // Loop over each command, evaluate the tree environment,
+    // and run the command in each context.
+    for name in &params.commands {
+        // One invocation runs multiple commands
+        for context in contexts {
+            let Some((config, tree)) = extract_context_state(app_context, context, params) else {
+                continue;
+            };
+            // Evaluate the tree environment
+            let env = eval::environment(app_context, config, context);
+
+            // Run each command in the tree's context
+            let Ok(mut path) = tree.path_as_ref() else {
+                continue;
+            };
+            let fallback_path;
+            // Sparse gardens/missing trees are ok -> skip these entries.
+            if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
+                if params.force {
+                    fallback_path = config.fallback_execdir_string();
+                    path = &fallback_path;
+                } else {
+                    continue;
+                }
+            }
+
+            // Expand one named command to include its pre-commands and post-commands.
+            let command_names = cmd::expand_command_names(app_context, context, name);
+            for command_name in command_names.iter() {
+                // One command maps to multiple command sequences.
+                // When the scope is tree, only the tree's commands
+                // are included.  When the scope includes a gardens,
+                // its matching commands are appended to the end.
+                let cmd_seq_vec = eval::command(app_context, context, command_name);
+                app_context.get_root_config_mut().reset();
+
+                if let Err(cmd_status) =
+                    run_cmd_vec(path, &shell_params, &env, &cmd_seq_vec, params)
+                {
+                    exit_status = cmd_status;
+                    if !params.keep_going {
+                        return Ok(cmd_status);
+                    }
+                }
+            }
+        }
+    }
+
+    // Return the last non-zero exit status.
+    Ok(exit_status)
+}
+
+/// Run multiple commands in parallel over a single tree query.
+/// All command are run in parallel over all of the matching trees.
+/// Each command invocation operates over every resolved tree, serially, within the scope of
+/// the currently running command.
+fn run_cmd_breadth_first_parallel(
+    app_context: &model::ApplicationContext,
+    contexts: &[model::TreeContext],
+    params: &CmdParams,
+) -> Result<i32> {
+    let exit_status = atomic::AtomicI32::new(errors::EX_OK);
+    let quiet = params.quiet;
+    let verbose = params.verbose;
+    let shell = app_context.get_root_config().shell.as_str();
+    let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
+    // Loop over each command, evaluate the tree environment, and run the command in each context.
+    params.commands.par_iter().for_each(|name| {
+        let mut exit_early = false;
+        // Create a thread-specific ApplicationContext.
+        let app_context_clone = app_context.clone();
+        let app_context = &app_context_clone;
+        // One invocation runs multiple commands
+        for context in contexts {
+            if exit_early {
+                break;
+            }
+            let Some((config, tree)) = extract_context_state(app_context, context, params) else {
+                continue;
+            };
+            // Evaluate the tree environment
+            let env = eval::environment(app_context, config, context);
+
+            // Run each command in the tree's context
+            let Ok(mut path) = tree.path_as_ref() else {
+                continue;
+            };
+            let fallback_path;
+            // Sparse gardens/missing trees are ok -> skip these entries.
+            if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
+                if params.force {
+                    fallback_path = config.fallback_execdir_string();
+                    path = &fallback_path;
+                } else {
+                    continue;
+                }
+            }
+
+            // Expand one named command to include its pre-commands and post-commands.
+            let command_names = cmd::expand_command_names(app_context, context, name);
+            for command_name in command_names.iter() {
+                // One command maps to multiple command sequences.
+                // When the scope is tree, only the tree's commands
+                // are included.  When the scope includes a gardens,
+                // its matching commands are appended to the end.
+                let cmd_seq_vec = eval::command(app_context, context, command_name);
+                app_context.get_root_config_mut().reset();
+
+                if let Err(cmd_status) =
+                    run_cmd_vec(path, &shell_params, &env, &cmd_seq_vec, params)
+                {
+                    exit_status.store(cmd_status, atomic::Ordering::Relaxed);
+                    if !params.keep_going {
+                        exit_early = true;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
+    // Return the last non-zero exit status.
+    Ok(exit_status.load(atomic::Ordering::SeqCst))
+}
+
+/// Run commands depth-first. All commands are run on the current tree before visiting the next tree.
 fn run_cmd_depth_first(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
@@ -444,22 +587,9 @@ fn run_cmd_depth_first(
     let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
     // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
-        // Skip filtered trees.
-        if !params.tree_pattern.matches(&context.tree) {
+        let Some((config, tree)) = extract_context_state(app_context, context, params) else {
             continue;
-        }
-        // Skip symlink trees.
-        let config = match context.config {
-            Some(config_id) => app_context.get_config(config_id),
-            None => app_context.get_root_config(),
         };
-        let tree = match config.trees.get(&context.tree) {
-            Some(tree) => tree,
-            None => continue,
-        };
-        if tree.is_symlink {
-            continue;
-        }
         // Evaluate the tree environment
         let env = eval::environment(app_context, config, context);
         // Run each command in the tree's context
@@ -501,6 +631,78 @@ fn run_cmd_depth_first(
 
     // Return the last non-zero exit status.
     Ok(exit_status)
+}
+
+/// Run commands depth-first in parallel.
+/// All trees are visited concurrently in parallel. Commands are run serially within
+/// the scope of a single tree.
+fn run_cmd_depth_first_parallel(
+    app_context: &model::ApplicationContext,
+    contexts: &[model::TreeContext],
+    params: &CmdParams,
+) -> Result<i32> {
+    let exit_status = atomic::AtomicI32::new(errors::EX_OK);
+    let quiet = params.quiet;
+    let verbose = params.verbose;
+    let shell = app_context.get_root_config().shell.as_str();
+    let shell_params = ShellParams::new(shell, params.exit_on_error, params.word_split);
+    // Loop over each context, evaluate the tree environment and run the command.
+    contexts.par_iter().for_each(|context| {
+        let mut exit_early = false;
+        // Create a thread-specific ApplicationContext.
+        let app_context_clone = app_context.clone();
+        let app_context = &app_context_clone;
+
+        let Some((config, tree)) = extract_context_state(app_context, context, params) else {
+            return;
+        };
+        // Evaluate the tree environment
+        let env = eval::environment(app_context, config, context);
+        // Run each command in the tree's context
+        let fallback_path;
+        let Ok(mut path) = tree.path_as_ref() else {
+            return;
+        };
+        // Sparse gardens/missing trees are ok -> skip these entries.
+        if !display::print_tree(tree, config.tree_branches, verbose, quiet, params.force) {
+            if params.force {
+                fallback_path = config.fallback_execdir_string();
+                path = &fallback_path;
+            } else {
+                return;
+            }
+        }
+        // One invocation runs multiple commands
+        for name in &params.commands {
+            if exit_early {
+                break;
+            }
+            // Expand one named command to include its pre-commands and post-commands.
+            let command_names = cmd::expand_command_names(app_context, context, name);
+            for command_name in command_names.iter() {
+                // One command maps to multiple command sequences.
+                // When the scope is tree, only the tree's commands
+                // are included.  When the scope includes a gardens,
+                // its matching commands are appended to the end.
+                let cmd_seq_vec = eval::command(app_context, context, command_name);
+                app_context.get_root_config_mut().reset();
+                if let Err(cmd_status) =
+                    run_cmd_vec(path, &shell_params, &env, &cmd_seq_vec, params)
+                {
+                    exit_status.store(cmd_status, atomic::Ordering::Relaxed);
+                    if !params.keep_going {
+                        exit_early = true;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
+    // Return any of the non-zero exit statuses. Which value is returned is
+    // undefined due to the parallel nature of this function. Any of the
+    // non-zero exit status values could have ended up recorded in exit_status.
+    Ok(exit_status.load(atomic::Ordering::SeqCst))
 }
 
 /// Run a vector of custom commands using the configured shell.
@@ -573,16 +775,26 @@ fn run_cmd_vec(
 
 /// Run cmd() over a Vec of tree queries
 fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
-    let mut exit_status = errors::EX_OK;
-    for query in &params.queries {
-        let status = cmd(app, query, params).unwrap_or(errors::EX_IOERR);
-        if status != errors::EX_OK {
-            exit_status = status;
-            if !params.keep_going {
-                break;
+    let exit_status = atomic::AtomicI32::new(errors::EX_OK);
+    if params.num_jobs.is_some() {
+        params.queries.par_iter().for_each(|query| {
+            let status = cmd_parallel(&app.clone(), query, params).unwrap_or(errors::EX_IOERR);
+            if status != errors::EX_OK {
+                exit_status.store(status, atomic::Ordering::Relaxed);
+            }
+        });
+    } else {
+        for query in &params.queries {
+            let status = cmd(app, query, params).unwrap_or(errors::EX_IOERR);
+            if status != errors::EX_OK {
+                exit_status.store(status, atomic::Ordering::Relaxed);
+                if !params.keep_going {
+                    break;
+                }
             }
         }
     }
     // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
+    cmd::result_from_exit_status(exit_status.load(atomic::Ordering::SeqCst))
+        .map_err(|err| err.into())
 }

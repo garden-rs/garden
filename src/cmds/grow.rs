@@ -579,7 +579,7 @@ fn grow_tree_from_context_as_worktree(
     if verbose > 1 {
         print_quoted_command(&cmd);
     }
-    exit_status = cmd::run_command(&cmd, parent_path);
+    exit_status = cmd::run_command(&cmd, &parent_path);
     if exit_status != 0 {
         return Err(errors::GardenError::WorktreeGitCheckoutError {
             tree: tree.get_name().clone(),

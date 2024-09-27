@@ -4,6 +4,12 @@
 
 **Features**:
 
+- `garden cmd` and custom commands now have a `--jobs | -j` option that enables
+running multiple in parallel. Specifying `--jobs=0` will detect and set the
+concurrency level to use all available cores.
+([#43](https://github.com/garden-rs/garden/issues/43))
+([#45](https://github.com/garden-rs/garden/pull/45))
+
 - `garden ls` now has a `--reverse | -r` option to display trees in reverse order.
 ([#44](https://github.com/garden-rs/garden/pull/44))
 
