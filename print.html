@@ -2325,6 +2325,28 @@ hello
 world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v180"><a class="header" href="#v180">v1.8.0</a></h2>
+<p><em>Released 2024-09-26</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>
+<p><code>garden cmd</code> and custom commands now have a <code>--jobs | -j</code> option that enables
+running multiple in parallel. Specifying <code>--jobs=0</code> will detect and set the
+concurrency level to use all available cores.
+(<a href="https://github.com/garden-rs/garden/issues/43">#43</a>)
+(<a href="https://github.com/garden-rs/garden/pull/45">#45</a>)</p>
+</li>
+<li>
+<p><code>garden ls</code> now has a <code>--reverse | -r</code> option to display trees in reverse order.
+(<a href="https://github.com/garden-rs/garden/pull/44">#44</a>)</p>
+</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>The <code>which</code>, <code>yansi</code> and <code>strum</code> dependencies were upgraded. <code>yansi</code> was a new major version
+and required a fair amount of changes. <code>strum</code> involved minor changes.
+(<a href="https://github.com/garden-rs/garden/pull/42">#42</a>)</li>
+</ul>
 <h2 id="v170"><a class="header" href="#v170">v1.7.0</a></h2>
 <p><em>Released 2024-06-29</em></p>
 <p><strong>Features</strong>:</p>
