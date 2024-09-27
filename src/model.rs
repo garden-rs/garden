@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell, UnsafeCell};
 use std::str::FromStr;
 
 use derivative::Derivative;
@@ -43,21 +43,33 @@ pub type ConfigId = NodeId;
 /// string expression.  An exec expression is denoted by using a "$ "
 /// (dollar-sign followed by space) before the value.  For example,
 /// using "$ echo foo" will place the value "foo" in the variable.
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct Variable {
     expr: String,
-    value: RefCell<Option<String>>,
-    evaluating: RefCell<bool>,
+    value: UnsafeCell<Option<String>>,
+    evaluating: Cell<bool>,
 }
 
 impl_display_brief!(Variable);
+
+/// A custom thread-safe clone implementation. RefCell::clone() is not thread-safe
+/// because it mutably borrows data under the hood.
+impl Clone for Variable {
+    fn clone(&self) -> Self {
+        Self {
+            expr: self.expr.clone(),
+            value: UnsafeCell::new(self.get_value().cloned()),
+            evaluating: Cell::new(false),
+        }
+    }
+}
 
 impl Variable {
     pub(crate) fn new(expr: String, value: Option<String>) -> Self {
         Variable {
             expr,
-            value: RefCell::new(value),
-            evaluating: RefCell::new(false),
+            value: UnsafeCell::new(value),
+            evaluating: Cell::new(false),
         }
     }
 
@@ -69,12 +81,12 @@ impl Variable {
     /// Is this variable currently being evaluated?
     /// This is a guard variable to avoid infinite loops when evaluating.
     pub(crate) fn is_evaluating(&self) -> bool {
-        *self.evaluating.borrow()
+        self.evaluating.get()
     }
 
     /// Set the evaluation state.
     pub(crate) fn set_evaluating(&self, value: bool) {
-        *self.evaluating.borrow_mut() = value;
+        self.evaluating.set(value);
     }
 
     /// Return the raw expression for this variable.
@@ -94,18 +106,21 @@ impl Variable {
 
     /// Store the cached result of evaluating the expression.
     pub(crate) fn set_value(&self, value: String) {
-        *self.value.borrow_mut() = Some(value);
+        unsafe {
+            *self.value.get() = Some(value);
+        }
     }
 
     /// Transform the `RefCell<Option<String>>` value into `Option<&String>`.
     pub fn get_value(&self) -> Option<&String> {
-        let ptr = self.value.as_ptr();
-        unsafe { (*ptr).as_ref() }
+        unsafe { (*self.value.get()).as_ref() }
     }
 
     /// Reset the variable.
     pub(crate) fn reset(&self) {
-        *self.value.borrow_mut() = None;
+        unsafe {
+            *self.value.get() = None;
+        }
     }
 }
 
@@ -1371,7 +1386,7 @@ impl ColorMode {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct ApplicationContext {
     pub options: cli::MainOptions,
     arena: RefCell<Arena<Configuration>>,
@@ -1379,6 +1394,39 @@ pub struct ApplicationContext {
 }
 
 impl_display!(ApplicationContext);
+
+/// Safety: ApplicationContext is not thread-safe due to its use of internal mutability.
+/// Furthermore, we cannot use mutexes internally due to our use of Rayon and
+/// [fundamental issues](https://github.com/rayon-rs/rayon/issues/592).
+/// that lead to deadlocks when performing parallel computations.
+///
+/// ApplicationContext is designed to be cloned whenever operations are performed
+/// across multiple threads. The RefCells stored inside of the Variable struct are
+/// used to provider interior mutability. Even though the methods are const, the
+/// methods mutate interior data in a non-thread-safe manner.
+///
+/// Likewise, even if we were able to hold mutexes when using Rayon, our access pattern
+/// is not logically sound were we to attempt to evaluate data in parallel. The evaluation
+/// machinery is context-specific and can lead to different results dependending on which
+/// TreeContext initiated the eval. This is the core reason why cloning is required in
+/// order to evaluate variables across multiple threads.
+unsafe impl Sync for ApplicationContext {}
+
+/// ApplicationContext performs a deepcopy of its internal arena to ensure that
+/// none of its internally-mutable data is shared between threads.
+impl Clone for ApplicationContext {
+    fn clone(&self) -> Self {
+        let mut arena: Arena<Configuration> = Arena::new();
+        for node in self.arena.borrow().iter() {
+            arena.new_node(node.get().clone());
+        }
+        Self {
+            arena: RefCell::new(arena),
+            options: self.options.clone(),
+            root_id: self.root_id,
+        }
+    }
+}
 
 impl ApplicationContext {
     /// Construct an empty ApplicationContext. Initialization must be performed post-construction.

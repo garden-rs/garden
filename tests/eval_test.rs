@@ -13,7 +13,10 @@ fn garden_root() -> Result<()> {
     let config = app_context.get_root_config();
     let expect_src_dir = string!("/home/test/src");
     assert_eq!("${root}", config.root.get_expr());
-    assert_eq!(Some(&expect_src_dir), config.root.get_value());
+    assert_eq!(
+        Some(expect_src_dir.clone()),
+        config.root.get_value().cloned()
+    );
     assert_eq!(expect_src_dir, config.root_path.to_string_lossy());
 
     Ok(())
@@ -419,13 +422,15 @@ fn command_tree_scope() -> Result<()> {
     Ok(())
 }
 
+/// Test environment variables in tree scope.
 #[test]
 fn environment_variables() -> Result<()> {
     let app_context = common::garden_context()?;
     let config = app_context.get_root_config();
-    // Environment variables in tree scope
-    std::env::set_var("GARDEN_TEST_VALUE", "test");
 
+    unsafe {
+        std::env::set_var("GARDEN_TEST_VALUE", "test");
+    }
     let value = garden::eval::value(&app_context, config, "${GARDEN_TEST_VALUE}");
     assert_eq!(value, "test");
 

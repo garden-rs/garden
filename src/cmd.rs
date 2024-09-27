@@ -166,7 +166,7 @@ where
     }
 
     // Create an Exec object.
-    let mut exec = exec_in_dir(&command_vec, path);
+    let mut exec = exec_in_dir(&command_vec, &path);
 
     //  Update the command environment
     for (name, value) in &env {
@@ -314,4 +314,35 @@ pub(crate) fn shell_quote(arg: &str) -> String {
     shlex::try_quote(arg)
         .map(|quoted_arg| quoted_arg.to_string())
         .unwrap_or_else(|_| arg.to_string())
+}
+
+/// Get the default number of jobs to run in parallel
+pub(crate) fn default_num_jobs() -> usize {
+    match std::thread::available_parallelism() {
+        Ok(value) => std::cmp::max(value.get(), 3), // "prune" requires at minimum three threads.
+        Err(_) => 4,
+    }
+}
+
+/// Initialize the global thread pool.
+pub(crate) fn initialize_threads(num_jobs: usize) -> anyhow::Result<()> {
+    let num_jobs = if num_jobs == 0 {
+        default_num_jobs()
+    } else {
+        num_jobs
+    };
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(num_jobs)
+        .build_global()?;
+
+    Ok(())
+}
+
+/// Initialize the global thread pool when the num_jobs option is provided.
+pub(crate) fn initialize_threads_option(num_jobs: Option<usize>) -> anyhow::Result<()> {
+    if let Some(num_jobs) = num_jobs {
+        initialize_threads(num_jobs)?;
+    }
+
+    Ok(())
 }
