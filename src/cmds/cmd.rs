@@ -40,7 +40,14 @@ pub struct CmdOptions {
     #[arg(long, short)]
     force: bool,
     /// Run commands in parallel using the specified number of jobs.
-    #[arg(long = "jobs", short = 'j')]
+    #[arg(
+        long = "jobs",
+        short = 'j',
+        require_equals = false,
+        num_args = 0..=1,
+        default_missing_value = "0",
+        value_name = "JOBS",
+    )]
     num_jobs: Option<usize>,
     /// Be quiet
     #[arg(short, long)]
@@ -96,7 +103,14 @@ pub struct CustomOptions {
     #[arg(long, short)]
     force: bool,
     /// Run commands in parallel using the specified number of jobs.
-    #[arg(long = "jobs", short = 'j')]
+    #[arg(
+        long = "jobs",
+        short = 'j',
+        require_equals = false,
+        num_args = 0..=1,
+        default_missing_value = "0",
+        value_name = "JOBS",
+    )]
     num_jobs: Option<usize>,
     /// Be quiet
     #[arg(short, long)]
