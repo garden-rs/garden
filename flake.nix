@@ -116,6 +116,7 @@
           checks = self.checks.${system};
           packages = [
             garden
+            pkgs.mdbook
           ];
         };
       });
