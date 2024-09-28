@@ -29,6 +29,9 @@ pub type GraftName = String;
 /// Configuration Node IDs
 pub type ConfigId = NodeId;
 
+/// Environment variables are set when running commands.
+pub(crate) type Environment = Vec<(String, String)>;
+
 /// Config files can define a sequence of variables that are
 /// iteratively calculated.  Variables can reference other
 /// variables in their Tree, Garden, and Configuration scopes.

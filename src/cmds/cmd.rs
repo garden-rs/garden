@@ -448,12 +448,11 @@ fn get_tree_from_context<'a>(
 }
 
 /// Prepare state needed for running commands.
-#[allow(clippy::type_complexity)]
 fn get_command_environment<'a>(
     app_context: &'a model::ApplicationContext,
     context: &model::TreeContext,
     params: &CmdParams,
-) -> Option<(Option<String>, &'a String, Vec<(String, String)>)> {
+) -> Option<(Option<String>, &'a String, model::Environment)> {
     let (config, tree) = get_tree_from_context(app_context, context, params)?;
     // Trees must have a valid path available.
     let Ok(tree_path) = tree.path_as_ref() else {
@@ -489,7 +488,7 @@ fn expand_and_run_command(
     path: &str,
     shell_params: &ShellParams,
     params: &CmdParams,
-    env: &Vec<(String, String)>,
+    env: &model::Environment,
 ) -> Result<i32, i32> {
     let mut exit_status = errors::EX_OK;
     // Create a sequence of the command names to run including pre and post-commands.
@@ -706,7 +705,7 @@ fn run_cmd_depth_first_parallel(
 fn run_cmd_vec(
     path: &str,
     shell_params: &ShellParams,
-    env: &Vec<(String, String)>,
+    env: &model::Environment,
     cmd_seq_vec: &[Vec<String>],
     params: &CmdParams,
 ) -> Result<(), i32> {

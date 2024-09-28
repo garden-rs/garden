@@ -417,8 +417,8 @@ pub fn environment(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     context: &model::TreeContext,
-) -> Vec<(String, String)> {
-    let mut result = Vec::new();
+) -> model::Environment {
+    let mut result = model::Environment::new();
     let mut vars = Vec::new();
 
     // Evaluate environment variables defined at global scope.
