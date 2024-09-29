@@ -34,17 +34,37 @@ pub fn main(app_context: &model::ApplicationContext, exec_options: &mut ExecOpti
         debug!("query: {}", exec_options.query);
         debug!("command: {:?}", exec_options.command);
     }
-    let config = app_context.get_root_config_mut();
     exec_options.quiet |= app_context.options.quiet;
-    exec(app_context, config, exec_options)
+    exec(app_context, exec_options)
+}
+
+/// Return true if the context has not been filtered out and refers to a valid configured tree.
+fn is_valid_context(
+    app_context: &model::ApplicationContext,
+    pattern: &glob::Pattern,
+    context: &model::TreeContext,
+) -> bool {
+    if !pattern.matches(&context.tree) {
+        return false;
+    }
+    let tree_opt = match context.config {
+        Some(graft_id) => app_context.get_config(graft_id).trees.get(&context.tree),
+        None => app_context.get_root_config().trees.get(&context.tree),
+    };
+    let tree = match tree_opt {
+        Some(tree) => tree,
+        None => return false,
+    };
+    // Skip symlink trees.
+    if tree.is_symlink {
+        return false;
+    }
+
+    true
 }
 
 /// Execute a command over every tree in the evaluated tree query.
-fn exec(
-    app_context: &model::ApplicationContext,
-    config: &model::Configuration,
-    exec_options: &ExecOptions,
-) -> Result<()> {
+fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
     let quiet = exec_options.quiet;
     let verbose = exec_options.verbose;
     let dry_run = exec_options.dry_run;
@@ -62,6 +82,7 @@ fn exec(
     // with no garden context.
 
     // Resolve the tree query into a vector of tree contexts.
+    let config = app_context.get_root_config_mut();
     let contexts = query::resolve_trees(app_context, config, None, query);
     let pattern = glob::Pattern::new(tree_pattern).unwrap_or_default();
     let mut exit_status: i32 = 0;
@@ -69,19 +90,7 @@ fn exec(
     // Loop over each context, evaluate the tree environment,
     // and run the command.
     for context in &contexts {
-        if !pattern.matches(&context.tree) {
-            continue;
-        }
-        let tree_opt = match context.config {
-            Some(graft_id) => app_context.get_config(graft_id).trees.get(&context.tree),
-            None => config.trees.get(&context.tree),
-        };
-        let tree = match tree_opt {
-            Some(tree) => tree,
-            None => continue,
-        };
-        // Skip symlink trees.
-        if tree.is_symlink {
+        if !is_valid_context(app_context, &pattern, context) {
             continue;
         }
         // Run the command in the current context.
