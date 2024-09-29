@@ -393,7 +393,8 @@ Garden's custom workflow commands.</p>
 <li><code>garden install-doc</code> installs the documentation.</li>
 </ul>
 <p>See Garden's <a href="https://gitlab.com/garden-rs/garden/-/blob/main/garden.yaml"><code>garden.yaml</code></a> for more details.</p>
-<h2 id="nix-flakes"><a class="header" href="#nix-flakes">Nix Flakes</a></h2>
+<h2 id="nix"><a class="header" href="#nix">Nix</a></h2>
+<h3 id="nix-flakes"><a class="header" href="#nix-flakes">Nix Flakes</a></h3>
 <p><a href="https://nixos.wiki/wiki/Flakes">Nix Flakes</a> can be used to build, test and install <code>garden</code>.
 A <code>flake.nix</code> file is provided in the source tree.</p>
 <p><a href="https://nixos.wiki/wiki/Flakes#Enable_flakes_permanently_in_NixOS">Enabling flakes permanently</a>
@@ -435,6 +436,45 @@ For example, <code>nix derivation show</code> will contain output that looks lik
 <p>You can use these details to open a shell with your previously-built <code>garden</code> package.</p>
 <pre><code class="language-bash">nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
 </code></pre>
+<h3 id="nix-home-manager-integration"><a class="header" href="#nix-home-manager-integration">Nix home-manager integration</a></h3>
+<p>One may also use <a href="https://github.com/nix-community/home-manager">home-manager</a>
+to have a permanent environment with <code>garden</code> available across all shells. This
+can be done by setting up a derivation in your home-manager configuration.</p>
+<p>Example:</p>
+<p>File <code>/path/to/home-manager/derivations/garden.nix</code>:</p>
+<pre><code class="language-nix">{ lib, fetchFromGitHub, rustPlatform }:
+
+rustPlatform.buildRustPackage rec {
+  pname = "garden";
+  version = "v1.8.0";
+
+  src = fetchFromGitHub {
+    owner = "garden-rs";
+    repo = "garden";
+    rev = version;
+    hash = "sha256-+hcjHuJvqxkp+5FikVb8+mpU6rObC4xkMj/NBZDYTrQ=";
+  };
+  cargoHash = "sha256-12X4bMDAQTLZfiPSbY9cPXB8cW1L0zYrts5F5CXzV7Y=";
+}
+</code></pre>
+<blockquote>
+<p><strong>Note 1:</strong> hashes hash and cargoHash above are for v1.8.0 specifically. One could set them to <code>lib.fakeHash;</code> let the build fail with the error specifying the right hash, paste the correct hash and rebuild.</p>
+</blockquote>
+<blockquote>
+<p><strong>Note 2:</strong> If tests fail due to missing git in your build environment, one can set this up with doCheck = false.</p>
+</blockquote>
+<p>you can activate the derivation above in your <code>home.nix</code> with</p>
+<p><code>home.nix</code></p>
+<pre><code class="language-nix">{ config, pkgs, ... }:
+    let garden =  pkgs.callPackage ./derivations/garden.nix {};
+in
+{
+   home.packages = [
+       garden
+  ]
+}
+</code></pre>
+<p>then run <code>home-manager switch</code> to activate the changes.</p>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
 <p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
 <p>Garden is not supported on Windows.</p>
@@ -2325,6 +2365,22 @@ hello
 world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Packaging</strong>:</p>
+<ul>
+<li>Garden's Nix flake was improved and using Garden with Nix home-manager was documented.
+(<a href="https://github.com/garden-rs/garden/pull/46">#46</a>)
+(<a href="https://github.com/garden-rs/garden/issues/17">#17</a>)</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p>Internal APIs for running commands were refactored.</p>
+</li>
+<li>
+<p>The <code>yaml-rust2</code> dependency was upgraded to v0.9.0.</p>
+</li>
+</ul>
 <h2 id="v180"><a class="header" href="#v180">v1.8.0</a></h2>
 <p><em>Released 2024-09-26</em></p>
 <p><strong>Features</strong>:</p>
