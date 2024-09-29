@@ -203,9 +203,9 @@
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
-<p><code>garden cmd</code> and custom commands now have a <code>--jobs | -j</code> option that enables
-running multiple in parallel. Specifying <code>--jobs=0</code> will detect and set the
-concurrency level to use all available cores.
+<p><code>garden cmd</code> and custom commands now have a <code>--jobs=# | -j#</code> option for
+<a href="https://garden-rs.gitlab.io/commands.html#parallel-execution">running commands in parallel</a>.
+Use <code>-j0 | --jobs=0</code> to use all available cores.
 (<a href="https://github.com/garden-rs/garden/issues/43">#43</a>)
 (<a href="https://github.com/garden-rs/garden/pull/45">#45</a>)</p>
 </li>

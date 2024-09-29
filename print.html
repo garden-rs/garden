@@ -894,6 +894,36 @@ next argument to the specified command.</p>
 command, will result in the remainder of the command getting passed as the next argument.</p>
 <p>Concretely, <code>garden</code> will run <code>python3 -c "import sys\nprint(sys.implementation)"</code> when
 the <code>garden python-cmd</code> command is run.</p>
+<h4 id="parallel-execution"><a class="header" href="#parallel-execution">Parallel Execution</a></h4>
+<p>By default, <code>garden</code> runs commands sequentially, one command and tree after another.</p>
+<p><code>garden cmd &lt;tree-query&gt; &lt;command&gt;...</code> and <code>garden &lt;command&gt; [&lt;tree-query&gt;...]</code>
+are able execute commands in parallel by using the <code>-j# | --jobs #</code> option.</p>
+<p>Using the <code>-j# | --jobs=#</code> option makes <code>garden</code> use the specified number of cores when
+running commands in parallel.</p>
+<p>Passing the value zero (<code>-j0 | --jobs 0</code>) to this option tells <code>garden</code> to detect and
+use all available cores. When <code>-j | --jobs</code> is the last option on the command line you
+can omit the numeric value and <code>garden</code> will treat it as if <code>0</code> was specified and use
+all cores.</p>
+<pre><code class="language-bash">garden test '@*' -j
+garden test --jobs=0 '@*'
+</code></pre>
+<p>The commands above run the custom <code>test</code> command over all trees, in parallel, using all
+cores as detected at runtime.</p>
+<p>Similarly, <code>garden cmd '@*' test -j</code> has the same behavior -- all trees are visited
+and operated on concurrently.</p>
+<p>When multiple commands are specified, e.g. <code>garden cmd '@*' a b c -j</code>, then <code>garden</code>
+will run commands <code>a</code>, <code>b</code> and <code>c</code> in order, one after another, over all trees in parallel.</p>
+<p><code>garden</code> can also be made to visit each tree sequentially while running the <code>a</code>, <code>b</code> and <code>c</code>
+commands in parallel as each tree is visited.</p>
+<p>The <code>-b | --breadth-first</code> option enables this behavior.</p>
+<pre><code class="language-bash">garden cmd -b '@*' a b c -j
+</code></pre>
+<p>The command above visits each tree sequentially and executes <code>a</code>, <code>b</code>, and <code>c</code>
+in parallel on each tree. The next tree is visited as soon as all three <code>a</code>, <code>b</code>,
+and <code>c</code> commands complete.</p>
+<p>Parallel execution does not effect the ordering of pre and post-commands.
+Pre and post-commands run sequentially, in-order, relative to their associated
+command irrespective of the parallel execution mode.</p>
 <h3 id="garden-shell"><a class="header" href="#garden-shell">Garden Shell</a></h3>
 <p>The <code>garden.shell</code> configuration value controls which shell interpreter
 is used to interpret custom commands.</p>
@@ -2386,9 +2416,9 @@ world
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
-<p><code>garden cmd</code> and custom commands now have a <code>--jobs | -j</code> option that enables
-running multiple in parallel. Specifying <code>--jobs=0</code> will detect and set the
-concurrency level to use all available cores.
+<p><code>garden cmd</code> and custom commands now have a <code>--jobs=# | -j#</code> option for
+<a href="https://garden-rs.gitlab.io/commands.html#parallel-execution">running commands in parallel</a>.
+Use <code>-j0 | --jobs=0</code> to use all available cores.
 (<a href="https://github.com/garden-rs/garden/issues/43">#43</a>)
 (<a href="https://github.com/garden-rs/garden/pull/45">#45</a>)</p>
 </li>
