@@ -452,6 +452,53 @@ command, will result in the remainder of the command getting passed as the next 
 Concretely, `garden` will run `python3 -c "import sys\nprint(sys.implementation)"` when
 the `garden python-cmd` command is run.
 
+#### Parallel Execution
+
+By default, `garden` runs commands sequentially, one command and tree after another.
+
+`garden cmd <tree-query> <command>...` and `garden <command> [<tree-query>...]`
+are able execute commands in parallel by using the `-j# | --jobs #` option.
+
+Using the `-j# | --jobs=#` option makes `garden` use the specified number of cores when
+running commands in parallel.
+
+Passing the value zero (`-j0 | --jobs 0`) to this option tells `garden` to detect and
+use all available cores. When `-j | --jobs` is the last option on the command line you
+can omit the numeric value and `garden` will treat it as if `0` was specified and use
+all cores.
+
+```bash
+garden test '@*' -j
+garden test --jobs=0 '@*'
+```
+
+The commands above run the custom `test` command over all trees, in parallel, using all
+cores as detected at runtime.
+
+Similarly, `garden cmd '@*' test -j` has the same behavior -- all trees are visited
+and operated on concurrently.
+
+When multiple commands are specified, e.g. `garden cmd '@*' a b c -j`, then `garden`
+will run commands `a`, `b` and `c` in order, one after another, over all trees in parallel.
+
+`garden` can also be made to visit each tree sequentially while running the `a`, `b` and `c`
+commands in parallel as each tree is visited.
+
+The `-b | --breadth-first` option enables this behavior.
+
+```bash
+garden cmd -b '@*' a b c -j
+```
+
+The command above visits each tree sequentially and executes `a`, `b`, and `c`
+in parallel on each tree. The next tree is visited as soon as all three `a`, `b`,
+and `c` commands complete.
+
+Parallel execution does not effect the ordering of pre and post-commands.
+Pre and post-commands run sequentially, in-order, relative to their associated
+command irrespective of the parallel execution mode.
+
+
 ### Garden Shell
 
 The `garden.shell` configuration value controls which shell interpreter
