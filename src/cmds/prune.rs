@@ -11,8 +11,15 @@ use crate::{cmd, errors, model, model::IndexSet};
 #[derive(Parser, Clone, Debug)]
 #[command(author, about, long_about)]
 pub struct PruneOptions {
-    /// Number of parallel jobs
-    #[arg(short = 'j', long = "jobs", default_value_t = cmd::default_num_jobs())]
+    /// Prune repositories in parallel using the specified number of jobs.
+    #[arg(
+        long = "jobs",
+        short = 'j',
+        num_args = 0..=1,
+        default_value_t = 0,
+        default_missing_value = "0",
+        value_name = "JOBS",
+    )]
     num_jobs: usize,
     /// Set the maximum prune depth
     #[arg(long, short = 'd', default_value_t = -1)]
