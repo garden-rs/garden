@@ -151,7 +151,9 @@ Garden's custom workflow commands.
 See Garden's [`garden.yaml`](https://gitlab.com/garden-rs/garden/-/blob/main/garden.yaml) for more details.
 
 
-## Nix Flakes
+## Nix
+
+### Nix Flakes
 
 [Nix Flakes](https://nixos.wiki/wiki/Flakes) can be used to build, test and install `garden`.
 A `flake.nix` file is provided in the source tree.
@@ -209,6 +211,55 @@ You can use these details to open a shell with your previously-built `garden` pa
 ```bash
 nix-shell -p /nix/store/8i7pgb529lq8id1z4xfmcyh8xsc4w6q0-garden-tools-1.0.0-beta2
 ```
+
+### Nix home-manager integration
+
+One may also use [home-manager](https://github.com/nix-community/home-manager)
+to have a permanent environment with `garden` available across all shells. This
+can be done by setting up a derivation in your home-manager configuration.
+
+Example:
+
+File `/path/to/home-manager/derivations/garden.nix`:
+
+
+```nix
+{ lib, fetchFromGitHub, rustPlatform }:
+
+rustPlatform.buildRustPackage rec {
+  pname = "garden";
+  version = "v1.8.0";
+
+  src = fetchFromGitHub {
+    owner = "garden-rs";
+    repo = "garden";
+    rev = version;
+    hash = "sha256-+hcjHuJvqxkp+5FikVb8+mpU6rObC4xkMj/NBZDYTrQ=";
+  };
+  cargoHash = "sha256-12X4bMDAQTLZfiPSbY9cPXB8cW1L0zYrts5F5CXzV7Y=";
+}
+```
+
+>**Note 1:** hashes hash and cargoHash above are for v1.8.0 specifically. One could set them to `lib.fakeHash;` let the build fail with the error specifying the right hash, paste the correct hash and rebuild.
+
+>**Note 2:** If tests fail due to missing git in your build environment, one can set this up with doCheck = false.
+
+you can activate the derivation above in your `home.nix` with
+
+`home.nix`
+
+```nix
+{ config, pkgs, ... }:
+    let garden =  pkgs.callPackage ./derivations/garden.nix {};
+in
+{
+   home.packages = [
+       garden
+  ]
+}
+```
+
+then run `home-manager switch` to activate the changes.
 
 ## Windows
 
