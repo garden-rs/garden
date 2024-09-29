@@ -1,5 +1,20 @@
 # Changelog
 
+## Upcoming
+
+**Packaging**:
+
+- Garden's Nix flake was improved and using Garden with Nix home-manager was documented.
+([#46](https://github.com/garden-rs/garden/pull/46))
+([#17](https://github.com/garden-rs/garden/issues/17))
+
+**Development**:
+
+- Internal APIs for running commands were refactored.
+
+- The `yaml-rust2` dependency was upgraded to v0.9.0.
+
+
 ## v1.8.0
 
 *Released 2024-09-26*
