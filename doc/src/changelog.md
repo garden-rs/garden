@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden exec` can now run commands in parallel using the `-j# | --jobs=#` option.
+([#43](https://github.com/garden-rs/garden/issues/43))
+
 **Packaging**:
 
 - Garden's Nix flake was improved and using Garden with Nix home-manager was documented.
@@ -21,7 +26,7 @@
 
 **Features**:
 
-- `garden cmd` and custom commands now have a `--jobs=# | -j#` option for
+- `garden cmd` and custom commands now have a `-j# | --jobs=#` option for
 [running commands in parallel](https://garden-rs.gitlab.io/commands.html#parallel-execution).
 Use `-j0 | --jobs=0` to use all available cores.
 ([#43](https://github.com/garden-rs/garden/issues/43))
