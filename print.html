@@ -1158,6 +1158,7 @@ directory as the current working directory when commands are run.</p>
 
 # example
 garden exec cola git status -s
+garden exec -j0 cola git status -s
 </code></pre>
 <p>Run commands over the trees, groups or gardens matched by tree query.
 When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environment
@@ -1169,6 +1170,10 @@ custom commands from both the tree and the garden.</p>
 post-query. Commands will only be run inside trees whose names match the pattern.
 This lets you activate a garden and its environment variables while only running
 the <code>&lt;command&gt;</code> against a subset of trees in that garden.</p>
+<p>Use the <code>-j# | --jobs=#</code> option to enable parallel execution of commands limited to
+the specified number of cores. Trees will be visited in parallel and the command will be
+executed concurrently in each tree.</p>
+<p>Set the jobs value to zero <code>-j0 | --jobs=0</code> to use all available cores.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
 <pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 
@@ -2396,6 +2401,11 @@ world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden exec</code> can now run commands in parallel using the <code>-j# | --jobs=#</code> option.
+(<a href="https://github.com/garden-rs/garden/issues/43">#43</a>)</li>
+</ul>
 <p><strong>Packaging</strong>:</p>
 <ul>
 <li>Garden's Nix flake was improved and using Garden with Nix home-manager was documented.
@@ -2416,7 +2426,7 @@ world
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
-<p><code>garden cmd</code> and custom commands now have a <code>--jobs=# | -j#</code> option for
+<p><code>garden cmd</code> and custom commands now have a <code>-j# | --jobs=#</code> option for
 <a href="https://garden-rs.gitlab.io/commands.html#parallel-execution">running commands in parallel</a>.
 Use <code>-j0 | --jobs=0</code> to use all available cores.
 (<a href="https://github.com/garden-rs/garden/issues/43">#43</a>)

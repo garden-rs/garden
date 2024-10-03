@@ -762,6 +762,7 @@ directory as the current working directory when commands are run.</p>
 
 # example
 garden exec cola git status -s
+garden exec -j0 cola git status -s
 </code></pre>
 <p>Run commands over the trees, groups or gardens matched by tree query.
 When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environment
@@ -773,6 +774,10 @@ custom commands from both the tree and the garden.</p>
 post-query. Commands will only be run inside trees whose names match the pattern.
 This lets you activate a garden and its environment variables while only running
 the <code>&lt;command&gt;</code> against a subset of trees in that garden.</p>
+<p>Use the <code>-j# | --jobs=#</code> option to enable parallel execution of commands limited to
+the specified number of cores. Trees will be visited in parallel and the command will be
+executed concurrently in each tree.</p>
+<p>Set the jobs value to zero <code>-j0 | --jobs=0</code> to use all available cores.</p>
 <h2 id="garden-eval"><a class="header" href="#garden-eval">garden eval</a></h2>
 <pre><code class="language-bash">garden eval &lt;expression&gt; [&lt;tree&gt;] [&lt;garden&gt;]
 

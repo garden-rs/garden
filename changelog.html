@@ -183,6 +183,11 @@
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
 <h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden exec</code> can now run commands in parallel using the <code>-j# | --jobs=#</code> option.
+(<a href="https://github.com/garden-rs/garden/issues/43">#43</a>)</li>
+</ul>
 <p><strong>Packaging</strong>:</p>
 <ul>
 <li>Garden's Nix flake was improved and using Garden with Nix home-manager was documented.
@@ -203,7 +208,7 @@
 <p><strong>Features</strong>:</p>
 <ul>
 <li>
-<p><code>garden cmd</code> and custom commands now have a <code>--jobs=# | -j#</code> option for
+<p><code>garden cmd</code> and custom commands now have a <code>-j# | --jobs=#</code> option for
 <a href="https://garden-rs.gitlab.io/commands.html#parallel-execution">running commands in parallel</a>.
 Use <code>-j0 | --jobs=0</code> to use all available cores.
 (<a href="https://github.com/garden-rs/garden/issues/43">#43</a>)
