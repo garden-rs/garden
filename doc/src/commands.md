@@ -798,6 +798,7 @@ garden exec <tree-query> <command> [<arguments>]*
 
 # example
 garden exec cola git status -s
+garden exec -j0 cola git status -s
 ```
 
 Run commands over the trees, groups or gardens matched by tree query.
@@ -813,6 +814,12 @@ Use the `-t | --trees` option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.
 This lets you activate a garden and its environment variables while only running
 the `<command>` against a subset of trees in that garden.
+
+Use the `-j# | --jobs=#` option to enable parallel execution of commands limited to
+the specified number of cores. Trees will be visited in parallel and the command will be
+executed concurrently in each tree.
+
+Set the jobs value to zero `-j0 | --jobs=0` to use all available cores.
 
 
 ## garden eval
