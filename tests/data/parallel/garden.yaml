@@ -1,0 +1,17 @@
+---
+trees:
+  a:
+    path: .
+  b:
+    path: .
+
+groups:
+  all:
+    - a
+    - b
+
+commands:
+  echo-values: |
+    echo a
+    sleep 0.1
+    echo z

@@ -2387,3 +2387,35 @@ fn cmd_prune_depth() -> Result<()> {
 
     Ok(())
 }
+
+/// Test parallel execution using "garden exec".
+#[test]
+fn cmd_parallel_commands() {
+    let expect = "a\na\nz\nz";
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/parallel",
+        "--define",
+        "garden.tree-branches=false",
+        "exec",
+        "--quiet",
+        "--jobs=0",
+        "all",
+        "sh",
+        "-c",
+        "echo a; sleep 0.1; echo z",
+    ]);
+    assert_eq!(expect, actual);
+
+    let actual = garden_capture(&[
+        "--chdir",
+        "tests/data/parallel",
+        "--define",
+        "garden.tree-branches=false",
+        "echo-values",
+        "--quiet",
+        "all",
+        "-j",
+    ]);
+    assert_eq!(expect, actual);
+}
