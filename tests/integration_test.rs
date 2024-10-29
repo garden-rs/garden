@@ -770,7 +770,7 @@ fn eval_builtin_command_variables_in_subcommand() {
         "echo-quiet-verbose",
         "-v",
     ]);
-    let expect = "verbose=-v\nquiet=";
+    let expect = "quiet=\nverbose=-v";
     assert_eq!(output, expect);
     // garden -v echo-quiet-verbose -v --quiet
     let output = garden_capture(&[
@@ -781,7 +781,19 @@ fn eval_builtin_command_variables_in_subcommand() {
         "--verbose",
         "--quiet",
     ]);
-    let expect = "verbose=-vv\nquiet=--quiet";
+    let expect = "quiet=--quiet\nverbose=-vv";
+    assert_eq!(output, expect);
+    // garden -v cmd -vv . echo-quiet-verbose
+    let output = garden_capture(&[
+        "--verbose",
+        "--config",
+        "tests/data/garden.yaml",
+        "cmd",
+        "-vv",
+        ".",
+        "echo-quiet-verbose",
+    ]);
+    let expect = "quiet=\nverbose=-vvv";
     assert_eq!(output, expect);
 }
 
