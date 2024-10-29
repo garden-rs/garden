@@ -140,6 +140,9 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
     app_context
         .get_root_config_mut()
         .apply_defines(&options.define);
+    app_context
+        .get_root_config_mut()
+        .update_quiet_and_verbose_variables(options.quiet, options.verbose);
     if app_context.options.debug_level(constants::DEBUG_LEVEL_CMD) > 0 {
         debug!("jobs: {:?}", options.num_jobs);
         debug!("query: {}", options.query);
@@ -275,6 +278,9 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
     app_context
         .get_root_config_mut()
         .apply_defines(&options.define);
+    app_context
+        .get_root_config_mut()
+        .update_quiet_and_verbose_variables(options.quiet, options.verbose);
     if !app_context.get_root_config().shell_exit_on_error {
         options.exit_on_error = false;
     }

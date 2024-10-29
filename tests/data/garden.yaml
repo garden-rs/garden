@@ -89,6 +89,9 @@ trees:
         do
             echo $arg
         done
+      echo-quiet-verbose: |
+        printf 'verbose=%s\n' "${GARDEN_CMD_VERBOSE}"
+        printf 'quiet=%s\n' "${GARDEN_CMD_QUIET}"
 
   example/shallow:
     path: example/tree/shallow

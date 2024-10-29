@@ -139,21 +139,10 @@ fn parse_recursive(
     }
 
     // Provide GARDEN_CMD_QUIET and GARDEN_CMD_VERBOSE.
-    let quiet_string = if config.quiet { "--quiet" } else { "" }.to_string();
-    let verbose_string = if config.verbose > 0 {
-        // -v can be specified multiple times, e.g. "-vv".
-        format!("-{}", "v".repeat(config.verbose.into()))
-    } else {
-        string!("")
-    };
-    config.variables.insert(
-        string!(constants::GARDEN_CMD_QUIET),
-        model::Variable::new(quiet_string.clone(), Some(quiet_string)),
-    );
-    config.variables.insert(
-        string!(constants::GARDEN_CMD_VERBOSE),
-        model::Variable::new(verbose_string.clone(), Some(verbose_string)),
-    );
+    // When commands call update_quiet_and_verbose_variables() they are adding
+    // additional "-v" options beyond what has been parsed at this point.
+    // We use 0 here so that the config's verbosity level is maintained.
+    config.update_quiet_and_verbose_variables(config.quiet, 0);
 
     // Variables are read early to make them available to config.eval_config_pathbuf_from_include().
     // Variables are reloaded after "includes" to give the current garden file the highest priority.

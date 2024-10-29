@@ -800,6 +800,26 @@ impl Configuration {
         }
     }
 
+    /// Apply the quiet and verbose options to resolve GARDEN_CMD_VERBOSE and GARDEN_CMD_QUIET.
+    pub(crate) fn update_quiet_and_verbose_variables(&mut self, quiet: bool, verbose: u8) {
+        // Provide GARDEN_CMD_QUIET and GARDEN_CMD_VERBOSE.
+        let quiet_string = if self.quiet || quiet { "--quiet" } else { "" }.to_string();
+        self.variables.insert(
+            string!(constants::GARDEN_CMD_QUIET),
+            Variable::new(quiet_string.clone(), Some(quiet_string)),
+        );
+        let verbose = self.verbose + verbose;
+        let verbose_string = if verbose > 0 {
+            format!("-{}", "v".repeat(verbose.into()))
+        } else {
+            string!("")
+        };
+        self.variables.insert(
+            string!(constants::GARDEN_CMD_VERBOSE),
+            Variable::new(verbose_string.clone(), Some(verbose_string)),
+        );
+    }
+
     pub(crate) fn reset(&mut self) {
         // Reset variables to allow for tree-scope evaluation
         self.reset_variables();

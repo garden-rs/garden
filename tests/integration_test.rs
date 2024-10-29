@@ -760,6 +760,31 @@ fn eval_builtin_command_variables() {
     assert_eq!(output, expect);
 }
 
+/// `garden custom-command` handles ${GARDEN_CMD_QUIET} and ${GARDEN_CMD_VERBOSE}.
+#[test]
+fn eval_builtin_command_variables_in_subcommand() {
+    // garden echo-quiet-verbose -v
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "echo-quiet-verbose",
+        "-v",
+    ]);
+    let expect = "verbose=-v\nquiet=";
+    assert_eq!(output, expect);
+    // garden -v echo-quiet-verbose -v --quiet
+    let output = garden_capture(&[
+        "--verbose",
+        "--config",
+        "tests/data/garden.yaml",
+        "echo-quiet-verbose",
+        "--verbose",
+        "--quiet",
+    ]);
+    let expect = "verbose=-vv\nquiet=--quiet";
+    assert_eq!(output, expect);
+}
+
 /// `garden eval` evaluates overridden variables.
 #[test]
 fn eval_override_variables() {
