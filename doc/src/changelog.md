@@ -7,7 +7,7 @@
 - `GARDEN_CMD_VERBOSE` and `GARDEN_CMD_QUIET` are now updated when using
 `garden <command> -v ...` and `garden cmd <command> -v ...`.
 Previously, these variables were only set when `-v` was used against the `garden`
-command directly, before any sub-commands; e.g. `garden -v ...`.
+command directly, before any sub-commands, e.g. `garden -v ...`.
 
 
 ## v1.9.0
