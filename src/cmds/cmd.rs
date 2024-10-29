@@ -715,7 +715,7 @@ fn run_cmd_vec(
     for cmd_seq in cmd_seq_vec {
         for cmd_str in cmd_seq {
             if params.verbose > 1 {
-                println!("{} {}", ":".cyan(), &cmd_str.green());
+                eprintln!("{} {}", ":".cyan(), &cmd_str.green());
             }
             if params.dry_run {
                 continue;
