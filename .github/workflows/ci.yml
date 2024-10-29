@@ -169,19 +169,19 @@ jobs:
     - name: Install cargo tools
       run: |
     - name: Install garden
-      run: cargo install garden-tools
+      run: cargo install --path .
     - name: Run format checks
-      run: garden -vv check/fmt
+      run: garden check/fmt -vv
     - name: Run clippy checks
-      run: garden -vv check/clippy
+      run: garden check/clippy -vv
     - name: Audit dependencies
       run: |
         cargo install cargo-audit
-        garden -vv check/audit
+        garden check/audit -vv -D fetch=true
     - name: Audit licenses
       run: |
         cargo install cargo-deny
-        garden -vv check/deny
+        garden check/deny -vv -D fetch=true
 
   docs:
     name: Documentation
@@ -201,6 +201,6 @@ jobs:
           curl -sSL https://github.com/rust-lang/mdBook/releases/download/${version}/mdbook-${version}-x86_64-unknown-linux-gnu.tar.gz |
             tar -xz --directory=${HOME}/.cargo/bin
       - name: Install garden
-        run: cargo install garden-tools
+        run: cargo install --path .
       - name: Build documentation
-        run: garden -vv doc
+        run: garden doc -vv

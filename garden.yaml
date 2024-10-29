@@ -8,7 +8,6 @@
 # Variables can be set externally. e.g.:
 #   garden -D DESTDIR=/tmp/stage -D prefix=/usr/local install-doc
 variables:
-  cargo_package: garden-tools
   DESTDIR: ""
   prefix: ~/.cargo
   bindir: ${prefix}/bin
@@ -16,6 +15,9 @@ variables:
   target: x86_64-unknown-linux-musl
   pkg: ${GARDEN_CONFIG_DIR}/pkg
   debdir: ${pkg}/deb
+  fetch: ""
+  disable-fetch: $ test -n "${fetch}" || printf '%s' --disable-fetch
+  no-fetch: $ test -n "${fetch}" || printf '%s' --no-fetch
 
 # usage:
 #   garden <cmd> [<tree-query>] [-- [<args>]]
@@ -31,13 +33,13 @@ commands:
   check/audit: |
     if type cargo-audit >/dev/null 2>&1
     then
-        cargo audit "$@"
+        cargo audit ${no-fetch} "$@"
     fi
   check/clippy: cargo clippy --all "$@" -- -D warnings
   check/deny: |
     if type cargo-deny >/dev/null 2>&1
     then
-        cargo deny check "$@"
+        cargo deny check ${disable-fetch} "$@"
     fi
   check/fmt: cargo fmt --check "$@"
   clean: cargo clean "$@"
