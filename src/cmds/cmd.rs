@@ -606,7 +606,7 @@ fn run_cmd_breadth_first_parallel(
     });
 
     // Return the last non-zero exit status.
-    Ok(exit_status.load(atomic::Ordering::SeqCst))
+    Ok(exit_status.load(atomic::Ordering::Acquire))
 }
 
 /// Run commands depth-first. All commands are run on the current tree before visiting the next tree.
@@ -698,7 +698,7 @@ fn run_cmd_depth_first_parallel(
     // Return any of the non-zero exit statuses. Which value is returned is
     // undefined due to the parallel nature of this function. Any of the
     // non-zero exit status values could have ended up recorded in exit_status.
-    Ok(exit_status.load(atomic::Ordering::SeqCst))
+    Ok(exit_status.load(atomic::Ordering::Acquire))
 }
 
 /// Run a vector of custom commands using the configured shell.
@@ -791,6 +791,6 @@ fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
         }
     }
     // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status.load(atomic::Ordering::SeqCst))
+    cmd::result_from_exit_status(exit_status.load(atomic::Ordering::Acquire))
         .map_err(|err| err.into())
 }
