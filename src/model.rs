@@ -1,4 +1,4 @@
-use std::cell::{Cell, RefCell, UnsafeCell};
+use std::cell::{Cell, UnsafeCell};
 use std::str::FromStr;
 
 use derivative::Derivative;
@@ -56,7 +56,7 @@ pub struct Variable {
 impl_display_brief!(Variable);
 
 /// A custom thread-safe clone implementation. RefCell::clone() is not thread-safe
-/// because it mutably borrows data under the hood.
+/// because it mutably borrows data under the hood. UnsafeCell avoids this property.
 impl Clone for Variable {
     fn clone(&self) -> Self {
         Self {
@@ -1412,7 +1412,7 @@ impl ColorMode {
 #[derive(Debug)]
 pub struct ApplicationContext {
     pub options: cli::MainOptions,
-    arena: RefCell<Arena<Configuration>>,
+    arena: UnsafeCell<Arena<Configuration>>,
     root_id: ConfigId,
 }
 
@@ -1440,11 +1440,13 @@ unsafe impl Sync for ApplicationContext {}
 impl Clone for ApplicationContext {
     fn clone(&self) -> Self {
         let mut arena: Arena<Configuration> = Arena::new();
-        for node in self.arena.borrow().iter() {
-            arena.new_node(node.get().clone());
+        if let Some(self_arena) = unsafe { self.arena.get().as_ref() } {
+            for node in self_arena.iter() {
+                arena.new_node(node.get().clone());
+            }
         }
         Self {
-            arena: RefCell::new(arena),
+            arena: UnsafeCell::new(arena),
             options: self.options.clone(),
             root_id: self.root_id,
         }
@@ -1459,7 +1461,7 @@ impl ApplicationContext {
         let root_id = arena.new_node(config);
 
         let app_context = ApplicationContext {
-            arena: RefCell::new(arena),
+            arena: UnsafeCell::new(arena),
             root_id,
             options,
         };
@@ -1535,12 +1537,12 @@ impl ApplicationContext {
     }
 
     pub fn get_config(&self, id: ConfigId) -> &Configuration {
-        unsafe { (*self.arena.as_ptr()).get(id).unwrap().get() }
+        unsafe { (*self.arena.get()).get(id).unwrap().get() }
     }
 
     #[allow(clippy::mut_from_ref)]
     pub(crate) fn get_config_mut(&self, id: ConfigId) -> &mut Configuration {
-        unsafe { (*self.arena.as_ptr()).get_mut(id).unwrap().get_mut() }
+        unsafe { (*self.arena.get()).get_mut(id).unwrap().get_mut() }
     }
 
     pub fn get_root_id(&self) -> ConfigId {
@@ -1557,8 +1559,10 @@ impl ApplicationContext {
 
     /// Add a child Configuration graft onto the parent ConfigId.
     pub(crate) fn add_graft(&self, parent: ConfigId, config: Configuration) -> ConfigId {
-        let graft_id = self.arena.borrow_mut().new_node(config); // Take ownership of config.
-        parent.append(graft_id, &mut self.arena.borrow_mut());
+        let graft_id = unsafe { (*self.arena.get()).new_node(config) }; // Take ownership of config.
+        if let Some(arena) = unsafe { self.arena.get().as_mut() } {
+            parent.append(graft_id, arena);
+        }
 
         self.get_config_mut(graft_id).set_id(graft_id);
 
