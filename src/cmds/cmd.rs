@@ -594,11 +594,11 @@ fn run_cmd_breadth_first_parallel(
             ) {
                 Ok(cmd_status) => {
                     if cmd_status != errors::EX_OK {
-                        exit_status.store(cmd_status, atomic::Ordering::Relaxed);
+                        exit_status.store(cmd_status, atomic::Ordering::Release);
                     }
                 }
                 Err(cmd_status) => {
-                    exit_status.store(cmd_status, atomic::Ordering::Relaxed);
+                    exit_status.store(cmd_status, atomic::Ordering::Release);
                     break;
                 }
             }
@@ -684,11 +684,11 @@ fn run_cmd_depth_first_parallel(
             ) {
                 Ok(cmd_status) => {
                     if cmd_status != errors::EX_OK {
-                        exit_status.store(cmd_status, atomic::Ordering::Relaxed);
+                        exit_status.store(cmd_status, atomic::Ordering::Release);
                     }
                 }
                 Err(cmd_status) => {
-                    exit_status.store(cmd_status, atomic::Ordering::Relaxed);
+                    exit_status.store(cmd_status, atomic::Ordering::Release);
                     break;
                 }
             }
@@ -776,14 +776,14 @@ fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
         params.queries.par_iter().for_each(|query| {
             let status = cmd_parallel(&app.clone(), query, params).unwrap_or(errors::EX_IOERR);
             if status != errors::EX_OK {
-                exit_status.store(status, atomic::Ordering::Relaxed);
+                exit_status.store(status, atomic::Ordering::Release);
             }
         });
     } else {
         for query in &params.queries {
             let status = cmd(app, query, params).unwrap_or(errors::EX_IOERR);
             if status != errors::EX_OK {
-                exit_status.store(status, atomic::Ordering::Relaxed);
+                exit_status.store(status, atomic::Ordering::Release);
                 if !params.keep_going {
                     break;
                 }

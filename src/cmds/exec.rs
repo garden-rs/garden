@@ -113,7 +113,7 @@ fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> 
                 dry_run,
                 command,
             ) {
-                exit_status.store(status, atomic::Ordering::Relaxed);
+                exit_status.store(status, atomic::Ordering::Release);
             }
         });
     } else {
@@ -131,7 +131,7 @@ fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> 
                 dry_run,
                 command,
             ) {
-                exit_status.store(status, atomic::Ordering::Relaxed);
+                exit_status.store(status, atomic::Ordering::Release);
             }
         }
     }
