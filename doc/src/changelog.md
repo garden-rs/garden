@@ -9,6 +9,10 @@
 Previously, these variables were only set when `-v` was used against the `garden`
 command directly, before any sub-commands, e.g. `garden -v ...`.
 
+**Fixes**:
+
+- `garden exec`'s parallel mode was made more robust.
+
 
 ## v1.9.0
 
