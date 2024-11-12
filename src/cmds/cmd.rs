@@ -1,6 +1,7 @@
 use std::sync::atomic;
 
 use anyhow::Result;
+use better_default::Default;
 use clap::{CommandFactory, FromArgMatches, Parser};
 use rayon::prelude::*;
 use yansi::Paint;
@@ -181,9 +182,11 @@ pub struct CmdParams {
     force: bool,
     keep_going: bool,
     num_jobs: Option<usize>,
+    #[default(true)]
     exit_on_error: bool,
     quiet: bool,
     verbose: u8,
+    #[default(true)]
     word_split: bool,
 }
 
