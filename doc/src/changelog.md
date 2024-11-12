@@ -1,5 +1,13 @@
 # Changelog
 
+## Upcoming
+
+**Development**:
+
+- Use of the [unmaintained](https://rustsec.org/advisories/RUSTSEC-2024-0388)
+`derivative` crate has been eliminated.
+
+
 ## v1.9.1
 
 *Released 2024-11-06*
