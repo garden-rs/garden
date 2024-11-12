@@ -1,7 +1,6 @@
 use std::cell::{Cell, UnsafeCell};
 use std::str::FromStr;
 
-use derivative::Derivative;
 use indextree::{Arena, NodeId};
 use is_terminal::IsTerminal;
 use strum::VariantNames;
@@ -184,8 +183,7 @@ impl MultiVariable {
 }
 
 /// Trees represent a single worktree
-#[derive(Clone, Debug, Derivative)]
-#[derivative(Default)]
+#[derive(Clone, Debug)]
 pub struct Tree {
     pub commands: MultiVariableMap,
     pub environment: Vec<MultiVariable>,
@@ -197,7 +195,6 @@ pub struct Tree {
     pub branch: Variable,
     pub(crate) branches: VariableMap,
     pub worktree: Variable,
-    #[derivative(Default(value = r#""origin".to_string()"#))]
     pub(crate) default_remote: String,
     pub(crate) clone_depth: i64,
     pub(crate) is_single_branch: bool,
@@ -212,6 +209,33 @@ pub struct Tree {
 }
 
 impl_display!(Tree);
+
+impl Default for Tree {
+    fn default() -> Self {
+        Self {
+            commands: MultiVariableMap::new(),
+            environment: Vec::new(),
+            gitconfig: MultiVariableMap::new(),
+            remotes: VariableMap::new(),
+            symlink: Variable::new(string!(""), None),
+            templates: StringSet::new(),
+            variables: VariableMap::new(),
+            branch: Variable::new(string!(""), None),
+            branches: VariableMap::new(),
+            worktree: Variable::new(string!(""), None),
+            default_remote: string!("origin"),
+            clone_depth: 0,
+            is_single_branch: false,
+            is_symlink: false,
+            is_bare_repository: false,
+            is_worktree: false,
+            description: string!(""),
+            links: Vec::new(),
+            name: string!(""),
+            path: Variable::new(string!(""), None),
+        }
+    }
+}
 
 impl Tree {
     pub fn get_name(&self) -> &String {

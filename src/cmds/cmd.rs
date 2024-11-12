@@ -2,7 +2,6 @@ use std::sync::atomic;
 
 use anyhow::Result;
 use clap::{CommandFactory, FromArgMatches, Parser};
-use derivative::Derivative;
 use rayon::prelude::*;
 use yansi::Paint;
 
@@ -171,8 +170,7 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
 /// CmdParams are used to control the execution of run_cmd_vec().
 ///
 /// `garden cmd` and `garden <custom-cmd>` parse command line arguments into CmdParams.
-#[derive(Clone, Debug, Derivative)]
-#[derivative(Default)]
+#[derive(Clone, Debug, Default)]
 pub struct CmdParams {
     commands: Vec<String>,
     arguments: Vec<String>,
@@ -183,11 +181,9 @@ pub struct CmdParams {
     force: bool,
     keep_going: bool,
     num_jobs: Option<usize>,
-    #[derivative(Default(value = "true"))]
     exit_on_error: bool,
     quiet: bool,
     verbose: u8,
-    #[derivative(Default(value = "true"))]
     word_split: bool,
 }
 
