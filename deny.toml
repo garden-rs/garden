@@ -1,5 +1,7 @@
 [licenses]
 allow = [
+  # better_default
+  "Apache-2.0",
   # encoding_rs
   "BSD-3-Clause",
   "MIT",
