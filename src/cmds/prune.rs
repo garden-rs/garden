@@ -76,7 +76,6 @@ pub fn main(app_context: &model::ApplicationContext, options: &mut PruneOptions)
 /// PathBufMessage is sent across channels between the TraverseFilesystem,
 /// PromptUser and RemovePaths tasks. The Path variant contains a PathBuf to process and
 /// the Finished variant is used to signal the end of the message stream.
-
 enum PathBufMessage {
     Path(std::path::PathBuf),
     Finished,
@@ -84,7 +83,6 @@ enum PathBufMessage {
 
 /// TraverseFilesystem walks the filesystem and sends a PathBufMessage as it
 /// discovers Git repositories during its traversal.
-
 struct TraverseFilesystem<'a> {
     min_depth: isize,
     max_depth: isize,

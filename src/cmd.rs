@@ -117,7 +117,6 @@ where
 /// - quiet: Suppress messages when set true.
 /// - verbose: increase verbosity of messages.
 /// - command: String vector of the command to run.
-
 pub(crate) fn exec_in_context<S>(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
@@ -179,7 +178,6 @@ where
 /// The command might be a path that only exists inside the resolved
 /// environment.  Resolve the path by looking for the presence of PATH
 /// and updating the command when it exists.
-
 fn resolve_command<S>(command: &[S], env: &[(String, String)]) -> Vec<String>
 where
     S: AsRef<std::ffi::OsStr>,

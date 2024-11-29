@@ -5,7 +5,6 @@ use yaml_rust::{Yaml, YamlEmitter};
 use crate::errors;
 
 /// Write a Yaml object to a file
-
 pub fn write_yaml<P>(doc: &Yaml, path: P) -> Result<(), errors::GardenError>
 where
     P: std::convert::AsRef<std::path::Path> + std::fmt::Debug,

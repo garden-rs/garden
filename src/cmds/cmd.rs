@@ -314,7 +314,6 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
 ///
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
-
 fn cmd(app_context: &model::ApplicationContext, query: &str, params: &CmdParams) -> Result<i32> {
     let config = app_context.get_root_config_mut();
     let contexts = query::resolve_trees(app_context, config, None, query);

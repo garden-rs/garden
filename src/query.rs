@@ -8,7 +8,6 @@ use crate::{constants, errors, eval, model, path, query, syntax};
 ///
 /// Returns:
 /// - `Vec<garden::model::TreeContext>`
-
 pub fn resolve_trees(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
@@ -132,7 +131,6 @@ pub(crate) fn resolve_and_filter_trees(
 /// Parameters:
 /// - config: `&garden::model::Configuration`
 /// - pattern: `&glob::Pattern`
-
 fn garden_trees(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
@@ -252,7 +250,6 @@ pub fn trees_from_group(
 /// - tree: Tree name `&str`
 /// - garden_name: optional name of the garden in which to operate.
 /// - group: optional name of the group in which to operate.
-
 pub fn tree_from_name(
     config: &model::Configuration,
     tree_name: &str,
@@ -284,7 +281,6 @@ pub fn tree_from_name(
 /// - config: `&garden::model::Configuration`
 /// - tree: Tree name pattern `&str`
 /// - garden_name: `Option<garden::model::GardenName>`
-
 pub fn trees_from_pattern(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
@@ -413,7 +409,6 @@ fn tree_from_pathbuf(
 }
 
 /// Return the name of an existing tree from the specified path.
-
 pub fn tree_name_from_path(
     config: &model::Configuration,
     path: &std::path::Path,
@@ -422,7 +417,6 @@ pub fn tree_name_from_path(
 }
 
 /// Return the name of an existing tree from an absolute path.
-
 pub(crate) fn tree_name_from_abspath(
     config: &model::Configuration,
     path: &std::path::Path,
@@ -451,7 +445,6 @@ pub(crate) fn tree_name_from_abspath(
 }
 
 /// Returns tree contexts matching the specified pattern
-
 fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::TreeContext> {
     let mut result = Vec::new();
     for (tree_name, tree) in &config.trees {
@@ -470,7 +463,6 @@ fn trees(config: &model::Configuration, pattern: &glob::Pattern) -> Vec<model::T
 
 /// Return a Result<garden::model::TreeContext, garden::errors::GardenError>
 /// when the tree and optional garden are present.
-
 pub fn tree_context(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
