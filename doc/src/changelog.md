@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden ls` now has a `-s | --sort` option that allows you to sort
+trees by name or modification time.
+
 **Development**:
 
 - Use of the [unmaintained](https://rustsec.org/advisories/RUSTSEC-2024-0388)

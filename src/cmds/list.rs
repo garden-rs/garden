@@ -19,6 +19,18 @@ pub struct ListOptions {
     /// Print trees in reverse order
     #[arg(short, long, default_value_t = false)]
     reverse: bool,
+    /// Sort trees using the specified mode [none, name, time]
+    #[arg(
+        long,
+        short,
+        require_equals = true,
+        num_args = 0..=1,
+        default_value_t = model::TreeSortMode::None,
+        default_missing_value = "name",
+        value_name = "MODE",
+        value_parser = model::TreeSortMode::parse_from_str,
+    )]
+    sort: model::TreeSortMode,
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
@@ -58,6 +70,43 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
         // Resolve the tree query into a vector of tree contexts.
         let mut contexts =
             query::resolve_and_filter_trees(app_context, config, query, &options.trees);
+        match options.sort {
+            model::TreeSortMode::None => (),
+            model::TreeSortMode::Name => {
+                contexts.sort_by(|context_a, context_b| context_a.tree.cmp(&context_b.tree));
+            }
+            model::TreeSortMode::Time => {
+                contexts.sort_by(|context_a, context_b| {
+                    let config_a = match context_a.config {
+                        Some(config_id) => app_context.get_config(config_id),
+                        None => config,
+                    };
+                    let config_b = match context_b.config {
+                        Some(config_id) => app_context.get_config(config_id),
+                        None => config,
+                    };
+                    match (
+                        config_a
+                            .trees
+                            .get(&context_a.tree)
+                            .and_then(|tree| tree.pathbuf())
+                            .and_then(|pathbuf| pathbuf.metadata().ok())
+                            .and_then(|metadata| metadata.modified().ok()),
+                        config_b
+                            .trees
+                            .get(&context_b.tree)
+                            .and_then(|tree| tree.pathbuf())
+                            .and_then(|pathbuf| pathbuf.metadata().ok())
+                            .and_then(|metadata| metadata.modified().ok()),
+                    ) {
+                        (Some(a), Some(b)) => a.cmp(&b),
+                        (None, Some(_)) => std::cmp::Ordering::Less,
+                        (Some(_), None) => std::cmp::Ordering::Greater,
+                        (None, None) => std::cmp::Ordering::Equal,
+                    }
+                });
+            }
+        }
         if options.reverse {
             contexts.reverse();
         }

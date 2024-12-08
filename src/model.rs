@@ -1408,6 +1408,31 @@ impl ColorMode {
     }
 }
 
+#[derive(
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    strum_macros::EnumString,
+    strum_macros::Display,
+    strum_macros::VariantNames,
+)]
+#[strum(ascii_case_insensitive, serialize_all = "kebab-case")]
+pub enum TreeSortMode {
+    #[default]
+    None,
+    Name,
+    Time,
+}
+
+impl TreeSortMode {
+    /// Parse a color mode from a string using strum's from_str().
+    pub(crate) fn parse_from_str(string: &str) -> Result<TreeSortMode, String> {
+        TreeSortMode::from_str(string).map_err(|_| format!("choices are {:?}", Self::VARIANTS))
+    }
+}
+
 #[derive(Debug)]
 pub struct ApplicationContext {
     pub options: cli::MainOptions,
