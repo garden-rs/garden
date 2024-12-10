@@ -21,6 +21,9 @@ pub struct GrowOptions {
     /// Filter trees by name post-query using a glob pattern
     #[arg(long, short, default_value = "*")]
     trees: String,
+    /// Filter remotes by name using a glob pattern
+    #[arg(long, default_value = "*")]
+    remote: String,
     /// Tree query for the gardens, groups or trees to grow
     #[arg(required = true)]
     queries: Vec<String>,
@@ -40,6 +43,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &GrowOptions) -> R
             verbose,
             query,
             &options.trees,
+            &options.remote,
         )?;
         if status != errors::EX_OK {
             exit_status = status;
@@ -58,14 +62,22 @@ fn grow(
     verbose: u8,
     query: &str,
     tree_pattern: &str,
+    remote_pattern: &str,
 ) -> Result<i32> {
     let config = app_context.get_root_config();
     let contexts = query::resolve_and_filter_trees(app_context, config, query, tree_pattern);
+    let remote_pattern = glob::Pattern::new(remote_pattern).unwrap_or_default();
     let mut exit_status = errors::EX_OK;
 
     for tree_context in &contexts {
         let eval_context = model::EvalContext::from_app_context(app_context, tree_context);
-        let status = grow_tree_from_context(&eval_context, configured_worktrees, quiet, verbose)?;
+        let status = grow_tree_from_context(
+            &eval_context,
+            configured_worktrees,
+            &remote_pattern,
+            quiet,
+            verbose,
+        )?;
         if status != errors::EX_OK {
             // Return the last non-zero exit status.
             exit_status = status;
@@ -80,6 +92,7 @@ fn grow(
 fn grow_tree_from_context(
     eval_context: &model::EvalContext,
     configured_worktrees: &mut StringSet,
+    remote_pattern: &glob::Pattern,
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
@@ -126,6 +139,7 @@ fn grow_tree_from_context(
             configured_worktrees,
             &pathbuf,
             &branch,
+            remote_pattern,
             false,
             quiet,
             verbose,
@@ -145,6 +159,7 @@ fn grow_tree_from_context(
         return grow_tree_from_context_as_worktree(
             eval_context,
             configured_worktrees,
+            remote_pattern,
             quiet,
             verbose,
         );
@@ -220,6 +235,7 @@ fn grow_tree_from_context(
         configured_worktrees,
         &pathbuf,
         &branch,
+        remote_pattern,
         true,
         quiet,
         verbose,
@@ -246,11 +262,13 @@ fn print_command_str(cmd: &str) {
 }
 
 /// Add remotes that do not already exist and synchronize .git/config values.
+#[allow(clippy::too_many_arguments)]
 fn update_tree_from_context(
     eval_context: &model::EvalContext,
     configured_worktrees: &mut StringSet,
     path: &dyn AsRef<std::path::Path>,
     branch: &str,
+    remote_pattern: &glob::Pattern,
     checkout: bool,
     _quiet: bool,
     verbose: u8,
@@ -317,6 +335,9 @@ fn update_tree_from_context(
 
     // Loop over remotes and add/update the git remote configuration.
     for (remote, var) in &tree.remotes {
+        if !remote_pattern.matches(remote) {
+            continue;
+        }
         let url = eval_context.tree_variable(var);
         if existing_remotes.contains(remote) {
             let remote_key = format!("remote.{remote}.url");
@@ -485,6 +506,7 @@ fn set_gitconfig_value(
 fn grow_tree_from_context_as_worktree(
     eval_context: &model::EvalContext,
     configured_worktrees: &mut StringSet,
+    remote_pattern: &glob::Pattern,
     quiet: bool,
     verbose: u8,
 ) -> Result<i32> {
@@ -520,8 +542,13 @@ fn grow_tree_from_context_as_worktree(
 
     let parent_eval_context =
         model::EvalContext::from_app_context(eval_context.app_context, &parent_tree_context);
-    exit_status =
-        grow_tree_from_context(&parent_eval_context, configured_worktrees, quiet, verbose)?;
+    exit_status = grow_tree_from_context(
+        &parent_eval_context,
+        configured_worktrees,
+        remote_pattern,
+        quiet,
+        verbose,
+    )?;
     if exit_status != 0 {
         return Err(errors::GardenError::WorktreeParentCreationError {
             tree: tree.get_name().into(),

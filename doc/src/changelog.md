@@ -4,6 +4,9 @@
 
 **Features**:
 
+- `garden grow` can now filter the remotes that will be updated by specifying a glob
+pattern to the new `--remote` option.
+
 - `garden ls` now has a `-s | --sort` option that allows you to sort
 trees by name or modification time.
 
