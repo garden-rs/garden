@@ -1,6 +1,8 @@
 # Changelog
 
-## Upcoming
+## v1.10.0
+
+*Released 2024-12-14*
 
 **Features**:
 
