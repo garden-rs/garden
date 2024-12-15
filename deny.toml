@@ -7,6 +7,6 @@ allow = [
   "MIT",
   # dirs -> dirs-sys -> options-ext
   "MPL-2.0",
-  # clap -> clap_derive -> proc-macro2 -> unicode-ident
-  "Unicode-DFS-2016"
+  # indexmap -> hashbrown
+  "Unicode-3.0",
 ]
