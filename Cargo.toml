@@ -67,7 +67,7 @@ debug = 1
 [profile.release-lto]
 inherits = "release"
 opt-level = 3
-debug = "none"
+debug = false
 strip = "symbols"
 debug-assertions = false
 overflow-checks = false
