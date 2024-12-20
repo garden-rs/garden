@@ -19,6 +19,7 @@ homepage = "https://garden-rs.gitlab.io"
 documentation = "https://docs.rs/garden-tools/latest/garden"
 repository = "https://gitlab.com/garden-rs/garden"
 authors = ["David Aguilar <davvid@gmail.com>"]
+rust-version = "1.74.1"
 
 [badges]
 maintenance = { status = "actively-developed" }
