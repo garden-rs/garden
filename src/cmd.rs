@@ -338,9 +338,9 @@ pub(crate) fn initialize_threads(num_jobs: usize) -> anyhow::Result<()> {
 
 /// Initialize the global thread pool when the num_jobs option is provided.
 pub(crate) fn initialize_threads_option(num_jobs: Option<usize>) -> anyhow::Result<()> {
-    if let Some(num_jobs) = num_jobs {
-        initialize_threads(num_jobs)?;
-    }
+    let Some(num_jobs_value) = num_jobs else {
+        return Ok(());
+    };
 
-    Ok(())
+    initialize_threads(num_jobs_value)
 }
