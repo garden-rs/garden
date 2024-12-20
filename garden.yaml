@@ -29,6 +29,7 @@ commands:
     - check/audit
     - check/clippy
     - check/deny
+    - check/msrv
     - test
   check/audit: |
     if type cargo-audit >/dev/null 2>&1
@@ -42,6 +43,11 @@ commands:
         cargo deny check ${disable-fetch} "$@"
     fi
   check/fmt: cargo fmt --check "$@"
+  check/msrv: |
+    if type cargo-msrv >/dev/null 2>&1
+    then
+        cargo msrv verify
+    fi
   clean: cargo clean "$@"
   commit: git commit "$@"
   coverage: cargo kcov "$@"
