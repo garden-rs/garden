@@ -1,5 +1,13 @@
 # Changelog
 
+## Upcoming
+
+**Features**:
+
+- `garden completion` now includes a comment in its output indicating which version of
+`garden` was used to generate the completion script.
+
+
 ## v1.10.0
 
 *Released 2024-12-14*
