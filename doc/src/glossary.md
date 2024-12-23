@@ -36,7 +36,7 @@
 
 * **commands**
   The `commands` YAML key/value table defines named commands that can be run
-  against trees. The `commands` block extends `garden` with with user-defined
+  against trees. The `commands` block extends `garden` with user-defined
   functionality. The `commands` block can be defined at global scope, within a
   `tree` block, and within a `garden` block. The scope in which a command is
   defined limits the scope in which it is visible. This means that a command
