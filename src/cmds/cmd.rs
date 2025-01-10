@@ -440,10 +440,7 @@ fn get_tree_from_context<'a>(
         Some(config_id) => app_context.get_config(config_id),
         None => app_context.get_root_config(),
     };
-    let tree = match config.trees.get(&context.tree) {
-        Some(tree) => tree,
-        None => return None,
-    };
+    let tree = config.trees.get(&context.tree)?;
     if tree.is_symlink {
         return None;
     }
