@@ -332,7 +332,7 @@ checksum = "673464e1e314dd67a0fd9544abc99e8eb28d0c7e3b69b033bcff9b2d00b87333"
 
 [[package]]
 name = "garden-tools"
-version = "1.10.1-rc.0"
+version = "1.10.1-rc.1"
 dependencies = [
  "anyhow",
  "assert_cmd",
