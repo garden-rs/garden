@@ -15,11 +15,16 @@ pub(crate) fn home_dir() -> std::path::PathBuf {
     dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("/tmp"))
 }
 
-/// Convert a Path into an absolute path.
-pub fn abspath(path: &std::path::Path) -> std::path::PathBuf {
-    path.to_path_buf()
-        .canonicalize()
-        .unwrap_or_else(|_| path.to_path_buf())
+/// Canonicalize a path while avoiding problematic UNC paths on Windows.
+pub(crate) fn canonicalize<P: AsRef<std::path::Path>>(
+    path: P,
+) -> std::io::Result<std::path::PathBuf> {
+    dunce::canonicalize(path)
+}
+
+/// Convert a Path into an absolute path. Return the original path if it cannot be canonicalized.
+pub fn abspath<P: AsRef<std::path::Path> + std::marker::Copy>(path: P) -> std::path::PathBuf {
+    canonicalize(path).unwrap_or(path.as_ref().to_path_buf())
 }
 
 /// Return the basename of a path-like string.

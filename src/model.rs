@@ -241,7 +241,7 @@ impl Tree {
     /// Build a canonicalized pathbuf for the current tree.
     pub(crate) fn canonical_pathbuf(&self) -> Option<std::path::PathBuf> {
         if let Some(pathbuf) = self.pathbuf() {
-            if let Ok(canon_path) = pathbuf.canonicalize() {
+            if let Ok(canon_path) = path::canonicalize(&pathbuf) {
                 return Some(canon_path);
             }
         }
@@ -644,7 +644,7 @@ impl Configuration {
         } else {
             // Store the resolved, canonicalized garden.root
             self.root_path = std::path::PathBuf::from(&value);
-            if let Ok(root_path_canon) = self.root_path.canonicalize() {
+            if let Ok(root_path_canon) = path::canonicalize(&self.root_path) {
                 if root_path_canon != self.root_path {
                     value = root_path_canon
                         .to_str()
@@ -682,8 +682,7 @@ impl Configuration {
         self.verbose = app_context.options.verbose;
 
         // Override the configured garden root
-        let root_pathbuf_option =
-            root.map(|path| path.canonicalize().unwrap_or(path.to_path_buf()));
+        let root_pathbuf_option = root.map(path::abspath);
         if let Some(root_path) = root_pathbuf_option {
             self.root.set_expr(root_path.to_string_lossy().to_string());
         }
@@ -920,7 +919,7 @@ impl Configuration {
         let pathbuf = std::path::PathBuf::from(path);
         if pathbuf.is_absolute() {
             // Absolute path, nothing to do
-            if let Ok(pathbuf_canon) = pathbuf.canonicalize() {
+            if let Ok(pathbuf_canon) = path::canonicalize(&pathbuf) {
                 pathbuf_canon
             } else {
                 pathbuf

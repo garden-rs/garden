@@ -361,7 +361,7 @@ fn tree_from_pathbuf(
     path: &std::path::Path,
 ) -> Option<model::TreeContext> {
     // First check whether the specified path (including ".") is a configured tree.
-    let pathbuf = match path.canonicalize() {
+    let pathbuf = match path::canonicalize(path) {
         Ok(canon) => canon,
         Err(_) => return None,
     };
@@ -370,7 +370,7 @@ fn tree_from_pathbuf(
             Ok(value) => value,
             Err(_) => continue,
         };
-        let tree_canon = match std::path::PathBuf::from(tree_path).canonicalize() {
+        let tree_canon = match path::canonicalize(std::path::PathBuf::from(tree_path)) {
             Ok(value) => value,
             Err(_) => continue,
         };
@@ -394,7 +394,7 @@ fn tree_from_pathbuf(
                     Ok(value) => value,
                     Err(_) => continue,
                 };
-                let tree_canon = match std::path::PathBuf::from(tree_path).canonicalize() {
+                let tree_canon = match path::canonicalize(std::path::PathBuf::from(tree_path)) {
                     Ok(value) => value,
                     Err(_) => continue,
                 };
@@ -433,7 +433,7 @@ pub(crate) fn tree_name_from_abspath(
         };
         // Check if this tree matches the specified path.
         let tree_pathbuf = std::path::PathBuf::from(tree_path_str);
-        if let Ok(canon_path) = tree_pathbuf.canonicalize() {
+        if let Ok(canon_path) = path::canonicalize(&tree_pathbuf) {
             if canon_path == path {
                 // Existing tree found: use the configured name.
                 return Some(tree.get_name().to_string());

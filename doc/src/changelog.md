@@ -7,6 +7,9 @@
 - `garden completion` now includes a comment in its output indicating which version of
 `garden` was used to generate the completion script.
 
+- Windows support was improved by avoiding UNC paths.
+([#20](https://gitlab.com/garden-rs/garden/-/issues/20))
+
 
 ## v1.10.0
 

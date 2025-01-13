@@ -106,7 +106,7 @@ pub(crate) fn plant_path(
     trees: &mut yaml::Hash,
 ) -> Result<yaml::Yaml> {
     // Garden root path
-    let root = config.root_path.canonicalize().map_err(|err| {
+    let root = path::canonicalize(&config.root_path).map_err(|err| {
         errors::GardenError::ConfigurationError(format!(
             "unable to canonicalize config root: {err:?}"
         ))
@@ -142,7 +142,7 @@ pub(crate) fn plant_path(
     }
 
     // Get a canonical tree path for comparison with the canonical root.
-    let path = pathbuf.canonicalize().map_err(|err| {
+    let path = path::canonicalize(&pathbuf).map_err(|err| {
         errors::GardenError::ConfigurationError(format!(
             "unable to canonicalize {raw_path:?}: {err:?}"
         ))

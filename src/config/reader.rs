@@ -3,7 +3,7 @@ use yaml_rust::{yaml, Yaml, YamlLoader};
 use crate::{
     constants, errors, eval, model,
     model::{IndexMap, StringSet},
-    syntax,
+    path, syntax,
 };
 
 /// Apply YAML Configuration from a string.
@@ -130,7 +130,7 @@ fn parse_recursive(
 
     if let Some(config_path_raw) = config.dirname.as_ref() {
         // Calculate an absolute path for GARDEN_CONFIG_DIR.
-        if let Ok(config_path) = config_path_raw.canonicalize() {
+        if let Ok(config_path) = path::canonicalize(config_path_raw) {
             config.variables.insert(
                 string!(constants::GARDEN_CONFIG_DIR),
                 model::Variable::new(config_path.to_string_lossy().to_string(), None),

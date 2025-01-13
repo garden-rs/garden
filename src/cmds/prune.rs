@@ -5,7 +5,7 @@ use clap::Parser;
 use rayon::prelude::*;
 use yansi::Paint;
 
-use crate::{cmd, errors, model, model::IndexSet};
+use crate::{cmd, errors, model, model::IndexSet, path};
 
 /// Remove unreferenced Git repositories
 #[derive(Parser, Clone, Debug)]
@@ -179,7 +179,7 @@ impl TraverseFilesystem<'_> {
                 None => false,
             }
         {
-            if let Ok(path_canon) = path.canonicalize() {
+            if let Ok(path_canon) = path::canonicalize(path) {
                 if !self.configured_tree_paths.contains(&path_canon) && !self.is_filtered_path(path)
                 {
                     return Some(path_canon);
