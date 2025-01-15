@@ -30,9 +30,9 @@ pub fn abspath<P: AsRef<std::path::Path> + std::marker::Copy>(path: P) -> std::p
 /// Return the basename of a path-like string.
 pub(crate) fn str_basename(path: &str) -> &str {
     let basename = if path.contains('/') {
-        path.split('/').last().unwrap_or(path)
+        path.split('/').next_back().unwrap_or(path)
     } else if path.contains('\\') {
-        path.split('\\').last().unwrap_or(path)
+        path.split('\\').next_back().unwrap_or(path)
     } else {
         path
     };
