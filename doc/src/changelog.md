@@ -1,5 +1,16 @@
 # Changelog
 
+## Upcoming
+
+**Development**:
+
+- The `dirs` dependency was upgraded to v6.0.
+
+- The `thiserror` dependency was upgraded to v2.0.
+
+- The `which` dependency was upgraded to v7.0.
+
+
 ## v1.10.1
 
 *Released 2025-01-14*
@@ -66,7 +77,7 @@ command directly, before any sub-commands, e.g. `garden -v ...`.
 
 - Internal APIs for running commands were refactored.
 
-- The `yaml-rust2` dependency was upgraded to v0.9.0.
+- The `yaml-rust2` dependency was upgraded to v0.9.
 
 
 ## v1.8.0
