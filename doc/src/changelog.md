@@ -1,6 +1,8 @@
 # Changelog
 
-## Upcoming
+## v1.10.1
+
+*Released 2025-01-14*
 
 **Features**:
 
