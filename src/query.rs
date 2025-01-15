@@ -433,7 +433,7 @@ pub(crate) fn tree_name_from_abspath(
         };
         // Check if this tree matches the specified path.
         let tree_pathbuf = std::path::PathBuf::from(tree_path_str);
-        if let Ok(canon_path) = path::canonicalize(&tree_pathbuf) {
+        if let Ok(canon_path) = path::canonicalize(tree_pathbuf) {
             if canon_path == path {
                 // Existing tree found: use the configured name.
                 return Some(tree.get_name().to_string());

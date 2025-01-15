@@ -241,7 +241,7 @@ impl Tree {
     /// Build a canonicalized pathbuf for the current tree.
     pub(crate) fn canonical_pathbuf(&self) -> Option<std::path::PathBuf> {
         if let Some(pathbuf) = self.pathbuf() {
-            if let Ok(canon_path) = path::canonicalize(&pathbuf) {
+            if let Ok(canon_path) = path::canonicalize(pathbuf) {
                 return Some(canon_path);
             }
         }

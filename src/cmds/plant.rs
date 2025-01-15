@@ -142,7 +142,7 @@ pub(crate) fn plant_path(
     }
 
     // Get a canonical tree path for comparison with the canonical root.
-    let path = path::canonicalize(&pathbuf).map_err(|err| {
+    let path = path::canonicalize(pathbuf).map_err(|err| {
         errors::GardenError::ConfigurationError(format!(
             "unable to canonicalize {raw_path:?}: {err:?}"
         ))
