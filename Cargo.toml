@@ -1,6 +1,6 @@
 [package]
 name = "garden-tools"
-version = "1.10.1-rc.1"
+version = "1.10.1"
 edition = "2021"
 description = """
 Garden grows and cultivates collections of Git trees
