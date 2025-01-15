@@ -428,9 +428,7 @@ fn environment_variables() -> Result<()> {
     let app_context = common::garden_context()?;
     let config = app_context.get_root_config();
 
-    unsafe {
-        std::env::set_var("GARDEN_TEST_VALUE", "test");
-    }
+    std::env::set_var("GARDEN_TEST_VALUE", "test");
     let value = garden::eval::value(&app_context, config, "${GARDEN_TEST_VALUE}");
     assert_eq!(value, "test");
 
