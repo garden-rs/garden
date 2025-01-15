@@ -378,7 +378,7 @@ dependencies = [
  "strum",
  "strum_macros",
  "subprocess",
- "thiserror 1.0.69",
+ "thiserror 2.0.11",
  "which",
  "xdg",
  "yaml-rust2",
@@ -444,7 +444,7 @@ version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
