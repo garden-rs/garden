@@ -149,8 +149,6 @@ pub struct MultiVariable {
     variables: Vec<Variable>,
 }
 
-impl_display!(MultiVariable);
-
 impl MultiVariable {
     pub(crate) fn new(name: String, variables: Vec<Variable>) -> Self {
         MultiVariable { name, variables }
@@ -209,8 +207,6 @@ pub struct Tree {
     name: String,
     path: Variable,
 }
-
-impl_display!(Tree);
 
 impl Tree {
     pub fn get_name(&self) -> &String {
@@ -483,8 +479,6 @@ pub struct Group {
     pub members: StringSet,
 }
 
-impl_display!(Group);
-
 impl Group {
     pub fn get_name(&self) -> &String {
         &self.name
@@ -513,8 +507,6 @@ pub struct Template {
     name: String,
 }
 
-impl_display!(Template);
-
 impl Template {
     pub fn get_name(&self) -> &String {
         &self.name
@@ -541,8 +533,6 @@ pub struct Garden {
     pub variables: VariableMap,
     name: GardenName,
 }
-
-impl_display!(Garden);
 
 impl Garden {
     pub fn get_name(&self) -> &GardenName {
@@ -1168,8 +1158,6 @@ pub struct Graft {
     pub config: String,
 }
 
-impl_display!(Graft);
-
 impl Graft {
     pub fn new(name: String, root: String, config: String) -> Self {
         Graft {
@@ -1263,8 +1251,6 @@ pub struct TreeContext {
     pub group: Option<String>,
 }
 
-impl_display_brief!(TreeContext);
-
 impl TreeContext {
     /// Construct a new TreeContext.
     pub fn new(
@@ -1294,8 +1280,6 @@ pub struct TreeQuery {
     pub include_groups: bool,
     pub include_trees: bool,
 }
-
-impl_display_brief!(TreeQuery);
 
 impl TreeQuery {
     pub fn new(query: &str) -> Self {
@@ -1438,8 +1422,6 @@ pub struct ApplicationContext {
     arena: UnsafeCell<Arena<Configuration>>,
     root_id: ConfigId,
 }
-
-impl_display!(ApplicationContext);
 
 /// Safety: ApplicationContext is not thread-safe due to its use of internal mutability.
 /// Furthermore, we cannot use mutexes internally due to our use of Rayon and
@@ -1636,13 +1618,9 @@ pub enum GitTreeType {
     Bare,
 }
 
-impl_display!(GitTreeType);
-
 /// Represent "git worktree list" details queried from Git.
 #[derive(Clone, Debug)]
 pub struct GitTreeDetails {
     pub branch: String,
     pub tree_type: GitTreeType,
 }
-
-impl_display!(GitTreeDetails);
