@@ -59,7 +59,25 @@ pub(crate) fn is_git_dir(string: &str) -> bool {
     string.len() > 4 && string.ends_with(".git") && !string.ends_with("/.git")
 }
 
-/// Return ture if `string` is a "#!" shebang line.
+/// Return true  if `string` is a post-command.
+#[inline]
+pub(crate) fn is_post_command(string: &str) -> bool {
+    string.ends_with('>')
+}
+
+/// Return true  if `string` is a pre-command.
+#[inline]
+pub(crate) fn is_pre_command(string: &str) -> bool {
+    string.ends_with('<')
+}
+
+/// Return true  if `string` is a pre or post-command.
+#[inline]
+pub(crate) fn is_pre_or_post_command(string: &str) -> bool {
+    is_pre_command(string) || is_post_command(string)
+}
+
+/// Return true if `string` is a "#!" shebang line.
 #[inline]
 pub(crate) fn is_shebang(string: &str) -> bool {
     string.starts_with("#!")

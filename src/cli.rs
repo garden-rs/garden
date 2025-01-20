@@ -104,6 +104,9 @@ pub enum Command {
     Exec(cmds::exec::ExecOptions),
     /// Grow garden worktrees into existence
     Grow(cmds::grow::GrowOptions),
+    /// Graphical interface
+    #[cfg(feature = "gui")]
+    Gui(cmds::cmd::CustomOptions),
     /// Initialize a "garden.yaml" garden configuration file
     Init(cmds::init::InitOptions),
     /// List available gardens, groups, trees and commands

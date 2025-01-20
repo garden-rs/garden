@@ -19,7 +19,7 @@ homepage = "https://garden-rs.gitlab.io"
 documentation = "https://docs.rs/garden-tools/latest/garden"
 repository = "https://gitlab.com/garden-rs/garden"
 authors = ["David Aguilar <davvid@gmail.com>"]
-rust-version = "1.74.0"
+rust-version = "1.81.0"
 
 [badges]
 maintenance = { status = "actively-developed" }
@@ -32,6 +32,9 @@ clap_complete = "4.5"
 crossbeam = "0.8"
 dirs = "6.0"
 dunce = "1.0"
+eframe = { version = "0.30", optional = true }
+egui = { version = "0.30", optional = true }
+egui_extras = { version = "0.30", optional = true }
 glob = "0.3"
 indexmap = "2.6"
 indextree = "4.7"
@@ -54,6 +57,13 @@ yansi = "1.0"
 [dev-dependencies]
 assert_cmd = "2.0.13"
 function_name = "0.3.0"
+
+[features]
+gui = [
+    "dep:eframe",
+    "dep:egui",
+    "dep:egui_extras",
+]
 
 [lib]
 name = "garden"

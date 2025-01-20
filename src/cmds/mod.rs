@@ -13,6 +13,9 @@ pub mod eval;
 /// Grow command
 pub mod grow;
 
+#[cfg(feature = "gui")]
+pub mod gui;
+
 /// Init command
 pub mod init;
 

@@ -135,6 +135,13 @@ pub struct CustomOptions {
     arguments: Vec<String>,
 }
 
+impl CustomOptions {
+    /// Return the queries as a single string.
+    pub(crate) fn query_string(&self) -> String {
+        shell_words::join(&self.queries)
+    }
+}
+
 /// Main entry point for `garden cmd <query> <command>...`.
 pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOptions) -> Result<()> {
     app_context
