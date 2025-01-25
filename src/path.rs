@@ -1,7 +1,7 @@
 use crate::{constants, errors};
 
 /// Return the current directory as a PathBuf.
-pub(crate) fn current_dir() -> std::path::PathBuf {
+pub fn current_dir() -> std::path::PathBuf {
     std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from(constants::DOT))
 }
 

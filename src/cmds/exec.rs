@@ -4,6 +4,7 @@ use anyhow::Result;
 use clap::{Parser, ValueHint};
 use rayon::prelude::*;
 
+use crate::cli::GardenOptions;
 use crate::{cmd, constants, errors, model, query};
 
 /// Evaluate garden expressions

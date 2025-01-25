@@ -6,6 +6,7 @@ use clap::{CommandFactory, FromArgMatches, Parser};
 use rayon::prelude::*;
 use yansi::Paint;
 
+use crate::cli::GardenOptions;
 use crate::{cli, cmd, constants, display, errors, eval, model, path, query, syntax};
 
 /// Run one or more custom commands over a tree query
@@ -133,13 +134,6 @@ pub struct CustomOptions {
     /// Arguments to forward to custom commands
     #[arg(last = true)]
     arguments: Vec<String>,
-}
-
-impl CustomOptions {
-    /// Return the queries as a single string.
-    pub(crate) fn query_string(&self) -> String {
-        shell_words::join(&self.queries)
-    }
 }
 
 /// Main entry point for `garden cmd <query> <command>...`.

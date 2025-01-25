@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand, ValueHint};
 
-use crate::{cmds, constants, model, path};
+use crate::{cmds, constants, errors, model, path};
 
 #[derive(Clone, Debug, Default, Parser)]
 #[command(name = constants::GARDEN)]
@@ -16,7 +16,7 @@ pub struct MainOptions {
         value_name = "WHEN",
         value_parser = model::ColorMode::parse_from_str,
     )]
-    color: model::ColorMode,
+    pub color: model::ColorMode,
 
     /// Set the Garden file to use
     #[arg(long, short, value_hint = ValueHint::FilePath)]
@@ -24,7 +24,7 @@ pub struct MainOptions {
 
     /// Change directories before searching for Garden files
     #[arg(long, short = 'C', value_hint = ValueHint::DirPath)]
-    chdir: Option<std::path::PathBuf>,
+    pub chdir: Option<std::path::PathBuf>,
 
     /// Increase verbosity for a debug category
     #[arg(long, short, action = clap::ArgAction::Append)]
@@ -56,22 +56,37 @@ impl MainOptions {
     pub fn new() -> Self {
         Self::default()
     }
+}
+
+/// Parse a vector of debug level arguments to count how many have been set
+pub fn debug_level(debug: &[String], name: &str) -> u8 {
+    debug.iter().filter(|&x| x == name).count() as u8
+}
+
+/// Garden command-line options that are common to all commands and typically specified before
+/// sub-command options and arguments.
+pub trait GardenOptions {
+    fn get_chdir(&self) -> &Option<std::path::PathBuf>;
+    fn get_color_mut(&mut self) -> &mut model::ColorMode;
+    fn get_config(&self) -> &Option<std::path::PathBuf>;
+    fn set_config(&mut self, path: std::path::PathBuf);
+    fn get_debug(&self) -> &[String];
+    fn get_root(&self) -> &Option<std::path::PathBuf>;
+    fn set_root(&mut self, path: std::path::PathBuf);
 
     /// Update the initial state to handle chdir() and making arguments absolute.
-    pub fn update(&mut self) {
-        self.color.update();
+    fn update(&mut self) {
+        self.get_color_mut().update();
 
-        if let Some(ref config) = self.config {
+        if let Some(ref config) = self.get_config() {
             if config.exists() {
-                self.config = Some(path::abspath(config));
+                self.set_config(path::abspath(config));
             }
         }
-
-        if let Some(ref root) = self.root {
-            self.root = Some(path::abspath(root));
+        if let Some(ref root) = self.get_root() {
+            self.set_root(path::abspath(root));
         }
-
-        if let Some(ref chdir) = self.chdir {
+        if let Some(ref chdir) = self.get_chdir() {
             if let Err(err) = std::env::set_current_dir(chdir) {
                 error!("could not chdir to {:?}: {}", chdir, err);
             }
@@ -79,14 +94,46 @@ impl MainOptions {
     }
 
     /// Return the debug level for the given name.
-    pub fn debug_level(&self, name: &str) -> u8 {
-        debug_level(&self.debug, name)
+    fn debug_level(&self, name: &str) -> u8 {
+        debug_level(self.get_debug(), name)
     }
 }
 
-/// Parse a vector of debug level arguments to count how many have been set
-fn debug_level(debug: &[String], name: &str) -> u8 {
-    debug.iter().filter(|&x| x == name).count() as u8
+impl GardenOptions for MainOptions {
+    fn get_color_mut(&mut self) -> &mut model::ColorMode {
+        &mut self.color
+    }
+
+    fn get_config(&self) -> &Option<std::path::PathBuf> {
+        &self.config
+    }
+
+    fn set_config(&mut self, path: std::path::PathBuf) {
+        self.config = Some(path);
+    }
+
+    fn get_chdir(&self) -> &Option<std::path::PathBuf> {
+        &self.chdir
+    }
+
+    fn get_debug(&self) -> &[String] {
+        &self.debug
+    }
+
+    fn get_root(&self) -> &Option<std::path::PathBuf> {
+        &self.root
+    }
+
+    fn set_root(&mut self, root: std::path::PathBuf) {
+        self.root = Some(root);
+    }
+}
+
+/// Arguments to forward to custom commands
+#[derive(Default, Clone, Debug, Parser)]
+pub struct Arguments {
+    #[arg(allow_hyphen_values = true)]
+    pub args: Vec<String>,
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -104,9 +151,8 @@ pub enum Command {
     Exec(cmds::exec::ExecOptions),
     /// Grow garden worktrees into existence
     Grow(cmds::grow::GrowOptions),
-    /// Graphical interface
-    #[cfg(feature = "gui")]
-    Gui(cmds::cmd::CustomOptions),
+    /// Garden GUI (run "garden-gui --help" for more details)
+    Gui(Arguments),
     /// Initialize a "garden.yaml" garden configuration file
     Init(cmds::init::InitOptions),
     /// List available gardens, groups, trees and commands
@@ -124,5 +170,26 @@ pub enum Command {
 impl std::default::Default for Command {
     fn default() -> Self {
         Command::Custom(vec![])
+    }
+}
+
+/// Transform an anyhow::Error into an exit code when an error occurs.
+pub fn exit_status_from_error(err: anyhow::Error) -> i32 {
+    match err.downcast::<errors::GardenError>() {
+        Ok(garden_err) => {
+            match garden_err {
+                // ExitStatus exits without printing a message.
+                errors::GardenError::ExitStatus(status) => status,
+                // Other GardenError variants print a message before exiting.
+                _ => {
+                    eprintln!("error: {garden_err:#}");
+                    garden_err.into()
+                }
+            }
+        }
+        Err(other_err) => {
+            eprintln!("error: {other_err:#}");
+            1
+        }
     }
 }

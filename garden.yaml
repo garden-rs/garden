@@ -22,8 +22,8 @@ variables:
 # usage:
 #   garden <cmd> [<tree-query>] [-- [<args>]]
 commands:
-  bench: cargo bench "$@"
-  build: cargo build "$@"
+  bench: cargo bench --workspace "$@"
+  build: cargo build --workspace "$@"
   check>:
     - check/fmt
     - check/audit
@@ -40,13 +40,13 @@ commands:
   check/deny: |
     if type cargo-deny >/dev/null 2>&1
     then
-        cargo deny check ${disable-fetch} "$@"
+        cargo deny --workspace check ${disable-fetch} "$@"
     fi
-  check/fmt: cargo fmt --check "$@"
+  check/fmt: cargo fmt --all --check "$@"
   check/msrv: |
     if type cargo-msrv >/dev/null 2>&1
     then
-        cargo msrv verify
+        cargo msrv --workspace verify
     fi
   clean: cargo clean "$@"
   commit: git commit "$@"

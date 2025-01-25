@@ -1,40 +1,34 @@
-[package]
-name = "garden-tools"
-version = "1.11.0-rc.0"
-edition = "2021"
-description = """
-Garden grows and cultivates collections of Git trees
-
-Garden lets you define and run commands over collections of configuration-defined
-multi-worktree Git environments."""
-keywords = ["git", "development", "sandboxes", "vcs", "worktree"]
-categories = [
+[workspace]
+members = ["gui"]
+package.authors = ["David Aguilar <davvid@gmail.com>"]
+package.categories = [
     "command-line-utilities",
     "development-tools",
     "development-tools::build-utils",
 ]
-license = "MIT"
-readme = "README.md"
-homepage = "https://garden-rs.gitlab.io"
-documentation = "https://docs.rs/garden-tools/latest/garden"
-repository = "https://gitlab.com/garden-rs/garden"
-authors = ["David Aguilar <davvid@gmail.com>"]
-rust-version = "1.81.0"
+package.documentation = "https://docs.rs/garden-tools/latest/garden"
+package.edition = "2021"
+package.homepage = "https://garden-rs.gitlab.io"
+package.keywords = ["git", "development", "sandboxes", "vcs", "worktree"]
+package.license = "MIT"
+package.readme = "README.md"
+package.repository = "https://gitlab.com/garden-rs/garden"
+package.version = "2.0.0-rc.0"
 
-[badges]
-maintenance = { status = "actively-developed" }
-
-[dependencies]
+[workspace.dependencies]
+garden-tools = { path = ".", version = "2.0.0-rc.0" }
 anyhow = "1.0"
+assert_cmd = "2.0.13"
 better_default = "1.0"
 clap = { version = "4.5", features = ["cargo", "derive", "string"] }
 clap_complete = "4.5"
 crossbeam = "0.8"
 dirs = "6.0"
 dunce = "1.0"
-eframe = { version = "0.30", optional = true }
-egui = { version = "0.30", optional = true }
-egui_extras = { version = "0.30", optional = true }
+eframe = "0.30"
+egui = "0.30"
+egui_extras = "0.30"
+function_name = "0.3.0"
 glob = "0.3"
 indexmap = "2.6"
 indextree = "4.7"
@@ -54,16 +48,59 @@ xdg = "2.5"
 yaml-rust = { version = "0.9", package = "yaml-rust2" }
 yansi = "1.0"
 
-[dev-dependencies]
-assert_cmd = "2.0.13"
-function_name = "0.3.0"
+[package]
+name = "garden-tools"
+description = """
+Garden grows and cultivates collections of Git trees
 
-[features]
-gui = [
-    "dep:eframe",
-    "dep:egui",
-    "dep:egui_extras",
-]
+Garden lets you define and run commands over collections of configuration-defined
+multi-worktree Git environments."""
+
+rust-version = "1.74.0"
+authors.workspace = true
+categories.workspace = true
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+keywords.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+anyhow.workspace = true
+better_default.workspace = true
+clap.workspace = true
+clap_complete.workspace = true
+crossbeam.workspace = true
+dirs.workspace = true
+dunce.workspace = true
+glob.workspace = true
+indexmap.workspace = true
+indextree.workspace = true
+is-terminal.workspace = true
+pathdiff.workspace = true
+rayon.workspace = true
+rm_rf.workspace = true
+shellexpand.workspace = true
+shell-words.workspace = true
+shlex.workspace = true
+strum.workspace = true
+strum_macros.workspace = true
+subprocess.workspace = true
+thiserror.workspace = true
+which.workspace = true
+xdg.workspace = true
+yaml-rust.workspace = true
+yansi.workspace = true
+
+[dev-dependencies]
+assert_cmd.workspace = true
+function_name.workspace = true
 
 [lib]
 name = "garden"

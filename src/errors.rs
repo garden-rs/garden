@@ -103,6 +103,7 @@ pub const EX_OK: i32 = 0;
 pub const EX_ERROR: i32 = 1;
 pub const EX_USAGE: i32 = 64;
 pub const EX_DATAERR: i32 = 65;
+pub const EX_UNAVAILABLE: i32 = 69;
 pub const EX_SOFTWARE: i32 = 70;
 pub const EX_OSERR: i32 = 71;
 pub const EX_CANTCREAT: i32 = 73;

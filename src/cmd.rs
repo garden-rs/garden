@@ -1,7 +1,7 @@
 use crate::{constants, display, errors, eval, model, syntax};
 
 /// Convert an exit status to Result<(), GardenError>.
-pub(crate) fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
+pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
     match exit_status {
         errors::EX_OK => Ok(()),
         _ => Err(errors::GardenError::ExitStatus(exit_status)),
@@ -10,17 +10,34 @@ pub(crate) fn result_from_exit_status(exit_status: i32) -> Result<(), errors::Ga
 
 /// Return an exit status code from a subprocess::Exec instance.
 pub fn status(exec: subprocess::Exec) -> i32 {
-    status_code(exec.join())
+    if let Err(status) = subprocess_result(exec.join()) {
+        status
+    } else {
+        errors::EX_OK
+    }
 }
 
-/// Return the status code from subprocess::Result<subprocess::ExitStatus>.
-fn status_code(result: subprocess::Result<subprocess::ExitStatus>) -> i32 {
+/// Flatten a subprocess::Result into a Result<(), i32>.
+pub fn subprocess_result(result: subprocess::Result<subprocess::ExitStatus>) -> Result<(), i32> {
     match result {
-        Ok(subprocess::ExitStatus::Exited(status)) => status as i32,
-        Ok(subprocess::ExitStatus::Signaled(status)) => status as i32,
-        Ok(subprocess::ExitStatus::Other(status)) => status,
-        Ok(subprocess::ExitStatus::Undetermined) => errors::EX_ERROR,
-        Err(_) => errors::EX_ERROR,
+        Ok(subprocess::ExitStatus::Exited(status)) => {
+            if status == 0 {
+                Ok(())
+            } else {
+                Err(status as i32)
+            }
+        }
+        Ok(subprocess::ExitStatus::Signaled(status)) => Err(status as i32),
+        Ok(subprocess::ExitStatus::Other(status)) => Err(status),
+        Ok(subprocess::ExitStatus::Undetermined) => Err(errors::EX_ERROR),
+        Err(subprocess::PopenError::IoError(err)) => {
+            if err.kind() == std::io::ErrorKind::NotFound {
+                Err(errors::EX_UNAVAILABLE)
+            } else {
+                Err(errors::EX_IOERR)
+            }
+        }
+        Err(_) => Err(errors::EX_ERROR),
     }
 }
 
@@ -80,7 +97,7 @@ pub fn stdout_to_string(exec: subprocess::Exec) -> Result<String, errors::Comman
 }
 
 /// Return a `subprocess::Exec` for a command.
-pub(crate) fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
+pub fn exec_cmd<S>(command: &[S]) -> subprocess::Exec
 where
     S: AsRef<std::ffi::OsStr>,
 {

@@ -8,11 +8,12 @@ use strum::VariantNames;
 use strum_macros;
 use which::which;
 
+use crate::cli::GardenOptions;
 use crate::{cli, collections, config, constants, errors, eval, path, syntax};
 
 pub(crate) type IndexMap<K, V> = indexmap::IndexMap<K, V>;
 pub(crate) type IndexSet<V> = indexmap::IndexSet<V>;
-pub(crate) type StringSet = indexmap::IndexSet<String>;
+pub type StringSet = indexmap::IndexSet<String>;
 
 /// TreeName keys into config.trees
 pub type TreeName = String;
@@ -1374,7 +1375,7 @@ impl ColorMode {
         }
     }
 
-    pub(crate) fn update(&mut self) {
+    pub fn update(&mut self) {
         if *self == ColorMode::Auto {
             // Speedup future calls to is_enabled() by performing the "auto"
             // is_terminal() check once and caching the result.
@@ -1558,7 +1559,7 @@ impl ApplicationContext {
         self.get_config(self.get_root_id())
     }
 
-    pub(crate) fn get_root_config_mut(&self) -> &mut Configuration {
+    pub fn get_root_config_mut(&self) -> &mut Configuration {
         self.get_config_mut(self.get_root_id())
     }
 

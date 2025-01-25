@@ -847,6 +847,29 @@ When a garden is specified then the garden's variables are also available for
 evaluation.
 
 
+## garden gui
+
+    garden gui [<query>...]
+
+    # example
+    garden gui
+
+Garden has a graphical user interface for running command and queries.
+`garden-gui` is provided by a separate crate:
+
+```bash
+cargo install garden-gui
+```
+
+The top-most search bar allows you to input Tree Queries and see the set of trees that
+the query would find.
+
+Custom commands are displayed in a grid of buttons. The contents of each command can be
+seen by right-clicking a command button.
+
+Clicking on a command button will run that command against the current query.
+
+
 ## garden shell
 
     garden shell <tree-query> [<tree>]

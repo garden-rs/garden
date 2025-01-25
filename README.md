@@ -7,7 +7,11 @@ Garden helps you create development workflows over collections of self-contained
 loosely-coupled and inter-dependent Git worktrees.
 
 ```bash
+# Install the "garden" command-line tool.
 cargo install garden-tools
+
+# Install the "garden-gui" graphical user interface for Garden.
+cargo install garden-gui
 ```
 
 ## Documentation
@@ -44,6 +48,8 @@ you can learn to use `garden` with minimal effort.
 ## Links and Related Projects
 
 * [Garden on crates.io](https://crates.io/crates/garden-tools)
+
+* [Garden GUI on crates.io](https://crates.io/crates/garden-gui)
 
 * [Garden Homebrew formula](https://gitlab.com/garden-rs/homebrew-garden)
 

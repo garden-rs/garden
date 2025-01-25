@@ -1,6 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
+use crate::cli::GardenOptions;
 use crate::{constants, display, model, query};
 
 /// Query tree status

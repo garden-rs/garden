@@ -33,15 +33,22 @@ by going to [rustup.rs and following the installation instructions](https://rust
 
 ## Crates.io
 
-This requires at least Rust 1.45 and Cargo to be installed. Once you have
+This requires at least Rust 1.74 and Cargo to be installed. Once you have
 installed Rust, type the following in the terminal:
 
 ```
 cargo install garden-tools
 ```
 
-This will download and compile garden for you. The only thing left to do is
+This will download and compile `garden` for you. The only thing left to do is
 to add the Cargo `$HOME/.cargo/bin` directory to your `$PATH`.
+
+The Garden graphical user interface is provided in a separate crate called `garden-gui`.
+You can install Garden GUI using `cargo` using Rust 1.81.0 or newer.
+
+```
+cargo install garden-gui
+```
 
 
 ## Latest using Cargo
@@ -52,6 +59,7 @@ build the Git version of Garden yourself using `cargo`.
 
 ```
 cargo install --git https://gitlab.com/garden-rs/garden.git garden-tools
+cargo install --git https://gitlab.com/garden-rs/garden.git garden-gui
 ```
 
 
@@ -130,11 +138,17 @@ have to clone the repository on your local machine.
 git clone https://gitlab.com/garden-rs/garden.git
 cd garden
 
-# Build ./target/debug/garden
+# Build garden only
 cargo build
+
+# Build garden and garden-gui
+cargo build --workspace
 
 # Install $HOME/.cargo/bin/garden
 cargo install --path .
+
+# Install $HOME/.cargo/bin/garden-gui
+cargo install --path gui
 ```
 
 This will install `garden` to `~/.cargo/bin/garden` by default.

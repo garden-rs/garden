@@ -1,0 +1,29 @@
+[package]
+name = "garden-gui"
+description = "Garden graphical user interface"
+rust-version = "1.81.0"
+authors.workspace = true
+categories.workspace = true
+documentation.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+keywords.workspace = true
+readme.workspace = true
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+eframe.workspace = true
+egui.workspace = true
+egui_extras.workspace = true
+garden-tools.workspace = true
+shell-words.workspace = true
+
+[[bin]]
+name = "garden-gui"
+
+[badges]
+maintenance = { status = "actively-developed" }

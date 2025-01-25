@@ -73,7 +73,7 @@ pub(crate) fn is_pre_command(string: &str) -> bool {
 
 /// Return true  if `string` is a pre or post-command.
 #[inline]
-pub(crate) fn is_pre_or_post_command(string: &str) -> bool {
+pub fn is_pre_or_post_command(string: &str) -> bool {
     is_pre_command(string) || is_post_command(string)
 }
 
@@ -108,7 +108,7 @@ pub(crate) fn trim_exec(string: &str) -> &str {
 
 /// Trim "+" and "=" suffixes in-place.
 #[inline]
-pub(crate) fn trim_op_inplace(string: &mut String) {
+pub fn trim_op_inplace(string: &mut String) {
     let len = string.len();
     if len > 1 {
         string.remove(len - 1);

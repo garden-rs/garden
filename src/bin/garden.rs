@@ -1,13 +1,14 @@
 use anyhow::Result;
 use clap::Parser;
 
-use garden::{cli, cmds, errors, model};
+use garden::cli::GardenOptions;
+use garden::{cli, cmds, model};
 
 /// Main entry point for the "garden" command.
 fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
-        let exit_status = exit_status_from_error(err);
+        let exit_status = cli::exit_status_from_error(err);
         std::process::exit(exit_status);
     }
 
@@ -38,33 +39,11 @@ fn cmd_main() -> Result<()> {
         cli::Command::Eval(eval) => cmds::eval::main(&app, &eval),
         cli::Command::Exec(mut exec) => cmds::exec::main(&app, &mut exec),
         cli::Command::Grow(grow) => cmds::grow::main(&app, &grow),
-        #[cfg(feature = "gui")]
-        cli::Command::Gui(gui) => cmds::gui::main(&app, &gui),
+        cli::Command::Gui(ref args) => cmds::gui::main(&options, args),
         cli::Command::Init(_) => Ok(()), // Handled above
         cli::Command::List(mut list) => cmds::list::main(&app, &mut list),
         cli::Command::Plant(plant) => cmds::plant::main(&app, &plant),
         cli::Command::Prune(mut prune) => cmds::prune::main(&app, &mut prune),
         cli::Command::Shell(shell) => cmds::shell::main(&app, &shell),
-    }
-}
-
-/// Transform an anyhow::Error into an exit code when an error occurs.
-fn exit_status_from_error(err: anyhow::Error) -> i32 {
-    match err.downcast::<errors::GardenError>() {
-        Ok(garden_err) => {
-            match garden_err {
-                // ExitStatus exits without printing a message.
-                errors::GardenError::ExitStatus(status) => status,
-                // Other GardenError variants print a message before exiting.
-                _ => {
-                    eprintln!("error: {garden_err:#}");
-                    garden_err.into()
-                }
-            }
-        }
-        Err(other_err) => {
-            eprintln!("error: {other_err:#}");
-            1
-        }
     }
 }
