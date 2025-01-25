@@ -2,6 +2,11 @@
 
 ## Upcoming
 
+**Features**:
+
+- A new `garden-gui` graphical user interface for Garden is now available.
+Garden GUI is provided as a separate `cargo install garden-gui` crate.
+
 **Development**:
 
 - The `dirs` dependency was upgraded to v6.0.
