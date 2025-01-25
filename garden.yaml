@@ -46,7 +46,8 @@ commands:
   check/msrv: |
     if type cargo-msrv >/dev/null 2>&1
     then
-        cargo msrv --workspace verify
+        cargo msrv verify
+        cargo msrv --path gui verify
     fi
   clean: cargo clean "$@"
   commit: git commit "$@"
