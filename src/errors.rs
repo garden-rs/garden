@@ -1,3 +1,4 @@
+use anyhow::Result;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -137,6 +138,50 @@ impl std::convert::From<GardenError> for i32 {
             GardenError::WorktreeParentNotPlantedError { .. } => EX_CONFIG,
             GardenError::WorktreeNotFound { .. } => EX_CONFIG,
             GardenError::WriteConfigurationError { .. } => EX_CANTCREAT,
+        }
+    }
+}
+
+/// Convert an i32 into a GardenError.
+pub fn error_from_exit_status(exit_status: i32) -> GardenError {
+    GardenError::ExitStatus(exit_status)
+}
+
+/// Convert a Result<(), i32> into a Result<(), anyhow::Error>
+pub fn error_from_exit_status_result(result: Result<(), i32>) -> Result<()> {
+    result.map_err(|status| error_from_exit_status(status).into())
+}
+
+/// Convert an i32 exit status to Result<(), GardenError>.
+pub fn result_from_exit_status(exit_status: i32) -> Result<(), GardenError> {
+    match exit_status {
+        EX_OK => Ok(()),
+        _ => Err(error_from_exit_status(exit_status)),
+    }
+}
+
+/// Convert an i32 exit status to an anyhow::Result<()>
+pub fn exit_status_into_result(exit_status: i32) -> Result<()> {
+    result_from_exit_status(exit_status).map_err(|err| err.into())
+}
+
+//r Transform an anyhow::Error into an exit code when an error occurs.
+pub fn exit_status_from_error(err: anyhow::Error) -> i32 {
+    match err.downcast::<GardenError>() {
+        Ok(garden_err) => {
+            match garden_err {
+                // ExitStatus exits without printing a message.
+                GardenError::ExitStatus(status) => status,
+                // Other GardenError variants print a message before exiting.
+                _ => {
+                    eprintln!("error: {garden_err:#}");
+                    garden_err.into()
+                }
+            }
+        }
+        Err(other_err) => {
+            eprintln!("error: {other_err:#}");
+            1
         }
     }
 }

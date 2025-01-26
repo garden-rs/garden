@@ -70,7 +70,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &mut PruneOptions)
     let exit_status = prune(config, options, &options.paths)?;
 
     // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
+    errors::exit_status_into_result(exit_status)
 }
 
 /// PathBufMessage is sent across channels between the TraverseFilesystem,

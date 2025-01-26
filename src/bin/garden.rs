@@ -2,13 +2,13 @@ use anyhow::Result;
 use clap::Parser;
 
 use garden::cli::GardenOptions;
-use garden::{cli, cmds, model};
+use garden::{cli, cmds, errors, model};
 
 /// Main entry point for the "garden" command.
 fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = cmd_main() {
-        let exit_status = cli::exit_status_from_error(err);
+        let exit_status = errors::exit_status_from_error(err);
         std::process::exit(exit_status);
     }
 

@@ -3,7 +3,7 @@ use clap::{Parser, ValueHint};
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use garden::cli::GardenOptions;
-use garden::{cli, cmd, errors, model, path, query, syntax};
+use garden::{cli, errors, model, path, query, syntax};
 
 /// Main entry point for the "garden-gui" command.
 fn main() -> Result<()> {
@@ -14,7 +14,7 @@ fn main() -> Result<()> {
     let app = model::ApplicationContext::from_options(&options)?;
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = gui_main(&app, &gui_options) {
-        let exit_status = cli::exit_status_from_error(err);
+        let exit_status = errors::exit_status_from_error(err);
         std::process::exit(exit_status);
     }
 
@@ -45,11 +45,8 @@ fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Re
         egui_options,
         Box::new(|_| Ok(Box::new(app_state))),
     );
-    if result.is_err() {
-        cmd::result_from_exit_status(errors::EX_ERROR).map_err(|err| err.into())
-    } else {
-        Ok(())
-    }
+
+    result.map_err(|_| errors::error_from_exit_status(errors::EX_ERROR).into())
 }
 
 /// Run the Garden graphical interface

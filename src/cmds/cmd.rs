@@ -166,7 +166,7 @@ pub fn main_cmd(app_context: &model::ApplicationContext, options: &mut CmdOption
         cmd(app_context, &options.query, &params)?
     };
 
-    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
+    errors::exit_status_into_result(exit_status)
 }
 
 /// CmdParams are used to control the execution of run_cmd_vec().
@@ -787,6 +787,5 @@ fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
         }
     }
     // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status.load(atomic::Ordering::Acquire))
-        .map_err(|err| err.into())
+    errors::exit_status_into_result(exit_status.load(atomic::Ordering::Acquire))
 }

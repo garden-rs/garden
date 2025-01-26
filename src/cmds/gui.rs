@@ -42,18 +42,13 @@ pub fn main(options: &cli::MainOptions, arguments: &cli::Arguments) -> Result<()
     }
 
     let exec = cmd::exec_cmd(&command);
-    let status = match cmd::subprocess_result(exec.join()) {
-        Err(errors::EX_UNAVAILABLE) => {
-            eprintln!("error: garden-gui is not installed");
-            eprintln!("error: run \"cargo install garden-gui\"");
+    let result = cmd::subprocess_result(exec.join());
+    if result == Err(errors::EX_UNAVAILABLE) {
+        eprintln!("error: garden-gui is not installed");
+        eprintln!("error: run \"cargo install garden-gui\"");
+    }
 
-            errors::EX_UNAVAILABLE
-        }
-        Err(status) => status,
-        Ok(()) => errors::EX_OK,
-    };
-
-    cmd::result_from_exit_status(status).map_err(|err| err.into())
+    errors::error_from_exit_status_result(result)
 }
 
 /// Calculate the size of the commands vector.

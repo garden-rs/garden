@@ -1,13 +1,5 @@
 use crate::{constants, display, errors, eval, model, syntax};
 
-/// Convert an exit status to Result<(), GardenError>.
-pub fn result_from_exit_status(exit_status: i32) -> Result<(), errors::GardenError> {
-    match exit_status {
-        errors::EX_OK => Ok(()),
-        _ => Err(errors::GardenError::ExitStatus(exit_status)),
-    }
-}
-
 /// Return an exit status code from a subprocess::Exec instance.
 pub fn status(exec: subprocess::Exec) -> i32 {
     if let Err(status) = subprocess_result(exec.join()) {
@@ -189,7 +181,7 @@ where
         exec = exec.env(name, value);
     }
 
-    result_from_exit_status(status(exec))
+    errors::result_from_exit_status(status(exec))
 }
 
 /// The command might be a path that only exists inside the resolved

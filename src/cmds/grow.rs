@@ -51,7 +51,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &GrowOptions) -> R
     }
 
     // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status).map_err(|err| err.into())
+    errors::exit_status_into_result(exit_status)
 }
 
 /// Create/update trees in the evaluated tree query.

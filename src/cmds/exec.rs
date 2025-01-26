@@ -138,6 +138,5 @@ fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> 
     }
 
     // Return the last non-zero exit status.
-    cmd::result_from_exit_status(exit_status.load(atomic::Ordering::Acquire))
-        .map_err(|err| err.into())
+    errors::exit_status_into_result(exit_status.load(atomic::Ordering::Acquire))
 }

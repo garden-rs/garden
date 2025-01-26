@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand, ValueHint};
 
-use crate::{cmds, constants, errors, model, path};
+use crate::{cmds, constants, model, path};
 
 #[derive(Clone, Debug, Default, Parser)]
 #[command(name = constants::GARDEN)]
@@ -170,26 +170,5 @@ pub enum Command {
 impl std::default::Default for Command {
     fn default() -> Self {
         Command::Custom(vec![])
-    }
-}
-
-/// Transform an anyhow::Error into an exit code when an error occurs.
-pub fn exit_status_from_error(err: anyhow::Error) -> i32 {
-    match err.downcast::<errors::GardenError>() {
-        Ok(garden_err) => {
-            match garden_err {
-                // ExitStatus exits without printing a message.
-                errors::GardenError::ExitStatus(status) => status,
-                // Other GardenError variants print a message before exiting.
-                _ => {
-                    eprintln!("error: {garden_err:#}");
-                    garden_err.into()
-                }
-            }
-        }
-        Err(other_err) => {
-            eprintln!("error: {other_err:#}");
-            1
-        }
     }
 }
