@@ -21,7 +21,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-/// Main entry point for `garden gui <query> <command>...`.
+/// Main entry point for `garden gui`.
 fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Result<()> {
     let egui_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([892.0, 480.0]),
@@ -297,7 +297,7 @@ impl eframe::App for GardenApp<'_> {
                 let column_width = available_width / (num_columns as f32);
                 egui::Grid::new("command_grid")
                     .num_columns(num_columns)
-                    .min_col_width(available_width / (num_columns as f32))
+                    .min_col_width(column_width)
                     .show(ui, |ui| {
                     let mut seen_commands = model::StringSet::new();
                     let mut current_column = 0;
@@ -326,6 +326,72 @@ impl eframe::App for GardenApp<'_> {
                         }
                     }
                 });
+
+                // Variables
+                if !self.app_context.get_root_config().variables.is_empty() {
+                    ui.separator();
+                    ui.collapsing("Variables", |ui| {
+                        TableBuilder::new(ui)
+                            .striped(true)
+                            .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
+                            .column(Column::auto().at_least(100.0))
+                            .column(Column::remainder()
+                                .at_least(40.0)
+                                .clip(true)
+                                .resizable(true))
+                            .body(|mut body| {
+                                for (name, variable) in &self.app_context.get_root_config().variables {
+                                    body.row(row_height, |mut row| {
+                                        row.col(|ui| {
+                                            ui.with_layout(
+                                                egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                    ui.add_space(spacing);
+                                                    ui.monospace(name);
+                                                },
+                                            );
+                                        });
+                                        row.col(|ui| {
+                                            ui.monospace(variable.get_expr());
+                                        });
+                                    });
+                                }
+                            }
+                        );
+                    });
+                }
+
+                // Overrides (defines)
+                if !self.app_context.get_root_config().override_variables.is_empty() {
+                    ui.separator();
+                    ui.collapsing("Defines", |ui| {
+                        TableBuilder::new(ui)
+                            .striped(true)
+                            .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
+                            .column(Column::auto().at_least(100.0))
+                            .column(Column::remainder()
+                                .at_least(40.0)
+                                .clip(true)
+                                .resizable(true))
+                            .body(|mut body| {
+                                for (name, variable) in &self.app_context.get_root_config().override_variables {
+                                    body.row(row_height, |mut row| {
+                                        row.col(|ui| {
+                                            ui.with_layout(
+                                                egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                                    ui.add_space(spacing);
+                                                    ui.monospace(name);
+                                                },
+                                            );
+                                        });
+                                        row.col(|ui| {
+                                            ui.monospace(variable.get_expr());
+                                        });
+                                    });
+                                }
+                            }
+                        );
+                    });
+                }
 
                 // Query results
                 ui.separator();
