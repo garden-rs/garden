@@ -88,6 +88,9 @@ commands:
     mkdir -p target/debian
     cargo deb --profile deb --target "${target-core}" --output target/debian
     cargo deb --profile deb --target "${target-gui}" --manifest-path gui/Cargo.toml --output target/debian
+  publish: |
+    cargo publish --package garden-tools "$@"
+    cargo publish --package garden-gui "$@"
   push: git push "$@"
   setup: |
     git fetch -q pages 2>/dev/null || (
