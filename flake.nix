@@ -41,6 +41,8 @@
         commonArgs = {
           inherit src;
           strictDeps = true;
+          cargoVendorDir = null;
+          cargoExtraArgs = "";
           nativeBuildInputs = [
             pkgs.git
           ];
@@ -84,12 +86,9 @@
             inherit src;
           };
 
-          garden-audit = craneLib.cargoAudit {
-            inherit src advisory-db;
-          };
-
           garden-deny = craneLib.cargoDeny {
             inherit src;
+            cargoVendorDir = null;
           };
 
           garden-nextest = craneLib.cargoNextest (commonArgs // {
