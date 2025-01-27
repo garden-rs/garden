@@ -16,6 +16,7 @@ version.workspace = true
 [dependencies]
 anyhow.workspace = true
 clap.workspace = true
+crossbeam.workspace = true
 eframe.workspace = true
 egui.workspace = true
 egui_extras.workspace = true

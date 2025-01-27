@@ -241,7 +241,7 @@ pub fn print_command_vec(command: &[&str]) {
 }
 
 /// Print a string command argument list
-pub(crate) fn print_command_string_vec(command: &[String]) {
+pub fn print_command_string_vec(command: &[String]) {
     let str_vec: Vec<&str> = command.iter().map(String::as_str).collect();
     print_command_vec(&str_vec);
 }

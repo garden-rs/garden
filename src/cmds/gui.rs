@@ -28,12 +28,9 @@ pub fn main(options: &cli::MainOptions, arguments: &cli::Arguments) -> Result<()
         command.push("--quiet".as_ref());
     }
 
-    let mut verbose = "-".to_string();
-    verbose.reserve((options.verbose + 1) as usize);
-    for _ in 0..options.verbose {
-        verbose.push('v');
-    }
+    let verbose: String;
     if options.verbose > 0 {
+        verbose = cli::verbose_string(options.verbose);
         command.push(verbose.as_str().as_ref());
     }
 

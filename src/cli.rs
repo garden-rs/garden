@@ -172,3 +172,13 @@ impl std::default::Default for Command {
         Command::Custom(vec![])
     }
 }
+
+/// Convert a verbose u8 into the corresponding command-line argument.
+pub fn verbose_string(verbose: u8) -> String {
+    let mut verbose_str = "-".to_string();
+    verbose_str.reserve((verbose + 1) as usize);
+    for _ in 0..verbose {
+        verbose_str.push('v');
+    }
+    verbose_str
+}

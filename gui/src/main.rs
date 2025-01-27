@@ -3,12 +3,20 @@ use clap::{Parser, ValueHint};
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use garden::cli::GardenOptions;
-use garden::{cli, constants, errors, model, path, query, syntax};
+use garden::{cli, cmd, constants, display, errors, model, path, query, string, syntax};
 
 /// Main entry point for the "garden-gui" command.
 fn main() -> Result<()> {
     let mut gui_options = GuiOptions::parse();
+    // The color mode is modified by update() but we don't need to care about its
+    // new value because update() ends up modifying global state that is ok to leave
+    // alone after the call to update(). We restore the value of color so that we can
+    // pass the original command-line value along to spawned garden commands.
+    let color = gui_options.color.clone();
     gui_options.update();
+    gui_options.color = color;
+
+    cmd::initialize_threads_option(gui_options.num_jobs)?;
 
     let options = gui_options.to_main_options();
     let app = model::ApplicationContext::from_options(&options)?;
@@ -33,18 +41,44 @@ fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Re
         .and_then(|os_name| os_name.to_str())
         .unwrap_or(".");
     let window_title = format!("Garden - {}", basename);
+    let query = options.query_string();
+    let (send_command, recv_command) = crossbeam::channel::unbounded();
+
     let app_state = GardenApp {
         app_context,
         initialized: false,
         modal_window_open: false,
         modal_window: ModalWindow::None,
-        query: options.query_string(),
+        options: options.clone(),
+        query,
+        send_command: send_command.clone(),
     };
+
+    let command_thread = std::thread::spawn(move || loop {
+        match recv_command.recv() {
+            Ok(CommandMessage::GardenCommand(command)) => {
+                display::print_command_string_vec(&command);
+                let exec = cmd::exec_cmd(&command);
+                let result = cmd::subprocess_result(exec.join());
+                if result == Err(errors::EX_UNAVAILABLE) {
+                    eprintln!("error: garden is not installed");
+                    eprintln!("error: run \"cargo install garden-tools\"");
+                }
+            }
+            Ok(CommandMessage::Quit) => break,
+            Err(_) => break,
+        }
+    });
+
     let result = eframe::run_native(
         &window_title,
         egui_options,
         Box::new(|_| Ok(Box::new(app_state))),
     );
+
+    // Tell the command thread to quit.
+    send_command.send(CommandMessage::Quit).unwrap_or(());
+    command_thread.join().unwrap_or(());
 
     result.map_err(|_| errors::error_from_exit_status(errors::EX_ERROR).into())
 }
@@ -187,12 +221,122 @@ enum ModalWindow {
     Command(String, Vec<model::Variable>),
 }
 
+enum CommandMessage {
+    GardenCommand(Vec<String>),
+    Quit,
+}
+
 struct GardenApp<'a> {
     app_context: &'a model::ApplicationContext,
     initialized: bool,
     modal_window: ModalWindow,
     modal_window_open: bool,
+    options: GuiOptions,
     query: String,
+    send_command: crossbeam::channel::Sender<CommandMessage>,
+}
+
+/// Calculate a "garden" command for running the specified command.
+fn get_command_vec(options: &GuiOptions, command_name: &str, query: &str) -> Vec<String> {
+    let mut queries = cmd::shlex_split(query);
+    let capacity = get_command_capacity(options, &queries);
+    let mut command = Vec::with_capacity(capacity);
+
+    command.push(constants::GARDEN.to_string());
+
+    if options.color != model::ColorMode::Auto {
+        command.push(format!("--color={}", options.color));
+    }
+    if let Some(config) = &options.config {
+        command.push(format!("--config={}", config.to_string_lossy()));
+    }
+    for debug in &options.debug {
+        command.push(format!("--debug={}", debug));
+    }
+    if let Some(root) = &options.root {
+        command.push(format!("--root={}", root.to_string_lossy()));
+    }
+    if options.verbose > 0 {
+        let verbose = cli::verbose_string(options.verbose);
+        command.push(verbose);
+    }
+
+    // Custom command name.
+    // Options after this point are supported by "garden <command> [options]".
+    command.push(command_name.to_string());
+
+    for define in &options.define {
+        command.push(string!("--define"));
+        command.push(define.to_string());
+    }
+    if options.dry_run {
+        command.push(string!("--dry-run"));
+    }
+    if options.force {
+        command.push(string!("--force"));
+    }
+    if options.keep_going {
+        command.push(string!("--keep-going"));
+    }
+    if let Some(num_jobs) = &options.num_jobs {
+        command.push(format!("--jobs={}", num_jobs));
+    }
+    if !options.exit_on_error {
+        command.push(string!("--no-errexit"));
+    }
+    if !options.word_split {
+        command.push(string!("--no-wordsplit"));
+    }
+    if options.quiet {
+        command.push(string!("--quiet"));
+    }
+
+    // Query positional argument
+    command.append(&mut queries);
+
+    command
+}
+
+fn get_command_capacity(options: &GuiOptions, queries: &[String]) -> usize {
+    let mut size = 2; // garden <cmd>
+    size += queries.len();
+    size += options.define.len();
+    size += options.debug.len() * 2;
+    if options.dry_run {
+        size += 1;
+    }
+    if options.config.is_some() {
+        size += 1;
+    }
+    if options.color != model::ColorMode::Auto {
+        size += 1;
+    }
+    if !options.exit_on_error {
+        size += 1;
+    }
+    if options.force {
+        size += 1;
+    }
+    if options.keep_going {
+        size += 1;
+    }
+    if options.quiet {
+        size += 1;
+    }
+    if options.root.is_some() {
+        size += 1;
+    }
+    if options.verbose > 0 {
+        size += 1;
+    }
+    if !options.word_split {
+        size += 1;
+    }
+    if options.num_jobs.is_some() {
+        size += 1;
+    }
+
+    size
 }
 
 impl GardenApp<'_> {
@@ -312,7 +456,8 @@ impl eframe::App for GardenApp<'_> {
                         let button_ui = egui::Button::new(&command_name).wrap_mode(egui::TextWrapMode::Wrap);
                         let button = ui.add_sized(egui::Vec2::new(column_width, ui.available_height()), button_ui);
                         if button.clicked() {
-                            println!("Running: {}", command_name);
+                            let command_vec = get_command_vec(&self.options, &command_name, &self.query);
+                            self.send_command.send(CommandMessage::GardenCommand(command_vec)).unwrap_or(());
                         }
                         if button.secondary_clicked() {
                             self.modal_window = ModalWindow::Command(command_name.clone(), command_vec.clone());
@@ -396,12 +541,16 @@ impl eframe::App for GardenApp<'_> {
                 // Query results
                 ui.separator();
                 let config = self.app_context.get_root_config_mut();
-                let query = if self.query.is_empty() {
+                let query_str = if self.query.is_empty() {
                     "."
                 } else {
                     self.query.as_str()
                 };
-                let contexts = query::resolve_trees(self.app_context, config, None, query);
+                let mut contexts: Vec<model::TreeContext> = Vec::with_capacity(self.app_context.get_root_config().trees.len());
+                let queries = cmd::shlex_split(query_str);
+                for query in &queries {
+                    contexts.append(&mut query::resolve_trees(self.app_context, config, None, query));
+                }
                 if !contexts.is_empty() {
                     ui.with_layout(
                         egui::Layout::top_down(egui::Align::Center),

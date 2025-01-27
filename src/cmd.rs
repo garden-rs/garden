@@ -323,6 +323,19 @@ pub(crate) fn shell_quote(arg: &str) -> String {
         .unwrap_or_else(|_| arg.to_string())
 }
 
+/// Split a shell string into command-line arguments.
+pub fn shlex_split(shell: &str) -> Vec<String> {
+    if shell.is_empty() {
+        return Vec::new();
+    }
+    match shlex::split(shell) {
+        Some(shell_command) if !shell_command.is_empty() => shell_command,
+        _ => {
+            vec![shell.to_string()]
+        }
+    }
+}
+
 /// Get the default number of jobs to run in parallel
 pub(crate) fn default_num_jobs() -> usize {
     match std::thread::available_parallelism() {
@@ -346,7 +359,7 @@ pub(crate) fn initialize_threads(num_jobs: usize) -> anyhow::Result<()> {
 }
 
 /// Initialize the global thread pool when the num_jobs option is provided.
-pub(crate) fn initialize_threads_option(num_jobs: Option<usize>) -> anyhow::Result<()> {
+pub fn initialize_threads_option(num_jobs: Option<usize>) -> anyhow::Result<()> {
     let Some(num_jobs_value) = num_jobs else {
         return Ok(());
     };

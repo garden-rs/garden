@@ -340,16 +340,6 @@ fn cmd_parallel(
     }
 }
 
-/// Split the configured shell into command-line arguments.
-fn shlex_split(shell: &str) -> Vec<String> {
-    match shlex::split(shell) {
-        Some(shell_command) if !shell_command.is_empty() => shell_command,
-        _ => {
-            vec![shell.to_string()]
-        }
-    }
-}
-
 /// The configured shell state.
 struct ShellParams {
     /// The shell string is parsed into command line arguments.
@@ -360,7 +350,7 @@ struct ShellParams {
 
 impl ShellParams {
     fn new(shell: &str, exit_on_error: bool, word_split: bool) -> Self {
-        let mut shell_command = shlex_split(shell);
+        let mut shell_command = cmd::shlex_split(shell);
         let basename = path::str_basename(&shell_command[0]);
         // Does the shell understand "-e" for errexit?
         let is_shell = path::is_shell(basename);
@@ -404,7 +394,7 @@ impl ShellParams {
 
     /// Return ShellParams from a "#!" shebang line string.
     fn from_str(shell: &str) -> Self {
-        let shell_command = shlex_split(shell);
+        let shell_command = cmd::shlex_split(shell);
         let basename = path::str_basename(&shell_command[0]);
         // Does the shell understand "-e" for errexit?
         let is_shell = path::is_shell(basename);
