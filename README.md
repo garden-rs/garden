@@ -29,6 +29,16 @@ for details on how to use the Garden APIs for developing Garden.
 
 * [Garden pre-built binaries](https://github.com/garden-rs/garden/releases)
 
+Pre-built `garden` binaries are statically linked using
+[musl libc](https://musl.libc.org/) so that they can run on any Linux system.
+
+Pre-built binaries for Garden's graphical user interface (`garden-gui`) are only
+available as amd64/x86_64 Linux tarballs and Debian packages. `garden-gui` is provided
+by the `garden-gui_*_amd64.deb` and `garden-gui-*-x86_64-unknown-linux-gnu.tar.gz`
+artifacts.
+
+Both `garden` and `garden-gui` must be installed in order to use `garden-gui`.
+
 
 ## Use Cases
 
