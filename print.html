@@ -300,17 +300,22 @@ managers, e.g. <code>brew install rust</code> or <code>apt install rust-all</cod
 <p>Other platforms and older distributions can get a Rust development toolchain
 by going to <a href="https://rustup.rs">rustup.rs and following the installation instructions</a>.</p>
 <h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
-<p>This requires at least Rust 1.45 and Cargo to be installed. Once you have
+<p>This requires at least Rust 1.74 and Cargo to be installed. Once you have
 installed Rust, type the following in the terminal:</p>
 <pre><code>cargo install garden-tools
 </code></pre>
-<p>This will download and compile garden for you. The only thing left to do is
+<p>This will download and compile <code>garden</code> for you. The only thing left to do is
 to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</code>.</p>
+<p>The Garden graphical user interface is provided in a separate crate called <code>garden-gui</code>.
+You can install Garden GUI using <code>cargo</code> using Rust 1.81.0 or newer.</p>
+<pre><code>cargo install garden-gui
+</code></pre>
 <h2 id="latest-using-cargo"><a class="header" href="#latest-using-cargo">Latest using Cargo</a></h2>
 <p>The version published to crates.io will sometimes be behind the source
 code repository. If you want to install the latest pre-release version then you can
 build the Git version of Garden yourself using <code>cargo</code>.</p>
 <pre><code>cargo install --git https://gitlab.com/garden-rs/garden.git garden-tools
+cargo install --git https://gitlab.com/garden-rs/garden.git garden-gui
 </code></pre>
 <h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
 <p>You can install <code>garden</code> on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
@@ -355,11 +360,17 @@ have to clone the repository on your local machine.</p>
 <pre><code class="language-bash">git clone https://gitlab.com/garden-rs/garden.git
 cd garden
 
-# Build ./target/debug/garden
+# Build garden only
 cargo build
+
+# Build garden and garden-gui
+cargo build --workspace
 
 # Install $HOME/.cargo/bin/garden
 cargo install --path .
+
+# Install $HOME/.cargo/bin/garden-gui
+cargo install --path gui
 </code></pre>
 <p>This will install <code>garden</code> to <code>~/.cargo/bin/garden</code> by default.</p>
 <p>Once you have <code>garden</code> installed then you can use Garden's <code>garden.yaml</code> to run
@@ -1169,6 +1180,21 @@ block only.</p>
 <p>When a tree is given then its variables are considered as well.</p>
 <p>When a garden is specified then the garden's variables are also available for
 evaluation.</p>
+<h2 id="garden-gui"><a class="header" href="#garden-gui">garden gui</a></h2>
+<pre><code>garden gui [&lt;query&gt;...]
+
+# example
+garden gui
+</code></pre>
+<p>Garden has a graphical user interface for running command and queries.
+<code>garden-gui</code> is provided by a separate crate:</p>
+<pre><code class="language-bash">cargo install garden-gui
+</code></pre>
+<p>The top-most search bar allows you to input Tree Queries and see the set of trees that
+the query would find.</p>
+<p>Custom commands are displayed in a grid of buttons. The contents of each command can be
+seen by right-clicking a command button.</p>
+<p>Clicking on a command button will run that command against the current query.</p>
 <h2 id="garden-shell-1"><a class="header" href="#garden-shell-1">garden shell</a></h2>
 <pre><code>garden shell &lt;tree-query&gt; [&lt;tree&gt;]
 
@@ -2379,6 +2405,25 @@ hello
 world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v200"><a class="header" href="#v200">v2.0.0</a></h2>
+<p><em>Released 2025-01-26</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>A new <code>garden-gui</code> graphical user interface for Garden is now available.
+Garden GUI is provided as a separate <code>cargo install garden-gui</code> crate.</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p>The <code>dirs</code> dependency was upgraded to v6.0.</p>
+</li>
+<li>
+<p>The <code>thiserror</code> dependency was upgraded to v2.0.</p>
+</li>
+<li>
+<p>The <code>which</code> dependency was upgraded to v7.0.</p>
+</li>
+</ul>
 <h2 id="v1101"><a class="header" href="#v1101">v1.10.1</a></h2>
 <p><em>Released 2025-01-14</em></p>
 <p><strong>Features</strong>:</p>
@@ -2442,7 +2487,7 @@ command directly, before any sub-commands, e.g. <code>garden -v ...</code>.</li>
 <p>Internal APIs for running commands were refactored.</p>
 </li>
 <li>
-<p>The <code>yaml-rust2</code> dependency was upgraded to v0.9.0.</p>
+<p>The <code>yaml-rust2</code> dependency was upgraded to v0.9.</p>
 </li>
 </ul>
 <h2 id="v180"><a class="header" href="#v180">v1.8.0</a></h2>

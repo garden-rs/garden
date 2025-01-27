@@ -179,17 +179,22 @@ managers, e.g. <code>brew install rust</code> or <code>apt install rust-all</cod
 <p>Other platforms and older distributions can get a Rust development toolchain
 by going to <a href="https://rustup.rs">rustup.rs and following the installation instructions</a>.</p>
 <h2 id="cratesio"><a class="header" href="#cratesio">Crates.io</a></h2>
-<p>This requires at least Rust 1.45 and Cargo to be installed. Once you have
+<p>This requires at least Rust 1.74 and Cargo to be installed. Once you have
 installed Rust, type the following in the terminal:</p>
 <pre><code>cargo install garden-tools
 </code></pre>
-<p>This will download and compile garden for you. The only thing left to do is
+<p>This will download and compile <code>garden</code> for you. The only thing left to do is
 to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</code>.</p>
+<p>The Garden graphical user interface is provided in a separate crate called <code>garden-gui</code>.
+You can install Garden GUI using <code>cargo</code> using Rust 1.81.0 or newer.</p>
+<pre><code>cargo install garden-gui
+</code></pre>
 <h2 id="latest-using-cargo"><a class="header" href="#latest-using-cargo">Latest using Cargo</a></h2>
 <p>The version published to crates.io will sometimes be behind the source
 code repository. If you want to install the latest pre-release version then you can
 build the Git version of Garden yourself using <code>cargo</code>.</p>
 <pre><code>cargo install --git https://gitlab.com/garden-rs/garden.git garden-tools
+cargo install --git https://gitlab.com/garden-rs/garden.git garden-gui
 </code></pre>
 <h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
 <p>You can install <code>garden</code> on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
@@ -234,11 +239,17 @@ have to clone the repository on your local machine.</p>
 <pre><code class="language-bash">git clone https://gitlab.com/garden-rs/garden.git
 cd garden
 
-# Build ./target/debug/garden
+# Build garden only
 cargo build
+
+# Build garden and garden-gui
+cargo build --workspace
 
 # Install $HOME/.cargo/bin/garden
 cargo install --path .
+
+# Install $HOME/.cargo/bin/garden-gui
+cargo install --path gui
 </code></pre>
 <p>This will install <code>garden</code> to <code>~/.cargo/bin/garden</code> by default.</p>
 <p>Once you have <code>garden</code> installed then you can use Garden's <code>garden.yaml</code> to run

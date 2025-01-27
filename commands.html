@@ -773,6 +773,21 @@ block only.</p>
 <p>When a tree is given then its variables are considered as well.</p>
 <p>When a garden is specified then the garden's variables are also available for
 evaluation.</p>
+<h2 id="garden-gui"><a class="header" href="#garden-gui">garden gui</a></h2>
+<pre><code>garden gui [&lt;query&gt;...]
+
+# example
+garden gui
+</code></pre>
+<p>Garden has a graphical user interface for running command and queries.
+<code>garden-gui</code> is provided by a separate crate:</p>
+<pre><code class="language-bash">cargo install garden-gui
+</code></pre>
+<p>The top-most search bar allows you to input Tree Queries and see the set of trees that
+the query would find.</p>
+<p>Custom commands are displayed in a grid of buttons. The contents of each command can be
+seen by right-clicking a command button.</p>
+<p>Clicking on a command button will run that command against the current query.</p>
 <h2 id="garden-shell-1"><a class="header" href="#garden-shell-1">garden shell</a></h2>
 <pre><code>garden shell &lt;tree-query&gt; [&lt;tree&gt;]
 
