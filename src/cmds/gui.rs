@@ -1,12 +1,12 @@
 use anyhow::Result;
 
-use crate::{cli, cmd, errors};
+use crate::{cli, cmd, constants, errors};
 
 /// Main entry point for `garden gui <query> <command>...`.
 pub fn main(options: &cli::MainOptions, arguments: &cli::Arguments) -> Result<()> {
     let capacity = get_capacity(options, arguments);
     let mut command = Vec::with_capacity(capacity);
-    command.push("garden-gui".as_ref());
+    command.push(constants::GARDEN_GUI.as_ref());
 
     if let Some(config) = &options.config {
         command.push("--config".as_ref());

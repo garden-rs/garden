@@ -3,7 +3,7 @@ use clap::{Parser, ValueHint};
 use eframe::egui;
 use egui_extras::{Column, TableBuilder};
 use garden::cli::GardenOptions;
-use garden::{cli, errors, model, path, query, syntax};
+use garden::{cli, constants, errors, model, path, query, syntax};
 
 /// Main entry point for the "garden-gui" command.
 fn main() -> Result<()> {
@@ -51,7 +51,7 @@ fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Re
 
 /// Run the Garden graphical interface
 #[derive(Parser, Clone, Debug)]
-#[command(bin_name = "garden-gui")]
+#[command(bin_name = constants::GARDEN_GUI)]
 #[command(author, version, about, long_about = None)]
 pub(crate) struct GuiOptions {
     /// Change directories before searching for Garden files

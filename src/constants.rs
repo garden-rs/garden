@@ -77,6 +77,9 @@ pub const GARDEN_CONFIG_DIR: &str = "GARDEN_CONFIG_DIR";
 /// Variable expression for the "garden.yaml" configuration directory.
 pub const GARDEN_CONFIG_DIR_EXPR: &str = "${GARDEN_CONFIG_DIR}";
 
+/// The "garden-gui" command name.
+pub const GARDEN_GUI: &str = "garden-gui";
+
 /// Builtin variable for the "garden.root" location where trees are grown.
 pub const GARDEN_ROOT: &str = "GARDEN_ROOT";
 
