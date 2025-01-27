@@ -27,3 +27,16 @@ name = "garden-gui"
 
 [badges]
 maintenance = { status = "actively-developed" }
+
+[package.metadata.deb]
+name = "garden-gui"
+section = "utils"
+assets = [
+  ["target/release/garden-gui", "usr/bin/", "755"],
+  ["../LICENSE", "usr/share/doc/garden-gui/", "644"],
+  ["../README.md", "usr/share/doc/garden-gui/", "644"],
+]
+extended-description = """\
+Garden GUI is a graphical user interface for Garden.
+https://crates.io/crates/garden-tools
+"""

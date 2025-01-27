@@ -139,7 +139,7 @@ assets = [
   ["target/release/garden", "usr/bin/", "755"],
   ["LICENSE", "usr/share/doc/garden/", "644"],
   ["doc/src/changelog.md", "usr/share/doc/garden/CHANGELOG.md", "644"],
-  ["README.md", "usr/share/doc/garden/README.md", "644"],
+  ["README.md", "usr/share/doc/garden/", "644"],
   ["pkg/deb/userguide/*", "usr/share/doc/garden/userguide/", "644"],
   ["pkg/deb/userguide/css/*", "usr/share/doc/garden/userguide/css/", "644"],
   ["pkg/deb/userguide/examples/*", "usr/share/doc/garden/userguide/examples/", "644"],
