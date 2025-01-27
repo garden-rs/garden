@@ -12,7 +12,8 @@ variables:
   prefix: ~/.cargo
   bindir: ${prefix}/bin
   docdir: ${prefix}/share/doc/garden
-  target: x86_64-unknown-linux-musl
+  target-core: x86_64-unknown-linux-musl
+  target-gui: x86_64-unknown-linux-gnu
   pkg: ${GARDEN_CONFIG_DIR}/pkg
   debdir: ${pkg}/deb
   fetch: ""
@@ -75,14 +76,18 @@ commands:
     - pkg/deb/doc
     - pkg/deb/package
   pkg/deb/build: |
-    cargo build --profile deb --target "${target}"
+    cargo build --profile deb --target "${target-core}"
+    cargo build --profile deb --target "${target-gui}" --package garden-gui
   pkg/deb/completion: |
     mkdir -p "${debdir}/completion"
     "$0" completion bash >"${debdir}/completion/garden.bash"
     "$0" completion fish >"${debdir}/completion/garden.fish"
     "$0" completion zsh >"${debdir}/completion/_garden"
   pkg/deb/doc: mdbook build --dest-dir "${debdir}/userguide" doc
-  pkg/deb/package: cargo deb --profile deb --target "${target}"
+  pkg/deb/package: |
+    mkdir -p target/debian
+    cargo deb --profile deb --target "${target-core}" --output target/debian
+    cargo deb --profile deb --target "${target-gui}" --manifest-path gui/Cargo.toml --output target/debian
   push: git push "$@"
   setup: |
     git fetch -q pages 2>/dev/null || (

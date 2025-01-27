@@ -131,7 +131,7 @@ jobs:
         echo "target flag is: ${{ env.TARGET_FLAGS }}"
         echo "target dir is: ${{ env.TARGET_DIR }}"
     - name: Build all crates
-      run: ${{ env.CARGO }} build --verbose --workspace ${{ env.TARGET_FLAGS }}
+      run: ${{ env.CARGO }} build --verbose ${{ env.TARGET_FLAGS }}
     - name: Show build.rs stderr
       shell: bash
       run: |

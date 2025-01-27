@@ -5,6 +5,7 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+      - "dev[0-9]+.[0-9]+.[0-9]+"
 
 # We need this to be able to create releases.
 permissions:
@@ -22,8 +23,8 @@ jobs:
       - name: Get the release version from the tag
         if: env.VERSION == ''
         run: |
-          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-          echo "VERSION_NUMBER=$(echo ${{ github.ref_name }} | sed -e s'/^v//')" >> $GITHUB_ENV
+          echo "VERSION=${{ github.ref_name }}" >>$GITHUB_ENV
+          echo "VERSION_NUMBER=$(echo ${{ github.ref_name }} | sed -e 's/^v//' -e 's/^dev//')" >>$GITHUB_ENV
       - name: Show the version
         run: |
           echo "VERSION = $VERSION"
@@ -31,7 +32,7 @@ jobs:
       - name: Check that tag version and Cargo.toml version are the same
         shell: bash
         run: |
-          if ! grep -q "version = \"$VERSION_NUMBER\"" Cargo.toml
+          if ! grep -q "package.version = \"$VERSION_NUMBER\"" Cargo.toml
           then
             echo "version does not match Cargo.toml" >&2
             exit 1
@@ -70,6 +71,11 @@ jobs:
           rust: nightly
           target: x86_64-unknown-linux-musl
           strip: x86_64-linux-musl-strip
+        - build: linux-gui
+          os: ubuntu-latest
+          rust: nightly
+          target: x86_64-unknown-linux-gnu
+          strip: x86_64-linux-gnu-strip
         - build: stable-x86
           os: ubuntu-latest
           rust: stable
@@ -176,17 +182,25 @@ jobs:
       shell: bash
       run: |
         ${{ env.CARGO }} build --verbose --release ${{ env.TARGET_FLAGS }}
-        if [ "${{ matrix.os }}" = "windows-latest" ]; then
-          bin="target/${{ matrix.target }}/release/garden.exe"
+        if test "${{ matrix.os }}" = "windows-latest"
+        then
+            bin="target/${{ matrix.target }}/release/garden.exe"
         else
-          bin="target/${{ matrix.target }}/release/garden"
+            bin="target/${{ matrix.target }}/release/garden"
         fi
-        echo "BIN=$bin" >> $GITHUB_ENV
+        echo "BIN_CORE=$bin" >>$GITHUB_ENV
+
+    - name: Build release GUI binary
+      shell: bash
+      if: matrix.build == 'linux-gui'
+      run: |
+        ${{ env.CARGO }} build --verbose --release --package garden-gui ${{ env.TARGET_FLAGS }}
+        echo "BIN_GUI=target/${{ matrix.target }}/release/garden-gui" >>$GITHUB_ENV
 
     - name: Strip release binary (macos)
       if: matrix.os == 'macos-latest'
       shell: bash
-      run: strip "$BIN"
+      run: strip "$BIN_CORE"
 
     - name: Strip release binary (cross)
       if: env.CARGO == 'cross'
@@ -196,29 +210,49 @@ jobs:
           "$PWD/target:/target:Z" \
           "ghcr.io/cross-rs/${{ matrix.target }}:main" \
           "${{ matrix.strip }}" \
-          "/$BIN"
+          "/$BIN_CORE"
+
+    - name: Strip release binary (gui)
+      if: matrix.build == 'linux-gui'
+      shell: bash
+      run: |
+        strip "$BIN_GUI"
 
     - name: Determine archive name
       shell: bash
       run: |
         version_number="${{ needs.create-release.outputs.version_number }}"
-        echo "ARCHIVE=garden-${version_number}-${{ matrix.target }}" >> $GITHUB_ENV
+        echo "ARCHIVE_CORE=garden-${version_number}-${{ matrix.target }}" >>$GITHUB_ENV
+
+    - name: Determine GUI archive name
+      if: matrix.build == 'linux-gui'
+      shell: bash
+      run: |
+        version_number="${{ needs.create-release.outputs.version_number }}"
+        echo "ARCHIVE_GUI=garden-gui-${version_number}-${{ matrix.target }}" >>$GITHUB_ENV
 
     - name: Creating directory for archive
       shell: bash
       run: |
-        mkdir -p "$ARCHIVE"/{completion,doc}
-        cp "$BIN" "$ARCHIVE"/
-        cp doc/src/changelog.md "$ARCHIVE"/doc/CHANGELOG.md
-        cp README.md LICENSE "$ARCHIVE"/doc
+        mkdir -p "$ARCHIVE_CORE"/{completion,doc}
+        cp "$BIN_CORE" "$ARCHIVE_CORE"/
+        cp doc/src/changelog.md "$ARCHIVE_CORE"/doc/CHANGELOG.md
+        cp README.md LICENSE "$ARCHIVE_CORE"/doc
+
+    - name: Creating directory for GUI archive
+      if: matrix.build == 'linux-gui'
+      shell: bash
+      run: |
+        mkdir -p "$ARCHIVE_GUI"
+        cp "$BIN_GUI" "$ARCHIVE_GUI"/
 
     - name: Generate completions (no emulation)
       if: matrix.qemu == '' && matrix.build != 'win-msvc' && matrix.build != 'win-gnu'
       shell: bash
       run: |
-        "$BIN" --version
-        "$BIN" -vv --define debdir="$ARCHIVE" pkg/deb/completion
-        "$BIN" completion powershell >"$ARCHIVE/completion/_garden.ps1"
+        "$BIN_CORE" --version
+        "$BIN_CORE" --define debdir="$ARCHIVE_CORE" pkg/deb/completion -vv
+        "$BIN_CORE" completion powershell >"$ARCHIVE_CORE/completion/_garden.ps1"
 
     - name: Generate completions (emulation)
       if: matrix.qemu != '' && matrix.build != 'win-msvc' && matrix.build != 'win-gnu'
@@ -227,45 +261,54 @@ jobs:
         docker run --rm -v \
           "$PWD/target:/target:Z" \
           "ghcr.io/cross-rs/${{ matrix.target }}:main" \
-          "${{ matrix.qemu }}" "/$BIN" --version
+          "${{ matrix.qemu }}" "/$BIN_CORE" --version
         docker run --rm -v \
           "$PWD/target:/target:Z" \
           "ghcr.io/cross-rs/${{ matrix.target }}:main" \
-          "${{ matrix.qemu }}" "/$BIN" \
-            completion bash > "$ARCHIVE/completion/garden.bash"
+          "${{ matrix.qemu }}" "/$BIN_CORE" \
+            completion bash >"$ARCHIVE_CORE/completion/garden.bash"
         docker run --rm -v \
           "$PWD/target:/target:Z" \
           "ghcr.io/cross-rs/${{ matrix.target }}:main" \
-          "${{ matrix.qemu }}" "/$BIN" \
-            completion fish > "$ARCHIVE/completion/garden.fish"
+          "${{ matrix.qemu }}" "/$BIN_CORE" \
+            completion fish >"$ARCHIVE_CORE/completion/garden.fish"
         docker run --rm -v \
           "$PWD/target:/target:Z" \
           "ghcr.io/cross-rs/${{ matrix.target }}:main" \
-          "${{ matrix.qemu }}" "/$BIN" \
-            completion powershell > "$ARCHIVE/completion/_garden.ps1"
+          "${{ matrix.qemu }}" "/$BIN_CORE" \
+            completion powershell >"$ARCHIVE_CORE/completion/_garden.ps1"
         docker run --rm -v \
           "$PWD/target:/target:Z" \
           "ghcr.io/cross-rs/${{ matrix.target }}:main" \
-          "${{ matrix.qemu }}" "/$BIN" \
-            completion zsh > "$ARCHIVE/completion/_garden"
+          "${{ matrix.qemu }}" "/$BIN_CORE" \
+            completion zsh >"$ARCHIVE_CORE/completion/_garden"
 
     - name: Build archive (Windows)
       shell: bash
       if: matrix.os == 'windows-latest'
       run: |
-        7z a "$ARCHIVE.zip" "$ARCHIVE"
-        certutil -hashfile "$ARCHIVE.zip" SHA256 > "$ARCHIVE.zip.sha256"
-        echo "ASSET=$ARCHIVE.zip" >> $GITHUB_ENV
-        echo "ASSET_SUM=$ARCHIVE.zip.sha256" >> $GITHUB_ENV
+        7z a "$ARCHIVE_CORE.zip" "$ARCHIVE_CORE"
+        certutil -hashfile "$ARCHIVE_CORE.zip" SHA256 > "$ARCHIVE_CORE.zip.sha256"
+        echo "ASSET_CORE=$ARCHIVE_CORE.zip" >>$GITHUB_ENV
+        echo "ASSET_CORE_SUM=$ARCHIVE_CORE.zip.sha256" >>$GITHUB_ENV
 
     - name: Build archive (Unix)
       shell: bash
       if: matrix.os != 'windows-latest'
       run: |
-        tar czf "$ARCHIVE.tar.gz" "$ARCHIVE"
-        shasum -a 256 "$ARCHIVE.tar.gz" > "$ARCHIVE.tar.gz.sha256"
-        echo "ASSET=$ARCHIVE.tar.gz" >> $GITHUB_ENV
-        echo "ASSET_SUM=$ARCHIVE.tar.gz.sha256" >> $GITHUB_ENV
+        tar czf "$ARCHIVE_CORE.tar.gz" "$ARCHIVE_CORE"
+        shasum -a 256 "$ARCHIVE_CORE.tar.gz" >"$ARCHIVE_CORE.tar.gz.sha256"
+        echo "ASSET_CORE=$ARCHIVE_CORE.tar.gz" >>$GITHUB_ENV
+        echo "ASSET_CORE_SUM=$ARCHIVE_CORE.tar.gz.sha256" >>$GITHUB_ENV
+
+    - name: Build archive (gui)
+      shell: bash
+      if: matrix.build == 'linux-gui'
+      run: |
+        tar czf "$ARCHIVE_GUI.tar.gz" "$ARCHIVE_GUI"
+        shasum -a 256 "$ARCHIVE_GUI.tar.gz" >"$ARCHIVE_GUI.tar.gz.sha256"
+        echo "ASSET_GUI=$ARCHIVE_GUI.tar.gz" >>$GITHUB_ENV
+        echo "ASSET_GUI_SUM=$ARCHIVE_GUI.tar.gz.sha256" >>$GITHUB_ENV
 
     - name: Upload release archive
       env:
@@ -273,14 +316,24 @@ jobs:
       shell: bash
       run: |
         version="${{ needs.create-release.outputs.version }}"
-        gh release upload "$version" ${{ env.ASSET }} ${{ env.ASSET_SUM }}
+        gh release upload "$version" ${{ env.ASSET_CORE }} ${{ env.ASSET_CORE_SUM }}
+
+    - name: Upload GUI release archive
+      if: matrix.build == 'linux-gui'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+      run: |
+        version="${{ needs.create-release.outputs.version }}"
+        gh release upload "$version" ${{ env.ASSET_GUI }} ${{ env.ASSET_GUI_SUM }}
 
   build-release-deb:
     name: build-release-deb
     needs: ['create-release']
     runs-on: ubuntu-latest
     env:
-      TARGET: x86_64-unknown-linux-musl
+      TARGET_MUSL: x86_64-unknown-linux-musl
+      TARGET_GNU: x86_64-unknown-linux-gnu
       RUST_BACKTRACE: 1
 
     steps:
@@ -291,15 +344,21 @@ jobs:
       shell: bash
       run: sudo apt install git musl-tools rsync
 
-    - name: Install Rust
+    - name: Install Rust (musl)
       uses: dtolnay/rust-toolchain@master
       with:
         toolchain: nightly
-        target: ${{ env.TARGET }}
+        target: ${{ env.TARGET_MUSL }}
+
+    - name: Install Rust (gnu)
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+        target: ${{ env.TARGET_GNU }}
 
     - name: Install mdbook
       run: |
-        version=v0.4.37
+        version=v0.4.43
         curl -sSL https://github.com/rust-lang/mdBook/releases/download/${version}/mdbook-${version}-x86_64-unknown-linux-gnu.tar.gz |
           tar -xz --directory=${HOME}/.cargo/bin
 
@@ -314,49 +373,57 @@ jobs:
     - name: Build debug binary to create release assets
       shell: bash
       run: |
-        cargo build --target ${{ env.TARGET }}
-        bin="target/${{ env.TARGET }}/debug/garden"
-        echo "BIN=$bin" >> $GITHUB_ENV
+        cargo build --target ${{ env.TARGET_MUSL }}
+        echo "BIN_CORE=target/${{ env.TARGET_MUSL }}/debug/garden" >>$GITHUB_ENV
 
     - name: Create deployment directory
       shell: bash
       run: |
         dir=target/deb
         mkdir -p "$dir"
-        echo "DEPLOY_DIR=$dir" >> $GITHUB_ENV
+        echo "DEPLOY_DIR=$dir" >>$GITHUB_ENV
 
     - name: Generate shell completions
       shell: bash
       run: |
-        "$BIN" -vv pkg/deb/completion
+        "$BIN_CORE" pkg/deb/completion -vv
 
     - name: Generate user documentation
       shell: bash
       run: |
-        "$BIN" -vv pkg/deb/doc
+        "$BIN_CORE" pkg/deb/doc -vv
 
-    - name: Build release binary
+    - name: Build Debian release binary
       shell: bash
       run: |
-        "$BIN" -vv --define target=${{ env.TARGET }} pkg/deb/build
-        "$BIN" -vv --define target=${{ env.TARGET }} pkg/deb/package
+        "$BIN_CORE" \
+          --define target=${{ env.TARGET_MUSL }} \
+          --define target-gui=${{ env.TARGET_GNU }} \
+          pkg/deb/build -vv
+        "$BIN_CORE" \
+          --define target=${{ env.TARGET_MUSL }} \
+          --define target-gui=${{ env.TARGET_GNU }} \
+          pkg/deb/package -vv
         version_number="${{ needs.create-release.outputs.version_number }}"
-        echo "DEB_DIR=target/${{ env.TARGET }}/debian" >> $GITHUB_ENV
-        echo "DEB_NAME=garden_${version_number}-1_amd64.deb" >> $GITHUB_ENV
+        echo "DEB_DIR=target/debian" >>$GITHUB_ENV
+        echo "DEB_CORE_NAME=garden_${version_number}-1_amd64.deb" >>$GITHUB_ENV
+        echo "DEB_GUI_NAME=garden-gui_${version_number}-1_amd64.deb" >>$GITHUB_ENV
 
     - name: Create sha256 sum of deb file
       shell: bash
       run: |
         cd "$DEB_DIR"
-        sum="$DEB_NAME.sha256"
-        shasum -a 256 "$DEB_NAME" > "$sum"
-        echo "SUM=$sum" >> $GITHUB_ENV
+        shasum -a 256 "$DEB_CORE_NAME" >"$DEB_CORE_NAME.sha256"
+        shasum -a 256 "$DEB_GUI_NAME" >"$DEB_GUI_NAME.sha256"
+        echo "SUM_CORE=$DEB_CORE_NAME.sha256" >>$GITHUB_ENV
+        echo "SUM_GUI=$DEB_GUI_NAME.sha256" >>$GITHUB_ENV
 
     - name: Upload release archive
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       shell: bash
       run: |
-        cd "$DEB_DIR"
         version="${{ needs.create-release.outputs.version }}"
-        gh release upload "$version" "$DEB_NAME" "$SUM"
+        cd "$DEB_DIR"
+        gh release upload "$version" "$DEB_CORE_NAME" "$SUM_CORE"
+        gh release upload "$version" "$DEB_GUI_NAME" "$SUM_GUI"
