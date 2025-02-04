@@ -1,5 +1,14 @@
 # Changelog
 
+## Upcoming
+
+**Development**:
+
+- The `v2.0.0` release removed `Cargo.lock` and added an entry for it to `.gitignore`.
+The `.gitignore` entry has now been removed to make it easier for packagers to track
+their changes.
+
+
 ## v2.0.0
 
 *Released 2025-01-26*
