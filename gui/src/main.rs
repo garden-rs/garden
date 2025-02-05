@@ -52,6 +52,10 @@ fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Re
         options: options.clone(),
         query,
         send_command: send_command.clone(),
+        view_metrics: ViewMetrics {
+            spacing: 4.0,
+            row_height: 18.0,
+        },
     };
 
     let command_thread = std::thread::spawn(move || loop {
@@ -226,6 +230,11 @@ enum CommandMessage {
     Quit,
 }
 
+struct ViewMetrics {
+    spacing: f32,
+    row_height: f32,
+}
+
 struct GardenApp<'a> {
     app_context: &'a model::ApplicationContext,
     initialized: bool,
@@ -234,6 +243,7 @@ struct GardenApp<'a> {
     options: GuiOptions,
     query: String,
     send_command: crossbeam::channel::Sender<CommandMessage>,
+    view_metrics: ViewMetrics,
 }
 
 /// Calculate a "garden" command for running the specified command.
@@ -340,6 +350,82 @@ fn get_command_capacity(options: &GuiOptions, queries: &[String]) -> usize {
 }
 
 impl GardenApp<'_> {
+    /// Add the query bar.
+    fn display_query_input(&mut self, egui_ctx: &egui::Context, ui: &mut egui::Ui) {
+        let focus_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::L);
+        ui.horizontal(|ui| {
+            ui.label("Query");
+            ui.add_space(self.view_metrics.spacing);
+            let query_response = ui.add_sized(
+                ui.available_size(),
+                egui::TextEdit::singleline(&mut self.query).hint_text(
+                    "Tree query for the gardens, groups or trees to execute commands within",
+                ),
+            );
+            if !self.initialized {
+                self.initialized = true;
+                ui.memory_mut(|memory| {
+                    memory.request_focus(query_response.id);
+                });
+            }
+            if egui_ctx.input_mut(|input| input.consume_shortcut(&focus_shortcut)) {
+                ui.memory_mut(|memory| {
+                    memory.request_focus(query_response.id);
+                });
+            }
+        });
+    }
+
+    /// Add the command grid.
+    fn display_commands(&mut self, ui: &mut egui::Ui) {
+        let num_columns = 4;
+        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+            ui.label("Commands");
+        });
+        let available_width = ui.available_width();
+        let column_width = available_width / (num_columns as f32);
+        egui::Grid::new("command_grid")
+            .num_columns(num_columns)
+            .min_col_width(column_width)
+            .show(ui, |ui| {
+                let mut seen_commands = model::StringSet::new();
+                let mut current_column = 0;
+                for (command_name, command_vec) in &self.app_context.get_root_config().commands {
+                    let mut command_name = String::from(command_name);
+                    if syntax::is_pre_or_post_command(&command_name) {
+                        syntax::trim_op_inplace(&mut command_name);
+                    }
+                    if !seen_commands.insert(command_name.clone()) {
+                        continue;
+                    }
+                    let button_ui =
+                        egui::Button::new(&command_name).wrap_mode(egui::TextWrapMode::Wrap);
+                    let button = ui.add_sized(
+                        egui::Vec2::new(column_width, ui.available_height()),
+                        button_ui,
+                    );
+                    if button.clicked() {
+                        let command_vec =
+                            get_command_vec(&self.options, &command_name, &self.query);
+                        self.send_command
+                            .send(CommandMessage::GardenCommand(command_vec))
+                            .unwrap_or(());
+                    }
+                    if button.secondary_clicked() {
+                        self.modal_window =
+                            ModalWindow::Command(command_name.clone(), command_vec.clone());
+                        self.modal_window_open = true;
+                    }
+
+                    current_column += 1;
+                    if current_column % num_columns == 0 {
+                        current_column = 0;
+                        ui.end_row();
+                    }
+                }
+            });
+    }
+
     /// Display details about a command when right-clicked.
     fn command_details(
         &mut self,
@@ -379,16 +465,136 @@ impl GardenApp<'_> {
                 });
             });
     }
+
+    /// Add the variables table.
+    fn display_variables(&mut self, ui: &mut egui::Ui) {
+        if self.app_context.get_root_config().variables.is_empty() {
+            return;
+        }
+        ui.separator();
+        ui.collapsing("Variables", |ui| {
+            TableBuilder::new(ui)
+                .striped(true)
+                .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
+                .column(Column::auto().at_least(100.0))
+                .column(
+                    Column::remainder()
+                        .at_least(40.0)
+                        .clip(true)
+                        .resizable(true),
+                )
+                .body(|mut body| {
+                    for (name, variable) in &self.app_context.get_root_config().variables {
+                        body.row(self.view_metrics.row_height, |mut row| {
+                            row.col(|ui| {
+                                ui.with_layout(
+                                    egui::Layout::right_to_left(egui::Align::Center),
+                                    |ui| {
+                                        ui.add_space(self.view_metrics.spacing);
+                                        ui.monospace(name);
+                                    },
+                                );
+                            });
+                            row.col(|ui| {
+                                ui.monospace(variable.get_expr());
+                            });
+                        });
+                    }
+                });
+        });
+    }
+
+    //// Add the `--defines` overrides table.
+    fn display_override_variables(&mut self, ui: &mut egui::Ui) {
+        if self
+            .app_context
+            .get_root_config()
+            .override_variables
+            .is_empty()
+        {
+            return;
+        }
+        ui.separator();
+        ui.collapsing("Defines", |ui| {
+            TableBuilder::new(ui)
+                .striped(true)
+                .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
+                .column(Column::auto().at_least(100.0))
+                .column(
+                    Column::remainder()
+                        .at_least(40.0)
+                        .clip(true)
+                        .resizable(true),
+                )
+                .body(|mut body| {
+                    for (name, variable) in &self.app_context.get_root_config().override_variables {
+                        body.row(self.view_metrics.row_height, |mut row| {
+                            row.col(|ui| {
+                                ui.with_layout(
+                                    egui::Layout::right_to_left(egui::Align::Center),
+                                    |ui| {
+                                        ui.add_space(self.view_metrics.spacing);
+                                        ui.monospace(name);
+                                    },
+                                );
+                            });
+                            row.col(|ui| {
+                                ui.monospace(variable.get_expr());
+                            });
+                        });
+                    }
+                });
+        });
+    }
+
+    /// Add the query results table
+    fn display_query_results(&self, ui: &mut egui::Ui) {
+        let config = self.app_context.get_root_config();
+        let contexts = query_trees(self.app_context, &self.query);
+        if contexts.is_empty() {
+            return;
+        }
+        ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
+            ui.label("Tree Query Results");
+        });
+        ui.separator();
+        TableBuilder::new(ui)
+            .striped(true)
+            .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
+            .column(Column::auto().at_least(100.0))
+            .column(
+                Column::remainder()
+                    .at_least(40.0)
+                    .clip(true)
+                    .resizable(true),
+            )
+            .body(|mut body| {
+                for tree_ctx in &contexts {
+                    body.row(self.view_metrics.row_height, |mut row| {
+                        row.col(|ui| {
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::Center),
+                                |ui| {
+                                    ui.add_space(self.view_metrics.spacing);
+                                    ui.monospace(&tree_ctx.tree);
+                                },
+                            );
+                        });
+                        let tree = config.get_tree(&tree_ctx.tree);
+                        if let Some(Ok(path)) = tree.map(|tree| tree.path_as_ref()) {
+                            row.col(|ui| {
+                                ui.monospace(path);
+                            });
+                        }
+                    });
+                }
+            });
+    }
 }
 
 impl eframe::App for GardenApp<'_> {
-    /// Display and update the user interface.
+    /// Display the Garden GUI window.
     fn update(&mut self, egui_ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let num_columns = 4;
-        let spacing = 4.0;
-        let row_height = 18.0;
-        let focus_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::L);
-
         egui_ctx.set_pixels_per_point(2.0);
         egui_ctx.style_mut(|style| style.visuals.window_shadow = egui::Shadow::NONE);
 
@@ -408,188 +614,29 @@ impl eframe::App for GardenApp<'_> {
                 ui.disable();
             }
             ui.vertical(|ui| {
-                ui.horizontal(|ui| {
-                    ui.label("Query");
-                    ui.add_space(spacing);
-                    let query_response = ui.add_sized(
-                        ui.available_size(),
-                        egui::TextEdit::singleline(&mut self.query)
-                            .hint_text("Tree query for the gardens, groups or trees to execute commands within")
-                    );
-                    if !self.initialized {
-                        self.initialized = true;
-                        ui.memory_mut(|memory| {
-                            memory.request_focus(query_response.id);
-                        });
-                    }
-                    if egui_ctx.input_mut(|input| { input.consume_shortcut(&focus_shortcut) }) {
-                        ui.memory_mut(|memory| {
-                            memory.request_focus(query_response.id);
-                        });
-                    }
-                });
-
-                // Global commands
+                self.display_query_input(egui_ctx, ui);
                 ui.separator();
-                ui.with_layout(
-                    egui::Layout::top_down(egui::Align::Center),
-                    |ui| {
-                        ui.label("Commands");
-                    },
-                );
-                let available_width = ui.available_width();
-                let column_width = available_width / (num_columns as f32);
-                egui::Grid::new("command_grid")
-                    .num_columns(num_columns)
-                    .min_col_width(column_width)
-                    .show(ui, |ui| {
-                    let mut seen_commands = model::StringSet::new();
-                    let mut current_column = 0;
-                    for (command_name, command_vec) in &self.app_context.get_root_config().commands {
-                        let mut command_name = String::from(command_name);
-                        if syntax::is_pre_or_post_command(&command_name) {
-                            syntax::trim_op_inplace(&mut command_name);
-                        }
-                        if !seen_commands.insert(command_name.clone()) {
-                            continue;
-                        }
-                        let button_ui = egui::Button::new(&command_name).wrap_mode(egui::TextWrapMode::Wrap);
-                        let button = ui.add_sized(egui::Vec2::new(column_width, ui.available_height()), button_ui);
-                        if button.clicked() {
-                            let command_vec = get_command_vec(&self.options, &command_name, &self.query);
-                            self.send_command.send(CommandMessage::GardenCommand(command_vec)).unwrap_or(());
-                        }
-                        if button.secondary_clicked() {
-                            self.modal_window = ModalWindow::Command(command_name.clone(), command_vec.clone());
-                            self.modal_window_open = true;
-                        }
-
-                        current_column += 1;
-                        if current_column % num_columns == 0 {
-                            current_column = 0;
-                            ui.end_row();
-                        }
-                    }
-                });
-
-                // Variables
-                if !self.app_context.get_root_config().variables.is_empty() {
-                    ui.separator();
-                    ui.collapsing("Variables", |ui| {
-                        TableBuilder::new(ui)
-                            .striped(true)
-                            .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
-                            .column(Column::auto().at_least(100.0))
-                            .column(Column::remainder()
-                                .at_least(40.0)
-                                .clip(true)
-                                .resizable(true))
-                            .body(|mut body| {
-                                for (name, variable) in &self.app_context.get_root_config().variables {
-                                    body.row(row_height, |mut row| {
-                                        row.col(|ui| {
-                                            ui.with_layout(
-                                                egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                    ui.add_space(spacing);
-                                                    ui.monospace(name);
-                                                },
-                                            );
-                                        });
-                                        row.col(|ui| {
-                                            ui.monospace(variable.get_expr());
-                                        });
-                                    });
-                                }
-                            }
-                        );
-                    });
-                }
-
-                // Overrides (defines)
-                if !self.app_context.get_root_config().override_variables.is_empty() {
-                    ui.separator();
-                    ui.collapsing("Defines", |ui| {
-                        TableBuilder::new(ui)
-                            .striped(true)
-                            .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
-                            .column(Column::auto().at_least(100.0))
-                            .column(Column::remainder()
-                                .at_least(40.0)
-                                .clip(true)
-                                .resizable(true))
-                            .body(|mut body| {
-                                for (name, variable) in &self.app_context.get_root_config().override_variables {
-                                    body.row(row_height, |mut row| {
-                                        row.col(|ui| {
-                                            ui.with_layout(
-                                                egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                    ui.add_space(spacing);
-                                                    ui.monospace(name);
-                                                },
-                                            );
-                                        });
-                                        row.col(|ui| {
-                                            ui.monospace(variable.get_expr());
-                                        });
-                                    });
-                                }
-                            }
-                        );
-                    });
-                }
-
-                // Query results
+                self.display_commands(ui);
+                self.display_variables(ui);
+                self.display_override_variables(ui);
                 ui.separator();
-                let config = self.app_context.get_root_config_mut();
-                let query_str = if self.query.is_empty() {
-                    "."
-                } else {
-                    self.query.as_str()
-                };
-                let mut contexts: Vec<model::TreeContext> = Vec::with_capacity(self.app_context.get_root_config().trees.len());
-                let queries = cmd::shlex_split(query_str);
-                for query in &queries {
-                    contexts.append(&mut query::resolve_trees(self.app_context, config, None, query));
-                }
-                if !contexts.is_empty() {
-                    ui.with_layout(
-                        egui::Layout::top_down(egui::Align::Center),
-                        |ui| {
-                            ui.label("Tree Query Results");
-                        },
-                    );
-                    ui.separator();
-                    TableBuilder::new(ui)
-                        .striped(true)
-                        .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
-                        .column(Column::auto().at_least(100.0))
-                        .column(Column::remainder()
-                            .at_least(40.0)
-                            .clip(true)
-                            .resizable(true))
-                        .body(|mut body| {
-                            for tree_ctx in &contexts {
-                                body.row(row_height, |mut row| {
-                                    row.col(|ui| {
-                                        ui.with_layout(
-                                            egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                                                ui.add_space(spacing);
-                                                ui.monospace(&tree_ctx.tree);
-                                            },
-                                        );
-                                    });
-                                    let tree = config.get_tree(&tree_ctx.tree);
-                                    if let Some(Ok(path)) = tree.map(|tree| tree.path_as_ref()) {
-                                        row.col(|ui| {
-                                            ui.monospace(path);
-                                        });
-                                    }
-                                });
-                            }
-                        }
-                    );
-                }
+                self.display_query_results(ui);
             });
         });
     }
+}
+
+/// Resolve multiple tree queries contained within a single string that uses
+/// shell syntax for specifying multiple tokens.
+#[inline]
+fn query_trees(app_context: &model::ApplicationContext, query: &str) -> Vec<model::TreeContext> {
+    let query_str = if query.is_empty() { "." } else { query };
+    let config = app_context.get_root_config();
+    let mut contexts = Vec::with_capacity(config.trees.len());
+    let queries = cmd::shlex_split(query_str);
+    for query in &queries {
+        contexts.append(&mut query::resolve_trees(app_context, config, None, query));
+    }
+
+    contexts
 }
