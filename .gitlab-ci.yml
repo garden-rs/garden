@@ -45,8 +45,8 @@ pages:
   script:
     - apt-get update
     - apt-get install -y curl rsync
-    - curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.34/mdbook-v0.4.34-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=target/release
-    - garden -vv doc
+    - curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.44/mdbook-v0.4.44-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=target/release
+    - garden doc -vv
     - mv target/doc doc/book/doc
     - mv doc/book public
     - echo "Read the generated documenation at $CI_PAGES_URL"
