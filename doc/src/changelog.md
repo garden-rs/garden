@@ -4,9 +4,9 @@
 
 **Features**:
 
-- `garden grow` is now runnable from the `garden gui` query results.
+- `garden grow` is now runnable from the `garden gui` commands and query results.
 
-- `garden ls` is now runnable from the `garden gui` query results.
+- `garden ls` is now runnable from the `garden gui` commands and query results.
 
 - Missing trees are now displayed in red in the `garden gui` query results.
 

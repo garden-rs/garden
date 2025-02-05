@@ -446,7 +446,43 @@ impl GardenApp<'_> {
             .max_col_width(column_width)
             .show(ui, |ui| {
                 let mut seen_commands = model::StringSet::new();
-                let mut current_column = 0;
+                // Add a "grow" command that runs against the entire tree query.
+                let button_ui = egui::Button::new("grow").wrap_mode(egui::TextWrapMode::Wrap);
+                let button = ui.add_sized(
+                    egui::Vec2::new(column_width, ui.available_height()),
+                    button_ui,
+                );
+                if button.clicked() {
+                    let command_vec = get_grow_command_vec(&self.options, &self.query);
+                    self.send_command
+                        .send(CommandMessage::GardenCommand(command_vec))
+                        .unwrap_or(());
+                }
+                if button.secondary_clicked() {
+                    let command_vec = get_grow_command_vec(&self.options, &self.query);
+                    self.modal_window = ModalWindow::Grow(command_vec.clone());
+                    self.modal_window_open = true;
+                }
+
+                // Add an "ls" command that runs against the entire tree query.
+                let button_ui = egui::Button::new("ls").wrap_mode(egui::TextWrapMode::Wrap);
+                let button = ui.add_sized(
+                    egui::Vec2::new(column_width, ui.available_height()),
+                    button_ui,
+                );
+                if button.clicked() {
+                    let command_vec = get_ls_command_vec(&self.options, &self.query);
+                    self.send_command
+                        .send(CommandMessage::GardenCommand(command_vec))
+                        .unwrap_or(());
+                }
+                if button.secondary_clicked() {
+                    let command_vec = get_ls_command_vec(&self.options, &self.query);
+                    self.modal_window = ModalWindow::Grow(command_vec.clone());
+                    self.modal_window_open = true;
+                }
+
+                let mut current_column = 2;
                 for (command_name, command_vec) in &self.app_context.get_root_config().commands {
                     let mut command_name = String::from(command_name);
                     if syntax::is_pre_or_post_command(&command_name) {
