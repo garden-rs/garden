@@ -688,50 +688,31 @@ impl GardenApp<'_> {
         TableBuilder::new(ui)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
-            .column(Column::auto().at_least(100.0))
-            .column(
-                Column::remainder()
-                    .at_least(40.0)
-                    .clip(true)
-                    .resizable(true),
-            )
+            .resizable(true)
+            .column(Column::auto().clip(true))
+            .column(Column::remainder().clip(true))
             .body(|mut body| {
                 for tree_ctx in &contexts {
+                    let Some(tree) = config.get_tree(&tree_ctx.tree) else {
+                        continue;
+                    };
+                    let Ok(path) = tree.path_as_ref() else {
+                        continue;
+                    };
                     body.row(self.view_metrics.row_height, |mut row| {
                         row.col(|ui| {
                             ui.with_layout(
                                 egui::Layout::right_to_left(egui::Align::Center),
                                 |ui| {
-                                    ui.add_space(self.view_metrics.spacing);
                                     ui.monospace(&tree_ctx.tree);
                                 },
                             );
                         });
-                        let tree = config.get_tree(&tree_ctx.tree);
-                        if let Some(Ok(path)) = tree.map(|tree| tree.path_as_ref()) {
-                            row.col(|ui| {
-                                ui.horizontal(|ui| {
-                                    ui.add_space(self.view_metrics.spacing);
-                                    let grow_button_ui = egui::Button::new("grow");
-                                    let grow_button = ui.add(grow_button_ui);
-
-                                    if grow_button.clicked() {
-                                        let tree_query = format!("@{}", tree_ctx.tree);
-                                        let command_vec =
-                                            get_grow_command_vec(&self.options, &tree_query);
-                                        self.send_command
-                                            .send(CommandMessage::GardenCommand(command_vec))
-                                            .unwrap_or(());
-                                    }
-                                    if grow_button.secondary_clicked() {
-                                        let tree_query = format!("@{}", tree_ctx.tree);
-                                        let command_vec =
-                                            get_grow_command_vec(&self.options, &tree_query);
-                                        self.modal_window = ModalWindow::Grow(command_vec);
-                                        self.modal_window_open = true;
-                                    }
-
-                                    ui.add_space(self.view_metrics.spacing);
+                        row.col(|ui| {
+                            ui.with_layout(
+                                egui::Layout::right_to_left(egui::Align::Center),
+                                |ui| {
+                                    // Fields are added in reverse order to get "<path> [grow] [ls]".
                                     let ls_button_ui = egui::Button::new("ls");
                                     let ls_button = ui.add(ls_button_ui);
                                     if ls_button.clicked() {
@@ -749,7 +730,25 @@ impl GardenApp<'_> {
                                         self.modal_window = ModalWindow::List(command_vec);
                                         self.modal_window_open = true;
                                     }
-
+                                    // Add the "grow" button.
+                                    ui.add_space(self.view_metrics.spacing);
+                                    let grow_button_ui = egui::Button::new("grow");
+                                    let grow_button = ui.add(grow_button_ui);
+                                    if grow_button.clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_grow_command_vec(&self.options, &tree_query);
+                                        self.send_command
+                                            .send(CommandMessage::GardenCommand(command_vec))
+                                            .unwrap_or(());
+                                    }
+                                    if grow_button.secondary_clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_grow_command_vec(&self.options, &tree_query);
+                                        self.modal_window = ModalWindow::Grow(command_vec);
+                                        self.modal_window_open = true;
+                                    }
                                     ui.add_space(self.view_metrics.spacing);
                                     if std::path::PathBuf::from(path).exists() {
                                         ui.monospace(path);
@@ -760,9 +759,10 @@ impl GardenApp<'_> {
                                                 .color(egui::Color32::RED),
                                         );
                                     }
-                                });
-                            });
-                        }
+                                    ui.add_space(self.view_metrics.spacing);
+                                },
+                            );
+                        });
                     });
                 }
             });
