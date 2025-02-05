@@ -462,6 +462,12 @@ impl GardenApp<'_> {
         }
         // Open a modal window with the contents of the command.
         let mut text = value.as_str();
+        let modal_window_open = self.modal_window_open;
+        let close_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::W);
+        let esc_shortcut =
+            egui::KeyboardShortcut::new(egui::Modifiers::default(), egui::Key::Escape);
+        let esc_shortcut_alt =
+            egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::OpenBracket);
         egui::Window::new(command_name)
             .open(&mut self.modal_window_open)
             .default_width(size.width())
@@ -469,6 +475,17 @@ impl GardenApp<'_> {
             .resizable(true)
             .movable(true)
             .show(egui_ctx, |ui| {
+                if modal_window_open {
+                    if egui_ctx.input_mut(|input| input.consume_shortcut(&close_shortcut)) {
+                        self.modal_window = ModalWindow::None;
+                    }
+                    if egui_ctx.input_mut(|input| input.consume_shortcut(&esc_shortcut)) {
+                        self.modal_window = ModalWindow::None;
+                    }
+                    if egui_ctx.input_mut(|input| input.consume_shortcut(&esc_shortcut_alt)) {
+                        self.modal_window = ModalWindow::None;
+                    }
+                }
                 ui.vertical(|ui| {
                     ui.add(
                         egui::TextEdit::multiline(&mut text)
