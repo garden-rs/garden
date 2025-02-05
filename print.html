@@ -466,13 +466,18 @@ in
 </code></pre>
 <p>then run <code>home-manager switch</code> to activate the changes.</p>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
-<p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
-<p>Garden is not supported on Windows.</p>
-<p>Garden "should" work fine on Windows if you install a shell (e.g. <code>bash.exe</code> or
-<code>zsh.exe</code>) in <code>$PATH</code> and patch a few details to deal with Windows-isms, but Garden is
-untested and not supported by the core team on Windows or WSL.</p>
-<p>Issues related to Windows will be closed. Pull requests related to these systems are
-welcome as long as they do not clutter the core or test suite with Windows-isms.</p>
+<p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.
+Garden started supporting Windows in <code>v1.10.1</code>.</p>
+<p>Garden works on Windows if you install a shell (e.g. <code>bash.exe</code> or <code>zsh.exe</code>) in
+your <code>$PATH</code>. Installing <a href="https://gitforwindows.org/">Git for Windows</a> and enabling
+the option that adds <code>git.exe</code> and related tools to your <code>$PATH</code> during installation
+is the easiest way to satisfy these requirements.</p>
+<p>Please note that Garden's support for <code>$PATH</code>-like environment variables may need
+attention to improve its behavior on Windows.</p>
+<p>Garden currently uses colon (<code>:</code>) delimiters for environment variables whereas Windows
+may require semicolon (<code>;</code>) delimiters to be used instead. This behavior has not been
+tested so if you are able to test it out then please open an issue so that you can
+help sort out this last detail.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="setup-and-usage"><a class="header" href="#setup-and-usage">Setup and Usage</a></h1>
 <h2 id="setup"><a class="header" href="#setup">Setup</a></h2>
 <p>A garden can be created in any directory. Run <code>garden init</code> to create
@@ -2405,6 +2410,23 @@ hello
 world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>The <code>v2.0.0</code> release removed <code>Cargo.lock</code> and added an entry for it to <code>.gitignore</code>.
+The <code>.gitignore</code> entry has now been removed to make it easier for packagers to track
+their changes.</li>
+</ul>
+<p><strong>Documentation</strong>:</p>
+<ul>
+<li>Windows support was improved in <code>v1.10.1</code> to the point where we can now consider
+Windows as being officially supported. This development has now been documented
+in the installation section of the Garden User Guide.</li>
+</ul>
+<p><strong>Packaging</strong>:</p>
+<ul>
+<li>The Nightly Build artifacts from Gitlab CI have been updated to include <code>garden-gui</code>.</li>
+</ul>
 <h2 id="v200"><a class="header" href="#v200">v2.0.0</a></h2>
 <p><em>Released 2025-01-26</em></p>
 <p><strong>Features</strong>:</p>

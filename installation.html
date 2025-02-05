@@ -345,13 +345,18 @@ in
 </code></pre>
 <p>then run <code>home-manager switch</code> to activate the changes.</p>
 <h2 id="windows"><a class="header" href="#windows">Windows</a></h2>
-<p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.</p>
-<p>Garden is not supported on Windows.</p>
-<p>Garden "should" work fine on Windows if you install a shell (e.g. <code>bash.exe</code> or
-<code>zsh.exe</code>) in <code>$PATH</code> and patch a few details to deal with Windows-isms, but Garden is
-untested and not supported by the core team on Windows or WSL.</p>
-<p>Issues related to Windows will be closed. Pull requests related to these systems are
-welcome as long as they do not clutter the core or test suite with Windows-isms.</p>
+<p>Garden is developed on Linux and supported on macOS and BSDs where Rust is available.
+Garden started supporting Windows in <code>v1.10.1</code>.</p>
+<p>Garden works on Windows if you install a shell (e.g. <code>bash.exe</code> or <code>zsh.exe</code>) in
+your <code>$PATH</code>. Installing <a href="https://gitforwindows.org/">Git for Windows</a> and enabling
+the option that adds <code>git.exe</code> and related tools to your <code>$PATH</code> during installation
+is the easiest way to satisfy these requirements.</p>
+<p>Please note that Garden's support for <code>$PATH</code>-like environment variables may need
+attention to improve its behavior on Windows.</p>
+<p>Garden currently uses colon (<code>:</code>) delimiters for environment variables whereas Windows
+may require semicolon (<code>;</code>) delimiters to be used instead. This behavior has not been
+tested so if you are able to test it out then please open an issue so that you can
+help sort out this last detail.</p>
 
                     </main>
 
