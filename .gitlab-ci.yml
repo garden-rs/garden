@@ -17,7 +17,7 @@ tests:
   stage: test
   image: rust
   script:
-    - garden -vv test
+    - garden test -vv
 
 checks:
   stage: test
