@@ -5,6 +5,21 @@ use egui_extras::{Column, TableBuilder};
 use garden::cli::GardenOptions;
 use garden::{cli, cmd, constants, display, errors, model, path, query, string, syntax};
 
+/// Return the max of two floats.
+macro_rules! max {
+    // We could use the float_ord crate to get std:::cmp::max(f32, f32) working,
+    // but this is simpler.
+    ($a: expr) => ($a);
+    ($a: expr, $($b: expr),+) => {{
+        let b = max!($($b),*);
+        if $a > b {
+            $a
+        } else {
+            b
+        }
+    }}
+}
+
 /// Main entry point for the "garden-gui" command.
 fn main() -> Result<()> {
     let mut gui_options = GuiOptions::parse();
@@ -55,6 +70,7 @@ fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Re
         view_metrics: ViewMetrics {
             spacing: 4.0,
             row_height: 18.0,
+            window_margin: 24.0,
         },
     };
 
@@ -233,6 +249,7 @@ enum CommandMessage {
 struct ViewMetrics {
     spacing: f32,
     row_height: f32,
+    window_margin: f32,
 }
 
 struct GardenApp<'a> {
@@ -382,11 +399,12 @@ impl GardenApp<'_> {
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
             ui.label("Commands");
         });
-        let available_width = ui.available_width();
+        let available_width = max!(100.0, ui.available_width() - self.view_metrics.window_margin);
         let column_width = available_width / (num_columns as f32);
         egui::Grid::new("command_grid")
             .num_columns(num_columns)
             .min_col_width(column_width)
+            .max_col_width(column_width)
             .show(ui, |ui| {
                 let mut seen_commands = model::StringSet::new();
                 let mut current_column = 0;
