@@ -6,6 +6,8 @@
 
 - `garden grow` is now runnable from the `garden gui` query results.
 
+- Missing trees are now displayed in red in the `garden gui` query results.
+
 - Escape and Ctrl-Q hotkeys can now close the `garden gui` command details window.
 
 - The Ctrl-Q hotkey will now close the main `garden gui` window.

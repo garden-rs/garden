@@ -661,7 +661,15 @@ impl GardenApp<'_> {
                                     let button = ui.add(button_ui);
 
                                     ui.add_space(self.view_metrics.spacing);
-                                    ui.monospace(path);
+                                    if std::path::PathBuf::from(path).exists() {
+                                        ui.monospace(path);
+                                    } else {
+                                        ui.label(
+                                            egui::RichText::new(path)
+                                                .monospace()
+                                                .color(egui::Color32::RED),
+                                        );
+                                    }
 
                                     if button.clicked() {
                                         let tree_query = format!("@{}", tree_ctx.tree);
