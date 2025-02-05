@@ -240,6 +240,7 @@ enum ModalWindow {
     None,
     Command(String, Vec<model::Variable>),
     Grow(Vec<String>),
+    List(Vec<String>),
 }
 
 enum CommandMessage {
@@ -340,6 +341,18 @@ fn get_grow_command_vec(options: &GuiOptions, query: &str) -> Vec<String> {
     if query.is_empty() {
         command.push(string!("."));
     } else {
+        command.append(&mut queries);
+    }
+
+    command
+}
+
+/// Calculate a "garden ls" command.
+fn get_ls_command_vec(options: &GuiOptions, query: &str) -> Vec<String> {
+    let (mut command, mut queries) = get_garden_command_vec(options, "ls", query);
+    command.push(string!("--no-commands"));
+    // Query positional arguments
+    if !query.is_empty() {
         command.append(&mut queries);
     }
 
@@ -489,6 +502,12 @@ impl GardenApp<'_> {
     fn grow_command_details(&mut self, egui_ctx: &egui::Context, command_vec: &[String]) {
         let value = shell_words::join(command_vec);
         self.command_string_window(egui_ctx, "grow", &value);
+    }
+
+    /// Display details about a "garden ls" command when right-clicked.
+    fn ls_command_details(&mut self, egui_ctx: &egui::Context, command_vec: &[String]) {
+        let value = shell_words::join(command_vec);
+        self.command_string_window(egui_ctx, "ls", &value);
     }
 
     /// Display details about a command when right-clicked
@@ -657,8 +676,43 @@ impl GardenApp<'_> {
                             row.col(|ui| {
                                 ui.horizontal(|ui| {
                                     ui.add_space(self.view_metrics.spacing);
-                                    let button_ui = egui::Button::new("grow");
-                                    let button = ui.add(button_ui);
+                                    let grow_button_ui = egui::Button::new("grow");
+                                    let grow_button = ui.add(grow_button_ui);
+
+                                    if grow_button.clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_grow_command_vec(&self.options, &tree_query);
+                                        self.send_command
+                                            .send(CommandMessage::GardenCommand(command_vec))
+                                            .unwrap_or(());
+                                    }
+                                    if grow_button.secondary_clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_grow_command_vec(&self.options, &tree_query);
+                                        self.modal_window = ModalWindow::Grow(command_vec);
+                                        self.modal_window_open = true;
+                                    }
+
+                                    ui.add_space(self.view_metrics.spacing);
+                                    let ls_button_ui = egui::Button::new("ls");
+                                    let ls_button = ui.add(ls_button_ui);
+                                    if ls_button.clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_ls_command_vec(&self.options, &tree_query);
+                                        self.send_command
+                                            .send(CommandMessage::GardenCommand(command_vec))
+                                            .unwrap_or(());
+                                    }
+                                    if ls_button.secondary_clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_ls_command_vec(&self.options, &tree_query);
+                                        self.modal_window = ModalWindow::List(command_vec);
+                                        self.modal_window_open = true;
+                                    }
 
                                     ui.add_space(self.view_metrics.spacing);
                                     if std::path::PathBuf::from(path).exists() {
@@ -669,22 +723,6 @@ impl GardenApp<'_> {
                                                 .monospace()
                                                 .color(egui::Color32::RED),
                                         );
-                                    }
-
-                                    if button.clicked() {
-                                        let tree_query = format!("@{}", tree_ctx.tree);
-                                        let command_vec =
-                                            get_grow_command_vec(&self.options, &tree_query);
-                                        self.send_command
-                                            .send(CommandMessage::GardenCommand(command_vec))
-                                            .unwrap_or(());
-                                    }
-                                    if button.secondary_clicked() {
-                                        let tree_query = format!("@{}", tree_ctx.tree);
-                                        let command_vec =
-                                            get_grow_command_vec(&self.options, &tree_query);
-                                        self.modal_window = ModalWindow::Grow(command_vec);
-                                        self.modal_window_open = true;
                                     }
                                 });
                             });
@@ -711,6 +749,9 @@ impl eframe::App for GardenApp<'_> {
                 }
                 ModalWindow::Grow(command_vec) => {
                     self.grow_command_details(egui_ctx, &command_vec);
+                }
+                ModalWindow::List(command_vec) => {
+                    self.ls_command_details(egui_ctx, &command_vec);
                 }
             }
         }
