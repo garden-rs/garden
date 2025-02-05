@@ -239,6 +239,7 @@ impl GuiOptions {
 enum ModalWindow {
     None,
     Command(String, Vec<model::Variable>),
+    Grow(Vec<String>),
 }
 
 enum CommandMessage {
@@ -263,12 +264,15 @@ struct GardenApp<'a> {
     view_metrics: ViewMetrics,
 }
 
-/// Calculate a "garden" command for running the specified command.
-fn get_command_vec(options: &GuiOptions, command_name: &str, query: &str) -> Vec<String> {
-    let mut queries = cmd::shlex_split(query);
+/// Return the base command arguments for any garden sub-command.
+fn get_garden_command_vec(
+    options: &GuiOptions,
+    command_name: &str,
+    query: &str,
+) -> (Vec<String>, Vec<String>) {
+    let queries = cmd::shlex_split(query);
     let capacity = get_command_capacity(options, &queries);
     let mut command = Vec::with_capacity(capacity);
-
     command.push(constants::GARDEN.to_string());
 
     if options.color != model::ColorMode::Auto {
@@ -287,11 +291,16 @@ fn get_command_vec(options: &GuiOptions, command_name: &str, query: &str) -> Vec
         let verbose = cli::verbose_string(options.verbose);
         command.push(verbose);
     }
-
     // Custom command name.
-    // Options after this point are supported by "garden <command> [options]".
     command.push(command_name.to_string());
 
+    (command, queries)
+}
+
+/// Calculate a "garden" command for running the specified command.
+fn get_custom_command_vec(options: &GuiOptions, command_name: &str, query: &str) -> Vec<String> {
+    let (mut command, mut queries) = get_garden_command_vec(options, command_name, query);
+    // Options after this point are supported by "garden <command> [options]".
     for define in &options.define {
         command.push(string!("--define"));
         command.push(define.to_string());
@@ -318,12 +327,26 @@ fn get_command_vec(options: &GuiOptions, command_name: &str, query: &str) -> Vec
         command.push(string!("--quiet"));
     }
 
-    // Query positional argument
+    // Query positional arguments
     command.append(&mut queries);
 
     command
 }
 
+/// Calculate a "garden grow" command.
+fn get_grow_command_vec(options: &GuiOptions, query: &str) -> Vec<String> {
+    let (mut command, mut queries) = get_garden_command_vec(options, "grow", query);
+    // Query positional arguments
+    if query.is_empty() {
+        command.push(string!("."));
+    } else {
+        command.append(&mut queries);
+    }
+
+    command
+}
+
+/// Calculate the vector capacity for custom command storage.
 fn get_command_capacity(options: &GuiOptions, queries: &[String]) -> usize {
     let mut size = 2; // garden <cmd>
     size += queries.len();
@@ -427,7 +450,7 @@ impl GardenApp<'_> {
                     );
                     if button.clicked() {
                         let command_vec =
-                            get_command_vec(&self.options, &command_name, &self.query);
+                            get_custom_command_vec(&self.options, &command_name, &self.query);
                         self.send_command
                             .send(CommandMessage::GardenCommand(command_vec))
                             .unwrap_or(());
@@ -447,21 +470,32 @@ impl GardenApp<'_> {
             });
     }
 
-    /// Display details about a command when right-clicked.
-    fn command_details(
+    /// Display details about a custom command when right-clicked.
+    fn custom_command_details(
         &mut self,
         egui_ctx: &egui::Context,
         command_name: &str,
         command_vec: &Vec<model::Variable>,
     ) {
-        let size = egui_ctx.input(|i: &egui::InputState| i.screen_rect());
         let mut value = String::new();
         for cmd in command_vec {
             value.push_str(cmd.get_expr());
             value.push('\n');
         }
+        self.command_string_window(egui_ctx, command_name, &value);
+    }
+
+    /// Display details about a "garden grow" command when right-clicked.
+    fn grow_command_details(&mut self, egui_ctx: &egui::Context, command_vec: &[String]) {
+        let value = shell_words::join(command_vec);
+        self.command_string_window(egui_ctx, "grow", &value);
+    }
+
+    /// Display details about a command when right-clicked
+    fn command_string_window(&mut self, egui_ctx: &egui::Context, command_name: &str, value: &str) {
+        let size = egui_ctx.input(|i: &egui::InputState| i.screen_rect());
         // Open a modal window with the contents of the command.
-        let mut text = value.as_str();
+        let mut text = value;
         let modal_window_open = self.modal_window_open;
         let close_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::W);
         let esc_shortcut =
@@ -586,7 +620,7 @@ impl GardenApp<'_> {
     }
 
     /// Add the query results table
-    fn display_query_results(&self, ui: &mut egui::Ui) {
+    fn display_query_results(&mut self, ui: &mut egui::Ui) {
         let config = self.app_context.get_root_config();
         let contexts = query_trees(self.app_context, &self.query);
         if contexts.is_empty() {
@@ -621,7 +655,30 @@ impl GardenApp<'_> {
                         let tree = config.get_tree(&tree_ctx.tree);
                         if let Some(Ok(path)) = tree.map(|tree| tree.path_as_ref()) {
                             row.col(|ui| {
-                                ui.monospace(path);
+                                ui.horizontal(|ui| {
+                                    ui.add_space(self.view_metrics.spacing);
+                                    let button_ui = egui::Button::new("grow");
+                                    let button = ui.add(button_ui);
+
+                                    ui.add_space(self.view_metrics.spacing);
+                                    ui.monospace(path);
+
+                                    if button.clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_grow_command_vec(&self.options, &tree_query);
+                                        self.send_command
+                                            .send(CommandMessage::GardenCommand(command_vec))
+                                            .unwrap_or(());
+                                    }
+                                    if button.secondary_clicked() {
+                                        let tree_query = format!("@{}", tree_ctx.tree);
+                                        let command_vec =
+                                            get_grow_command_vec(&self.options, &tree_query);
+                                        self.modal_window = ModalWindow::Grow(command_vec);
+                                        self.modal_window_open = true;
+                                    }
+                                });
                             });
                         }
                     });
@@ -642,7 +699,10 @@ impl eframe::App for GardenApp<'_> {
                     self.modal_window_open = false;
                 }
                 ModalWindow::Command(command_name, command_vec) => {
-                    self.command_details(egui_ctx, &command_name, &command_vec);
+                    self.custom_command_details(egui_ctx, &command_name, &command_vec);
+                }
+                ModalWindow::Grow(command_vec) => {
+                    self.grow_command_details(egui_ctx, &command_vec);
                 }
             }
         }

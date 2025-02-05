@@ -2,6 +2,14 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden grow` is now runnable from the `garden gui` query results.
+
+- Escape and Ctrl-Q hotkeys can now close the `garden gui` command details window.
+
+- The Ctrl-Q hotkey will now close the main `garden gui` window.
+
 **Development**:
 
 - The `v2.0.0` release removed `Cargo.lock` and added an entry for it to `.gitignore`.
