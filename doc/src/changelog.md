@@ -14,6 +14,10 @@ their changes.
 Windows as being officially supported. This development has now been documented
 in the installation section of the Garden User Guide.
 
+**Packaging**:
+
+- The Nightly Build artifacts from Gitlab CI have been updated to include `garden-gui`.
+
 
 ## v2.0.0
 

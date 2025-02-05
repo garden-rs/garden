@@ -10,7 +10,7 @@ cache:
     - target/release
 
 before_script:
-  - cargo build --release
+  - cargo build --release --workspace
   - export PATH=${PWD}/target/release:${PATH}
 
 tests:
@@ -34,10 +34,12 @@ build:amd64:
   script:
     - echo using pre-generated target/release/garden
     - cp -p target/release/garden garden
+    - cp -p target/release/garden-gui garden-gui
     - garden --version
   artifacts:
     paths:
       - garden
+      - garden-gui
 
 pages:
   stage: pages
