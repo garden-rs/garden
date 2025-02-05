@@ -8,6 +8,12 @@
 The `.gitignore` entry has now been removed to make it easier for packagers to track
 their changes.
 
+**Documentation**:
+
+- Windows support was improved in `v1.10.1` to the point where we can now consider
+Windows as being officially supported. This development has now been documented
+in the installation section of the Garden User Guide.
+
 
 ## v2.0.0
 

@@ -278,12 +278,17 @@ then run `home-manager switch` to activate the changes.
 ## Windows
 
 Garden is developed on Linux and supported on macOS and BSDs where Rust is available.
+Garden started supporting Windows in `v1.10.1`.
 
-Garden is not supported on Windows.
+Garden works on Windows if you install a shell (e.g. `bash.exe` or `zsh.exe`) in
+your `$PATH`. Installing [Git for Windows](https://gitforwindows.org/) and enabling
+the option that adds `git.exe` and related tools to your `$PATH` during installation
+is the easiest way to satisfy these requirements.
 
-Garden "should" work fine on Windows if you install a shell (e.g. `bash.exe` or
-`zsh.exe`) in `$PATH` and patch a few details to deal with Windows-isms, but Garden is
-untested and not supported by the core team on Windows or WSL.
+Please note that Garden's support for `$PATH`-like environment variables may need
+attention to improve its behavior on Windows.
 
-Issues related to Windows will be closed. Pull requests related to these systems are
-welcome as long as they do not clutter the core or test suite with Windows-isms.
+Garden currently uses colon (`:`) delimiters for environment variables whereas Windows
+may require semicolon (`;`) delimiters to be used instead. This behavior has not been
+tested so if you are able to test it out then please open an issue so that you can
+help sort out this last detail.
