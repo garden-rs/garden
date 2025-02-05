@@ -399,7 +399,10 @@ impl GardenApp<'_> {
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
             ui.label("Commands");
         });
-        let available_width = max!(100.0, ui.available_width() - self.view_metrics.window_margin);
+        let available_width = max!(
+            100.0,
+            ui.available_width() - self.view_metrics.window_margin
+        );
         let column_width = available_width / (num_columns as f32);
         egui::Grid::new("command_grid")
             .num_columns(num_columns)
@@ -627,7 +630,12 @@ impl eframe::App for GardenApp<'_> {
             }
         }
 
+        let quit_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::Q);
         egui::CentralPanel::default().show(egui_ctx, |ui| {
+            // Close the window when the quit_shortcut is triggered.
+            if egui_ctx.input_mut(|input| input.consume_shortcut(&quit_shortcut)) {
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+            }
             if self.modal_window_open {
                 ui.disable();
             }
