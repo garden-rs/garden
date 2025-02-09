@@ -10,6 +10,8 @@
 
 - Missing trees are now displayed in red in the `garden gui` query results.
 
+- Autocompletion was added to the `garden gui` query field.
+
 - Escape and Ctrl-Q hotkeys can now close the `garden gui` command details window.
 
 - The Ctrl-Q hotkey will now close the main `garden gui` window.

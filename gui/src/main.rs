@@ -409,12 +409,15 @@ impl GardenApp<'_> {
         ui.horizontal(|ui| {
             ui.label("Query");
             ui.add_space(self.view_metrics.spacing);
-            let query_response = ui.add_sized(
-                ui.available_size(),
-                egui::TextEdit::singleline(&mut self.query).hint_text(
-                    "Tree query for the gardens, groups or trees to execute commands within",
-                ),
-            );
+            let completions = completion_values(self.app_context);
+            let text_edit = garden_gui::AutoCompleteTextEdit::new(&mut self.query, &completions)
+                .multiple_words(true)
+                .set_text_edit_properties(|text_edit: egui::TextEdit<'_>| {
+                    text_edit.hint_text(
+                        "Tree query for the gardens, groups or trees to execute commands within",
+                    )
+                });
+            let query_response = ui.add_sized(ui.available_size(), text_edit);
             if !self.initialized {
                 self.initialized = true;
                 ui.memory_mut(|memory| {
@@ -827,4 +830,35 @@ fn query_trees(app_context: &model::ApplicationContext, query: &str) -> Vec<mode
     }
 
     contexts
+}
+
+/// Provide candidate completion values for the tree query input field.
+#[inline]
+fn completion_values(app_context: &model::ApplicationContext) -> Vec<String> {
+    let config = app_context.get_root_config();
+    let mut results = Vec::with_capacity(
+        config.trees.len() * 2 + config.gardens.len() * 2 + config.groups.len() * 2,
+    );
+    let mut tree_results = Vec::with_capacity(config.trees.len());
+    let mut group_results = Vec::with_capacity(config.groups.len());
+    let mut garden_results = Vec::with_capacity(config.gardens.len());
+
+    for (name, _tree) in &config.trees {
+        results.push(name.clone());
+        tree_results.push(format!("@{name}"));
+    }
+    for (name, _group) in &config.groups {
+        results.push(name.clone());
+        group_results.push(format!("%{name}"));
+    }
+    for (name, _garden) in &config.gardens {
+        results.push(name.clone());
+        garden_results.push(format!(":{name}"));
+    }
+    results.sort();
+    results.append(&mut tree_results);
+    results.append(&mut group_results);
+    results.append(&mut garden_results);
+
+    results
 }
