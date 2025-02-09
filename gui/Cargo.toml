@@ -20,11 +20,21 @@ crossbeam.workspace = true
 eframe.workspace = true
 egui.workspace = true
 egui_extras.workspace = true
+fuzzy-matcher.workspace = true
 garden-tools.workspace = true
+serde = { workspace = true, optional = true }
 shell-words.workspace = true
 
 [[bin]]
 name = "garden-gui"
+
+[lib]
+name = "garden_gui"
+doc = false
+test = false
+
+[features]
+serde = ["dep:serde", "egui/persistence"]
 
 [badges]
 maintenance = { status = "actively-developed" }
