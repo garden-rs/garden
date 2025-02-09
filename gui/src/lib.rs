@@ -63,6 +63,8 @@ pub struct AutoCompleteTextEdit<'a, T> {
     highlight: bool,
     /// Used to set properties on the internal TextEdit
     set_properties: Option<Box<SetTextEditProperties>>,
+    // Provide completions when entering multiple space-delimited words
+    multiple_words: bool,
 }
 
 impl<'a, T, S> AutoCompleteTextEdit<'a, T>
@@ -81,6 +83,7 @@ where
             max_suggestions: 10,
             highlight: false,
             set_properties: None,
+            multiple_words: false,
         }
     }
 }
@@ -98,6 +101,11 @@ where
     /// If set to true, characters will be highlighted in the dropdown to show the match
     pub fn highlight_matches(mut self, highlight: bool) -> Self {
         self.highlight = highlight;
+        self
+    }
+    /// If set to true, completions will be provided when entering multiple words.
+    pub fn multiple_words(mut self, multiple_words: bool) -> Self {
+        self.multiple_words = multiple_words;
         self
     }
 
@@ -136,6 +144,7 @@ where
             max_suggestions,
             highlight,
             set_properties,
+            multiple_words,
         } = self;
 
         let id = ui.next_auto_id();
@@ -154,7 +163,42 @@ where
             text_edit = set_properties(text_edit);
         }
 
-        let mut text_response = text_edit.ui(ui);
+        let text_edit_output = text_edit.show(ui);
+        let completion_input = if multiple_words {
+            if let Some(cursor_range) = text_edit_output.cursor_range {
+                let index = cursor_range.primary.ccursor.index;
+                // Get the word located at the current index
+                let mut start = index;
+                let mut end = index;
+                while start > 0
+                    && !text_field[start - 1..start]
+                        .chars()
+                        .next()
+                        .map(|c| c.is_whitespace())
+                        .unwrap_or(false)
+                {
+                    start -= 1;
+                }
+                while end < text_field.len()
+                    && !text_field[end..end + 1]
+                        .chars()
+                        .next()
+                        .map(|c| c.is_whitespace())
+                        .unwrap_or(false)
+                {
+                    end += 1;
+                }
+                state.start = start;
+                state.end = end;
+                text_field[start..end].trim()
+            } else {
+                text_field.as_str()
+            }
+        } else {
+            text_field.as_str()
+        };
+
+        let mut text_response = text_edit_output.response.clone();
         state.focused = text_response.has_focus();
 
         let matcher = SkimMatcherV2::default().ignore_case();
@@ -162,7 +206,7 @@ where
         let mut match_results = search
             .into_iter()
             .filter_map(|s| {
-                let score = matcher.fuzzy_indices(s.as_ref(), text_field.as_str());
+                let score = matcher.fuzzy_indices(s.as_ref(), completion_input);
                 score.map(|(score, indices)| (s, score, indices))
             })
             .collect::<Vec<_>>();
@@ -189,7 +233,23 @@ where
             // If accepted by keyboard, close the popup. If the popup is closed with a selected index, take that text
             accepted_by_keyboard || !ui.memory(|mem| mem.is_popup_open(id)),
         ) {
-            text_field.replace_with(match_results[index].0.as_ref());
+            let match_result = match_results[index].0.as_ref();
+            if multiple_words {
+                text_field.replace_range(state.start..state.end, match_result);
+                // Move the cursor to the end of the line.
+                let text_edit_id = text_edit_output.response.id;
+                if let Some(mut state) = egui::TextEdit::load_state(ui.ctx(), text_edit_id) {
+                    let ccursor = egui::text::CCursor::new(text_field.chars().count());
+                    state
+                        .cursor
+                        .set_char_range(Some(egui::text::CCursorRange::one(ccursor)));
+                    state.store(ui.ctx(), text_edit_id);
+                    // Give focus back to the text edit.
+                    ui.memory_mut(|memory| memory.request_focus(text_edit_id));
+                }
+            } else {
+                text_field.replace_with(match_result);
+            }
             state.selected_index = None;
             text_response.changed = true;
         }
@@ -284,6 +344,10 @@ struct AutoCompleteTextEditState {
     selected_index: Option<usize>,
     /// Whether or not the text edit was focused last frame
     focused: bool,
+    /// The start of the current word being replaced
+    start: usize,
+    /// The end of the current word being replaced
+    end: usize,
 }
 
 impl AutoCompleteTextEditState {
