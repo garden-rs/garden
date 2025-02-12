@@ -17,6 +17,12 @@ pub struct ListOptions {
     /// Display commands. Omits descriptions, remotes and links so that commands are more visible
     #[arg(long = "commands", short = 'c', default_value_t = false)]
     only_commands: bool,
+    /// Do not show gardens
+    #[arg(long, short = 'N', default_value_t = false)]
+    no_gardens: bool,
+    /// Do not show groups
+    #[arg(long, short = 'G', default_value_t = false)]
+    no_groups: bool,
     /// Print trees in reverse order
     #[arg(short, long, default_value_t = false)]
     reverse: bool,
@@ -60,6 +66,8 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let display_worktrees = options.worktrees;
     let show_commands = !options.no_commands;
     let only_commands = options.only_commands;
+    let show_gardens = !only_commands && !options.no_gardens;
+    let show_groups = !only_commands && !options.no_groups;
     let verbose = app_context.options.verbose + options.verbose;
     let mut needs_newline = false;
 
@@ -171,12 +179,12 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
         }
     }
 
-    if !only_commands && !config.groups.is_empty() {
+    if show_groups && !config.groups.is_empty() {
         println!();
         display::print_groups(&config.groups);
     }
 
-    if !only_commands && !config.gardens.is_empty() {
+    if show_gardens && !config.gardens.is_empty() {
         println!();
         display::print_gardens(&config.gardens);
     }

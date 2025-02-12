@@ -19,6 +19,9 @@
 
 - The Ctrl-Q hotkey will now close the main `garden gui` window.
 
+- `garden ls` now has `-G | --no-groups` and `-N | --no-gardens` options
+for omitting groups and gardens from its output.
+
 **Development**:
 
 - The `v2.0.0` release removed `Cargo.lock` and added an entry for it to `.gitignore`.
