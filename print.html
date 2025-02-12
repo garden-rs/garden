@@ -2423,6 +2423,10 @@ world
 <p>Missing trees are now displayed in red in the <code>garden gui</code> query results.</p>
 </li>
 <li>
+<p>Tree names and paths can now be copied to the system clipboard from the
+<code>garden gui</code> query results.</p>
+</li>
+<li>
 <p>Autocompletion was added to the <code>garden gui</code> query field.</p>
 </li>
 <li>
@@ -2431,12 +2435,21 @@ world
 <li>
 <p>The Ctrl-Q hotkey will now close the main <code>garden gui</code> window.</p>
 </li>
+<li>
+<p><code>garden ls</code> now has <code>-G | --no-groups</code> and <code>-N | --no-gardens</code> options
+for omitting groups and gardens from its output.</p>
+</li>
 </ul>
 <p><strong>Development</strong>:</p>
 <ul>
-<li>The <code>v2.0.0</code> release removed <code>Cargo.lock</code> and added an entry for it to <code>.gitignore</code>.
+<li>
+<p>The <code>v2.0.0</code> release removed <code>Cargo.lock</code> and added an entry for it to <code>.gitignore</code>.
 The <code>.gitignore</code> entry has now been removed to make it easier for packagers to track
-their changes.</li>
+their changes.</p>
+</li>
+<li>
+<p>The <code>yaml-rust2</code> dependency was upgraded to v0.10.</p>
+</li>
 </ul>
 <p><strong>Documentation</strong>:</p>
 <ul>
