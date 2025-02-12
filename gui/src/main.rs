@@ -350,7 +350,8 @@ fn get_grow_command_vec(options: &GuiOptions, query: &str) -> Vec<String> {
 /// Calculate a "garden ls" command.
 fn get_ls_command_vec(options: &GuiOptions, query: &str) -> Vec<String> {
     let (mut command, mut queries) = get_garden_command_vec(options, "ls", query);
-    command.push(string!("--no-commands"));
+    // garden ls --no-commands --no-groups --no-gardens <query>
+    command.push(string!("-CGN"));
     // Query positional arguments
     if !query.is_empty() {
         command.append(&mut queries);
