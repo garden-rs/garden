@@ -707,6 +707,15 @@ impl GardenApp<'_> {
                             ui.with_layout(
                                 egui::Layout::right_to_left(egui::Align::Center),
                                 |ui| {
+                                    let copy_button = ui.button("📋").on_hover_ui(|ui| {
+                                        ui.label("Click to copy path. Right-click to copy the tree name.");
+                                    });
+                                    if copy_button.clicked() {
+                                        ui.output_mut(|output| output.copied_text = path.to_string());
+                                    }
+                                    if copy_button.secondary_clicked() {
+                                        ui.output_mut(|output| output.copied_text = tree_ctx.tree.to_string());
+                                    }
                                     ui.monospace(&tree_ctx.tree);
                                 },
                             );
@@ -754,21 +763,27 @@ impl GardenApp<'_> {
                                     }
                                     ui.add_space(self.view_metrics.spacing);
                                     if std::path::PathBuf::from(path).exists() {
-                                        ui.monospace(path);
-                                    } else {
-                                        ui.label(
-                                            egui::RichText::new(path)
-                                                .monospace()
-                                                .color(egui::Color32::RED),
-                                        );
+                                        if ui.monospace(path).on_hover_ui(|ui| {
+                                            ui.label("Right-click to copy path.");
+                                        }).secondary_clicked() {
+                                            ui.output_mut(|output| output.copied_text = path.to_string());
+                                        }
+                                    } else if ui.label(
+                                        egui::RichText::new(path)
+                                            .monospace()
+                                            .color(egui::Color32::RED),
+                                    ).on_hover_ui(|ui| {
+                                        ui.label("Right-click to copy path.");
+                                    }).secondary_clicked() {
+                                        ui.output_mut(|output| output.copied_text = path.to_string());
                                     }
-                                    ui.add_space(self.view_metrics.spacing);
                                 },
                             );
                         });
                     });
                 }
-            });
+            }
+        );
     }
 }
 

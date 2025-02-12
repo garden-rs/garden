@@ -10,6 +10,9 @@
 
 - Missing trees are now displayed in red in the `garden gui` query results.
 
+- Tree names and paths can now be copied to the system clipboard from the
+`garden gui` query results.
+
 - Autocompletion was added to the `garden gui` query field.
 
 - Escape and Ctrl-Q hotkeys can now close the `garden gui` command details window.
