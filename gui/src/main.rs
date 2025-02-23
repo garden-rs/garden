@@ -5,6 +5,8 @@ use egui_extras::{Column, TableBuilder};
 use garden::cli::GardenOptions;
 use garden::{cli, cmd, constants, display, errors, model, path, query, string, syntax};
 
+const NUM_COMMAND_COLUMNS: usize = 4;
+
 /// Return the max of two floats.
 macro_rules! max {
     // We could use the float_ord crate to get std:::cmp::max(f32, f32) working,
@@ -435,7 +437,6 @@ impl GardenApp<'_> {
 
     /// Add the command grid.
     fn display_commands(&mut self, ui: &mut egui::Ui) {
-        let num_columns = 4;
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
             ui.label("Commands");
         });
@@ -443,9 +444,9 @@ impl GardenApp<'_> {
             100.0,
             ui.available_width() - self.view_metrics.window_margin
         );
-        let column_width = available_width / (num_columns as f32);
+        let column_width = available_width / (NUM_COMMAND_COLUMNS as f32);
         egui::Grid::new("command_grid")
-            .num_columns(num_columns)
+            .num_columns(NUM_COMMAND_COLUMNS)
             .min_col_width(column_width)
             .max_col_width(column_width)
             .show(ui, |ui| {
@@ -488,39 +489,57 @@ impl GardenApp<'_> {
 
                 let mut current_column = 2;
                 for (command_name, command_vec) in &self.app_context.get_root_config().commands {
-                    let mut command_name = String::from(command_name);
-                    if syntax::is_pre_or_post_command(&command_name) {
-                        syntax::trim_op_inplace(&mut command_name);
-                    }
-                    if !seen_commands.insert(command_name.clone()) {
-                        continue;
-                    }
-                    let button_ui =
-                        egui::Button::new(&command_name).wrap_mode(egui::TextWrapMode::Wrap);
-                    let button = ui.add_sized(
-                        egui::Vec2::new(column_width, ui.available_height()),
-                        button_ui,
+                    self.add_command_button(
+                        ui,
+                        command_name,
+                        command_vec,
+                        &mut seen_commands,
+                        column_width,
+                        &mut current_column,
                     );
-                    if button.clicked() {
-                        let command_vec =
-                            get_custom_command_vec(&self.options, &command_name, &self.query);
-                        self.send_command
-                            .send(CommandMessage::GardenCommand(command_vec))
-                            .unwrap_or(());
-                    }
-                    if button.secondary_clicked() {
-                        self.modal_window =
-                            ModalWindow::Command(command_name.clone(), command_vec.clone());
-                        self.modal_window_open = true;
-                    }
-
-                    current_column += 1;
-                    if current_column % num_columns == 0 {
-                        current_column = 0;
-                        ui.end_row();
-                    }
                 }
             });
+    }
+
+    /// Add a command button to the command grid.
+    #[inline]
+    fn add_command_button(
+        &mut self,
+        ui: &mut egui::Ui,
+        command_name: &str,
+        command_vec: &[model::Variable],
+        seen_commands: &mut model::StringSet,
+        column_width: f32,
+        current_column: &mut usize,
+    ) {
+        let mut command_name = String::from(command_name);
+        if syntax::is_pre_or_post_command(&command_name) {
+            syntax::trim_op_inplace(&mut command_name);
+        }
+        if !seen_commands.insert(command_name.clone()) {
+            return;
+        }
+        let button_ui = egui::Button::new(&command_name).wrap_mode(egui::TextWrapMode::Wrap);
+        let button = ui.add_sized(
+            egui::Vec2::new(column_width, ui.available_height()),
+            button_ui,
+        );
+        if button.clicked() {
+            let command_vec = get_custom_command_vec(&self.options, &command_name, &self.query);
+            self.send_command
+                .send(CommandMessage::GardenCommand(command_vec.to_vec()))
+                .unwrap_or(());
+        }
+        if button.secondary_clicked() {
+            self.modal_window = ModalWindow::Command(command_name.clone(), command_vec.to_vec());
+            self.modal_window_open = true;
+        }
+
+        *current_column += 1;
+        if *current_column % NUM_COMMAND_COLUMNS == 0 {
+            *current_column = 0;
+            ui.end_row();
+        }
     }
 
     /// Display details about a custom command when right-clicked.
