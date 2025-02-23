@@ -1131,6 +1131,11 @@ impl Configuration {
         self.trees.get(name)
     }
 
+    /// Find a garden by name and return a reference if it exists.
+    pub fn get_garden(&self, name: &str) -> Option<&Garden> {
+        self.gardens.get(name)
+    }
+
     /// Return a pathbuf for the specified Tree index
     pub(crate) fn get_tree_pathbuf(&self, tree_name: &str) -> Option<std::path::PathBuf> {
         self.get_tree(tree_name)
