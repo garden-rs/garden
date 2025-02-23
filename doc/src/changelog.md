@@ -4,6 +4,9 @@
 
 **Features**:
 
+- Commands defined in Garden and Tree scopes are now runnable from the `garden gui`
+command palette.
+
 - `garden grow` is now runnable from the `garden gui` commands and query results.
 
 - `garden ls` is now runnable from the `garden gui` commands and query results.

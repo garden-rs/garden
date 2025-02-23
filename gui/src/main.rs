@@ -498,6 +498,52 @@ impl GardenApp<'_> {
                         &mut current_column,
                     );
                 }
+
+                // Resolve the tree query so that we can add commands specific to the query.
+                let contexts = query_trees(self.app_context, &self.query);
+                // Insert commands from tree contexts with garden scopes.
+                let mut seen_gardens = model::StringSet::new();
+                for context in &contexts {
+                    let Some(garden_name) = context.garden.as_ref() else {
+                        continue;
+                    };
+                    // If we've already seen this garden then we can skip adding its commands.
+                    if !seen_gardens.insert(garden_name.clone()) {
+                        return;
+                    }
+                    let Some(garden) = self.app_context.get_root_config().get_garden(garden_name)
+                    else {
+                        continue;
+                    };
+                    for (command_name, command_vec) in &garden.commands {
+                        self.add_command_button(
+                            ui,
+                            command_name,
+                            command_vec,
+                            &mut seen_commands,
+                            column_width,
+                            &mut current_column,
+                        );
+                    }
+                }
+
+                // Insert tree-specific commands from each tree context.
+                for context in &contexts {
+                    let Some(tree) = self.app_context.get_root_config().get_tree(&context.tree)
+                    else {
+                        continue;
+                    };
+                    for (command_name, command_vec) in &tree.commands {
+                        self.add_command_button(
+                            ui,
+                            command_name,
+                            command_vec,
+                            &mut seen_commands,
+                            column_width,
+                            &mut current_column,
+                        );
+                    }
+                }
             });
     }
 
