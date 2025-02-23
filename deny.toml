@@ -19,6 +19,8 @@ allow = [
   "MPL-2.0",
   # indexmap -> hashbrown
   "Unicode-3.0",
+  # egui (fonts)
+  "Ubuntu-font-1.0",
   # egui
   "Zlib",
 ]

@@ -251,7 +251,9 @@ where
                 text_field.replace_with(match_result);
             }
             state.selected_index = None;
-            text_response.changed = true;
+            text_response
+                .flags
+                .set(egui::response::Flags::CHANGED, true);
         }
         egui::popup::popup_below_widget(
             ui,

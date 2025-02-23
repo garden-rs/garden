@@ -777,10 +777,12 @@ impl GardenApp<'_> {
                                         ui.label("Click to copy path. Right-click to copy the tree name.");
                                     });
                                     if copy_button.clicked() {
-                                        ui.output_mut(|output| output.copied_text = path.to_string());
+                                        let copy_text = egui::OutputCommand::CopyText(path.to_string());
+                                        ui.output_mut(|output| output.commands.push(copy_text));
                                     }
                                     if copy_button.secondary_clicked() {
-                                        ui.output_mut(|output| output.copied_text = tree_ctx.tree.to_string());
+                                        let copy_text = egui::OutputCommand::CopyText(tree_ctx.tree.to_string());
+                                        ui.output_mut(|output| output.commands.push(copy_text));
                                     }
                                     ui.monospace(&tree_ctx.tree);
                                 },
@@ -832,7 +834,8 @@ impl GardenApp<'_> {
                                         if ui.monospace(path).on_hover_ui(|ui| {
                                             ui.label("Right-click to copy path.");
                                         }).secondary_clicked() {
-                                            ui.output_mut(|output| output.copied_text = path.to_string());
+                                            let copy_text = eframe::egui::OutputCommand::CopyText(path.to_string());
+                                            ui.output_mut(|output| output.commands.push(copy_text));
                                         }
                                     } else if ui.label(
                                         egui::RichText::new(path)
@@ -841,7 +844,8 @@ impl GardenApp<'_> {
                                     ).on_hover_ui(|ui| {
                                         ui.label("Right-click to copy path.");
                                     }).secondary_clicked() {
-                                        ui.output_mut(|output| output.copied_text = path.to_string());
+                                        let copy_text = eframe::egui::OutputCommand::CopyText(path.to_string());
+                                        ui.output_mut(|output| output.commands.push(copy_text));
                                     }
                                 },
                             );

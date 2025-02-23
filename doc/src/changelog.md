@@ -33,6 +33,8 @@ their changes.
 
 - The `yaml-rust2` dependency was upgraded to v0.10.
 
+- The `egui` dependency was upgraded to v0.31.
+
 **Documentation**:
 
 - Windows support was improved in `v1.10.1` to the point where we can now consider
