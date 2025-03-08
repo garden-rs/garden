@@ -1,0 +1,5 @@
+[advisories]
+ignore = [
+    # paste is unmainted but currently used by egui via accesskit_windows
+    "RUSTSEC-2024-0436",
+]
