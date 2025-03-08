@@ -181,7 +181,7 @@ jobs:
     - name: Audit licenses
       run: |
         cargo install cargo-deny
-        garden check/deny -vv -D fetch=true
+        garden check/deny -vv -D fetch=true -D graph=true
 
   docs:
     name: Documentation

@@ -18,6 +18,8 @@ variables:
   debdir: ${pkg}/deb
   fetch: ""
   disable-fetch: $ test -n "${fetch}" || printf '%s' --disable-fetch
+  graph: ""
+  hide-graph: $ test -n "${graph}" || printf '%s' --hide-inclusion-graph
   no-fetch: $ test -n "${fetch}" || printf '%s' --no-fetch
 
 # usage:
@@ -41,7 +43,7 @@ commands:
   check/deny: |
     if type cargo-deny >/dev/null 2>&1
     then
-        cargo deny --workspace check ${disable-fetch} "$@"
+        cargo deny --workspace check ${hide-graph} ${disable-fetch} "$@"
     fi
   check/fmt: cargo fmt --all --check "$@"
   check/msrv: |
