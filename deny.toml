@@ -1,31 +1,46 @@
 [advisories]
 ignore = [
-  { id = "RUSTSEC-2024-0436", reason = "egui uses unmaintained paste via accesskit_windows" }
+    { id = "RUSTSEC-2024-0436", reason = "egui uses unmaintained paste via accesskit_windows" },
 ]
 
 [licenses]
 allow = [
-  # better_default
-  "Apache-2.0",
-  # egui
-  "BSL-1.0",
-  # egui
-  "BSD-2-Clause",
-  # encoding_rs
-  "BSD-3-Clause",
-  # egui
-  "ISC",
-  "MIT",
-  # egui (fonts)
-  "LicenseRef-UFL-1.0",
-  # egui (fonts)
-  "OFL-1.1",
-  # dirs -> dirs-sys -> options-ext
-  "MPL-2.0",
-  # indexmap -> hashbrown
-  "Unicode-3.0",
-  # egui (fonts)
-  "Ubuntu-font-1.0",
-  # egui
-  "Zlib",
+    "Apache-2.0",
+    # egui
+    "BSL-1.0",
+    # egui
+    "BSD-2-Clause",
+    # encoding_rs
+    "BSD-3-Clause",
+    "MIT",
+    "Unicode-3.0",
+    # egui and others
+    "Zlib",
+]
+
+exceptions = [
+    # egui
+    { allow = ["OFL-1.1", "Ubuntu-font-1.0"], crate = "epaint_default_fonts" },
+    { allow = ["ISC"], crate = "libloading" },
+    # dirs
+    { allow = ["MPL-2.0"], crate = "option-ext" },
+]
+
+[bans]
+skip = [
+    "bitflags",
+    "core-foundation",
+    "getrandom",
+    "quick-xml",
+    "redox_syscall",
+    "redox_users",
+    "thiserror-impl",
+    "wasi",
+]
+
+skip-tree = [
+    "dirs",
+    "strum",
+    "thiserror",
+    "windows-sys",
 ]
