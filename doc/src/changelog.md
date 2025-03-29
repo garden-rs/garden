@@ -1,5 +1,12 @@
 # Changelog
 
+## Upcoming
+
+**Features**:
+
+- `garden gui` now avoids displaying duplicate trees.
+
+
 ## v2.1.0
 
 *Released 2025-02-23*

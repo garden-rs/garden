@@ -750,10 +750,12 @@ impl GardenApp<'_> {
         if contexts.is_empty() {
             return;
         }
+
         ui.with_layout(egui::Layout::top_down(egui::Align::Center), |ui| {
             ui.label("Tree Query Results");
         });
         ui.separator();
+
         TableBuilder::new(ui)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::LEFT))
@@ -761,7 +763,12 @@ impl GardenApp<'_> {
             .column(Column::auto().clip(true))
             .column(Column::remainder().clip(true))
             .body(|mut body| {
+                let mut seen_trees  = model::StringSet::new();
                 for tree_ctx in &contexts {
+                    // If we've already seen this tree then we can skip it.
+                    if !seen_trees.insert(tree_ctx.tree.clone()) {
+                        continue;
+                    }
                     let Some(tree) = config.get_tree(&tree_ctx.tree) else {
                         continue;
                     };
