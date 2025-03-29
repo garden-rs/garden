@@ -947,7 +947,11 @@ fn completion_values(app_context: &model::ApplicationContext) -> Vec<String> {
         results.push(name.clone());
         garden_results.push(format!(":{name}"));
     }
+
     results.sort();
+    tree_results.sort();
+    group_results.sort();
+    garden_results.sort();
     results.append(&mut tree_results);
     results.append(&mut group_results);
     results.append(&mut garden_results);
