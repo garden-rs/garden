@@ -104,34 +104,34 @@ jobs:
           os: windows-2022
           rust: nightly-x86_64-gnu
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
     - name: Install packages
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt install git musl-tools rsync zsh
-    - name: Install rust
-      uses: dtolnay/rust-toolchain@master
+    - run: rustup toolchain install ${{ matrix.rust }} --profile minimal --no-self-update
+    - run: |
+        date +%W >weekly
+        echo ${{ matrix.build }}-${{ matrix.rust }}-${{ matrix.target }} >>weekly
+        cat weekly
+    - id: cache
+      uses: Swatinem/rust-cache@v2
       with:
-        toolchain: ${{ matrix.rust }}
-    - name: Installa and enable cross
+        key: test-${{ hashFiles('weekly') }}
+    - name: Install and enable cross
       if: matrix.os == 'ubuntu-latest' && matrix.target != ''
       run: |
         # Use pre-compiled cross releases because cross has over 100 dependencies and
         # takes a while to compile.
-        dir="$RUNNER_TEMP/cross-download"
-        mkdir "$dir"
-        echo "$dir" >> $GITHUB_PATH
-        cd "$dir"
-        curl -LO "https://github.com/cross-rs/cross/releases/download/$CROSS_VERSION/cross-x86_64-unknown-linux-musl.tar.gz"
-        tar xf cross-x86_64-unknown-linux-musl.tar.gz
-        echo "CARGO=cross" >> $GITHUB_ENV
-        echo "TARGET_FLAGS=--target ${{ matrix.target }}" >> $GITHUB_ENV
-        echo "TARGET_DIR=./target/${{ matrix.target }}" >> $GITHUB_ENV
+        curl -LO "https://github.com/cross-rs/cross/releases/download/${CROSS_VERSION}/cross-x86_64-unknown-linux-musl.tar.gz"
+        tar -xzf cross-x86_64-unknown-linux-musl.tar.gz --directory=${HOME}/.cargo/bin
+        echo "CARGO=cross" >> ${GITHUB_ENV}
+        echo "TARGET_FLAGS=--target ${{ matrix.target }}" >> ${GITHUB_ENV}
+        echo "TARGET_DIR=./target/${{ matrix.target }}" >> ${GITHUB_ENV}
     - name: Show command used for cargo
       run: |
-        echo "cargo command is: ${{ env.CARGO }}"
-        echo "target flag is: ${{ env.TARGET_FLAGS }}"
-        echo "target dir is: ${{ env.TARGET_DIR }}"
+        echo "CARGO=${{ env.CARGO }}"
+        echo "TARGET_DIR=${{ env.TARGET_DIR }}"
+        echo "TARGET_FLAGS=${{ env.TARGET_FLAGS }}"
     - name: Build all crates
       run: ${{ env.CARGO }} build --verbose ${{ env.TARGET_FLAGS }}
     - name: Show build.rs stderr
@@ -146,8 +146,7 @@ jobs:
           echo "====="
         fi
         set -x
-    - name: Show git version
-      run: git version
+    - run: git version
     - name: Configure git for tests
       run: |
         git config --global init.defaultBranch main
@@ -161,29 +160,25 @@ jobs:
     name: Checks
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-    - name: Install rust
-      uses: dtolnay/rust-toolchain@master
+    - uses: actions/checkout@v4
+    - run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy --no-self-update
+    - run: date +%W >weekly
+    - id: cache
+      uses: Swatinem/rust-cache@v2
       with:
-        toolchain: stable
-        components: rustfmt clippy
+        key: check-${{ hashFiles('weekly') }}
     - name: Install cargo tools
-      run: |
-    - name: Install garden
-      run: cargo install --path .
-    - name: Run format checks
-      run: garden check/fmt -vv
-    - name: Run clippy checks
-      run: garden check/clippy -vv
-    - name: Audit dependencies
+      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         cargo install cargo-audit
-        garden check/audit -vv -D fetch=true
-    - name: Audit licenses
-      run: |
         cargo install cargo-deny
-        garden check/deny -vv -D fetch=true -D graph=true
+        cargo install cargo-msrv
+    - run: cargo install --path .
+    - run: garden check/fmt -vv
+    - run: garden check/clippy -vv
+    - run: garden check/audit -vv -D fetch=true
+    - run: garden check/deny -vv -D fetch=true -D graph=true
+    - run: garden check/msrv -vv
 
   docs:
     name: Documentation
@@ -191,17 +186,15 @@ jobs:
       MDBOOK_VERSION: v0.4.48
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install rust
-        uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v4
+      - run: rustup toolchain install stable --profile minimal --no-self-update
+      - run: date +%W >weekly
+      - uses: Swatinem/rust-cache@v2
         with:
-          toolchain: stable
+          key: docs-${{ hashFiles('weekly') }}
       - name: Install mdbook
         run: |
           curl -sSL https://github.com/rust-lang/mdBook/releases/download/${MDBOOK_VERSION}/mdbook-${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz |
             tar -xz --directory=${HOME}/.cargo/bin
-      - name: Install garden
-        run: cargo install --path .
-      - name: Build documentation
-        run: garden doc -vv
+      - run: cargo install --path .
+      - run: garden doc -vv
