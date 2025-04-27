@@ -33,7 +33,6 @@ skip = [
     "getrandom",
     "quick-xml",
     "redox_syscall",
-    "redox_users",
     "thiserror-impl",
     "wasi",
 ]
