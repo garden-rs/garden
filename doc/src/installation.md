@@ -44,7 +44,7 @@ This will download and compile `garden` for you. The only thing left to do is
 to add the Cargo `$HOME/.cargo/bin` directory to your `$PATH`.
 
 The Garden graphical user interface is provided in a separate crate called `garden-gui`.
-You can install Garden GUI using `cargo` using Rust 1.81.0 or newer.
+You can install Garden GUI using `cargo` from Rust version 1.81.0 or newer.
 
 ```
 cargo install garden-gui
