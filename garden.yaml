@@ -136,6 +136,7 @@ trees:
       branch.pages.remote: pages
       remote.pages.pushurl:
         - "git@gitlab.com:garden-rs/garden-rs.gitlab.io.git"
+        - "git@github.com:garden-rs/garden-rs.github.io.git"
         - "git@github.com:garden-rs/garden.git"
     links:
       - "https://garden-rs.gitlab.io"
