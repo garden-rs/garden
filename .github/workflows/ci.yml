@@ -8,13 +8,17 @@ on:
   schedule:
   - cron: '00 01 * * *'
 
-# The section is needed to drop write-all permissions that are granted on
-# `schedule` event. By specifying any permission explicitly all others are set
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# The section is needed to drop write-all permissions that are granted to
+# `schedule` events. By specifying any permission explicitly all others are set
 # to none. By using the principle of least privilege the damage a compromised
 # workflow can do (because of an injection or compromised third party tool or
 # action) is restricted. Currently the worklow doesn't need any additional
 # permission except for pulling the code. Adding labels to issues, commenting
-# on pull-requests, etc. may need additional permissions:
+# on pull-requests, etc. may need additional permissions.
 #
 # Syntax for this section:
 # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
@@ -22,7 +26,7 @@ on:
 # Reference for how to assign permissions on a job-by-job basis:
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
 #
-# Reference for available permissions that we can enable if needed:
+# Reference for additional permissions that can be enabled:
 # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
 permissions:
   # to fetch code (actions/checkout)
@@ -100,8 +104,6 @@ jobs:
           os: windows-2022
           rust: nightly-x86_64-gnu
     steps:
-    - name: Cancel previous runs
-      uses: styfle/cancel-workflow-action@0.12.1
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Install packages
@@ -187,8 +189,6 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.12.1
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install rust
