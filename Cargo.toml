@@ -21,6 +21,7 @@ anyhow = "1.0"
 assert_cmd = "2.0.13"
 better_default = "1.0"
 clap = { version = "4.5", features = ["cargo", "derive", "string"] }
+clap-cargo = "0.15"
 clap_complete = "4.5"
 crossbeam = "0.8"
 dirs = "6.0"
@@ -79,6 +80,7 @@ maintenance = { status = "actively-developed" }
 anyhow.workspace = true
 better_default.workspace = true
 clap.workspace = true
+clap-cargo.workspace = true
 clap_complete.workspace = true
 crossbeam.workspace = true
 dirs.workspace = true

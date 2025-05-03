@@ -78,6 +78,7 @@ pub struct CmdOptions {
 /// Run custom garden commands
 #[derive(Parser, Clone, Debug)]
 #[command(bin_name = constants::GARDEN)]
+#[command(styles = clap_cargo::style::CLAP_STYLING)]
 pub struct CustomOptions {
     /// Set variables using 'name=value' expressions
     #[arg(long, short = 'D')]

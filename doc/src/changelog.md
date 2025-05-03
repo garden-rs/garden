@@ -6,6 +6,8 @@
 
 - `garden gui` now avoids displaying duplicate trees.
 
+- `garden --help` now uses ANSI colors.
+
 
 ## v2.1.0
 

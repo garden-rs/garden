@@ -5,6 +5,7 @@ use crate::{cmds, constants, model, path};
 #[derive(Clone, Debug, Default, Parser)]
 #[command(name = constants::GARDEN)]
 #[command(author, version, about, long_about = None)]
+#[command(styles = clap_cargo::style::CLAP_STYLING)]
 pub struct MainOptions {
     /// Use ANSI colors [auto, true, false, on, off, always, never, 1, 0]
     #[arg(

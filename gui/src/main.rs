@@ -109,6 +109,7 @@ fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Re
 #[derive(Parser, Clone, Debug)]
 #[command(bin_name = constants::GARDEN_GUI)]
 #[command(author, version, about, long_about = None)]
+#[command(styles = clap_cargo::style::CLAP_STYLING)]
 pub(crate) struct GuiOptions {
     /// Change directories before searching for Garden files
     #[arg(long, short = 'C', value_hint = ValueHint::DirPath)]
