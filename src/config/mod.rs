@@ -88,16 +88,19 @@ pub fn xdg_dir() -> std::path::PathBuf {
     let mut home_config_dir;
 
     #[cfg(unix)]
-    if let Ok(xdg_dirs) = xdg::BaseDirectories::new() {
-        home_config_dir = xdg_dirs.get_config_home();
-    } else {
-        home_config_dir = path::home_dir();
-        home_config_dir.push(".config")
+    {
+        let xdg_dirs = xdg::BaseDirectories::new();
+        if let Some(config_home) = xdg_dirs.get_config_home() {
+            home_config_dir = config_home;
+        } else {
+            home_config_dir = path::home_dir();
+            home_config_dir.push(".config");
+        }
     }
     #[cfg(not(unix))]
     {
         home_config_dir = path::home_dir();
-        home_config_dir.push(".config")
+        home_config_dir.push(".config");
     }
 
     home_config_dir.push("garden");

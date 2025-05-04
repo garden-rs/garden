@@ -8,6 +8,10 @@
 
 - `garden --help` now uses ANSI colors.
 
+**Development**:
+
+- The `xdg` dependency was upgraded to v3.0.
+
 
 ## v2.1.0
 
