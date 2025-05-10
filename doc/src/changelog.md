@@ -12,6 +12,9 @@
 
 - The `xdg` dependency was upgraded to v3.0.
 
+- The `idna_adapter` and `mime_guess2` crates were pinned to maintain the
+current MSRV of 1.81.0 for `garden-gui`.
+
 
 ## v2.1.0
 

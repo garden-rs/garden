@@ -23,7 +23,8 @@ egui.workspace = true
 egui_extras.workspace = true
 fuzzy-matcher.workspace = true
 garden-tools.workspace = true
-mime_guess2.workspace = true
+idna_adapter.workspace = true  # pinned for MSRV
+mime_guess2.workspace = true  # pinned for MSRV
 serde = { workspace = true, optional = true }
 shell-words.workspace = true
 
