@@ -7,6 +7,7 @@ pub struct DisplayOptions {
     pub commands: bool,
     pub force: bool,
     pub quiet: bool,
+    pub remotes: bool,
     pub verbose: u8,
     pub worktrees: bool,
 }
@@ -186,7 +187,7 @@ pub(crate) fn print_tree_extended_details(
     if tree.is_worktree && !display_options.worktrees {
         return;
     }
-    if !tree.remotes.is_empty() {
+    if display_options.remotes && !tree.remotes.is_empty() {
         println!("{}", "remotes:".blue());
         for (name, remote) in &tree.remotes {
             let value = eval::tree_variable(

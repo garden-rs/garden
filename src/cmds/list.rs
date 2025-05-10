@@ -23,6 +23,9 @@ pub struct ListOptions {
     /// Do not show groups
     #[arg(long, short = 'G', default_value_t = false)]
     no_groups: bool,
+    /// Do not show remotes
+    #[arg(long, short = 'R', default_value_t = false)]
+    no_remotes: bool,
     /// Print trees in reverse order
     #[arg(short, long, default_value_t = false)]
     reverse: bool,
@@ -64,6 +67,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let config = app_context.get_root_config();
     let display_all = options.all;
     let worktrees = options.worktrees;
+    let remotes = !options.no_remotes;
     let show_commands = !options.no_commands;
     let only_commands = options.only_commands;
     let show_gardens = !only_commands && !options.no_gardens;
@@ -71,6 +75,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let verbose = app_context.options.verbose + options.verbose;
     let mut needs_newline = false;
     let mut display_options = display::DisplayOptions {
+        remotes,
         verbose,
         worktrees,
         ..std::default::Default::default()

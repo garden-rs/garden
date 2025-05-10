@@ -4,6 +4,8 @@
 
 **Features**:
 
+- `garden ls` now has a `-R | --no-remotes` option to disable the display of remotes.
+
 - `garden gui` now avoids displaying duplicate trees.
 
 - `garden --help` now uses ANSI colors.
