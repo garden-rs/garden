@@ -1,6 +1,16 @@
 use crate::{eval, git, model};
 use yansi::Paint;
 
+#[derive(Debug, Default, Clone, Copy)]
+pub struct DisplayOptions {
+    pub branches: bool,
+    pub commands: bool,
+    pub force: bool,
+    pub quiet: bool,
+    pub verbose: u8,
+    pub worktrees: bool,
+}
+
 pub(crate) fn display_missing_tree(
     tree: &model::Tree,
     path: &str,
@@ -78,29 +88,26 @@ pub(crate) fn display_tree(
 }
 
 /// Print a tree if it exists, otherwise print a missing tree
-pub(crate) fn print_tree(
-    tree: &model::Tree,
-    tree_branches: bool,
-    verbose: u8,
-    quiet: bool,
-    force: bool,
-) -> bool {
+pub(crate) fn print_tree(tree: &model::Tree, options: &DisplayOptions) -> bool {
     if let Ok(path) = tree.path_as_ref() {
         // Sparse gardens/missing trees are expected. Skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
-            if !quiet {
-                eprintln!("{}", display_missing_tree(tree, path, verbose, force));
+            if !options.quiet {
+                eprintln!(
+                    "{}",
+                    display_missing_tree(tree, path, options.verbose, options.force)
+                );
             }
             return false;
         }
 
-        print_tree_details(tree, tree_branches, verbose, quiet);
+        print_tree_details(tree, options.branches, options.verbose, options.quiet);
         return true;
     }
-    if !quiet {
+    if !options.quiet {
         eprintln!(
             "{}",
-            display_missing_tree(tree, "(invalid-path)", verbose, force)
+            display_missing_tree(tree, "(invalid-path)", options.verbose, options.force)
         );
     }
 
@@ -167,7 +174,7 @@ pub(crate) fn print_tree_extended_details(
     app_context: &model::ApplicationContext,
     context: &model::TreeContext,
     tree: &model::Tree,
-    display_worktrees: bool,
+    display_options: &DisplayOptions,
 ) {
     let config = match context.config {
         Some(config_id) => app_context.get_config(config_id),
@@ -176,7 +183,7 @@ pub(crate) fn print_tree_extended_details(
     if !tree.description.is_empty() {
         println!("{}", tree.description.green());
     }
-    if tree.is_worktree && !display_worktrees {
+    if tree.is_worktree && !display_options.worktrees {
         return;
     }
     if !tree.remotes.is_empty() {

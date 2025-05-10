@@ -455,13 +455,13 @@ fn get_command_environment<'a>(
     let env = eval::environment(app_context, config, context);
     // Sparse gardens/missing trees are ok -> skip these entries.
     let mut fallback_path = None;
-    if !display::print_tree(
-        tree,
-        config.tree_branches,
-        params.verbose,
-        params.quiet,
-        params.force,
-    ) {
+    let display_options = display::DisplayOptions {
+        branches: config.tree_branches,
+        quiet: params.quiet,
+        verbose: params.verbose,
+        ..std::default::Default::default()
+    };
+    if !display::print_tree(tree, &display_options) {
         // The "--force" option runs commands in a fallback directory when the tree does not exist.
         if params.force {
             fallback_path = Some(config.fallback_execdir_string());

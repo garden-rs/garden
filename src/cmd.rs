@@ -138,16 +138,23 @@ pub(crate) fn exec_in_context<S>(
 where
     S: AsRef<std::ffi::OsStr>,
 {
-    let path;
+    let display_options = display::DisplayOptions {
+        branches: config.tree_branches,
+        verbose,
+        quiet,
+        ..std::default::Default::default()
+    };
     let graft_config = context
         .config
         .map(|graft_id| app_context.get_config(graft_id));
+
+    let path;
     if let Some(graft_cfg) = graft_config {
         if let Some(tree) = graft_cfg.trees.get(&context.tree) {
             path = tree.path_as_ref()?;
 
             // Sparse gardens/missing trees are okay -> skip these entries.
-            if !display::print_tree(tree, config.tree_branches, verbose, quiet, false) {
+            if !display::print_tree(tree, &display_options) {
                 return Ok(());
             }
         } else {
@@ -157,7 +164,7 @@ where
         path = tree.path_as_ref()?;
 
         // Sparse gardens/missing trees are okay -> skip these entries.
-        if !display::print_tree(tree, config.tree_branches, verbose, quiet, false) {
+        if !display::print_tree(tree, &display_options) {
             return Ok(());
         }
     } else {

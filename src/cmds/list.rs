@@ -63,13 +63,18 @@ pub fn main(app_context: &model::ApplicationContext, options: &mut ListOptions) 
 fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Result<()> {
     let config = app_context.get_root_config();
     let display_all = options.all;
-    let display_worktrees = options.worktrees;
+    let worktrees = options.worktrees;
     let show_commands = !options.no_commands;
     let only_commands = options.only_commands;
     let show_gardens = !only_commands && !options.no_gardens;
     let show_groups = !only_commands && !options.no_groups;
     let verbose = app_context.options.verbose + options.verbose;
     let mut needs_newline = false;
+    let mut display_options = display::DisplayOptions {
+        verbose,
+        worktrees,
+        ..std::default::Default::default()
+    };
 
     if app_context.options.debug_level(constants::DEBUG_LEVEL_LIST) > 0 {
         debug!("queries: {:?}", options.queries);
@@ -145,7 +150,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
                             app_context,
                             context,
                             tree,
-                            display_worktrees,
+                            &display_options,
                         );
                     }
                     if show_commands && !tree.commands.is_empty() {
@@ -168,9 +173,10 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
             if idx > 0 {
                 println!();
             }
-            display::print_tree(tree, config.tree_branches, verbose, false, false);
+            display_options.branches = config.tree_branches;
+            display::print_tree(tree, &display_options);
             if !only_commands {
-                display::print_tree_extended_details(app_context, context, tree, display_worktrees);
+                display::print_tree_extended_details(app_context, context, tree, &display_options);
             }
             if show_commands && !tree.commands.is_empty() {
                 display::print_commands(&tree.commands);
