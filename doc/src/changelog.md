@@ -1,6 +1,8 @@
 # Changelog
 
-## Upcoming
+## v2.2.0
+
+*Released 2025-05-11*
 
 **Features**:
 
