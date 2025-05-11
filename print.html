@@ -307,7 +307,7 @@ installed Rust, type the following in the terminal:</p>
 <p>This will download and compile <code>garden</code> for you. The only thing left to do is
 to add the Cargo <code>$HOME/.cargo/bin</code> directory to your <code>$PATH</code>.</p>
 <p>The Garden graphical user interface is provided in a separate crate called <code>garden-gui</code>.
-You can install Garden GUI using <code>cargo</code> using Rust 1.81.0 or newer.</p>
+You can install Garden GUI using <code>cargo</code> from Rust version 1.81.0 or newer.</p>
 <pre><code>cargo install garden-gui
 </code></pre>
 <h2 id="latest-using-cargo"><a class="header" href="#latest-using-cargo">Latest using Cargo</a></h2>
@@ -2410,9 +2410,38 @@ hello
 world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
-<h2 id="upcoming"><a class="header" href="#upcoming">Upcoming</a></h2>
+<h2 id="v220"><a class="header" href="#v220">v2.2.0</a></h2>
+<p><em>Released 2025-05-11</em></p>
 <p><strong>Features</strong>:</p>
 <ul>
+<li>
+<p><code>garden ls</code> now has a <code>-R | --no-remotes</code> option to disable the display of remotes.</p>
+</li>
+<li>
+<p><code>garden gui</code> now avoids displaying duplicate trees.</p>
+</li>
+<li>
+<p><code>garden --help</code> now uses ANSI colors.</p>
+</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p>The <code>xdg</code> dependency was upgraded to v3.0.</p>
+</li>
+<li>
+<p>The <code>idna_adapter</code> and <code>mime_guess2</code> crates were pinned to maintain the
+current MSRV of 1.81.0 for <code>garden-gui</code>.</p>
+</li>
+</ul>
+<h2 id="v210"><a class="header" href="#v210">v2.1.0</a></h2>
+<p><em>Released 2025-02-23</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>
+<p>Commands defined in Garden and Tree scopes are now runnable from the <code>garden gui</code>
+command palette.</p>
+</li>
 <li>
 <p><code>garden grow</code> is now runnable from the <code>garden gui</code> commands and query results.</p>
 </li>
@@ -2449,6 +2478,9 @@ their changes.</p>
 </li>
 <li>
 <p>The <code>yaml-rust2</code> dependency was upgraded to v0.10.</p>
+</li>
+<li>
+<p>The <code>egui</code> dependency was upgraded to v0.31.</p>
 </li>
 </ul>
 <p><strong>Documentation</strong>:</p>
