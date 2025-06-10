@@ -18,21 +18,22 @@
   commands and gardens. Groups are lighter-weight than a garden and group
   trees together into named collections that can be referenced by gardens
   and commands. In contrast to gardens, groups *do not* provide a scope
-  in which variables, commands environment variables can be defined.
+  in which variables, commands, and environment variables can be defined.
 
 * ***garden*** -- a composite of trees and groups for defining project-level
-  variables, commands and environment variables. Gardens help create
-  environments for working on projects composed of multiple Git repositories.
+  variables, commands and environment variables. Gardens can be used to manage
+  environment variables when working on projects composed of multiple Git repositories.
   The `gardens` YAML key/value block defines named gardens with a scope
   in which garden-specific variables, commands and environment variables
   can be defined.
 
 * **variables**
-  A YAML key/value table defines named variables that can be used in
-  YAML strings by using braced `shell ${expressions}` to provide dynamic
-  values that can be used to provide modularity and configurability to a garden
-  file. Variables defined in a garden file are overridden on the
-  command-line by using the `-D / --define key=value` option.
+  A key/value YAML string table that is used to define values that can be used in
+  garden commands and other variables definitions. String expressions and exec
+  expressions can be used to provide a variable's value.
+
+  Variables defined in a garden file in all scopes are overridden on the command-line by
+  using the `--define | -D key=value` option.
 
 * **commands**
   The `commands` YAML key/value table defines named commands that can be run
