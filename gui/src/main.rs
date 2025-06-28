@@ -57,7 +57,7 @@ fn gui_main(app_context: &model::ApplicationContext, options: &GuiOptions) -> Re
         .file_name()
         .and_then(|os_name| os_name.to_str())
         .unwrap_or(".");
-    let window_title = format!("Garden - {}", basename);
+    let window_title = format!("Garden - {basename}");
     let query = options.query_string();
     let (send_command, recv_command) = crossbeam::channel::unbounded();
 
@@ -286,7 +286,7 @@ fn get_garden_command_vec(
         command.push(format!("--config={}", config.to_string_lossy()));
     }
     for debug in &options.debug {
-        command.push(format!("--debug={}", debug));
+        command.push(format!("--debug={debug}"));
     }
     if let Some(root) = &options.root {
         command.push(format!("--root={}", root.to_string_lossy()));
@@ -319,7 +319,7 @@ fn get_custom_command_vec(options: &GuiOptions, command_name: &str, query: &str)
         command.push(string!("--keep-going"));
     }
     if let Some(num_jobs) = &options.num_jobs {
-        command.push(format!("--jobs={}", num_jobs));
+        command.push(format!("--jobs={num_jobs}"));
     }
     if !options.exit_on_error {
         command.push(string!("--no-errexit"));

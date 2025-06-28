@@ -356,7 +356,7 @@ fn update_tree_from_context(
             }
 
             // git config remote.<name>.tagopt --no-tags
-            let key = format!("remote.{}.tagopt", remote);
+            let key = format!("remote.{remote}.tagopt");
             let status = set_gitconfig_value(&key, "--no-tags", path, verbose);
             if status != errors::EX_OK {
                 exit_status = status;
