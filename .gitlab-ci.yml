@@ -25,8 +25,8 @@ checks:
   script:
     - rustup component add clippy
     - rustup component add rustfmt
-    - garden -vv check/clippy
-    - garden -vv check/fmt
+    - garden check/clippy -vv
+    - garden check/fmt -vv
 
 build:amd64:
   stage: build

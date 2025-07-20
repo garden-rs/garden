@@ -142,7 +142,7 @@ jobs:
     - name: Install packages
       if: matrix.os == 'ubuntu-latest'
       shell: bash
-      run: sudo apt install git musl-tools rsync zsh
+      run: sudo apt install coreutils git musl-tools rsync zsh
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@master
@@ -297,7 +297,13 @@ jobs:
       if: matrix.os != 'windows-latest'
       run: |
         tar czf "$ARCHIVE_CORE.tar.gz" "$ARCHIVE_CORE"
-        shasum -a 256 "$ARCHIVE_CORE.tar.gz" >"$ARCHIVE_CORE.tar.gz.sha256"
+        if ! type sha256sum >/dev/null
+        then
+          sha256sum () {
+            shasum -a 256 "$@"
+          }
+        fi
+        sha256sum "$ARCHIVE_CORE.tar.gz" >"$ARCHIVE_CORE.tar.gz.sha256"
         echo "ASSET_CORE=$ARCHIVE_CORE.tar.gz" >>$GITHUB_ENV
         echo "ASSET_CORE_SUM=$ARCHIVE_CORE.tar.gz.sha256" >>$GITHUB_ENV
 
@@ -306,7 +312,7 @@ jobs:
       if: matrix.build == 'linux-gui'
       run: |
         tar czf "$ARCHIVE_GUI.tar.gz" "$ARCHIVE_GUI"
-        shasum -a 256 "$ARCHIVE_GUI.tar.gz" >"$ARCHIVE_GUI.tar.gz.sha256"
+        sha256sum "$ARCHIVE_GUI.tar.gz" >"$ARCHIVE_GUI.tar.gz.sha256"
         echo "ASSET_GUI=$ARCHIVE_GUI.tar.gz" >>$GITHUB_ENV
         echo "ASSET_GUI_SUM=$ARCHIVE_GUI.tar.gz.sha256" >>$GITHUB_ENV
 
@@ -342,7 +348,7 @@ jobs:
 
     - name: Install packages
       shell: bash
-      run: sudo apt install git musl-tools rsync
+      run: sudo apt install coreutils git musl-tools rsync zsh
 
     - name: Install Rust
       run: |
@@ -408,8 +414,8 @@ jobs:
       shell: bash
       run: |
         cd "$DEB_DIR"
-        shasum -a 256 "$DEB_CORE_NAME" >"$DEB_CORE_NAME.sha256"
-        shasum -a 256 "$DEB_GUI_NAME" >"$DEB_GUI_NAME.sha256"
+        sha256sum "$DEB_CORE_NAME" >"$DEB_CORE_NAME.sha256"
+        sha256sum "$DEB_GUI_NAME" >"$DEB_GUI_NAME.sha256"
         echo "SUM_CORE=$DEB_CORE_NAME.sha256" >>$GITHUB_ENV
         echo "SUM_GUI=$DEB_GUI_NAME.sha256" >>$GITHUB_ENV
 
