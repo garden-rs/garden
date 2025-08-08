@@ -16,6 +16,7 @@ version.workspace = true
 [dependencies]
 eframe = "0.31"
 egui = "0.31"
+egui_autocomplete= "10.2.0"
 egui_extras = "0.31"
 fuzzy-matcher = "0.3.7"
 mime_guess2 = "=2.0.5"  # (egui_extras) pinned for MSRV

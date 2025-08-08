@@ -1,5 +1,14 @@
 # Changelog
 
+## Upcoming
+
+**Development**:
+
+- `garden-gui` switched over to `egui_autocomplete` now that our
+[autocomplete multiple words feature](https://github.com/JakeHandsome/egui_autocomplete/pull/38)
+was merged and released.
+
+
 ## v2.2.0
 
 *Released 2025-05-11*

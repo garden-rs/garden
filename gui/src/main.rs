@@ -414,13 +414,14 @@ impl GardenApp<'_> {
             ui.label("Query");
             ui.add_space(self.view_metrics.spacing);
             let completions = completion_values(self.app_context);
-            let text_edit = garden_gui::AutoCompleteTextEdit::new(&mut self.query, &completions)
-                .multiple_words(true)
-                .set_text_edit_properties(|text_edit: egui::TextEdit<'_>| {
-                    text_edit.hint_text(
+            let text_edit =
+                egui_autocomplete::AutoCompleteTextEdit::new(&mut self.query, &completions)
+                    .multiple_words(true)
+                    .set_text_edit_properties(|text_edit: egui::TextEdit<'_>| {
+                        text_edit.hint_text(
                         "Tree query for the gardens, groups or trees to execute commands within",
                     )
-                });
+                    });
             let query_response = ui.add_sized(ui.available_size(), text_edit);
             if !self.initialized {
                 self.initialized = true;
