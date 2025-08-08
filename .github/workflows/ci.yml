@@ -6,7 +6,8 @@ on:
     - dev
     - main
   schedule:
-  - cron: '00 01 * * *'
+  # Saturdays at 12:00 AM
+  - cron: '0 0 * * 6'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
