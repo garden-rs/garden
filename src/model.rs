@@ -177,7 +177,7 @@ impl MultiVariable {
         }
     }
 
-    pub fn iter(&self) -> std::slice::Iter<Variable> {
+    pub fn iter(&self) -> std::slice::Iter<'_, Variable> {
         self.variables.iter()
     }
 }
