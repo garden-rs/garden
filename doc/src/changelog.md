@@ -2,6 +2,10 @@
 
 ## Upcoming
 
+**Features**:
+
+- `garden ls -cc` now displays command recipes.
+
 **Development**:
 
 - `garden-gui` switched over to `egui_autocomplete` now that our

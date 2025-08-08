@@ -15,8 +15,8 @@ pub struct ListOptions {
     #[arg(long, short = 'C', default_value_t = false)]
     no_commands: bool,
     /// Display commands. Omits descriptions, remotes and links so that commands are more visible
-    #[arg(long = "commands", short = 'c', default_value_t = false)]
-    only_commands: bool,
+    #[arg(long = "commands", short = 'c', action = clap::ArgAction::Count)]
+    commands: u8,
     /// Do not show gardens
     #[arg(long, short = 'N', default_value_t = false)]
     no_gardens: bool,
@@ -69,7 +69,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
     let worktrees = options.worktrees;
     let remotes = !options.no_remotes;
     let show_commands = !options.no_commands;
-    let only_commands = options.only_commands;
+    let only_commands = options.commands > 0;
     let show_gardens = !only_commands && !options.no_gardens;
     let show_groups = !only_commands && !options.no_groups;
     let verbose = app_context.options.verbose + options.verbose;
@@ -159,7 +159,12 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
                         );
                     }
                     if show_commands && !tree.commands.is_empty() {
-                        display::print_commands(&tree.commands);
+                        display::print_commands(
+                            app_context,
+                            context,
+                            &tree.commands,
+                            options.commands > 1,
+                        );
                     }
                 }
                 needs_newline = display_all;
@@ -184,7 +189,7 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
                 display::print_tree_extended_details(app_context, context, tree, &display_options);
             }
             if show_commands && !tree.commands.is_empty() {
-                display::print_commands(&tree.commands);
+                display::print_commands(app_context, context, &tree.commands, options.commands > 1);
             }
             needs_newline = true;
         }
@@ -202,7 +207,18 @@ fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Resul
 
     if show_commands && !config.commands.is_empty() {
         println!();
-        display::print_commands(&config.commands);
+        let context = model::TreeContext {
+            tree: "".to_string(),
+            config: config.get_id(),
+            garden: None,
+            group: None,
+        };
+        display::print_commands(
+            app_context,
+            &context,
+            &config.commands,
+            options.commands > 1,
+        );
     }
 
     Ok(())

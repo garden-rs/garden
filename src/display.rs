@@ -218,10 +218,27 @@ pub(crate) fn print_tree_extended_details(
 }
 
 /// Print a list of commands
-pub(crate) fn print_commands(commands: &model::MultiVariableMap) {
+pub(crate) fn print_commands(
+    app_context: &model::ApplicationContext,
+    context: &model::TreeContext,
+    commands: &model::MultiVariableMap,
+    verbose: bool,
+) {
     println!("{}", "commands:".blue());
-    for cmd in commands.keys() {
-        println!("  {} {}", "-".blue(), cmd.yellow());
+    if verbose {
+        for cmd in commands.keys() {
+            let cmd_seq_vec = eval::command(app_context, context, cmd);
+            println!("{} {}", "-".blue(), cmd.yellow());
+            for command_seq in &cmd_seq_vec {
+                for line in command_seq {
+                    println!("{} {}", ":".cyan(), line.green(),);
+                }
+            }
+        }
+    } else {
+        for cmd in commands.keys() {
+            println!("  {} {}", "-".blue(), cmd.yellow());
+        }
     }
 }
 
