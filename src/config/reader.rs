@@ -374,34 +374,68 @@ fn get_indexset_str(yaml: &Yaml, values: &mut StringSet) -> bool {
     }
 }
 
-/// Promote `Yaml::String` or `Yaml::Array<Yaml::String>` into a `Vec<Variable>`.
-fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
+/// Construct a model::Variable from a ran YAML object.
+fn variable_from_yaml(yaml: &Yaml) -> Option<model::Variable> {
     match yaml {
-        Yaml::String(yaml_string) => {
-            vec.push(model::Variable::new(yaml_string.clone(), None));
-            true
-        }
-        Yaml::Array(yaml_vec) => {
-            for value in yaml_vec {
-                if let Yaml::String(value_str) = value {
-                    vec.push(model::Variable::new(value_str.clone(), None));
-                }
+        Yaml::String(yaml_str) => Some(model::Variable::new(yaml_str.to_string(), None)),
+        Yaml::Array(yaml_array) => {
+            // If we see an array we loop over so that the first value wins.
+            for array_value in yaml_array.iter().rev() {
+                return variable_from_yaml(array_value);
             }
-            true
+
+            None
         }
-        _ => false,
+        Yaml::Integer(yaml_int) => {
+            // Integers are already resolved.
+            let int_value = yaml_int.to_string();
+
+            Some(model::Variable::new(int_value.to_string(), Some(int_value)))
+        }
+        Yaml::Boolean(yaml_bool) => {
+            // Booleans are already resolved.
+            let bool_value = syntax::bool_to_string(*yaml_bool);
+
+            Some(model::Variable::new(
+                bool_value.to_string(),
+                Some(bool_value),
+            ))
+        }
+        _ => {
+            // dump_node(yaml, 1, "");
+            None
+        }
     }
 }
 
 // Extract a `Variable` from `yaml`. Return `false` when `yaml` is not a `Yaml::String`.
 fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
-    match yaml {
-        Yaml::String(yaml_string) => {
-            value.set_expr(yaml_string.to_string());
-            true
-        }
-        _ => false,
+    if let Some(variable) = variable_from_yaml(yaml) {
+        *value = variable;
+
+        true
+    } else {
+        false
     }
+}
+
+/// Promote `Yaml::String` or `Yaml::Array<Yaml::String>` into a `Vec<Variable>`.
+fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
+    if let Yaml::Array(yaml_array) = yaml {
+        for value in yaml_array {
+            if let Some(variable) = variable_from_yaml(value) {
+                vec.push(variable);
+            }
+        }
+        return true;
+    }
+
+    if let Some(variable) = variable_from_yaml(yaml) {
+        vec.push(variable);
+        return true;
+    }
+
+    false
 }
 
 /// Extract variable definitions from a `yaml::Hash` into a `VariablesMap`.
@@ -416,47 +450,8 @@ fn get_variables_map(yaml: &Yaml, map: &mut model::VariableMap) -> bool {
                         continue;
                     }
                 };
-                match v {
-                    Yaml::String(yaml_str) => {
-                        map.insert(key, model::Variable::new(yaml_str.clone(), None));
-                    }
-                    Yaml::Array(yaml_array) => {
-                        for value in yaml_array {
-                            if let Yaml::String(yaml_str) = value {
-                                map.insert(
-                                    key.to_owned(),
-                                    model::Variable::new(
-                                        yaml_str.clone(),
-                                        None, // Defer resolution of string values.
-                                    ),
-                                );
-                            }
-                        }
-                    }
-                    Yaml::Integer(yaml_int) => {
-                        let value = yaml_int.to_string();
-                        map.insert(
-                            key,
-                            model::Variable::new(
-                                value.clone(),
-                                Some(value.clone()), // Integer values are already resolved.
-                            ),
-                        );
-                    }
-                    Yaml::Boolean(yaml_bool) => {
-                        let value = syntax::bool_to_string(*yaml_bool);
-                        map.insert(
-                            key,
-                            model::Variable::new(
-                                value.clone(),
-                                Some(value.clone()), // Booleans are already resolved.
-                            ),
-                        );
-                    }
-                    _ => {
-                        dump_node(v, 1, "");
-                        error!("invalid variables");
-                    }
+                if let Some(variable) = variable_from_yaml(v) {
+                    map.insert(key, variable);
                 }
             }
             true
@@ -473,29 +468,21 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
                 Some(key_value) => key_value.to_string(),
                 None => continue,
             };
-            match v {
-                Yaml::String(yaml_str) => {
-                    let variables = vec![model::Variable::new(yaml_str.to_string(), None)];
-                    vec.push(model::MultiVariable::new(key, variables));
-                }
-                Yaml::Array(yaml_array) => {
-                    let mut variables = Vec::new();
-                    for value in yaml_array {
-                        if let Yaml::String(yaml_str) = value {
-                            variables.push(model::Variable::new(yaml_str.clone(), None));
-                        }
+            // Special-case arrays.
+            if let Yaml::Array(yaml_array) = v {
+                let mut variables = Vec::new();
+                for value in yaml_array {
+                    if let Some(variable) = variable_from_yaml(value) {
+                        variables.push(variable);
                     }
-                    vec.push(model::MultiVariable::new(key, variables));
                 }
-                Yaml::Integer(yaml_int) => {
-                    let value = yaml_int.to_string();
-                    let variables = vec![model::Variable::new(value.clone(), Some(value))];
-                    vec.push(model::MultiVariable::new(key, variables));
-                }
-                _ => {
-                    dump_node(v, 1, "");
-                    error!("invalid configuration");
-                }
+                vec.push(model::MultiVariable::new(key, variables));
+                continue;
+            }
+
+            if let Some(variable) = variable_from_yaml(v) {
+                let variables = vec![variable];
+                vec.push(model::MultiVariable::new(key, variables));
             }
         }
 
@@ -514,39 +501,22 @@ fn get_multivariables_map(yaml: &Yaml, multivariables: &mut model::MultiVariable
                     Some(key_value) => key_value.to_string(),
                     None => continue,
                 };
-                match v {
-                    Yaml::String(yaml_str) => {
-                        let variables = vec![model::Variable::new(yaml_str.to_string(), None)];
-                        multivariables.insert(key, variables);
-                    }
-                    Yaml::Array(yaml_array) => {
-                        let mut variables = Vec::new();
-                        for value in yaml_array {
-                            if let Yaml::String(yaml_str) = value {
-                                variables.push(model::Variable::new(yaml_str.clone(), None));
-                            }
+                if let Yaml::Array(yaml_array) = v {
+                    let mut variables = Vec::new();
+                    for value in yaml_array {
+                        if let Some(variable) = variable_from_yaml(value) {
+                            variables.push(variable);
                         }
-                        multivariables.insert(key, variables);
                     }
-                    Yaml::Integer(yaml_int) => {
-                        // Integers are already resolved.
-                        let value = yaml_int.to_string();
-                        let variables = vec![model::Variable::new(value.clone(), Some(value))];
-                        multivariables.insert(key, variables);
-                    }
-                    Yaml::Boolean(yaml_bool) => {
-                        // Booleans are already resolved.
-                        let value = syntax::bool_to_string(*yaml_bool);
-                        let variables = vec![model::Variable::new(value.clone(), Some(value))];
-                        multivariables.insert(key, variables);
-                    }
-                    _ => {
-                        dump_node(v, 1, "");
-                        error!("invalid variables");
-                    }
+                    multivariables.insert(key, variables);
+                    continue;
+                }
+
+                if let Some(variable) = variable_from_yaml(v) {
+                    let variables = vec![variable];
+                    multivariables.insert(key, variables);
                 }
             }
-
             true
         }
         _ => false,
