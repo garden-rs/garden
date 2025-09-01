@@ -69,10 +69,20 @@ impl Clone for Variable {
 }
 
 impl Variable {
-    pub(crate) fn new(expr: String, value: Option<String>) -> Self {
+    /// Create an un-evaluated variable from an expression string.
+    pub(crate) fn from_expr(expr: String) -> Self {
         Variable {
             expr,
-            value: UnsafeCell::new(value),
+            value: UnsafeCell::new(None),
+            evaluating: Cell::new(false),
+        }
+    }
+
+    /// Create a resolved variable from a string that is both the expression and value.
+    pub(crate) fn from_resolved_expr(expr: String) -> Self {
+        Variable {
+            expr: expr.clone(),
+            value: UnsafeCell::new(Some(expr)),
             evaluating: Cell::new(false),
         }
     }
@@ -278,13 +288,13 @@ impl Tree {
     pub(crate) fn add_builtin_variables(&mut self) {
         self.variables.insert(
             string!(constants::TREE_NAME),
-            Variable::new(self.get_name().clone(), None),
+            Variable::from_expr(self.get_name().clone()),
         );
 
         // Register the ${TREE_PATH} variable.
         self.variables.insert(
             string!(constants::TREE_PATH),
-            Variable::new(self.get_path().get_expr().clone(), None),
+            Variable::from_expr(self.get_path().get_expr().clone()),
         );
     }
 
@@ -783,7 +793,7 @@ impl Configuration {
                 }
                 _ => {
                     self.override_variables
-                        .insert(name, Variable::new(expr, None));
+                        .insert(name, Variable::from_expr(expr));
                 }
             }
         }
@@ -795,7 +805,7 @@ impl Configuration {
         let quiet_string = if self.quiet || quiet { "--quiet" } else { "" }.to_string();
         self.variables.insert(
             string!(constants::GARDEN_CMD_QUIET),
-            Variable::new(quiet_string.clone(), Some(quiet_string)),
+            Variable::from_resolved_expr(quiet_string),
         );
         let verbose = self.verbose + verbose;
         let verbose_string = if verbose > 0 {
@@ -805,7 +815,7 @@ impl Configuration {
         };
         self.variables.insert(
             string!(constants::GARDEN_CMD_VERBOSE),
-            Variable::new(verbose_string.clone(), Some(verbose_string)),
+            Variable::from_resolved_expr(verbose_string),
         );
     }
 

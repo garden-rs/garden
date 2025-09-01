@@ -125,7 +125,7 @@ fn parse_recursive(
     // Provide GARDEN_ROOT.
     config.variables.insert(
         string!(constants::GARDEN_ROOT),
-        model::Variable::new(config.root.get_expr().to_string(), None),
+        model::Variable::from_expr(config.root.get_expr().to_string()),
     );
 
     if let Some(config_path_raw) = config.dirname.as_ref() {
@@ -133,7 +133,7 @@ fn parse_recursive(
         if let Ok(config_path) = path::canonicalize(config_path_raw) {
             config.variables.insert(
                 string!(constants::GARDEN_CONFIG_DIR),
-                model::Variable::new(config_path.to_string_lossy().to_string(), None),
+                model::Variable::from_expr(config_path.to_string_lossy().to_string()),
             );
         }
     }
@@ -377,7 +377,7 @@ fn get_indexset_str(yaml: &Yaml, values: &mut StringSet) -> bool {
 /// Construct a model::Variable from a ran YAML object.
 fn variable_from_yaml(yaml: &Yaml) -> Option<model::Variable> {
     match yaml {
-        Yaml::String(yaml_str) => Some(model::Variable::new(yaml_str.to_string(), None)),
+        Yaml::String(yaml_str) => Some(model::Variable::from_expr(yaml_str.to_string())),
         Yaml::Array(yaml_array) => {
             // If we see an array we loop over so that the first value wins.
             for array_value in yaml_array.iter().rev() {
@@ -390,16 +390,13 @@ fn variable_from_yaml(yaml: &Yaml) -> Option<model::Variable> {
             // Integers are already resolved.
             let int_value = yaml_int.to_string();
 
-            Some(model::Variable::new(int_value.to_string(), Some(int_value)))
+            Some(model::Variable::from_resolved_expr(int_value))
         }
         Yaml::Boolean(yaml_bool) => {
             // Booleans are already resolved.
             let bool_value = syntax::bool_to_string(*yaml_bool);
 
-            Some(model::Variable::new(
-                bool_value.to_string(),
-                Some(bool_value),
-            ))
+            Some(model::Variable::from_resolved_expr(bool_value))
         }
         _ => {
             // dump_node(yaml, 1, "");
@@ -567,7 +564,7 @@ fn get_template(
             template
                 .tree
                 .remotes
-                .insert(string!(constants::ORIGIN), model::Variable::new(url, None));
+                .insert(string!(constants::ORIGIN), model::Variable::from_expr(url));
             return template;
         }
         // If a `<url>` is configured then populate the "origin" remote.
@@ -576,7 +573,7 @@ fn get_template(
             template
                 .tree
                 .remotes
-                .insert(string!(constants::ORIGIN), model::Variable::new(url, None));
+                .insert(string!(constants::ORIGIN), model::Variable::from_expr(url));
         }
     }
 
@@ -675,7 +672,7 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
     }
     tree.remotes.insert(
         string!(constants::ORIGIN),
-        model::Variable::new(url.to_string(), None),
+        model::Variable::from_expr(url.to_string()),
     );
 
     tree
@@ -709,7 +706,7 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
         if get_str(&value[constants::URL], &mut url) {
             tree.remotes.insert(
                 tree.default_remote.to_string(),
-                model::Variable::new(url, None),
+                model::Variable::from_expr(url),
             );
         }
     }
@@ -806,7 +803,7 @@ fn get_str_variables_map(yaml: &Yaml, remotes: &mut model::VariableMap) {
         if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
             remotes.insert(
                 name_str.to_string(),
-                model::Variable::new(value_str.to_string(), None),
+                model::Variable::from_expr(value_str.to_string()),
             );
         }
     }

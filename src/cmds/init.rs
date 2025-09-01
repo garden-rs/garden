@@ -92,7 +92,7 @@ pub fn main(options: &cli::MainOptions, init_options: &mut InitOptions) -> Resul
     };
 
     let mut config = model::Configuration::new();
-    config.root = model::Variable::new(init_options.root.clone(), None);
+    config.root = model::Variable::from_expr(init_options.root.clone());
     config.root_path.clone_from(&dirname);
     config.path = Some(config_path.clone());
 
