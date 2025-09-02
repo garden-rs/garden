@@ -496,6 +496,36 @@ the output of the evaluated command.</p>
 <p>When resolving values, variables defined in a tree scope override/replace
 variables defined at the global scope.  Variables defined in garden scope
 override/replace variables defined in a tree scope.</p>
+<h3 id="required-variables"><a class="header" href="#required-variables">Required Variables</a></h3>
+<p>Required variables prevent empty values from being used at runtime.
+A variable can be defined as required using the YAML syntax below.</p>
+<pre><code class="language-yaml">variables:
+  # This is a required variable.
+  required-value:
+    required: true
+    value: ${default-value}
+    # The ${default-value} expression above might resolve to an empty value.
+    # Required variables prevent empty values from being used at runtime.
+
+  default-value: $ test -f garden.yaml &amp;&amp; echo not empty
+  # This a normal variable using an exec expression that might result in an empty value.
+
+# Commands that use empty required variables are prevented from running.
+commands:
+  example: echo required-value = ${required-value}
+</code></pre>
+<p>A required variable is can be used just like a regular variable. The only difference is
+that it terminates <code>garden</code> when it evaluates to an empty value in the course of
+evaluating a garden command or expression.</p>
+<p>The <code>required-value</code> variable above is a required variable. When <code>default-value</code>
+evaluates to an empty value then an error will be reported and execution will be stopped
+right before the command that references the variable is run.</p>
+<p>Running <code>garden example</code> with the example configuration above will not execute the
+<code>echo</code> inside of the <code>example</code> garden command. An error will be reported before the
+command is run and <code>garden</code> will exit with exit code 65
+(<code>EX_DATAERR</code> from <code>/usr/include/sysexits.h</code>).</p>
+<p>You can specify values for (required) variables using the <code>--define | -D name=value</code>
+command-line arguments.</p>
 <h2 id="built-in-variables"><a class="header" href="#built-in-variables">Built-in variables</a></h2>
 <p>Garden automatically defines some built-in variables that can be useful
 when constructing values for variables, commands, and paths.</p>
