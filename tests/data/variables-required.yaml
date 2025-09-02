@@ -1,0 +1,15 @@
+---
+variables:
+  default-value: ""
+  required-value:
+    required: true
+    value: ${default-value}
+
+commands:
+  example: echo required-value = ${required-value}
+  # The example2/pre command will run before "garden example2" aborts
+  # due to the empty required-value.
+  example2/pre: echo "default-value = ${default-value}"
+  example2<: example2/pre
+  example2: echo ${required-value}
+...

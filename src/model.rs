@@ -49,9 +49,11 @@ pub(crate) type Environment = Vec<(String, String)>;
 /// using "$ echo foo" will place the value "foo" in the variable.
 #[derive(Debug, Default)]
 pub struct Variable {
+    name: String,
     expr: String,
     value: UnsafeCell<Option<String>>,
     evaluating: Cell<bool>,
+    required: bool,
 }
 
 impl_display_brief!(Variable);
@@ -61,29 +63,46 @@ impl_display_brief!(Variable);
 impl Clone for Variable {
     fn clone(&self) -> Self {
         Self {
+            name: self.name.clone(),
             expr: self.expr.clone(),
             value: UnsafeCell::new(self.get_value().cloned()),
             evaluating: Cell::new(false),
+            required: self.required,
         }
     }
 }
 
 impl Variable {
     /// Create an un-evaluated variable from an expression string.
-    pub(crate) fn from_expr(expr: String) -> Self {
+    pub(crate) fn from_expr(name: String, expr: String) -> Self {
         Variable {
+            name,
             expr,
             value: UnsafeCell::new(None),
             evaluating: Cell::new(false),
+            required: false,
         }
     }
 
     /// Create a resolved variable from a string that is both the expression and value.
-    pub(crate) fn from_resolved_expr(expr: String) -> Self {
+    pub(crate) fn from_resolved_expr(name: String, expr: String) -> Self {
         Variable {
+            name,
             expr: expr.clone(),
             value: UnsafeCell::new(Some(expr)),
             evaluating: Cell::new(false),
+            required: false,
+        }
+    }
+
+    /// Create an un-evaluated required variable from an expression string.
+    pub(crate) fn from_required_expr(name: String, expr: String) -> Self {
+        Variable {
+            name,
+            expr: expr.clone(),
+            value: UnsafeCell::new(None),
+            evaluating: Cell::new(false),
+            required: true,
         }
     }
 
@@ -98,9 +117,24 @@ impl Variable {
         self.evaluating.get()
     }
 
+    /// Is this variable a required variable?
+    pub(crate) fn is_required(&self) -> bool {
+        self.required
+    }
+
+    /// Indicate that we have started evaluating this variable.
+    pub(crate) fn set_evaluation_started(&self) {
+        self.set_evaluating(true);
+    }
+
     /// Set the evaluation state.
-    pub(crate) fn set_evaluating(&self, value: bool) {
+    fn set_evaluating(&self, value: bool) {
         self.evaluating.set(value);
+    }
+
+    /// Return the name of this variable as defined in the configuration.
+    pub(crate) fn get_name(&self) -> &String {
+        &self.name
     }
 
     /// Return the raw expression for this variable.
@@ -118,16 +152,23 @@ impl Variable {
         self.expr = expr;
     }
 
-    /// Store the cached result of evaluating the expression.
-    pub(crate) fn set_value(&self, value: String) {
-        unsafe {
-            *self.value.get() = Some(value);
-        }
-    }
-
     /// Transform the `RefCell<Option<String>>` value into `Option<&String>`.
     pub fn get_value(&self) -> Option<&String> {
         unsafe { (*self.value.get()).as_ref() }
+    }
+
+    /// Store the cached result of evaluating the expression.
+    pub(crate) fn set_value(&self, value: String) {
+        // Report an error and exit when a required variable has no value.
+        if !self.required || !value.is_empty() {
+            self.set_evaluating(false);
+            unsafe {
+                *self.value.get() = Some(value);
+            }
+        } else if self.required {
+            eprintln!("error: required variable '{}' is empty", self.name);
+            std::process::exit(errors::EX_DATAERR);
+        }
     }
 
     /// Reset the variable.
@@ -287,14 +328,17 @@ impl Tree {
     /// Add the builtin TREE_NAME and TREE_PATH variables.
     pub(crate) fn add_builtin_variables(&mut self) {
         self.variables.insert(
-            string!(constants::TREE_NAME),
-            Variable::from_expr(self.get_name().clone()),
+            constants::TREE_NAME.to_string(),
+            Variable::from_expr(constants::TREE_NAME.to_string(), self.get_name().clone()),
         );
 
         // Register the ${TREE_PATH} variable.
         self.variables.insert(
-            string!(constants::TREE_PATH),
-            Variable::from_expr(self.get_path().get_expr().clone()),
+            constants::TREE_PATH.to_string(),
+            Variable::from_expr(
+                constants::TREE_PATH.to_string(),
+                self.get_path().get_expr().clone(),
+            ),
         );
     }
 
@@ -793,7 +837,7 @@ impl Configuration {
                 }
                 _ => {
                     self.override_variables
-                        .insert(name, Variable::from_expr(expr));
+                        .insert(name.to_string(), Variable::from_expr(name, expr));
                 }
             }
         }
@@ -804,8 +848,8 @@ impl Configuration {
         // Provide GARDEN_CMD_QUIET and GARDEN_CMD_VERBOSE.
         let quiet_string = if self.quiet || quiet { "--quiet" } else { "" }.to_string();
         self.variables.insert(
-            string!(constants::GARDEN_CMD_QUIET),
-            Variable::from_resolved_expr(quiet_string),
+            constants::GARDEN_CMD_QUIET.to_string(),
+            Variable::from_resolved_expr(constants::GARDEN_CMD_QUIET.to_string(), quiet_string),
         );
         let verbose = self.verbose + verbose;
         let verbose_string = if verbose > 0 {
@@ -814,8 +858,8 @@ impl Configuration {
             string!("")
         };
         self.variables.insert(
-            string!(constants::GARDEN_CMD_VERBOSE),
-            Variable::from_resolved_expr(verbose_string),
+            constants::GARDEN_CMD_VERBOSE.to_string(),
+            Variable::from_resolved_expr(constants::GARDEN_CMD_VERBOSE.to_string(), verbose_string),
         );
     }
 

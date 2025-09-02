@@ -125,7 +125,10 @@ fn parse_recursive(
     // Provide GARDEN_ROOT.
     config.variables.insert(
         string!(constants::GARDEN_ROOT),
-        model::Variable::from_expr(config.root.get_expr().to_string()),
+        model::Variable::from_expr(
+            constants::GARDEN_ROOT.to_string(),
+            config.root.get_expr().to_string(),
+        ),
     );
 
     if let Some(config_path_raw) = config.dirname.as_ref() {
@@ -133,7 +136,10 @@ fn parse_recursive(
         if let Ok(config_path) = path::canonicalize(config_path_raw) {
             config.variables.insert(
                 string!(constants::GARDEN_CONFIG_DIR),
-                model::Variable::from_expr(config_path.to_string_lossy().to_string()),
+                model::Variable::from_expr(
+                    constants::GARDEN_CONFIG_DIR.to_string(),
+                    config_path.to_string_lossy().to_string(),
+                ),
             );
         }
     }
@@ -156,6 +162,7 @@ fn parse_recursive(
     // override the same variables when also defined in an included garden file.
     let mut config_includes = Vec::new();
     if get_vec_variables(
+        constants::INCLUDES,
         &doc[constants::GARDEN][constants::INCLUDES],
         &mut config_includes,
     ) {
@@ -375,13 +382,13 @@ fn get_indexset_str(yaml: &Yaml, values: &mut StringSet) -> bool {
 }
 
 /// Construct a model::Variable from a ran YAML object.
-fn variable_from_yaml(yaml: &Yaml) -> Option<model::Variable> {
+fn variable_from_yaml(name: String, yaml: &Yaml) -> Option<model::Variable> {
     match yaml {
-        Yaml::String(yaml_str) => Some(model::Variable::from_expr(yaml_str.to_string())),
+        Yaml::String(yaml_str) => Some(model::Variable::from_expr(name, yaml_str.to_string())),
         Yaml::Array(yaml_array) => {
             // If we see an array we loop over so that the first value wins.
-            for array_value in yaml_array.iter().rev() {
-                return variable_from_yaml(array_value);
+            if let Some(array_value) = yaml_array.iter().next_back() {
+                return variable_from_yaml(name, array_value);
             }
 
             None
@@ -390,13 +397,30 @@ fn variable_from_yaml(yaml: &Yaml) -> Option<model::Variable> {
             // Integers are already resolved.
             let int_value = yaml_int.to_string();
 
-            Some(model::Variable::from_resolved_expr(int_value))
+            Some(model::Variable::from_resolved_expr(name, int_value))
         }
         Yaml::Boolean(yaml_bool) => {
             // Booleans are already resolved.
             let bool_value = syntax::bool_to_string(*yaml_bool);
 
-            Some(model::Variable::from_resolved_expr(bool_value))
+            Some(model::Variable::from_resolved_expr(name, bool_value))
+        }
+        Yaml::Hash(yaml_hash) => {
+            let required = yaml_hash
+                .get(&Yaml::String(constants::REQUIRED.to_string()))
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            let value = yaml_hash
+                .get(&Yaml::String(constants::VALUE.to_string()))
+                .and_then(|v| v.as_str())
+                .unwrap_or_default()
+                .to_string();
+
+            if required {
+                Some(model::Variable::from_required_expr(name, value))
+            } else {
+                Some(model::Variable::from_expr(name, value))
+            }
         }
         _ => {
             // dump_node(yaml, 1, "");
@@ -406,8 +430,8 @@ fn variable_from_yaml(yaml: &Yaml) -> Option<model::Variable> {
 }
 
 // Extract a `Variable` from `yaml`. Return `false` when `yaml` is not a `Yaml::String`.
-fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
-    if let Some(variable) = variable_from_yaml(yaml) {
+fn get_variable(name: String, yaml: &Yaml, value: &mut model::Variable) -> bool {
+    if let Some(variable) = variable_from_yaml(name, yaml) {
         *value = variable;
 
         true
@@ -417,17 +441,17 @@ fn get_variable(yaml: &Yaml, value: &mut model::Variable) -> bool {
 }
 
 /// Promote `Yaml::String` or `Yaml::Array<Yaml::String>` into a `Vec<Variable>`.
-fn get_vec_variables(yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
+fn get_vec_variables(name: &str, yaml: &Yaml, vec: &mut Vec<model::Variable>) -> bool {
     if let Yaml::Array(yaml_array) = yaml {
         for value in yaml_array {
-            if let Some(variable) = variable_from_yaml(value) {
+            if let Some(variable) = variable_from_yaml(name.to_string(), value) {
                 vec.push(variable);
             }
         }
         return true;
     }
 
-    if let Some(variable) = variable_from_yaml(yaml) {
+    if let Some(variable) = variable_from_yaml(name.to_string(), yaml) {
         vec.push(variable);
         return true;
     }
@@ -447,7 +471,7 @@ fn get_variables_map(yaml: &Yaml, map: &mut model::VariableMap) -> bool {
                         continue;
                     }
                 };
-                if let Some(variable) = variable_from_yaml(v) {
+                if let Some(variable) = variable_from_yaml(key.to_string(), v) {
                     map.insert(key, variable);
                 }
             }
@@ -469,7 +493,7 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
             if let Yaml::Array(yaml_array) = v {
                 let mut variables = Vec::new();
                 for value in yaml_array {
-                    if let Some(variable) = variable_from_yaml(value) {
+                    if let Some(variable) = variable_from_yaml(key.to_string(), value) {
                         variables.push(variable);
                     }
                 }
@@ -477,7 +501,7 @@ fn get_multivariables(yaml: &Yaml, vec: &mut Vec<model::MultiVariable>) -> bool 
                 continue;
             }
 
-            if let Some(variable) = variable_from_yaml(v) {
+            if let Some(variable) = variable_from_yaml(key.to_string(), v) {
                 let variables = vec![variable];
                 vec.push(model::MultiVariable::new(key, variables));
             }
@@ -501,7 +525,7 @@ fn get_multivariables_map(yaml: &Yaml, multivariables: &mut model::MultiVariable
                 if let Yaml::Array(yaml_array) = v {
                     let mut variables = Vec::new();
                     for value in yaml_array {
-                        if let Some(variable) = variable_from_yaml(value) {
+                        if let Some(variable) = variable_from_yaml(key.to_string(), value) {
                             variables.push(variable);
                         }
                     }
@@ -509,7 +533,7 @@ fn get_multivariables_map(yaml: &Yaml, multivariables: &mut model::MultiVariable
                     continue;
                 }
 
-                if let Some(variable) = variable_from_yaml(v) {
+                if let Some(variable) = variable_from_yaml(key.to_string(), v) {
                     let variables = vec![variable];
                     multivariables.insert(key, variables);
                 }
@@ -561,19 +585,19 @@ fn get_template(
         // templates:
         //   example: git://git.example.org/example/repo.git
         if get_str(value, &mut url) {
-            template
-                .tree
-                .remotes
-                .insert(string!(constants::ORIGIN), model::Variable::from_expr(url));
+            template.tree.remotes.insert(
+                constants::ORIGIN.to_string(),
+                model::Variable::from_expr(constants::ORIGIN.to_string(), url),
+            );
             return template;
         }
         // If a `<url>` is configured then populate the "origin" remote.
         // The first remote is "origin" by convention.
         if get_str(&value[constants::URL], &mut url) {
-            template
-                .tree
-                .remotes
-                .insert(string!(constants::ORIGIN), model::Variable::from_expr(url));
+            template.tree.remotes.insert(
+                string!(constants::ORIGIN),
+                model::Variable::from_expr(constants::URL.to_string(), url),
+            );
         }
     }
 
@@ -671,8 +695,8 @@ fn get_tree_from_url(name: &Yaml, url: &str) -> model::Tree {
         tree.is_bare_repository = true;
     }
     tree.remotes.insert(
-        string!(constants::ORIGIN),
-        model::Variable::from_expr(url.to_string()),
+        constants::ORIGIN.to_string(),
+        model::Variable::from_expr(constants::ORIGIN.to_string(), url.to_string()),
     );
 
     tree
@@ -686,15 +710,27 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
     get_str(&value[constants::DEFAULT_REMOTE], &mut tree.default_remote);
     get_str_trimmed(&value[constants::DESCRIPTION], &mut tree.description);
     get_str_variables_map(&value[constants::REMOTES], &mut tree.remotes);
-    get_vec_variables(&value[constants::LINKS], &mut tree.links);
+    get_vec_variables(constants::LINKS, &value[constants::LINKS], &mut tree.links);
 
     get_multivariables(&value[constants::ENVIRONMENT], &mut tree.environment);
     get_multivariables_map(&value[constants::COMMANDS], &mut tree.commands);
 
-    get_variable(&value[constants::BRANCH], &mut tree.branch);
+    get_variable(
+        constants::BRANCH.to_string(),
+        &value[constants::BRANCH],
+        &mut tree.branch,
+    );
     get_variables_map(&value[constants::BRANCHES], &mut tree.branches);
-    get_variable(&value[constants::SYMLINK], &mut tree.symlink);
-    get_variable(&value[constants::WORKTREE], &mut tree.worktree);
+    get_variable(
+        constants::SYMLINK.to_string(),
+        &value[constants::SYMLINK],
+        &mut tree.symlink,
+    );
+    get_variable(
+        constants::WORKTREE.to_string(),
+        &value[constants::WORKTREE],
+        &mut tree.worktree,
+    );
 
     get_i64(&value[constants::DEPTH], &mut tree.clone_depth);
     get_bool(&value[constants::BARE], &mut tree.is_bare_repository);
@@ -706,7 +742,7 @@ fn get_tree_fields(value: &Yaml, tree: &mut model::Tree) {
         if get_str(&value[constants::URL], &mut url) {
             tree.remotes.insert(
                 tree.default_remote.to_string(),
-                model::Variable::from_expr(url),
+                model::Variable::from_expr(constants::URL.to_string(), url),
             );
         }
     }
@@ -803,7 +839,7 @@ fn get_str_variables_map(yaml: &Yaml, remotes: &mut model::VariableMap) {
         if let (Some(name_str), Some(value_str)) = (name.as_str(), value.as_str()) {
             remotes.insert(
                 name_str.to_string(),
-                model::Variable::from_expr(value_str.to_string()),
+                model::Variable::from_expr(name_str.to_string(), value_str.to_string()),
             );
         }
     }

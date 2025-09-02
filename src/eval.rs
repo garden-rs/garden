@@ -397,16 +397,18 @@ pub(crate) fn variables_for_shell(
             result.push(value.to_string());
             continue;
         }
-        let value = tree_value_for_shell(
+        var.set_evaluation_started();
+        let raw_value = tree_value_for_shell(
             app_context,
             config,
             var.get_expr(),
             &context.tree,
             context.garden.as_ref(),
         );
-        result.push(value.clone());
+        let value = get_value_from_environment(var, raw_value);
+        var.set_value(value.to_string());
 
-        var.set_value(value);
+        result.push(value);
     }
 
     result
@@ -924,9 +926,9 @@ pub(crate) fn tree_variable(
     if var.is_evaluating() {
         return String::new();
     }
-    var.set_evaluating(true);
+    var.set_evaluation_started();
     let expr = var.get_expr();
-    let result = tree_value(
+    let raw_value = tree_value(
         app_context,
         config,
         graft_config,
@@ -934,10 +936,10 @@ pub(crate) fn tree_variable(
         tree_name,
         garden_name,
     );
-    var.set_evaluating(false);
-    var.set_value(result.to_string());
+    let value = get_value_from_environment(var, raw_value);
+    var.set_value(value.to_string());
 
-    result
+    value
 }
 
 /// Evaluate a variable if it has not already been evaluated.
@@ -952,11 +954,22 @@ pub(crate) fn variable(
     if var.is_evaluating() {
         return String::new();
     }
-    var.set_evaluating(true);
+    var.set_evaluation_started();
     let expr = var.get_expr();
-    let result = value(app_context, config, expr);
-    var.set_evaluating(false);
-    var.set_value(result.to_string());
+    let raw_value = value(app_context, config, expr);
+    let value = get_value_from_environment(var, raw_value);
+    var.set_value(value.to_string());
 
-    result
+    value
+}
+
+/// Fallback to environment variables when required variables are empty.
+fn get_value_from_environment(variable: &model::Variable, value: String) -> String {
+    if variable.is_required() && value.is_empty() {
+        // Fallback to environment variables for required variables that resolve to empty values.
+        if let Ok(env_value) = std::env::var(variable.get_name()) {
+            return env_value;
+        }
+    }
+    value
 }

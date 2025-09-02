@@ -256,6 +256,45 @@ variables defined at the global scope.  Variables defined in garden scope
 override/replace variables defined in a tree scope.
 
 
+### Required Variables
+
+Required variables prevent empty values from being used at runtime.
+A variable can be defined as required using the YAML syntax below.
+
+```yaml
+variables:
+  # This is a required variable.
+  required-value:
+    required: true
+    value: ${default-value}
+    # The ${default-value} expression above might resolve to an empty value.
+    # Required variables prevent empty values from being used at runtime.
+
+  default-value: $ test -f garden.yaml && echo not empty
+  # This a normal variable using an exec expression that might result in an empty value.
+
+# Commands that use empty required variables are prevented from running.
+commands:
+  example: echo required-value = ${required-value}
+```
+
+A required variable is can be used just like a regular variable. The only difference is
+that it terminates `garden` when it evaluates to an empty value in the course of
+evaluating a garden command or expression.
+
+The `required-value` variable above is a required variable. When `default-value`
+evaluates to an empty value then an error will be reported and execution will be stopped
+right before the command that references the variable is run.
+
+Running `garden example` with the example configuration above will not execute the
+`echo` inside of the `example` garden command. An error will be reported before the
+command is run and `garden` will exit with exit code 65
+(`EX_DATAERR` from `/usr/include/sysexits.h`).
+
+You can specify values for (required) variables using the `--define | -D name=value`
+command-line arguments.
+
+
 ## Built-in variables
 
 Garden automatically defines some built-in variables that can be useful
@@ -274,6 +313,7 @@ that re-execute `garden`. These variables allow you to forward the user-specifie
 
 * **GARDEN_CMD_QUIET** -- `--quiet` when `--quiet` is specified, empty otherwise.
 * **GARDEN_CMD_VERBOSE** -- `-v`, `-vv` etc. when verbosity is increased, empty otherwise.
+
 
 ## Environment Variables
 

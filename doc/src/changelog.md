@@ -4,6 +4,12 @@
 
 **Features**:
 
+- Garden variables can now be defined as being *required* variables. A required variable
+must evaluate to a non-empty string. If a required variable evaluates to an empty value
+then an error is reported and execution is aborted.
+([#21](https://gitlab.com/garden-rs/garden/-/issues/21))
+
+
 - `garden ls -cc` now displays command recipes.
 
 **Development**:

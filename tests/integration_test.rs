@@ -1,9 +1,10 @@
 pub mod common;
 use common::{
     assert_cmd, assert_cmd_capture, assert_ref, assert_ref_missing, exec_garden, garden_capture,
-    BareRepoFixture,
+    garden_exec, BareRepoFixture,
 };
 
+use garden::errors;
 use garden::git;
 
 use anyhow::Result;
@@ -1256,6 +1257,40 @@ fn eval_environment_variables_with_circular_dependencies() {
         "root-tree",
     ]);
     assert_eq!(output, "root-tree/variables/root-tree/");
+}
+
+/// Test evaluating required variables.
+#[test]
+fn eval_required_variables() {
+    let (status, out, err) = garden_exec(&[
+        "--config",
+        "tests/data/variables-required.yaml",
+        "eval",
+        "${required-value}",
+    ]);
+    assert_eq!(status, errors::EX_DATAERR);
+    assert_eq!(out, "");
+    assert_eq!(err, "error: required variable 'required-value' is empty");
+
+    let (status, out, err) = garden_exec(&[
+        "--quiet",
+        "--config",
+        "tests/data/variables-required.yaml",
+        "example",
+    ]);
+    assert_eq!(status, errors::EX_DATAERR);
+    assert_eq!(out, "");
+    assert_eq!(err, "error: required variable 'required-value' is empty");
+
+    let (status, out, err) = garden_exec(&[
+        "--quiet",
+        "--config",
+        "tests/data/variables-required.yaml",
+        "example2",
+    ]);
+    assert_eq!(status, errors::EX_DATAERR);
+    assert_eq!(out, "default-value =");
+    assert_eq!(err, "error: required variable 'required-value' is empty");
 }
 
 /// `garden grow` creates symlinks

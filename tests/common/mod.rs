@@ -172,6 +172,31 @@ pub fn garden_capture(args: &[&str]) -> String {
     utf8_result.unwrap().trim_end().into()
 }
 
+/// Execute a command and ensure that exit status 0 is returned.
+/// Return the captured stdout value as a string.
+pub fn garden_exec(args: &[&str]) -> (i32, String, String) {
+    let mut argv: Vec<&str> = vec!["garden"];
+    argv.extend(args);
+    display::print_command_vec(&argv);
+
+    let mut exec = Command::cargo_bin("garden").expect("garden not found");
+    exec.args(args);
+    let output_result = exec.output();
+    assert!(output_result.is_ok());
+    let status = exec.status().unwrap().code().unwrap_or(0);
+    let output = output_result.unwrap();
+    let utf8_stdout = String::from_utf8(output.stdout);
+    let utf8_stderr = String::from_utf8(output.stderr);
+    assert!(utf8_stdout.is_ok());
+    assert!(utf8_stderr.is_ok());
+
+    (
+        status,
+        utf8_stdout.unwrap().trim_end().into(),
+        utf8_stderr.unwrap().trim_end().into(),
+    )
+}
+
 /// Execute a command and ensure that the exit status is returned.
 pub fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
     display::print_command_vec(cmd);

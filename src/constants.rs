@@ -130,6 +130,10 @@ pub const REMOTES: &str = "remotes";
 /// encountered.
 pub const REPLACE: &str = "replace";
 
+/// The "required" key in a variable hash definition causes the variable to require
+/// that it evaluate to a non-empty value.
+pub const REQUIRED: &str = "required";
+
 /// The "root" key in the garden block defines where trees are located and grown.
 pub const ROOT: &str = "root";
 
@@ -207,6 +211,9 @@ pub const URL: &str = "url";
 /// "environment", "commands" and "variables" blocks. Variables
 /// can use "$ exec" expressions to capture stdout from a command.
 pub const VARIABLES: &str = "variables";
+
+/// The "value" field in a Variable dict represents the variable's expression value.
+pub const VALUE: &str = "value";
 
 /// The "worktree" key in a tree block is used to refer to a parent
 /// tree that will be used to grow the tree using "git worktree add".
