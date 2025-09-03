@@ -18,10 +18,10 @@ package.version = "2.3.0"
 [workspace.dependencies]
 garden-tools = { path = ".", version = "2.3.0" }
 anyhow = "1.0"
-assert_cmd = "2.0.13"
+assert_cmd = "2.0"
 better_default = "1.0"
 clap = { version = "4.5", features = ["cargo", "derive", "string"] }
-clap-cargo = "0.15"
+clap-cargo = "0.17"
 clap_complete = "4.5"
 crossbeam = "0.8"
 dirs = "6.0"
@@ -32,8 +32,7 @@ indexmap = "2.6"
 indextree = "4.7"
 is-terminal = "0.4"
 pathdiff = "0.2"
-rayon = "<1.11"
-rayon-core = "<1.13"
+rayon = "1.11"
 rm_rf = "0.6.2"
 serde = { version = "1", features = ["derive"] }
 shellexpand = { version = "3.1", features = ["full"] }
@@ -43,7 +42,7 @@ strum = "0.27"
 strum_macros = "0.27"
 subprocess = "0.2"
 thiserror = "2.0"
-which = "7.0"
+which = "8.0"
 xdg = "3.0"
 yaml-rust = { version = "0.10", package = "yaml-rust2" }
 yansi = "1.0"
@@ -56,7 +55,7 @@ Garden grows and cultivates collections of Git trees
 Garden lets you define and run commands over collections of configuration-defined
 multi-worktree Git environments."""
 
-rust-version = "1.74.0"
+rust-version = "1.86.0"
 authors.workspace = true
 categories.workspace = true
 documentation.workspace = true
@@ -86,7 +85,6 @@ indextree.workspace = true
 is-terminal.workspace = true
 pathdiff.workspace = true
 rayon.workspace = true
-rayon-core.workspace = true
 rm_rf.workspace = true
 shellexpand.workspace = true
 shell-words.workspace = true
