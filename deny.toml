@@ -1,7 +1,5 @@
 [advisories]
-ignore = [
-    { id = "RUSTSEC-2024-0436", reason = "egui uses unmaintained paste via accesskit_windows" },
-]
+ignore = []
 
 [licenses]
 allow = [
