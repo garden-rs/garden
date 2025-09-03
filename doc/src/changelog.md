@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.4.0 (Upcoming)
+
+**Development**:
+
+- The minimum supported Rust version is now 1.86.0.
+
+- `egui` and `rayon` dependencies were updated to newer versions.
+Pinned dependencies `idna` and `mime_guess2` have been removed from `Cargo.toml`.
+
+
 ## v2.3.0
 
 *Released 2025-09-01*
