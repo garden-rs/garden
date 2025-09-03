@@ -95,14 +95,14 @@ impl Variable {
         }
     }
 
-    /// Create an un-evaluated required variable from an expression string.
-    pub(crate) fn from_required_expr(name: String, expr: String) -> Self {
+    /// Create an un-evaluated required variable from individual fields.
+    pub(crate) fn new(name: String, expr: String, required: bool) -> Self {
         Variable {
             name,
-            expr: expr.clone(),
+            expr,
+            required,
             value: UnsafeCell::new(None),
             evaluating: Cell::new(false),
-            required: true,
         }
     }
 

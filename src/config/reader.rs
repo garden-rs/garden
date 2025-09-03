@@ -386,12 +386,11 @@ fn variable_from_yaml(name: String, yaml: &Yaml) -> Option<model::Variable> {
     match yaml {
         Yaml::String(yaml_str) => Some(model::Variable::from_expr(name, yaml_str.to_string())),
         Yaml::Array(yaml_array) => {
-            // If we see an array we loop over so that the first value wins.
-            if let Some(array_value) = yaml_array.iter().next_back() {
-                return variable_from_yaml(name, array_value);
-            }
-
-            None
+            // If we see an array then last value wins.
+            yaml_array
+                .iter()
+                .next_back()
+                .and_then(|yaml_value| variable_from_yaml(name, yaml_value))
         }
         Yaml::Integer(yaml_int) => {
             // Integers are already resolved.
@@ -406,21 +405,17 @@ fn variable_from_yaml(name: String, yaml: &Yaml) -> Option<model::Variable> {
             Some(model::Variable::from_resolved_expr(name, bool_value))
         }
         Yaml::Hash(yaml_hash) => {
-            let required = yaml_hash
-                .get(&Yaml::String(constants::REQUIRED.to_string()))
-                .and_then(|v| v.as_bool())
-                .unwrap_or(false);
-            let value = yaml_hash
+            let expr = yaml_hash
                 .get(&Yaml::String(constants::VALUE.to_string()))
                 .and_then(|v| v.as_str())
                 .unwrap_or_default()
                 .to_string();
+            let required = yaml_hash
+                .get(&Yaml::String(constants::REQUIRED.to_string()))
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
 
-            if required {
-                Some(model::Variable::from_required_expr(name, value))
-            } else {
-                Some(model::Variable::from_expr(name, value))
-            }
+            Some(model::Variable::new(name, expr, required))
         }
         _ => {
             // dump_node(yaml, 1, "");
