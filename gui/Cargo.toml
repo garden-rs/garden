@@ -52,3 +52,10 @@ extended-description = """\
 Garden GUI is a graphical user interface for Garden.
 https://crates.io/crates/garden-tools
 """
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/x86_64-unknown-linux-gnu/pkg/garden-gui", dest = "/usr/bin/", mode = "755" },
+    { source = "../LICENSE", dest = "/usr/share/doc/garden-gui/", mode = "644", doc = true },
+    { source = "../README.md", dest = "/usr/share/doc/garden-gui/", mode = "644", doc = true },
+]

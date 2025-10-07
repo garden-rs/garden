@@ -89,6 +89,13 @@ commands:
     mkdir -p target/debian
     cargo deb --profile pkg --target "${target-core}" --output target/debian
     cargo deb --profile pkg --target "${target-gui}" --manifest-path gui/Cargo.toml --output target/debian
+  pkg/rpm>:
+    - pkg/build
+    - pkg/completion
+    - pkg/gen/rpm
+  pkg/gen/rpm: |
+    cargo generate-rpm
+    cargo generate-rpm --package gui
   publish: |
     cargo publish --package garden-tools "$@"
     cargo publish --package garden-gui "$@"

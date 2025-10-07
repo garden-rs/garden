@@ -158,3 +158,14 @@ extended-description = """\
 Garden helps you define development workflows that operate over collections of
 self-contained and inter-dependent Git worktrees.
 """
+
+[package.metadata.generate-rpm]
+assets = [
+    { source = "target/x86_64-unknown-linux-musl/pkg/garden", dest = "/usr/bin/", mode = "755" },
+    { source = "LICENSE", dest = "/usr/share/doc/garden/", mode = "644", doc = true },
+    { source = "README.md", dest = "/usr/share/doc/garden/", mode = "644", doc = true },
+    { source = "doc/src/changelog.md", dest = "/usr/share/doc/garden/CHANGELOG.md", mode = "644", doc = true },
+    { source = "pkg/completion/garden.bash", dest = "/usr/share/bash-completion/completions/garden", mode = "644" },
+    { source = "pkg/completion/garden.fish", dest = "/usr/share/fish/vendor_completions.d/garden.fish", mode = "644" },
+    { source = "pkg/completion/_garden", dest = "/usr/share/zsh/vendor-completions/", mode = "644" },
+]
