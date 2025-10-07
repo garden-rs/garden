@@ -14,8 +14,7 @@ variables:
   docdir: ${prefix}/share/doc/garden
   target-core: x86_64-unknown-linux-musl
   target-gui: x86_64-unknown-linux-gnu
-  pkg: ${GARDEN_CONFIG_DIR}/pkg
-  debdir: ${pkg}/deb
+  pkgdir: ${GARDEN_CONFIG_DIR}/pkg
   fetch: ""
   disable-fetch: $ test -n "${fetch}" || printf '%s' --disable-fetch
   graph: ""
@@ -73,23 +72,23 @@ commands:
     mkdir -p "${DESTDIR}${docdir}"
     rsync -r --exclude=.git doc/book/ "${DESTDIR}${docdir}/"
   pkg/deb>:
-    - pkg/deb/build
-    - pkg/deb/completion
-    - pkg/deb/doc
-    - pkg/deb/package
-  pkg/deb/build: |
-    cargo build --profile deb --target "${target-core}"
-    cargo build --profile deb --target "${target-gui}" --package garden-gui
-  pkg/deb/completion: |
-    mkdir -p "${debdir}/completion"
-    "$0" completion bash >"${debdir}/completion/garden.bash"
-    "$0" completion fish >"${debdir}/completion/garden.fish"
-    "$0" completion zsh >"${debdir}/completion/_garden"
-  pkg/deb/doc: mdbook build --dest-dir "${debdir}/userguide" doc
-  pkg/deb/package: |
+    - pkg/build
+    - pkg/completion
+    - pkg/doc
+    - pkg/gen/deb
+  pkg/build: |
+    cargo build --profile pkg --target "${target-core}"
+    cargo build --profile pkg --target "${target-gui}" --package garden-gui
+  pkg/completion: |
+    mkdir -p "${pkgdir}/completion"
+    "$0" completion bash >"${pkgdir}/completion/garden.bash"
+    "$0" completion fish >"${pkgdir}/completion/garden.fish"
+    "$0" completion zsh >"${pkgdir}/completion/_garden"
+  pkg/doc: mdbook build --dest-dir "${pkgdir}/userguide" doc
+  pkg/gen/deb: |
     mkdir -p target/debian
-    cargo deb --profile deb --target "${target-core}" --output target/debian
-    cargo deb --profile deb --target "${target-gui}" --manifest-path gui/Cargo.toml --output target/debian
+    cargo deb --profile pkg --target "${target-core}" --output target/debian
+    cargo deb --profile pkg --target "${target-gui}" --manifest-path gui/Cargo.toml --output target/debian
   publish: |
     cargo publish --package garden-tools "$@"
     cargo publish --package garden-gui "$@"
