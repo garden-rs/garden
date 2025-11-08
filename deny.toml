@@ -4,6 +4,8 @@ ignore = []
 [licenses]
 allow = [
     "Apache-2.0",
+    # rm_rf -> ar_archive_writer
+    "Apache-2.0 WITH LLVM-exception",
     # egui
     "BSL-1.0",
     # egui
