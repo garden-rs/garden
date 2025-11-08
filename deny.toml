@@ -32,7 +32,6 @@ skip = [
     "quick-xml",
     "redox_syscall",
     "thiserror-impl",
-    "wasi",
 ]
 
 skip-tree = [
