@@ -18,7 +18,7 @@ package.version = "2.4.0-alpha.1"
 [workspace.dependencies]
 garden-tools = { path = ".", version = "2.4.0-alpha.1" }
 anyhow = "1.0"
-assert_cmd = "2.0"
+assert_cmd = "2.1"
 better_default = "1.0"
 clap = { version = "4.5", features = ["cargo", "derive", "string"] }
 clap-cargo = "0.17"

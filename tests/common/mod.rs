@@ -5,7 +5,7 @@ use garden::model;
 use garden::string;
 
 use anyhow::Result;
-use assert_cmd::cargo;
+use assert_cmd::prelude::CommandCargoExt;
 
 use std::process::Command;
 
@@ -147,8 +147,7 @@ pub fn exec_garden(args: &[&str]) -> Result<()> {
     argv.extend(args);
     display::print_command_vec(&argv);
 
-    let garden_path = cargo::cargo_bin!("garden");
-    let mut exec = Command::new(garden_path);
+    let mut exec = Command::cargo_bin("garden").expect("garden not found");
     exec.args(args);
 
     assert!(exec.status().expect("garden returned an error").success());
@@ -162,8 +161,7 @@ pub fn garden_capture(args: &[&str]) -> String {
     argv.extend(args);
     display::print_command_vec(&argv);
 
-    let garden_path = cargo::cargo_bin!("garden");
-    let mut exec = Command::new(garden_path);
+    let mut exec = Command::cargo_bin("garden").expect("garden not found");
     exec.args(args);
     let capture = exec.output();
     assert!(capture.is_ok());
@@ -181,8 +179,7 @@ pub fn garden_exec(args: &[&str]) -> (i32, String, String) {
     argv.extend(args);
     display::print_command_vec(&argv);
 
-    let garden_path = cargo::cargo_bin!("garden");
-    let mut exec = Command::new(garden_path);
+    let mut exec = Command::cargo_bin("garden").expect("garden not found");
     exec.args(args);
     let output_result = exec.output();
     assert!(output_result.is_ok());
