@@ -43,7 +43,7 @@ subprocess = "0.2"
 thiserror = "2.0"
 which = "8.0"
 xdg = "3.0"
-yaml-rust = { version = "0.10", package = "yaml-rust2" }
+yaml-rust = { version = "0.11", package = "yaml-rust2" }
 yansi = "1.0"
 
 [package]
