@@ -4,10 +4,15 @@
 
 **Development**:
 
-- The minimum supported Rust version is now 1.86.0.
+- The minimum supported Rust version is now 1.88.0.
 
-- `egui` and `rayon` dependencies were updated to newer versions.
-Pinned dependencies `idna` and `mime_guess2` have been removed from `Cargo.toml`.
+- The `cargo-clap`, `eframe`, `egui`, `egui_autocomplete`, `rayon` and `yaml-rust2`
+dependencies were updated to the latest versions.
+
+- Pinned dependencies `idna` and `mime_guess2` have been removed from `Cargo.toml`.
+
+- The test suite no longer depends on the deprecated `CommandCargoExt` extension
+from the `assert_cmd` crate.
 
 
 ## v2.3.0

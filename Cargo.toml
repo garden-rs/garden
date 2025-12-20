@@ -13,7 +13,7 @@ package.keywords = ["git", "development", "sandboxes", "vcs", "worktree"]
 package.license = "MIT"
 package.readme = "README.md"
 package.repository = "https://gitlab.com/garden-rs/garden"
-package.version = "2.4.0-alpha.1"
+package.version = "2.4.0-beta.1"
 
 [workspace.dependencies]
 garden-tools = { path = ".", version = "2.4.0-alpha.1" }
