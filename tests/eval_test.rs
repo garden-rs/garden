@@ -154,6 +154,18 @@ fn shell_variable_syntax() -> Result<()> {
     Ok(())
 }
 
+/// Ensure that dashed variables are supported.
+#[test]
+fn exec_expression_with_dashed_variables() -> Result<()> {
+    let app_context =
+        garden::model::ApplicationContext::from_path_string("tests/data/variables.yaml")?;
+    let config = app_context.get_root_config();
+    let value = garden::eval::value(&app_context, config, "${var-dashed}");
+    assert_eq!(value, "ok");
+
+    Ok(())
+}
+
 #[test]
 fn multi_variable_with_tree() -> Result<()> {
     let app_context = common::garden_context()?;

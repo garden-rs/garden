@@ -1,4 +1,5 @@
 ---
 variables:
   var_0: zero
+  var-dashed: ok
 ...
