@@ -619,7 +619,7 @@ impl GardenApp<'_> {
 
     /// Display details about a command when right-clicked
     fn command_string_window(&mut self, egui_ctx: &egui::Context, command_name: &str, value: &str) {
-        let size = egui_ctx.input(|i: &egui::InputState| i.screen_rect());
+        let size = egui_ctx.input(|i: &egui::InputState| i.content_rect());
         // Open a modal window with the contents of the command.
         let mut text = value;
         let modal_window_open = self.modal_window_open;
