@@ -584,7 +584,7 @@ impl GardenApp<'_> {
         }
 
         *current_column += 1;
-        if *current_column % NUM_COMMAND_COLUMNS == 0 {
+        if (*current_column).is_multiple_of(NUM_COMMAND_COLUMNS) {
             *current_column = 0;
             ui.end_row();
         }
