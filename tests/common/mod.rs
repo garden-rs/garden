@@ -5,9 +5,6 @@ use garden::model;
 use garden::string;
 
 use anyhow::Result;
-use assert_cmd::prelude::CommandCargoExt;
-
-use std::process::Command;
 
 fn initialize_environment() {
     // Simplify testing by using a canned environment.
@@ -147,7 +144,7 @@ pub fn exec_garden(args: &[&str]) -> Result<()> {
     argv.extend(args);
     display::print_command_vec(&argv);
 
-    let mut exec = Command::cargo_bin("garden").expect("garden not found");
+    let mut exec = cargo_bin_cmd("garden").expect("garden command");
     exec.args(args);
 
     assert!(exec.status().expect("garden returned an error").success());
@@ -161,7 +158,7 @@ pub fn garden_capture(args: &[&str]) -> String {
     argv.extend(args);
     display::print_command_vec(&argv);
 
-    let mut exec = Command::cargo_bin("garden").expect("garden not found");
+    let mut exec = cargo_bin_cmd("garden").expect("garden command");
     exec.args(args);
     let capture = exec.output();
     assert!(capture.is_ok());
@@ -179,7 +176,7 @@ pub fn garden_exec(args: &[&str]) -> (i32, String, String) {
     argv.extend(args);
     display::print_command_vec(&argv);
 
-    let mut exec = Command::cargo_bin("garden").expect("garden not found");
+    let mut exec = cargo_bin_cmd("garden").expect("garden command");
     exec.args(args);
     let output_result = exec.output();
     assert!(output_result.is_ok());
@@ -325,3 +322,64 @@ impl Drop for BareRepoFixture<'_> {
         teardown_tmp_test_data(&self.root());
     }
 }
+
+// assert_cmd v2.1.0 deprecated cargo_bin!() and the provided replacement
+// does not work when running under "cross".
+//
+// cargo_bin_cmd() and related functions are duplicated here to avoid depending on deprecated code.
+//
+fn cargo_bin_cmd<S: AsRef<str>>(name: S) -> Result<std::process::Command, String> {
+    let path = cargo_bin(name);
+    if path.is_file() {
+        if let Some(runner) = cargo_runner() {
+            let mut cmd = std::process::Command::new(&runner[0]);
+            cmd.args(&runner[1..]).arg(path);
+            Ok(cmd)
+        } else {
+            Ok(std::process::Command::new(path))
+        }
+    } else {
+        Err(format!("error: file not found: {path:?}"))
+    }
+}
+
+fn cargo_runner() -> Option<Vec<String>> {
+    let runner_env = format!(
+        "CARGO_TARGET_{}_RUNNER",
+        CURRENT_TARGET.replace('-', "_").to_uppercase()
+    );
+    let runner = std::env::var(runner_env).ok()?;
+    Some(runner.split(' ').map(str::to_string).collect())
+}
+
+/// Look up the path to a cargo-built binary within an integration test.
+/// Copied from the deprecated assert_cmd v2.1.0 src/cargo.rs.
+fn cargo_bin<S: AsRef<str>>(name: S) -> std::path::PathBuf {
+    cargo_bin_str(name.as_ref())
+}
+
+fn cargo_bin_str(name: &str) -> std::path::PathBuf {
+    let env_var = format!("CARGO_BIN_EXE_{name}");
+    std::env::var_os(env_var)
+        .map(|p| p.into())
+        .unwrap_or_else(|| target_dir().join(format!("{}{}", name, std::env::consts::EXE_SUFFIX)))
+}
+
+//
+// Adapted from
+// https://github.com/rust-lang/cargo/blob/485670b3983b52289a2f353d589c57fae2f60f82/tests/testsuite/support/mod.rs#L507
+fn target_dir() -> std::path::PathBuf {
+    std::env::current_exe()
+        .ok()
+        .map(|mut path| {
+            path.pop();
+            if path.ends_with("deps") {
+                path.pop();
+            }
+            path
+        })
+        .expect("this should only be used where a `current_exe` can be set")
+}
+
+/// The current process' target triplet.
+const CURRENT_TARGET: &str = include_str!(concat!(env!("OUT_DIR"), "/current_target.txt"));
