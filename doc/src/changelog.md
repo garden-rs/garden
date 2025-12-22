@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.5.0 (Upcoming)
+
+**Development**:
+
+- The minimum supported Rust version is now 1.88.0.
+
+- `eframe`, `egui` and `egui_autocomplete` were updated to the latest version.
+
+
 ## v2.4.0
 
 *Released 2025-12-22*

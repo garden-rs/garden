@@ -1,7 +1,7 @@
 [package]
 name = "garden-gui"
 description = "Garden grows and cultivates Git trees, GUI edition"
-rust-version = "1.86.0"
+rust-version = "1.88.0"
 authors.workspace = true
 categories.workspace = true
 documentation.workspace = true
@@ -14,10 +14,10 @@ repository.workspace = true
 version.workspace = true
 
 [dependencies]
-eframe = "0.32"
-egui = "0.32"
-egui_autocomplete= "11.0"
-egui_extras = "0.32"
+eframe = "0.33"
+egui = "0.33"
+egui_autocomplete= "12.0"
+egui_extras = "0.33"
 anyhow.workspace = true
 clap.workspace = true
 clap-cargo.workspace = true
