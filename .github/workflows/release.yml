@@ -251,7 +251,7 @@ jobs:
       shell: bash
       run: |
         "$BIN_CORE" --version
-        "$BIN_CORE" --define debdir="$ARCHIVE_CORE" pkg/deb/completion -vv
+        "$BIN_CORE" --define pkgdir="$ARCHIVE_CORE" pkg/completion -vv
         "$BIN_CORE" completion powershell >"$ARCHIVE_CORE/completion/_garden.ps1"
 
     - name: Generate completions (emulation)
@@ -381,19 +381,6 @@ jobs:
       shell: bash
       run: |
         "$BIN_CORE" pkg/deb -vv
-        version_number="${{ needs.create-release.outputs.version_number }}"
-        echo "DEB_DIR=target/debian" >>$GITHUB_ENV
-        echo "DEB_CORE_NAME=garden_${version_number}-1_amd64.deb" >>$GITHUB_ENV
-        echo "DEB_GUI_NAME=garden-gui_${version_number}-1_amd64.deb" >>$GITHUB_ENV
-
-    - name: Create sha256 sum of deb file
-      shell: bash
-      run: |
-        cd "$DEB_DIR"
-        sha256sum "$DEB_CORE_NAME" >"$DEB_CORE_NAME.sha256"
-        sha256sum "$DEB_GUI_NAME" >"$DEB_GUI_NAME.sha256"
-        echo "SUM_CORE=$DEB_CORE_NAME.sha256" >>$GITHUB_ENV
-        echo "SUM_GUI=$DEB_GUI_NAME.sha256" >>$GITHUB_ENV
 
     - name: Upload release archive
       env:
@@ -401,6 +388,8 @@ jobs:
       shell: bash
       run: |
         version="${{ needs.create-release.outputs.version }}"
-        cd "$DEB_DIR"
-        gh release upload "$version" "$DEB_CORE_NAME" "$SUM_CORE"
-        gh release upload "$version" "$DEB_GUI_NAME" "$SUM_GUI"
+        DEB_CORE_NAME=garden_${version}-1_amd64.deb
+        DEB_GUI_NAME=garden-gui_${version}-1_amd64.deb
+        cd target/debian
+        gh release upload "${version}" "$DEB_CORE_NAME" "$DEB_CORE_NAME.sha256"
+        gh release upload "${version}" "$DEB_GUI_NAME" "$DEB_GUI_NAME.sha256"

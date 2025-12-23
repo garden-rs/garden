@@ -20,6 +20,9 @@ variables:
   graph: ""
   hide-graph: $ test -n "${graph}" || printf '%s' --hide-inclusion-graph
   no-fetch: $ test -n "${fetch}" || printf '%s' --no-fetch
+  deb-version: $ grep package.version Cargo.toml | awk '{print $3}' | sed -e 's/"//g' -e 's/-/~/g'
+  deb-core: garden_${deb-version}-1_amd64.deb
+  deb-gui: garden-gui_${deb-version}-1_amd64.deb
 
 # usage:
 #   garden <cmd> [<tree-query>] [-- [<args>]]
@@ -89,6 +92,9 @@ commands:
     mkdir -p target/debian
     cargo deb --profile pkg --target "${target-core}" --output target/debian
     cargo deb --profile pkg --target "${target-gui}" --manifest-path gui/Cargo.toml --output target/debian
+    cd target/debian
+    sha256sum ${deb-core} >${deb-core}.sha256
+    sha256sum ${deb-gui} >${deb-gui}.sha256
   pkg/rpm>:
     - pkg/build
     - pkg/completion
