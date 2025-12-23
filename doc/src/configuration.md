@@ -526,6 +526,31 @@ trees:
       gitster: https://github.com/gitster/git.git
 ```
 
+### Git Config Management (`.git/config`)
+
+Garden applies Git configuration to trees when they are created using `garden grow`.
+The configuration can be specified using scalar values for single-valued fields and
+array values for multi-valued fields.
+
+The following example configures `git push origin` to push to a URL that is distinct
+from the public clone URL and `git push publish` so that it pushes to multiple remotes
+in tandem.
+
+```yaml
+trees:
+  git:
+    url: "git://git.kernel.org/pub/scm/git/git.git"
+    gitconfig:
+      remote.origin.pushurl: "git@git.kernel.org:pub/scm/git/git.git"
+      remote.publish.pushurl:
+        - "git@git.kernel.org:pub/scm/git/git.git"
+        - "git@gitlab.com:git/git.git"
+        - "git@github.com:git/git.git"
+    remotes:
+      gitlab: "https://gitlab.com/git/git.git"
+      github: "https://github.com/git/git.git"
+```
+
 ### Links
 
 The `links` field allows you to specify a list of related URLs.
