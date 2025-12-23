@@ -359,7 +359,7 @@ jobs:
     - name: Install mdbook
       shell: bash
       run: |
-        version=v0.4.48
+        version=v0.5.2
         curl -sSL https://github.com/rust-lang/mdBook/releases/download/${version}/mdbook-${version}-x86_64-unknown-linux-gnu.tar.gz |
           tar -xz --directory=${HOME}/.cargo/bin
 
@@ -377,34 +377,10 @@ jobs:
         cargo build --target ${{ env.TARGET_MUSL }}
         echo "BIN_CORE=target/${{ env.TARGET_MUSL }}/debug/garden" >>$GITHUB_ENV
 
-    - name: Create deployment directory
-      shell: bash
-      run: |
-        dir=target/deb
-        mkdir -p "$dir"
-        echo "DEPLOY_DIR=$dir" >>$GITHUB_ENV
-
-    - name: Generate shell completions
-      shell: bash
-      run: |
-        "$BIN_CORE" pkg/deb/completion -vv
-
-    - name: Generate user documentation
-      shell: bash
-      run: |
-        "$BIN_CORE" pkg/deb/doc -vv
-
     - name: Build Debian release binary
       shell: bash
       run: |
-        "$BIN_CORE" \
-          --define target=${{ env.TARGET_MUSL }} \
-          --define target-gui=${{ env.TARGET_GNU }} \
-          pkg/deb/build -vv
-        "$BIN_CORE" \
-          --define target=${{ env.TARGET_MUSL }} \
-          --define target-gui=${{ env.TARGET_GNU }} \
-          pkg/deb/package -vv
+        "$BIN_CORE" pkg/deb -vv
         version_number="${{ needs.create-release.outputs.version_number }}"
         echo "DEB_DIR=target/debian" >>$GITHUB_ENV
         echo "DEB_CORE_NAME=garden_${version_number}-1_amd64.deb" >>$GITHUB_ENV
