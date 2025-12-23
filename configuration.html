@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "ayu";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-f4d08f87.js";
+            window.path_to_searchindex_js = "searchindex-2d412118.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-0a559ae1.js"></script>
@@ -711,6 +711,26 @@ This feature can also be used when multiple named remotes are configured.</p>
     remotes:
       kernel.org: git://git.kernel.org/pub/scm/git/git.git
       gitster: https://github.com/gitster/git.git
+</code></pre>
+<h3 id="git-config-management-gitconfig"><a class="header" href="#git-config-management-gitconfig">Git Config Management (<code>.git/config</code>)</a></h3>
+<p>Garden applies Git configuration to trees when they are created using <code>garden grow</code>.
+The configuration can be specified using scalar values for single-valued fields and
+array values for multi-valued fields.</p>
+<p>The following example configures <code>git push origin</code> to push to a URL that is distinct
+from the public clone URL and <code>git push publish</code> so that it pushes to multiple remotes
+in tandem.</p>
+<pre><code class="language-yaml">trees:
+  git:
+    url: "git://git.kernel.org/pub/scm/git/git.git"
+    gitconfig:
+      remote.origin.pushurl: "git@git.kernel.org:pub/scm/git/git.git"
+      remote.publish.pushurl:
+        - "git@git.kernel.org:pub/scm/git/git.git"
+        - "git@gitlab.com:git/git.git"
+        - "git@github.com:git/git.git"
+    remotes:
+      gitlab: "https://gitlab.com/git/git.git"
+      github: "https://github.com/git/git.git"
 </code></pre>
 <h3 id="links"><a class="header" href="#links">Links</a></h3>
 <p>The <code>links</code> field allows you to specify a list of related URLs.
