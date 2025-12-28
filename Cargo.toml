@@ -25,6 +25,7 @@ clap_complete = "4.5"
 crossbeam = "0.8"
 dirs = "6.0"
 dunce = "1.0"
+escargot = "0.5"
 function_name = "0.3.0"
 glob = "0.3"
 indexmap = "2.6"
@@ -98,6 +99,7 @@ yaml-rust.workspace = true
 yansi.workspace = true
 
 [dev-dependencies]
+escargot.workspace = true
 function_name.workspace = true
 
 [lib]

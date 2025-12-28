@@ -5,6 +5,7 @@ use garden::model;
 use garden::string;
 
 use anyhow::Result;
+use escargot::CURRENT_TARGET;
 
 fn initialize_environment() {
     // Simplify testing by using a canned environment.
@@ -380,6 +381,3 @@ fn target_dir() -> std::path::PathBuf {
         })
         .expect("this should only be used where a `current_exe` can be set")
 }
-
-/// The current process' target triplet.
-const CURRENT_TARGET: &str = include_str!(concat!(env!("OUT_DIR"), "/current_target.txt"));
