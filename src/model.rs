@@ -1684,3 +1684,28 @@ pub struct GitTreeDetails {
     pub branch: String,
     pub tree_type: GitTreeType,
 }
+
+/// Return true if the context has not been filtered out and refers to a valid configured tree.
+pub(crate) fn is_valid_context(
+    app_context: &ApplicationContext,
+    pattern: &glob::Pattern,
+    context: &TreeContext,
+) -> bool {
+    if !pattern.matches(&context.tree) {
+        return false;
+    }
+    let tree_opt = match context.config {
+        Some(graft_id) => app_context.get_config(graft_id).trees.get(&context.tree),
+        None => app_context.get_root_config().trees.get(&context.tree),
+    };
+    let tree = match tree_opt {
+        Some(tree) => tree,
+        None => return false,
+    };
+    // Skip symlink trees.
+    if tree.is_symlink {
+        return false;
+    }
+
+    true
+}

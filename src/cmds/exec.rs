@@ -45,31 +45,6 @@ pub fn main(app_context: &model::ApplicationContext, exec_options: &mut ExecOpti
     exec(app_context, exec_options)
 }
 
-/// Return true if the context has not been filtered out and refers to a valid configured tree.
-fn is_valid_context(
-    app_context: &model::ApplicationContext,
-    pattern: &glob::Pattern,
-    context: &model::TreeContext,
-) -> bool {
-    if !pattern.matches(&context.tree) {
-        return false;
-    }
-    let tree_opt = match context.config {
-        Some(graft_id) => app_context.get_config(graft_id).trees.get(&context.tree),
-        None => app_context.get_root_config().trees.get(&context.tree),
-    };
-    let tree = match tree_opt {
-        Some(tree) => tree,
-        None => return false,
-    };
-    // Skip symlink trees.
-    if tree.is_symlink {
-        return false;
-    }
-
-    true
-}
-
 /// Execute a command over every tree in the evaluated tree query.
 fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> Result<()> {
     let quiet = exec_options.quiet;
@@ -101,7 +76,7 @@ fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> 
         contexts.par_iter().for_each(|context| {
             let app_context_clone = app_context.clone();
             let app_context = &app_context_clone;
-            if !is_valid_context(app_context, &pattern, context) {
+            if !model::is_valid_context(app_context, &pattern, context) {
                 return;
             }
             // Run the command in the current context.
@@ -119,7 +94,7 @@ fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> 
         });
     } else {
         for context in &contexts {
-            if !is_valid_context(app_context, &pattern, context) {
+            if !model::is_valid_context(app_context, &pattern, context) {
                 continue;
             }
             // Run the command in the current context.
