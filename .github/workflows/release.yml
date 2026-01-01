@@ -388,8 +388,9 @@ jobs:
       shell: bash
       run: |
         version="${{ needs.create-release.outputs.version }}"
-        DEB_CORE_NAME=garden_${version}-1_amd64.deb
-        DEB_GUI_NAME=garden-gui_${version}-1_amd64.deb
+        version_number="${{ needs.create-release.outputs.version_number }}"
+        DEB_CORE_NAME=garden_${version_number}-1_amd64.deb
+        DEB_GUI_NAME=garden-gui_${version_number}-1_amd64.deb
         cd target/debian
         gh release upload "${version}" "$DEB_CORE_NAME" "$DEB_CORE_NAME.sha256"
         gh release upload "${version}" "$DEB_GUI_NAME" "$DEB_GUI_NAME.sha256"
