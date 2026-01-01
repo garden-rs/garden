@@ -38,6 +38,7 @@ fn cmd_main() -> Result<()> {
         cli::Command::Custom(args) => cmds::cmd::main_custom(&app, &args),
         cli::Command::Eval(eval) => cmds::eval::main(&app, &eval),
         cli::Command::Exec(mut exec) => cmds::exec::main(&app, &mut exec),
+        cli::Command::Git(mut git) => cmds::git::main(&app, &mut git),
         cli::Command::Grow(grow) => cmds::grow::main(&app, &grow),
         cli::Command::Gui(ref args) => cmds::gui::main(&options, args),
         cli::Command::Init(_) => Ok(()), // Handled above

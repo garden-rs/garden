@@ -847,6 +847,38 @@ When a garden is specified then the garden's variables are also available for
 evaluation.
 
 
+## garden git
+
+```bash
+garden git <tree-query> <git-subcommand> [<arguments>]*
+
+# example
+garden git pull
+garden git pull '@*' --ff-only
+garden git -j0 pull '@*' --ff-only
+```
+
+Run Git commands over the trees, groups or gardens matched by tree query.
+When the `<tree-query>` resolves to a garden then the environment
+is configured for the command using the environment variables
+from both the tree and the garden.
+
+Use the `-vv` extra-verbose option to display the command being run.
+
+Use the `-N | --dry-run` option to perform a trial run without running any commands.
+
+Use the `-t | --trees` option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+the `<command>` against a subset of trees in that garden.
+
+Use the `-j# | --jobs=#` option to enable parallel execution of commands limited to
+the specified number of cores. Trees will be visited in parallel and the command will be
+executed concurrently in each tree.
+
+Set the jobs value to zero `-j0 | --jobs=0` to use all available cores.
+
+
 ## garden gui
 
     garden gui [<query>...]

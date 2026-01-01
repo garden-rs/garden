@@ -2,6 +2,10 @@
 
 ## v2.5.0 (Upcoming)
 
+**Features**:
+
+- `garden git` was added for running Git sub-commands.
+
 **Development**:
 
 - The minimum supported Rust version is now 1.88.0.

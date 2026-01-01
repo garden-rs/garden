@@ -150,6 +150,8 @@ pub enum Command {
     Eval(cmds::eval::EvalOptions),
     /// Run commands inside garden environments
     Exec(cmds::exec::ExecOptions),
+    /// Execute Git commands
+    Git(cmds::git::GitOptions),
     /// Grow garden worktrees into existence
     Grow(cmds::grow::GrowOptions),
     /// Garden GUI (run "garden-gui --help" for more details)

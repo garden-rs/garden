@@ -10,6 +10,9 @@ pub mod exec;
 /// Eval command
 pub mod eval;
 
+/// Git command
+pub mod git;
+
 /// Grow command
 pub mod grow;
 
