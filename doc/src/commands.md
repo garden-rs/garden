@@ -714,7 +714,7 @@ garden or tree scope.
 For example, `garden build treesitters catsitters` will run a user-defined `build`
 command over both the `treesitters`  and `catsitters` groups.
 
-Use the `garden -vv` extra-verbose option to display the commands being run.
+Use the `-vv` extra-verbose option to display the commands being run.
 
 Use the `-t | --trees` option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.
@@ -806,7 +806,7 @@ When the `<tree-query>` resolves to a garden then the environment
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.
 
-Use the `garden -vv` extra-verbose option to display the command being run.
+Use the `-vv` extra-verbose option to display the command being run.
 
 Use the `-N | --dry-run` option to perform a trial run without running any commands.
 
