@@ -13,6 +13,7 @@ pub mod eval;
 /// Grow command
 pub mod grow;
 
+/// Gui command
 pub mod gui;
 
 /// Init command
