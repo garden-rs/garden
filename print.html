@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "ayu";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-2d412118.js";
+            window.path_to_searchindex_js = "searchindex-e43e216f.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-0a559ae1.js"></script>
@@ -1172,7 +1172,7 @@ garden or tree scope.</p>
 <p><code>garden &lt;command&gt; [&lt;query&gt;...]</code> runs a single command over multiple queries.</p>
 <p>For example, <code>garden build treesitters catsitters</code> will run a user-defined <code>build</code>
 command over both the <code>treesitters</code>  and <code>catsitters</code> groups.</p>
-<p>Use the <code>garden -vv</code> extra-verbose option to display the commands being run.</p>
+<p>Use the <code>-vv</code> extra-verbose option to display the commands being run.</p>
 <p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.
 This lets you activate a garden and its environment variables while only running
@@ -1249,7 +1249,7 @@ garden exec -j0 cola git status -s
 When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environment
 is configured for the command using the environment variables and
 custom commands from both the tree and the garden.</p>
-<p>Use the <code>garden -vv</code> extra-verbose option to display the command being run.</p>
+<p>Use the <code>-vv</code> extra-verbose option to display the command being run.</p>
 <p>Use the <code>-N | --dry-run</code> option to perform a trial run without running any commands.</p>
 <p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
 post-query. Commands will only be run inside trees whose names match the pattern.
@@ -1275,6 +1275,28 @@ block only.</p>
 <p>When a tree is given then its variables are considered as well.</p>
 <p>When a garden is specified then the garden’s variables are also available for
 evaluation.</p>
+<h2 id="garden-git"><a class="header" href="#garden-git">garden git</a></h2>
+<pre><code class="language-bash">garden git &lt;tree-query&gt; &lt;git-subcommand&gt; [&lt;arguments&gt;]*
+
+# example
+garden git pull
+garden git pull '@*' --ff-only
+garden git -j0 pull '@*' --ff-only
+</code></pre>
+<p>Run Git commands over the trees, groups or gardens matched by tree query.
+When the <code>&lt;tree-query&gt;</code> resolves to a garden then the environment
+is configured for the command using the environment variables
+from both the tree and the garden.</p>
+<p>Use the <code>-vv</code> extra-verbose option to display the command being run.</p>
+<p>Use the <code>-N | --dry-run</code> option to perform a trial run without running any commands.</p>
+<p>Use the <code>-t | --trees</code> option to specify a glob pattern to filter trees by name
+post-query. Commands will only be run inside trees whose names match the pattern.
+This lets you activate a garden and its environment variables while only running
+the <code>&lt;command&gt;</code> against a subset of trees in that garden.</p>
+<p>Use the <code>-j# | --jobs=#</code> option to enable parallel execution of commands limited to
+the specified number of cores. Trees will be visited in parallel and the command will be
+executed concurrently in each tree.</p>
+<p>Set the jobs value to zero <code>-j0 | --jobs=0</code> to use all available cores.</p>
 <h2 id="garden-gui"><a class="header" href="#garden-gui">garden gui</a></h2>
 <pre><code>garden gui [&lt;query&gt;...]
 
@@ -2559,7 +2581,12 @@ world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
-<h2 id="v250-upcoming"><a class="header" href="#v250-upcoming">v2.5.0 (Upcoming)</a></h2>
+<h2 id="v250"><a class="header" href="#v250">v2.5.0</a></h2>
+<p><em>Released 2025-12-31</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden git</code> was added for running Git sub-commands.</li>
+</ul>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
