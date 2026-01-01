@@ -13,25 +13,25 @@ use crate::{cmd, constants, errors, model, query};
 pub struct ExecOptions {
     /// Filter trees by name post-query using a glob pattern
     #[arg(long, short, default_value = "*")]
-    trees: String,
+    pub(crate) trees: String,
     /// Perform a trial run without executing any commands
     #[arg(long, short = 'N', short_alias = 'n')]
-    dry_run: bool,
+    pub(crate) dry_run: bool,
     /// Run commands in parallel using the specified number of jobs.
     #[arg(long = "jobs", short = 'j', value_name = "JOBS")]
-    num_jobs: Option<usize>,
+    pub(crate) num_jobs: Option<usize>,
     /// Be quiet
     #[arg(short, long)]
-    quiet: bool,
+    pub(crate) quiet: bool,
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
-    verbose: u8,
+    pub(crate) verbose: u8,
     /// Tree query for the gardens, groups or trees to run the command
     #[arg(value_hint=ValueHint::Other)]
-    query: String,
+    pub(crate) query: String,
     /// Command to run in the resolved environments
     #[arg(allow_hyphen_values = true, trailing_var_arg = true, required = true, value_hint=ValueHint::CommandWithArguments)]
-    command: Vec<String>,
+    pub(crate) command: Vec<String>,
 }
 
 /// Main entry point for the "garden exec" command
