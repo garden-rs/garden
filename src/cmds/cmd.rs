@@ -196,16 +196,16 @@ pub struct CmdParams {
 impl From<CmdOptions> for CmdParams {
     fn from(options: CmdOptions) -> Self {
         Self {
-            commands: options.commands.clone(),
             arguments: options.arguments.clone(),
             breadth_first: options.breadth_first,
+            commands: options.commands.clone(),
             dry_run: options.dry_run,
             exit_on_error: options.exit_on_error,
             force: options.force,
             keep_going: options.keep_going,
             num_jobs: options.num_jobs,
-            tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             quiet: options.quiet,
+            tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             verbose: options.verbose,
             word_split: options.word_split,
             ..Default::default()
@@ -219,7 +219,7 @@ impl From<CustomOptions> for CmdParams {
         let mut params = Self {
             // Add the custom command name to the list of commands. cmds() operates on a vec of commands.
             arguments: options.arguments.clone(),
-            queries: options.queries.clone(),
+            breadth_first: options.num_jobs.is_none(),
             // Custom commands run breadth-first. The distinction shouldn't make a difference in
             // practice because "garden <custom-cmd> ..." is only able to run a single command, but we
             // use breadth-first because it retains the original implementation/behavior from before
@@ -227,14 +227,14 @@ impl From<CustomOptions> for CmdParams {
             //
             // On the other hand, we want "garden <cmd> <query>" to paralellize over all of the
             // resolved TreeContexts, so we use depth-first traversal when running in paralle.
-            breadth_first: options.num_jobs.is_none(),
             dry_run: options.dry_run,
-            keep_going: options.keep_going,
             exit_on_error: options.exit_on_error,
             force: options.force,
+            keep_going: options.keep_going,
             num_jobs: options.num_jobs,
-            tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
+            queries: options.queries.clone(),
             quiet: options.quiet,
+            tree_pattern: glob::Pattern::new(&options.trees).unwrap_or_default(),
             verbose: options.verbose,
             word_split: options.word_split,
             ..Default::default()
