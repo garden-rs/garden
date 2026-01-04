@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.6.0
+
+*Upcoming*
+
+**Features**:
+
+- `garden <custom-cmd>` now has a `-x | --echo` option that enables the shell's
+native echo mode.
+
+
 ## v2.5.0
 
 *Released 2025-12-31*

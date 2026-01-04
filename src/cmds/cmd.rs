@@ -56,6 +56,9 @@ pub struct CmdOptions {
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
+    /// Enable echo mode by passing "-x" to the shell
+    #[arg(short = 'x', long)]
+    echo: bool,
     /// Do not pass "-o shwordsplit" to zsh.
     /// Prevent the "shwordsplit" shell option from being set when using zsh.
     /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
@@ -120,6 +123,9 @@ pub struct CustomOptions {
     /// Increase verbosity level (default: 0)
     #[arg(short, long, action = clap::ArgAction::Count)]
     verbose: u8,
+    /// Enable echo mode by passing "-x" to the shell
+    #[arg(short = 'x', long)]
+    echo: bool,
     /// Do not pass "-o shwordsplit" to zsh.
     /// Prevent the "shwordsplit" shell option from being set when using zsh.
     /// The "-o shwordsplit" option is passed to zsh by default so that unquoted
@@ -184,6 +190,7 @@ pub struct CmdParams {
     force: bool,
     keep_going: bool,
     num_jobs: Option<usize>,
+    echo: bool,
     #[default(true)]
     exit_on_error: bool,
     quiet: bool,
@@ -200,6 +207,7 @@ impl From<CmdOptions> for CmdParams {
             breadth_first: options.breadth_first,
             commands: options.commands.clone(),
             dry_run: options.dry_run,
+            echo: options.echo,
             exit_on_error: options.exit_on_error,
             force: options.force,
             keep_going: options.keep_going,
@@ -228,6 +236,7 @@ impl From<CustomOptions> for CmdParams {
             // On the other hand, we want "garden <cmd> <query>" to paralellize over all of the
             // resolved TreeContexts, so we use depth-first traversal when running in paralle.
             dry_run: options.dry_run,
+            echo: options.echo,
             exit_on_error: options.exit_on_error,
             force: options.force,
             keep_going: options.keep_going,
@@ -350,7 +359,7 @@ struct ShellParams {
 }
 
 impl ShellParams {
-    fn new(shell: &str, exit_on_error: bool, word_split: bool) -> Self {
+    fn new(shell: &str, echo: bool, exit_on_error: bool, word_split: bool) -> Self {
         let mut shell_command = cmd::shlex_split(shell);
         let basename = path::str_basename(&shell_command[0]);
         // Does the shell understand "-e" for errexit?
@@ -376,6 +385,9 @@ impl ShellParams {
             if is_zsh {
                 shell_command.push(string!("+o"));
                 shell_command.push(string!("nomatch"));
+            }
+            if echo && is_shell {
+                shell_command.push(string!("-x"));
             }
             if exit_on_error && is_shell {
                 shell_command.push(string!("-e"));
@@ -412,7 +424,7 @@ impl ShellParams {
         params: &CmdParams,
     ) -> Self {
         let shell = app_context.get_root_config().shell.as_str();
-        Self::new(shell, params.exit_on_error, params.word_split)
+        Self::new(shell, params.echo, params.exit_on_error, params.word_split)
     }
 }
 
