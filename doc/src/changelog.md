@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.5.1
+
+*Released 2026-01-27*
+
+**Fixes**:
+
+- Updated the command-line parser to account for a change in behavior in
+[clap v4.5.55](https://github.com/clap-rs/clap/issues/5040).
+
+
 ## v2.5.0
 
 *Released 2025-12-31*

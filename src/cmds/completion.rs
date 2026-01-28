@@ -49,9 +49,6 @@ pub fn main(options: &cli::MainOptions, completion_options: &CompletionOptions) 
                     )
                     .arg(
                         Arg::new("queries")
-                            // NOTE: value_terminator may not be needed in future versions of clap_complete.
-                            // https://github.com/clap-rs/clap/pull/4612
-                            .value_terminator("--")
                             .help("Tree queries to find trees where commands will be run"),
                     )
                     .arg(

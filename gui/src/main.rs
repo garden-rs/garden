@@ -179,8 +179,6 @@ pub(crate) struct GuiOptions {
     #[arg(long, short, value_hint = ValueHint::DirPath)]
     pub root: Option<std::path::PathBuf>,
     /// Tree queries for the Gardens/Groups/Trees to execute commands within
-    // NOTE: value_terminator may not be needed in future versions of clap_complete.
-    // https://github.com/clap-rs/clap/pull/4612
     #[arg(last = true)]
     queries: Vec<String>,
 }
