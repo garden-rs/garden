@@ -49,6 +49,7 @@ pub fn main(options: &cli::MainOptions, completion_options: &CompletionOptions) 
                     )
                     .arg(
                         Arg::new("queries")
+                            .value_terminator("--")
                             .help("Tree queries to find trees where commands will be run"),
                     )
                     .arg(
