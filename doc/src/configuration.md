@@ -692,7 +692,7 @@ gardens:
 The `graft-repos` graft entry demonstrates how to use a custom root directory for
 the trees provided by the grafted configuration.
 
-The `grafts.yaml` file provides a tree called `tree` and a variable called `value`.
+The `graft.yaml` file provides a tree called `tree` and a variable called `value`.
 We refer to them as `graft::tree` when specifying trees and `${graft::value}` when
 using variables.
 
