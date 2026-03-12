@@ -120,7 +120,6 @@ commands:
         return 1
     )
     garden ${GARDEN_CMD_VERBOSE} grow doc
-    garden ${GARDEN_CMD_VERBOSE} grow homebrew
   stage: git add --update "$@"
   stat: git status --short "$@"
   status: git status "$@"
@@ -165,20 +164,8 @@ trees:
     branch: pages
     branches:
       pages: pages/pages
-  homebrew:
-    description: Homebrew tap for installing Garden on macOS
-    url: "git@gitlab.com:garden-rs/homebrew-garden.git"
-    remotes:
-      github: "git@github.com:garden-rs/homebrew-garden.git"
-    gitconfig:
-      remote.origin.pushurl:
-        - "git@gitlab.com:garden-rs/homebrew-garden.git"
-        - "git@github.com:garden-rs/homebrew-garden.git"
-    links:
-      - "https://gitlab.com/garden-rs/homebrew-garden"
 
 groups:
   all:
     - garden
     - doc
-    - homebrew

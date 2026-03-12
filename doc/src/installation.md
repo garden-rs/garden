@@ -67,38 +67,60 @@ cargo install --git https://gitlab.com/garden-rs/garden.git garden-gui
 
 You can install `garden` on macOS using [Homebrew](https://brew.sh/).
 
-### Add the homebrew-garden tap
-
-*NOTE*: The custom `brew tap` will not be needed in the future once the
-[Garden repository gets enough stars, forks or watchers](https://github.com/Homebrew/homebrew-core/pull/119195)
-to allow `garden` to be added to the main homebrew-core repository.
-
-You will need to enable the `homebrew-garden` tap until then.
-
-```bash
-brew tap garden-rs/garden https://gitlab.com/garden-rs/homebrew-garden
-```
-
 ### Stable Release
 
-To install the latest stable release from the `homebrew-garden` tap:
+To install the latest stable release from Homebrew, run:
+
 ```bash
 brew install garden
 ```
+
 Upgrade `garden` in the future by using `brew upgrade garden`.
 
 ### Development Version
 
 To install the latest development version from Git:
+
 ```bash
 brew install --head garden
 ```
 
-*NOTE*: If you install the latest development version with `--head` then you will need to use
+### Notes
+
+If you install the latest development version with `--head` then you will need to use
 `brew upgrade --fetch-HEAD garden`  to upgrade it.
 
 If you don't specify `--fetch-HEAD` when upgrading then `brew upgrade garden` will
 actually downgrade `garden` to the latest stable release.
+
+### Migrating from the homebrew-garden tap
+
+Prior to 2026-03-11, `garden` was only available in Homebrew through
+the use of a custom tap. You may have enabled this tap using:
+
+```bash
+brew tap garden-rs/garden https://gitlab.com/garden-rs/homebrew-garden
+```
+
+You should remove this tap now that `garden` is part of homebrew-core
+as it is no longer maintained.
+
+Once you switch to using the builtin `garden` Homebrew formula then you may
+need to uninstall the old version first.
+
+```bash
+# Remove the legacy tap.
+brew untap garden-rs/garden
+
+# Uninstall the legacy version from the garden-rs/garden tap.
+brew uninstall garden
+
+# Install the new version from the main homebrew/homebrew-core tap.
+brew install garden
+```
+
+The `garden-rs/garden` tap will remain available for the purposes of accessing older
+`garden` versions, but the repository has been archived and is no longer being updated.
 
 ### Cleanup
 

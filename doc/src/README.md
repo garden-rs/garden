@@ -20,7 +20,7 @@ in separate Git repositories.
 
 * [Garden crates.io package](https://crates.io/crates/garden-tools)
 
-* [Garden Homebrew formula](https://gitlab.com/garden-rs/homebrew-garden)
+* [Garden Homebrew formula](https://github.com/Homebrew/homebrew-core/blob/main/Formula/g/garden.rb)
 
 * [Garden NetBSD pkgsrc](https://cdn.netbsd.org/pub/pkgsrc/current/pkgsrc/devel/garden/index.html)
 

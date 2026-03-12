@@ -61,11 +61,13 @@ you can learn to use `garden` with minimal effort.
 
 * [Garden GUI on crates.io](https://crates.io/crates/garden-gui)
 
-* [Garden Homebrew formula](https://gitlab.com/garden-rs/homebrew-garden)
+* [Garden Homebrew formula](https://github.com/Homebrew/homebrew-core/blob/main/Formula/g/garden.rb)
 
 * [Garden NetBSD pkgsrc](https://cdn.netbsd.org/pub/pkgsrc/current/pkgsrc/devel/garden/index.html)
 
 * [Garden seeds](https://gitlab.com/garden-rs/garden-seeds) ~ reusable templates for garden.
+
+* [Legacy Homebrew tap](https://gitlab.com/garden-rs/homebrew-garden) for old versions.
 
 
 ## Code Status

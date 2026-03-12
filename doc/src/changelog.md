@@ -9,6 +9,13 @@
 - `garden <custom-cmd>` now has a `-x | --echo` option that enables the shell's
 native echo mode.
 
+**Packaging**:
+
+- Garden can now be installed directly via
+[Homebrew on macOS](https://github.com/Homebrew/homebrew-core/pull/271700).
+The `garden-rs/homebrew-garden` tap repository has been archived and is no
+longer maintained.
+
 
 ## v2.5.1
 
