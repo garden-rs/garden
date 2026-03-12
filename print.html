@@ -38,7 +38,7 @@
             const path_to_root = "";
             const default_light_theme = "ayu";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-e43e216f.js";
+            window.path_to_searchindex_js = "searchindex-05ac2b4b.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-0a559ae1.js"></script>
@@ -200,7 +200,7 @@ in separate Git repositories.</p>
 <p><a href="https://crates.io/crates/garden-tools">Garden crates.io package</a></p>
 </li>
 <li>
-<p><a href="https://gitlab.com/garden-rs/homebrew-garden">Garden Homebrew formula</a></p>
+<p><a href="https://github.com/Homebrew/homebrew-core/blob/main/Formula/g/garden.rb">Garden Homebrew formula</a></p>
 </li>
 <li>
 <p><a href="https://cdn.netbsd.org/pub/pkgsrc/current/pkgsrc/devel/garden/index.html">Garden NetBSD pkgsrc</a></p>
@@ -394,15 +394,8 @@ cargo install --git https://gitlab.com/garden-rs/garden.git garden-gui
 </code></pre>
 <h2 id="install-using-homebrew"><a class="header" href="#install-using-homebrew">Install using Homebrew</a></h2>
 <p>You can install <code>garden</code> on macOS using <a href="https://brew.sh/">Homebrew</a>.</p>
-<h3 id="add-the-homebrew-garden-tap"><a class="header" href="#add-the-homebrew-garden-tap">Add the homebrew-garden tap</a></h3>
-<p><em>NOTE</em>: The custom <code>brew tap</code> will not be needed in the future once the
-<a href="https://github.com/Homebrew/homebrew-core/pull/119195">Garden repository gets enough stars, forks or watchers</a>
-to allow <code>garden</code> to be added to the main homebrew-core repository.</p>
-<p>You will need to enable the <code>homebrew-garden</code> tap until then.</p>
-<pre><code class="language-bash">brew tap garden-rs/garden https://gitlab.com/garden-rs/homebrew-garden
-</code></pre>
 <h3 id="stable-release"><a class="header" href="#stable-release">Stable Release</a></h3>
-<p>To install the latest stable release from the <code>homebrew-garden</code> tap:</p>
+<p>To install the latest stable release from Homebrew, run:</p>
 <pre><code class="language-bash">brew install garden
 </code></pre>
 <p>Upgrade <code>garden</code> in the future by using <code>brew upgrade garden</code>.</p>
@@ -410,10 +403,31 @@ to allow <code>garden</code> to be added to the main homebrew-core repository.</
 <p>To install the latest development version from Git:</p>
 <pre><code class="language-bash">brew install --head garden
 </code></pre>
-<p><em>NOTE</em>: If you install the latest development version with <code>--head</code> then you will need to use
+<h3 id="notes"><a class="header" href="#notes">Notes</a></h3>
+<p>If you install the latest development version with <code>--head</code> then you will need to use
 <code>brew upgrade --fetch-HEAD garden</code>  to upgrade it.</p>
 <p>If you don’t specify <code>--fetch-HEAD</code> when upgrading then <code>brew upgrade garden</code> will
 actually downgrade <code>garden</code> to the latest stable release.</p>
+<h3 id="migrating-from-the-homebrew-garden-tap"><a class="header" href="#migrating-from-the-homebrew-garden-tap">Migrating from the homebrew-garden tap</a></h3>
+<p>Prior to 2026-03-11, <code>garden</code> was only available in Homebrew through
+the use of a custom tap. You may have enabled this tap using:</p>
+<pre><code class="language-bash">brew tap garden-rs/garden https://gitlab.com/garden-rs/homebrew-garden
+</code></pre>
+<p>You should remove this tap now that <code>garden</code> is part of homebrew-core
+as it is no longer maintained.</p>
+<p>Once you switch to using the builtin <code>garden</code> Homebrew formula then you may
+need to uninstall the old version first.</p>
+<pre><code class="language-bash"># Remove the legacy tap.
+brew untap garden-rs/garden
+
+# Uninstall the legacy version from the garden-rs/garden tap.
+brew uninstall garden
+
+# Install the new version from the main homebrew/homebrew-core tap.
+brew install garden
+</code></pre>
+<p>The <code>garden-rs/garden</code> tap will remain available for the purposes of accessing older
+<code>garden</code> versions, but the repository has been archived and is no longer being updated.</p>
 <h3 id="cleanup"><a class="header" href="#cleanup">Cleanup</a></h3>
 <p>Installing <code>garden</code> with Homebrew may leave behind the Rust development tools.</p>
 <p>Use <code>brew remove rust</code> after <code>garden</code> is installed to save on disk space.</p>
@@ -2116,7 +2130,7 @@ gardens:
 </code></pre>
 <p>The <code>graft-repos</code> graft entry demonstrates how to use a custom root directory for
 the trees provided by the grafted configuration.</p>
-<p>The <code>grafts.yaml</code> file provides a tree called <code>tree</code> and a variable called <code>value</code>.
+<p>The <code>graft.yaml</code> file provides a tree called <code>tree</code> and a variable called <code>value</code>.
 We refer to them as <code>graft::tree</code> when specifying trees and <code>${graft::value}</code> when
 using variables.</p>
 <p><code>graft.yaml</code> contains the following:</p>
@@ -2581,6 +2595,27 @@ world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v260"><a class="header" href="#v260">v2.6.0</a></h2>
+<p><em>Upcoming</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li><code>garden &lt;custom-cmd&gt;</code> now has a <code>-x | --echo</code> option that enables the shell’s
+native echo mode.</li>
+</ul>
+<p><strong>Packaging</strong>:</p>
+<ul>
+<li>Garden can now be installed directly via
+<a href="https://github.com/Homebrew/homebrew-core/pull/271700">Homebrew on macOS</a>.
+The <code>garden-rs/homebrew-garden</code> tap repository has been archived and is no
+longer maintained.</li>
+</ul>
+<h2 id="v251"><a class="header" href="#v251">v2.5.1</a></h2>
+<p><em>Released 2026-01-27</em></p>
+<p><strong>Fixes</strong>:</p>
+<ul>
+<li>Updated the command-line parser to account for a change in behavior in
+<a href="https://github.com/clap-rs/clap/issues/5040">clap v4.5.55</a>.</li>
+</ul>
 <h2 id="v250"><a class="header" href="#v250">v2.5.0</a></h2>
 <p><em>Released 2025-12-31</em></p>
 <p><strong>Features</strong>:</p>
