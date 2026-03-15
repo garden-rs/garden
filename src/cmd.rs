@@ -9,55 +9,40 @@ pub fn status(exec: subprocess::Exec) -> i32 {
     }
 }
 
-/// Flatten a subprocess::Result into a Result<(), i32>.
-pub fn subprocess_result(result: subprocess::Result<subprocess::ExitStatus>) -> Result<(), i32> {
+/// Flatten a std::io::Result into a Result<(), i32>.
+pub fn subprocess_result(result: std::io::Result<subprocess::ExitStatus>) -> Result<(), i32> {
     match result {
-        Ok(subprocess::ExitStatus::Exited(status)) => {
-            if status == 0 {
+        Ok(status) => {
+            let status_code = exit_status(status);
+            if status_code == 0 {
                 Ok(())
             } else {
-                Err(status as i32)
+                Err(status_code)
             }
         }
-        Ok(subprocess::ExitStatus::Signaled(status)) => Err(status as i32),
-        Ok(subprocess::ExitStatus::Other(status)) => Err(status),
-        Ok(subprocess::ExitStatus::Undetermined) => Err(errors::EX_ERROR),
-        Err(subprocess::PopenError::IoError(err)) => {
-            if err.kind() == std::io::ErrorKind::NotFound {
-                Err(errors::EX_UNAVAILABLE)
-            } else {
-                Err(errors::EX_IOERR)
+        Err(err) => {
+            match err.kind() {
+                std::io::ErrorKind::NotFound => Err(errors::EX_UNAVAILABLE),
+                std::io::ErrorKind::PermissionDenied => Err(errors::EX_IOERR),
+                _ => Err(errors::EX_ERROR),
             }
         }
-        Err(_) => Err(errors::EX_ERROR),
     }
 }
 
 /// Take a subprocess capture and return a string without trailing whitespace.
-fn stdout(capture: &subprocess::CaptureData) -> String {
+fn stdout(capture: &subprocess::Capture) -> String {
     capture.stdout_str().trim_end().to_string()
-}
-
-/// Convert a PopenError into a garden::errors::CommandError.
-fn command_error_from_popen_error(
-    command: String,
-    popen_err: subprocess::PopenError,
-) -> errors::CommandError {
-    let status = match popen_err {
-        subprocess::PopenError::IoError(err) => err.raw_os_error().unwrap_or(1),
-        _ => 1,
-    };
-    errors::CommandError::ExitStatus { command, status }
 }
 
 /// Return a CaptureData result for a subprocess's stdout.
 pub(crate) fn capture_stdout(
     exec: subprocess::Exec,
-) -> Result<subprocess::CaptureData, errors::CommandError> {
+) -> Result<subprocess::Capture, errors::CommandError> {
     let command = exec.to_cmdline_lossy();
     let capture = exec
+        .stderr(subprocess::Redirection::Null)
         .stdout(subprocess::Redirection::Pipe)
-        .stderr(subprocess::NullFile {}) // Redirect stderr to /dev/null
         .capture();
 
     match capture {
@@ -69,18 +54,15 @@ pub(crate) fn capture_stdout(
                 Err(errors::CommandError::ExitStatus { command, status })
             }
         }
-        Err(err) => Err(command_error_from_popen_error(command, err)),
+        Err(_) => {
+            Err(errors::CommandError::ExitStatus { command, status: errors::EX_ERROR })
+        }
     }
 }
 
 /// Convert subprocess::ExitStatus into a CommandError
 pub(crate) fn exit_status(status: subprocess::ExitStatus) -> i32 {
-    match status {
-        subprocess::ExitStatus::Exited(status) => status as i32,
-        subprocess::ExitStatus::Signaled(status) => status as i32,
-        subprocess::ExitStatus::Other(status) => status,
-        subprocess::ExitStatus::Undetermined => errors::EX_ERROR,
-    }
+    status.code().unwrap_or(errors::EX_ERROR as u32) as i32
 }
 
 /// Return a trimmed stdout string for an subprocess::Exec instance.

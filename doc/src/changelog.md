@@ -4,6 +4,8 @@
 
 **Development**:
 
+- The `subprocess` dependency was upgraded to v1.0.
+
 - The `strum` and `strum_macros` dependencies were upgraded to v0.28.
 
 
