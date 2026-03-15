@@ -172,7 +172,7 @@ pub fn garden_capture(args: &[&str]) -> String {
 
 /// Execute a command and ensure that exit status 0 is returned.
 /// Return the captured stdout value as a string.
-pub fn garden_exec(args: &[&str]) -> (i32, String, String) {
+pub fn garden_exec(args: &[&str]) -> (u32, String, String) {
     let mut argv: Vec<&str> = vec!["garden"];
     argv.extend(args);
     display::print_command_vec(&argv);
@@ -189,14 +189,14 @@ pub fn garden_exec(args: &[&str]) -> (i32, String, String) {
     assert!(utf8_stderr.is_ok());
 
     (
-        status,
+        status as u32,
         utf8_stdout.unwrap().trim_end().into(),
         utf8_stderr.unwrap().trim_end().into(),
     )
 }
 
 /// Execute a command and ensure that the exit status is returned.
-pub fn assert_cmd_status(cmd: &[&str], directory: &str, status: i32) {
+pub fn assert_cmd_status(cmd: &[&str], directory: &str, status: u32) {
     display::print_command_vec(cmd);
     let exec = cmd::exec_in_dir(cmd, directory);
     let cmd_status = cmd::status(exec);

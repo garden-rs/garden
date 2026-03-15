@@ -63,7 +63,7 @@ fn grow(
     query: &str,
     tree_pattern: &str,
     remote_pattern: &str,
-) -> Result<i32> {
+) -> Result<u32> {
     let config = app_context.get_root_config();
     let contexts = query::resolve_and_filter_trees(app_context, config, query, tree_pattern);
     let remote_pattern = glob::Pattern::new(remote_pattern).unwrap_or_default();
@@ -95,7 +95,7 @@ fn grow_tree_from_context(
     remote_pattern: &glob::Pattern,
     quiet: bool,
     verbose: u8,
-) -> Result<i32> {
+) -> Result<u32> {
     let mut exit_status = errors::EX_OK;
 
     let tree = if let Some(graft_cfg) = eval_context.graft_config {
@@ -272,7 +272,7 @@ fn update_tree_from_context(
     checkout: bool,
     _quiet: bool,
     verbose: u8,
-) -> Result<i32> {
+) -> Result<u32> {
     let mut exit_status = errors::EX_OK;
 
     let tree = if let Some(graft_cfg) = eval_context.graft_config {
@@ -453,7 +453,7 @@ fn append_gitconfig_value(
     value: &str,
     path: &dyn AsRef<std::path::Path>,
     config_map: &mut GitConfigMap,
-) -> i32 {
+) -> u32 {
     // If the config_map doesn't contain this variable then we need
     // to query git for the current values to avoid appending values
     // that are already present.
@@ -492,7 +492,7 @@ fn set_gitconfig_value(
     value: &str,
     path: &dyn AsRef<std::path::Path>,
     verbose: u8,
-) -> i32 {
+) -> u32 {
     let command = ["git", "config", name, value];
     if verbose > 1 {
         print_command_str(&command.join(" "));
@@ -509,7 +509,7 @@ fn grow_tree_from_context_as_worktree(
     remote_pattern: &glob::Pattern,
     quiet: bool,
     verbose: u8,
-) -> Result<i32> {
+) -> Result<u32> {
     let mut exit_status = errors::EX_OK;
     let tree = if let Some(graft_cfg) = eval_context.graft_config {
         match graft_cfg.trees.get(&eval_context.tree_context.tree) {
@@ -622,7 +622,7 @@ fn grow_tree_from_context_as_worktree(
 fn grow_symlink(
     app_context: &model::ApplicationContext,
     tree_context: &model::TreeContext,
-) -> Result<i32> {
+) -> Result<u32> {
     let config = match tree_context.config {
         Some(config_id) => app_context.get_config(config_id),
         None => app_context.get_root_config(),

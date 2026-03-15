@@ -68,7 +68,7 @@ fn exec(app_context: &model::ApplicationContext, exec_options: &ExecOptions) -> 
     let config = app_context.get_root_config_mut();
     let contexts = query::resolve_trees(app_context, config, None, query);
     let pattern = glob::Pattern::new(tree_pattern).unwrap_or_default();
-    let exit_status = atomic::AtomicI32::new(errors::EX_OK);
+    let exit_status = atomic::AtomicU32::new(errors::EX_OK);
 
     // Loop over each context, evaluate the tree environment,
     // and run the command.

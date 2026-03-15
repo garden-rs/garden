@@ -1,7 +1,7 @@
 use crate::{constants, display, errors, eval, model, syntax};
 
 /// Return an exit status code from a subprocess::Exec instance.
-pub fn status(exec: subprocess::Exec) -> i32 {
+pub fn status(exec: subprocess::Exec) -> u32 {
     if let Err(status) = subprocess_result(exec.join()) {
         status
     } else {
@@ -9,8 +9,8 @@ pub fn status(exec: subprocess::Exec) -> i32 {
     }
 }
 
-/// Flatten a std::io::Result into a Result<(), i32>.
-pub fn subprocess_result(result: std::io::Result<subprocess::ExitStatus>) -> Result<(), i32> {
+/// Flatten a std::io::Result into a Result<(), u32>.
+pub fn subprocess_result(result: std::io::Result<subprocess::ExitStatus>) -> Result<(), u32> {
     match result {
         Ok(status) => {
             let status_code = exit_status(status);
@@ -20,13 +20,11 @@ pub fn subprocess_result(result: std::io::Result<subprocess::ExitStatus>) -> Res
                 Err(status_code)
             }
         }
-        Err(err) => {
-            match err.kind() {
-                std::io::ErrorKind::NotFound => Err(errors::EX_UNAVAILABLE),
-                std::io::ErrorKind::PermissionDenied => Err(errors::EX_IOERR),
-                _ => Err(errors::EX_ERROR),
-            }
-        }
+        Err(err) => match err.kind() {
+            std::io::ErrorKind::NotFound => Err(errors::EX_UNAVAILABLE),
+            std::io::ErrorKind::PermissionDenied => Err(errors::EX_IOERR),
+            _ => Err(errors::EX_ERROR),
+        },
     }
 }
 
@@ -54,15 +52,16 @@ pub(crate) fn capture_stdout(
                 Err(errors::CommandError::ExitStatus { command, status })
             }
         }
-        Err(_) => {
-            Err(errors::CommandError::ExitStatus { command, status: errors::EX_ERROR })
-        }
+        Err(_) => Err(errors::CommandError::ExitStatus {
+            command,
+            status: errors::EX_ERROR,
+        }),
     }
 }
 
 /// Convert subprocess::ExitStatus into a CommandError
-pub(crate) fn exit_status(status: subprocess::ExitStatus) -> i32 {
-    status.code().unwrap_or(errors::EX_ERROR as u32) as i32
+pub(crate) fn exit_status(status: subprocess::ExitStatus) -> u32 {
+    status.code().unwrap_or(errors::EX_ERROR)
 }
 
 /// Return a trimmed stdout string for an subprocess::Exec instance.
@@ -93,7 +92,7 @@ where
 
 /// Return the exit status from running a command using `subprocess::Exec`
 /// in the specified directory.
-pub(crate) fn run_command<P, S>(command: &[S], path: &P) -> i32
+pub(crate) fn run_command<P, S>(command: &[S], path: &P) -> u32
 where
     P: AsRef<std::path::Path> + std::convert::AsRef<std::ffi::OsStr> + ?Sized,
     S: AsRef<std::ffi::OsStr>,

@@ -54,14 +54,14 @@ pub fn main(app_context: &model::ApplicationContext, options: &mut PruneOptions)
     // Do not allow min_depth to be greater than max_depth.
     if options.max_depth >= 0 && options.max_depth < options.min_depth {
         println!("error: --max-depth cannot be less than --min-depth");
-        std::process::exit(errors::EX_USAGE);
+        std::process::exit(errors::EX_USAGE as i32);
     }
 
     // --exact-depth <depth> is an alias for --min-depth <depth> --max-depth <depth>.
     if options.exact_depth >= 0 {
         if options.min_depth >= 0 || options.max_depth >= 0 {
             println!("error: --exact-depth cannot be used with --min-depth and --max-depth");
-            std::process::exit(errors::EX_USAGE);
+            std::process::exit(errors::EX_USAGE as i32);
         }
         options.min_depth = options.exact_depth;
         options.max_depth = options.exact_depth;
@@ -454,8 +454,8 @@ pub fn prune(
     config: &model::Configuration,
     options: &PruneOptions,
     paths: &[String],
-) -> Result<i32> {
-    let exit_status: i32 = 0;
+) -> Result<u32> {
+    let exit_status: u32 = 0;
 
     if !options.remove {
         let msg = "NOTE: Safe mode enabled. Repositories will not be deleted.";

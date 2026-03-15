@@ -23,7 +23,7 @@ pub enum GardenError {
 
     /// ExitStatus is used to exit without printing an error message.
     #[error("exit status {0}")]
-    ExitStatus(i32),
+    ExitStatus(u32),
 
     #[error("{0}")]
     FileExists(String),
@@ -74,7 +74,7 @@ pub enum GardenError {
     Usage(String),
 
     #[error("error creating {tree:?}: 'git checkout' returned exit status {status:?}")]
-    WorktreeGitCheckoutError { tree: String, status: i32 },
+    WorktreeGitCheckoutError { tree: String, status: u32 },
 
     #[error("unable to find worktree {worktree:?} for {tree:?}")]
     WorktreeNotFound { worktree: String, tree: String },
@@ -96,22 +96,22 @@ pub enum GardenError {
 pub enum CommandError {
     /// ExitStatus is used to exit without printing an error message.
     #[error("{command} returned exit status {status}")]
-    ExitStatus { command: String, status: i32 },
+    ExitStatus { command: String, status: u32 },
 }
 
 // /usr/include/sysexits.h
-pub const EX_OK: i32 = 0;
-pub const EX_ERROR: i32 = 1;
-pub const EX_USAGE: i32 = 64;
-pub const EX_DATAERR: i32 = 65;
-pub const EX_UNAVAILABLE: i32 = 69;
-pub const EX_SOFTWARE: i32 = 70;
-pub const EX_OSERR: i32 = 71;
-pub const EX_CANTCREAT: i32 = 73;
-pub const EX_IOERR: i32 = 74;
-pub const EX_CONFIG: i32 = 78;
+pub const EX_OK: u32 = 0;
+pub const EX_ERROR: u32 = 1;
+pub const EX_USAGE: u32 = 64;
+pub const EX_DATAERR: u32 = 65;
+pub const EX_UNAVAILABLE: u32 = 69;
+pub const EX_SOFTWARE: u32 = 70;
+pub const EX_OSERR: u32 = 71;
+pub const EX_CANTCREAT: u32 = 73;
+pub const EX_IOERR: u32 = 74;
+pub const EX_CONFIG: u32 = 78;
 
-impl std::convert::From<GardenError> for i32 {
+impl std::convert::From<GardenError> for u32 {
     fn from(garden_err: GardenError) -> Self {
         match garden_err {
             GardenError::AssertionError(_) => EX_SOFTWARE,
@@ -142,31 +142,31 @@ impl std::convert::From<GardenError> for i32 {
     }
 }
 
-/// Convert an i32 into a GardenError.
-pub fn error_from_exit_status(exit_status: i32) -> GardenError {
+/// Convert a u32 into a GardenError.
+pub fn error_from_exit_status(exit_status: u32) -> GardenError {
     GardenError::ExitStatus(exit_status)
 }
 
-/// Convert a Result<(), i32> into a Result<(), anyhow::Error>
-pub fn error_from_exit_status_result(result: Result<(), i32>) -> Result<()> {
+/// Convert a Result<(), u32> into a Result<(), anyhow::Error>
+pub fn error_from_exit_status_result(result: Result<(), u32>) -> Result<()> {
     result.map_err(|status| error_from_exit_status(status).into())
 }
 
-/// Convert an i32 exit status to Result<(), GardenError>.
-pub fn result_from_exit_status(exit_status: i32) -> Result<(), GardenError> {
+/// Convert an u32 exit status to Result<(), GardenError>.
+pub fn result_from_exit_status(exit_status: u32) -> Result<(), GardenError> {
     match exit_status {
         EX_OK => Ok(()),
         _ => Err(error_from_exit_status(exit_status)),
     }
 }
 
-/// Convert an i32 exit status to an anyhow::Result<()>
-pub fn exit_status_into_result(exit_status: i32) -> Result<()> {
+/// Convert an u32 exit status to an anyhow::Result<()>
+pub fn exit_status_into_result(exit_status: u32) -> Result<()> {
     result_from_exit_status(exit_status).map_err(|err| err.into())
 }
 
 //r Transform an anyhow::Error into an exit code when an error occurs.
-pub fn exit_status_from_error(err: anyhow::Error) -> i32 {
+pub fn exit_status_from_error(err: anyhow::Error) -> u32 {
     match err.downcast::<GardenError>() {
         Ok(garden_err) => {
             match garden_err {

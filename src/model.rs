@@ -167,7 +167,7 @@ impl Variable {
             }
         } else if self.required {
             eprintln!("error: required variable '{}' is empty", self.name);
-            std::process::exit(errors::EX_DATAERR);
+            std::process::exit(errors::EX_DATAERR as i32);
         }
     }
 

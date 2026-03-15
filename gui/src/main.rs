@@ -40,7 +40,7 @@ fn main() -> Result<()> {
     // Return the appropriate exit code when a GardenError is encountered.
     if let Err(err) = gui_main(&app, &gui_options) {
         let exit_status = errors::exit_status_from_error(err);
-        std::process::exit(exit_status);
+        std::process::exit(exit_status as i32);
     }
 
     Ok(())

@@ -321,7 +321,7 @@ pub fn main_custom(app_context: &model::ApplicationContext, arguments: &Vec<Stri
 ///
 /// If the names resolve to trees, each tree is processed independently
 /// with no garden context.
-fn cmd(app_context: &model::ApplicationContext, query: &str, params: &CmdParams) -> Result<i32> {
+fn cmd(app_context: &model::ApplicationContext, query: &str, params: &CmdParams) -> Result<u32> {
     let config = app_context.get_root_config_mut();
     let contexts = query::resolve_trees(app_context, config, None, query);
     if params.breadth_first {
@@ -336,7 +336,7 @@ fn cmd_parallel(
     app_context: &model::ApplicationContext,
     query: &str,
     params: &CmdParams,
-) -> Result<i32> {
+) -> Result<u32> {
     let config = app_context.get_root_config_mut();
     let contexts = query::resolve_trees(app_context, config, None, query);
     if params.breadth_first {
@@ -490,7 +490,7 @@ fn expand_and_run_command(
     shell_params: &ShellParams,
     params: &CmdParams,
     env: &model::Environment,
-) -> Result<i32, i32> {
+) -> Result<u32, u32> {
     let mut exit_status = errors::EX_OK;
     // Create a sequence of the command names to run including pre and post-commands.
     let command_names = cmd::expand_command_names(app_context, context, name);
@@ -517,8 +517,8 @@ fn run_cmd_breadth_first(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
-) -> Result<i32> {
-    let mut exit_status: i32 = errors::EX_OK;
+) -> Result<u32> {
+    let mut exit_status: u32 = errors::EX_OK;
     let shell_params = ShellParams::from_context_and_params(app_context, params);
     // Loop over each command, evaluate the tree environment,
     // and run the command in each context.
@@ -562,8 +562,8 @@ fn run_cmd_breadth_first_parallel(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
-) -> Result<i32> {
-    let exit_status = atomic::AtomicI32::new(errors::EX_OK);
+) -> Result<u32> {
+    let exit_status = atomic::AtomicU32::new(errors::EX_OK);
     let shell_params = ShellParams::from_context_and_params(app_context, params);
     // Loop over each command, evaluate the tree environment, and run the command in each context.
     params.commands.par_iter().for_each(|name| {
@@ -609,8 +609,8 @@ fn run_cmd_depth_first(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
-) -> Result<i32> {
-    let mut exit_status: i32 = errors::EX_OK;
+) -> Result<u32> {
+    let mut exit_status: u32 = errors::EX_OK;
     let shell_params = ShellParams::from_context_and_params(app_context, params);
     // Loop over each context, evaluate the tree environment and run the command.
     for context in contexts {
@@ -652,8 +652,8 @@ fn run_cmd_depth_first_parallel(
     app_context: &model::ApplicationContext,
     contexts: &[model::TreeContext],
     params: &CmdParams,
-) -> Result<i32> {
-    let exit_status = atomic::AtomicI32::new(errors::EX_OK);
+) -> Result<u32> {
+    let exit_status = atomic::AtomicU32::new(errors::EX_OK);
     let shell_params = ShellParams::from_context_and_params(app_context, params);
     // Loop over each context, evaluate the tree environment and run the command.
     contexts.par_iter().for_each(|context| {
@@ -709,7 +709,7 @@ fn run_cmd_vec(
     env: &model::Environment,
     cmd_seq_vec: &[Vec<String>],
     params: &CmdParams,
-) -> Result<(), i32> {
+) -> Result<(), u32> {
     // Get the current executable name
     let current_exe = cmd::current_exe();
     let mut exit_status = errors::EX_OK;
@@ -766,7 +766,7 @@ fn run_cmd_vec(
 
 /// Run cmd() over a Vec of tree queries
 fn cmds(app: &model::ApplicationContext, params: &CmdParams) -> Result<()> {
-    let exit_status = atomic::AtomicI32::new(errors::EX_OK);
+    let exit_status = atomic::AtomicU32::new(errors::EX_OK);
     if params.num_jobs.is_some() {
         params.queries.par_iter().for_each(|query| {
             let status = cmd_parallel(&app.clone(), query, params).unwrap_or(errors::EX_IOERR);
