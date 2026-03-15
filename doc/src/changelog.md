@@ -2,7 +2,7 @@
 
 ## v2.6.0
 
-*Upcoming*
+*Released 2026-03-14*
 
 **Features**:
 
