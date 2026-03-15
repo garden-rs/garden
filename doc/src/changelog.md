@@ -2,6 +2,8 @@
 
 ## v2.7.0
 
+*Upcoming*
+
 **Development**:
 
 - The `subprocess` dependency was upgraded to v1.0.
