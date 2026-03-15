@@ -124,10 +124,14 @@ jobs:
           target: s390x-unknown-linux-gnu
           strip: s390x-linux-gnu-strip
           qemu: qemu-s390x
-        - build: macos
+        - build: macos-x86_64
           os: macos-latest
           rust: nightly
           target: x86_64-apple-darwin
+        - build: macos-arm64
+          os: macos-latest
+          rust: nightly
+          target: aarch64-apple-darwin
         - build: win-msvc
           os: windows-latest
           rust: nightly
