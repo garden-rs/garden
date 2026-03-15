@@ -19,7 +19,7 @@ jobs:
     name: create-release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get the release version from the tag
         if: env.VERSION == ''
         run: |
@@ -32,6 +32,12 @@ jobs:
       - name: Check that tag version and Cargo.toml version are the same
         shell: bash
         run: |
+          case "$VERSION" in
+          dev*)
+            echo "[dev] Cargo.toml version check skipped" >&2
+            exit 0
+            ;;
+          esac
           if ! grep -q "package.version = \"$VERSION_NUMBER\"" Cargo.toml
           then
             echo "version does not match Cargo.toml" >&2
@@ -118,10 +124,14 @@ jobs:
           target: s390x-unknown-linux-gnu
           strip: s390x-linux-gnu-strip
           qemu: qemu-s390x
-        - build: macos
+        - build: macos-x86_64
           os: macos-latest
           rust: nightly
           target: x86_64-apple-darwin
+        - build: macos-arm64
+          os: macos-latest
+          rust: nightly
+          target: aarch64-apple-darwin
         - build: win-msvc
           os: windows-latest
           rust: nightly
@@ -137,7 +147,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install packages
       if: matrix.os == 'ubuntu-latest'
@@ -344,7 +354,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Install packages
       shell: bash

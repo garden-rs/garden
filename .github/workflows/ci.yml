@@ -105,7 +105,7 @@ jobs:
           os: windows-2022
           rust: nightly-x86_64-gnu
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install packages
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt install git musl-tools rsync zsh
@@ -161,7 +161,7 @@ jobs:
     name: Checks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy --no-self-update
     - run: date +%W >weekly
     - id: cache
@@ -187,7 +187,7 @@ jobs:
       MDBOOK_VERSION: v0.4.48
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: rustup toolchain install stable --profile minimal --no-self-update
       - run: date +%W >weekly
       - uses: Swatinem/rust-cache@v2
