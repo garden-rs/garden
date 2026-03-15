@@ -32,6 +32,12 @@ jobs:
       - name: Check that tag version and Cargo.toml version are the same
         shell: bash
         run: |
+          case "$VERSION" in
+          dev*)
+            echo "[dev] Cargo.toml version check skipped" >&2
+            exit 0
+            ;;
+          esac
           if ! grep -q "package.version = \"$VERSION_NUMBER\"" Cargo.toml
           then
             echo "version does not match Cargo.toml" >&2
