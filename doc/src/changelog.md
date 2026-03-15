@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.7.0
+
+**Development**:
+
+- The `strum` and `strum_macros` dependencies were upgraded to v0.28.
+
+
 ## v2.6.0
 
 *Released 2026-03-14*
