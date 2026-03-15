@@ -11,6 +11,9 @@ native echo mode.
 
 **Packaging**:
 
+- [Prebuilt binaries for Apple Darwin aarch64](https://github.com/garden-rs/garden/releases)
+are now available.
+
 - Garden can now be installed directly via
 [Homebrew on macOS](https://github.com/Homebrew/homebrew-core/pull/271700).
 The `garden-rs/homebrew-garden` tap repository has been archived and is no
