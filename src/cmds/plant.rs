@@ -83,7 +83,7 @@ pub fn main(app_context: &model::ApplicationContext, options: &PlantOptions) -> 
             }
         }
         // Sort trees case-insensitively.
-        names_and_trees.sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
+        names_and_trees.sort_by_key(|a| a.0.to_lowercase());
         // Build a new trees table and replace the existing entry with it.
         let mut sorted_trees = yaml::Hash::new();
         for (name, tree) in names_and_trees {
