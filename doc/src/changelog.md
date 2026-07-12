@@ -1,8 +1,8 @@
 # Changelog
 
-## v2.7.0
+## v2.6.1
 
-*Upcoming*
+*Released 2026-07-12*
 
 **Development**:
 
