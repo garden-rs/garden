@@ -36,24 +36,18 @@ commands:
     - check/msrv
     - test
   check/audit: |
-    if type cargo-audit >/dev/null 2>&1
-    then
-        cargo audit ${no-fetch} "$@"
-    fi
+    type cargo-audit >/dev/null 2>&1 || exit 0
+    cargo audit ${no-fetch} "$@"
   check/clippy: cargo clippy --all "$@" -- -D warnings
   check/deny: |
-    if type cargo-deny >/dev/null 2>&1
-    then
-        test -z "${fetch}" || cargo deny fetch
-        cargo deny --workspace --offline check ${hide-graph} "$@"
-    fi
+    type cargo-deny >/dev/null 2>&1 || exit 0
+    test -z "${fetch}" || cargo deny fetch
+    cargo deny --workspace --offline check ${hide-graph} "$@"
   check/fmt: cargo fmt --all --check "$@"
   check/msrv: |
-    if type cargo-msrv >/dev/null 2>&1
-    then
-        cargo msrv verify
-        cargo msrv --path gui verify
-    fi
+    type cargo-msrv >/dev/null 2>&1 || exit 0
+    cargo msrv verify
+    cargo msrv --path gui verify
   clean: cargo clean "$@"
   commit: git commit "$@"
   coverage: cargo kcov "$@"
