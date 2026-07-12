@@ -265,7 +265,7 @@ jobs:
         "$BIN_CORE" completion powershell >"$ARCHIVE_CORE/completion/_garden.ps1"
 
     - name: Generate completions (emulation)
-      if: matrix.qemu != '' && matrix.build != 'win-msvc' && matrix.build != 'win-gnu'
+      if: matrix.qemu != '' && matrix.build != 'win-msvc' && matrix.build != 'win-gnu' && matrix.build != 'stable-x86'
       shell: bash
       run: |
         docker run --rm -v \
