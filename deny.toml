@@ -1,5 +1,11 @@
 [advisories]
-ignore = []
+ignore = [
+    # ttf-parser is unmainted but is currently used by egui
+    "RUSTSEC-2026-0192",
+    # quick-xml will be upgraded later via egui
+    "RUSTSEC-2026-0194",
+    "RUSTSEC-2026-0195",
+]
 
 [licenses]
 allow = [
