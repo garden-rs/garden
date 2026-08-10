@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.6.2
+
+**Development**:
+
+- `Cargo.lock` is now being tracked in Git.
+([#22](https://gitlab.com/garden-rs/garden/-/work_items/22))
+
+
 ## v2.6.1
 
 *Released 2026-07-12*
