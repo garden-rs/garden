@@ -1488,7 +1488,7 @@ dependencies = [
 
 [[package]]
 name = "garden-gui"
-version = "2.6.1"
+version = "2.6.2"
 dependencies = [
  "anyhow",
  "clap",
@@ -1505,7 +1505,7 @@ dependencies = [
 
 [[package]]
 name = "garden-tools"
-version = "2.6.1"
+version = "2.6.2"
 dependencies = [
  "anyhow",
  "better_default",

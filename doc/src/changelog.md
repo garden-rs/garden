@@ -2,10 +2,14 @@
 
 ## v2.6.2
 
+*Released 2026-08-10*
+
 **Development**:
 
 - `Cargo.lock` is now being tracked in Git.
 ([#22](https://gitlab.com/garden-rs/garden/-/work_items/22))
+
+- The nix flake was updated.
 
 
 ## v2.6.1
