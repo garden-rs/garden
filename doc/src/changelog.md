@@ -1,5 +1,13 @@
 # Changelog
 
+## Upcoming
+
+**Development**:
+
+- `event-listener` and `webbrowser` were updated in `Cargo.lock` to avoid
+`RUSTSEC-2026-0221` and `RUSTSEC-2026-0257`.
+
+
 ## v2.6.2
 
 *Released 2026-08-10*
