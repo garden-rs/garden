@@ -128,18 +128,17 @@ pub(crate) fn trim_graft(string: &str) -> Option<String> {
         Some((before, after)) => (before, after),
         None => return None,
     };
-    let result;
     // We split the graft prefix off which can contain garden/group/tree qualifiers.
     // Reattach the qualifiers onto the inner graft query string.
-    if is_garden(string) {
-        result = string!(":") + after;
+    let result = if is_garden(string) {
+        string!(":") + after
     } else if is_group(string) {
-        result = string!("%") + after;
+        string!("%") + after
     } else if is_tree(string) {
-        result = string!("@") + after;
+        string!("@") + after
     } else {
-        result = after.to_string();
-    }
+        after.to_string()
+    };
 
     Some(result)
 }
