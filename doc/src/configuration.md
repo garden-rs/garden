@@ -446,10 +446,10 @@ trees:
       gitlab: https://gitlab.com/git-scm/git.git
       github: https://github.com/git/git.git
     commands:
-      build: make all -j ${num_procs} "$@"
+      build: make all -j ${num-procs} "$@"
       test: make test "$@"
     variables:
-      num_procs: $ nproc 2>/dev/null || sysctl -n hw.activecpu 2>/dev/null || echo 4
+      num-procs: $ nproc 2>/dev/null || sysctl -n hw.activecpu 2>/dev/null || echo 4
     links:
       - "https://gitgitgadget.github.io/"
       - "https://github.com/gitgitgadget/git/issues"
