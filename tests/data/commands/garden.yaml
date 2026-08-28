@@ -2,6 +2,11 @@ commands:
   pwd: pwd
   echo: echo "$@"
   echo-name: echo ${name}
+  shell-quoted-variables: |
+    test1=abc
+    test2=xyz
+    echo $test1/$test2
 
 variables:
   name: default-name
+  test: test
