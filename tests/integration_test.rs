@@ -637,7 +637,12 @@ fn cmd_dry_run() {
 /// Shell $variables are escaped and survive
 #[test]
 fn cmd_shell_quoted_variables_are_retained() {
-    let output = garden_capture(&["--quiet", "--chdir", "tests/data/commands", "shell-quoted-variables"]);
+    let output = garden_capture(&[
+        "--quiet",
+        "--chdir",
+        "tests/data/commands",
+        "shell-quoted-variables",
+    ]);
     assert_eq!(output, "abc/xyz");
 }
 

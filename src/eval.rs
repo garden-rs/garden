@@ -350,7 +350,11 @@ pub fn value_for_shell(
     config: &model::Configuration,
     expr: &str,
 ) -> String {
-    value(app_context, config, syntax::escape_shell_variables(expr).as_str())
+    value(
+        app_context,
+        config,
+        syntax::escape_shell_variables(expr).as_str(),
+    )
 }
 
 /// Evaluate `$ <command>` command strings, AKA "exec expressions".
