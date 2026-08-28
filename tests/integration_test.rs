@@ -1393,6 +1393,21 @@ fn eval_grafted_builtin_variables() {
     );
 }
 
+/// `garden eval` shell-quotes its inputs.
+#[test]
+fn eval_shellquotes_inputs() {
+    let output = garden_capture(&[
+        "--config",
+        "tests/data/garden.yaml",
+        "eval",
+        "-D",
+        "foo=test",
+        "$foo",
+    ]);
+    let expect = "$foo";
+    assert_eq!(output, expect);
+}
+
 /// Test dash-dash arguments in custom commands via "garden cmd ..."
 #[test]
 fn cmd_dash_dash_arguments() {

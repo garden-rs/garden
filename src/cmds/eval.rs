@@ -28,7 +28,7 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
             // Evaluate and print the expression in global scope. No trees or gardens
             // were provided so only the top-level variables are included.
             let config = app_context.get_root_config();
-            let value = eval::value(app_context, config, &eval.expr);
+            let value = eval::value_for_shell(app_context, config, &eval.expr);
             println!("{value}");
         }
         Some(tree) => {
@@ -36,7 +36,7 @@ pub fn main(app_context: &model::ApplicationContext, eval: &EvalOptions) -> Resu
             let garden = eval.garden.as_deref();
             let ctx = query::find_tree(app_context, app_context.get_root_id(), tree, garden)?;
             let graft_config = ctx.config.map(|graft_id| app_context.get_config(graft_id));
-            let value = eval::tree_value(
+            let value = eval::tree_value_for_shell(
                 app_context,
                 app_context.get_root_config(),
                 graft_config,

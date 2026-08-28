@@ -290,9 +290,10 @@ pub fn tree_value(
 
 /// Resolve an expression in a garden/tree/global scope for execution by a shell.
 /// This is used to generate the commands used internally by garden.
-fn tree_value_for_shell(
+pub fn tree_value_for_shell(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
+    graft_config: Option<&model::Configuration>,
     expr: &str,
     tree_name: &model::TreeName,
     garden_name: Option<&model::GardenName>,
@@ -301,7 +302,7 @@ fn tree_value_for_shell(
     let expanded = shellexpand::full_with_context_no_errors(
         &syntax::escape_shell_variables(expr),
         home_dir,
-        |x| expand_tree_vars(app_context, config, None, tree_name, garden_name, x),
+        |x| expand_tree_vars(app_context, config, graft_config, tree_name, garden_name, x),
     )
     .to_string();
 
@@ -341,6 +342,15 @@ pub fn value(
     } else {
         expanded
     }
+}
+
+/// Resolve a variable in a configuration/global scope with shell escaping.
+pub fn value_for_shell(
+    app_context: &model::ApplicationContext,
+    config: &model::Configuration,
+    expr: &str,
+) -> String {
+    value(app_context, config, syntax::escape_shell_variables(expr).as_str())
 }
 
 /// Evaluate `$ <command>` command strings, AKA "exec expressions".
@@ -401,6 +411,7 @@ pub(crate) fn variables_for_shell(
         let raw_value = tree_value_for_shell(
             app_context,
             config,
+            None,
             var.get_expr(),
             &context.tree,
             context.garden.as_ref(),
