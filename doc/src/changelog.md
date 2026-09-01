@@ -2,6 +2,8 @@
 
 ## v2.7.0
 
+*Released 2026-09-01*
+
 **Features**:
 
 - Plain `$shell_variables` are now retained in more situations. Notably, `variables`
