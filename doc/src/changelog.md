@@ -1,6 +1,13 @@
 # Changelog
 
-## Upcoming
+## v2.7.0
+
+**Features**:
+
+- Plain `$shell_variables` are now retained in more situations. Notably, `variables`
+that contained shell scriptlets that were interpolated into commands using
+`${variable}` syntax will now properly preserve plain brace-less `$shell_variables`
+in their contents.
 
 **Development**:
 

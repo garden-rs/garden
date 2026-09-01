@@ -6,7 +6,14 @@ commands:
     test1=abc
     test2=xyz
     echo $test1/$test2
+  # Ensure that a scriptlet provided by a ${var} reference retains $plain_shell_vars.
+  shell-quoted-scriptlet: |
+    ${scriptlet-variables}
+    echo $test1/$test2
 
 variables:
   name: default-name
   test: test
+  scriptlet-variables: |
+    test1=abc
+    test2=xyz

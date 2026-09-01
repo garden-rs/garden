@@ -247,13 +247,18 @@ variables.
 
 Variable references use shell `${variable}` syntax.
 
-Values that start with dollar-sign+space (`$ `) are called "exec expressions".
-Exec expressions are run through a shell after evaluation and replaced with
-the output of the evaluated command.
+- `${braced-variables}` are interpolated by Garden.
+
+- Plain `$shell_variables` are **not interpolated** so that they can be used in your
+command shell scriptlets without needing to escape them.
 
 When resolving values, variables defined in a tree scope override/replace
 variables defined at the global scope.  Variables defined in garden scope
 override/replace variables defined in a tree scope.
+
+Values that start with dollar-sign + space (`$ `) are called "exec expressions".
+Exec expressions are run through a shell after evaluation and replaced with
+the output of the evaluated command.
 
 
 ### Required Variables

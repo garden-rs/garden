@@ -264,46 +264,10 @@ pub fn tree_value(
     garden_name: Option<&model::GardenName>,
 ) -> String {
     let is_exec = syntax::is_exec(expr);
-    let escaped_value;
-    let escaped_expr = if is_exec {
-        escaped_value = syntax::escape_shell_variables(expr);
-        escaped_value.as_str()
-    } else {
-        expr
-    };
-    let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
+    let escaped_expr = syntax::escape_shell_variables(expr);
+    let expanded = shellexpand::full_with_context_no_errors(&escaped_expr, home_dir, |x| {
         expand_tree_vars(app_context, config, graft_config, tree_name, garden_name, x)
     })
-    .to_string();
-
-    // NOTE: an environment must not be calculated here otherwise any
-    // exec expression will implicitly depend on the entire environment,
-    // and potentially many variables (including itself).  Exec expressions
-    // always use the default environment.
-    if is_exec {
-        let pathbuf = config.get_tree_pathbuf(tree_name);
-        exec_expression(&expanded, pathbuf)
-    } else {
-        expanded
-    }
-}
-
-/// Resolve an expression in a garden/tree/global scope for execution by a shell.
-/// This is used to generate the commands used internally by garden.
-pub fn tree_value_for_shell(
-    app_context: &model::ApplicationContext,
-    config: &model::Configuration,
-    graft_config: Option<&model::Configuration>,
-    expr: &str,
-    tree_name: &model::TreeName,
-    garden_name: Option<&model::GardenName>,
-) -> String {
-    let is_exec = syntax::is_exec(expr);
-    let expanded = shellexpand::full_with_context_no_errors(
-        &syntax::escape_shell_variables(expr),
-        home_dir,
-        |x| expand_tree_vars(app_context, config, graft_config, tree_name, garden_name, x),
-    )
     .to_string();
 
     // NOTE: an environment must not be calculated here otherwise any
@@ -325,14 +289,8 @@ pub fn value(
     expr: &str,
 ) -> String {
     let is_exec = syntax::is_exec(expr);
-    let escaped_value;
-    let escaped_expr = if is_exec {
-        escaped_value = syntax::escape_shell_variables(expr);
-        escaped_value.as_str()
-    } else {
-        expr
-    };
-    let expanded = shellexpand::full_with_context_no_errors(escaped_expr, home_dir, |x| {
+    let escaped_expr = syntax::escape_shell_variables(expr);
+    let expanded = shellexpand::full_with_context_no_errors(&escaped_expr, home_dir, |x| {
         expand_vars(app_context, config, x)
     })
     .to_string();
@@ -342,19 +300,6 @@ pub fn value(
     } else {
         expanded
     }
-}
-
-/// Resolve a variable in a configuration/global scope with shell escaping.
-pub fn value_for_shell(
-    app_context: &model::ApplicationContext,
-    config: &model::Configuration,
-    expr: &str,
-) -> String {
-    value(
-        app_context,
-        config,
-        syntax::escape_shell_variables(expr).as_str(),
-    )
 }
 
 /// Evaluate `$ <command>` command strings, AKA "exec expressions".
@@ -398,7 +343,7 @@ pub fn multi_variable(
 }
 
 /// Evaluate a variable in the given context for execution in a shell
-pub(crate) fn variables_for_shell(
+pub(crate) fn variables(
     app_context: &model::ApplicationContext,
     config: &model::Configuration,
     variables: &mut Vec<model::Variable>,
@@ -412,7 +357,7 @@ pub(crate) fn variables_for_shell(
             continue;
         }
         var.set_evaluation_started();
-        let raw_value = tree_value_for_shell(
+        let raw_value = tree_value(
             app_context,
             config,
             None,
@@ -919,8 +864,8 @@ pub fn command(
         }
     }
 
-    for variables in vec_variables.iter_mut() {
-        result.push(variables_for_shell(app_context, config, variables, context));
+    for var in vec_variables.iter_mut() {
+        result.push(variables(app_context, config, var, context));
     }
 
     result

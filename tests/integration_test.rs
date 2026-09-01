@@ -644,6 +644,14 @@ fn cmd_shell_quoted_variables_are_retained() {
         "shell-quoted-variables",
     ]);
     assert_eq!(output, "abc/xyz");
+
+    let output = garden_capture(&[
+        "--quiet",
+        "--chdir",
+        "tests/data/commands",
+        "shell-quoted-scriptlet",
+    ]);
+    assert_eq!(output, "abc/xyz");
 }
 
 /// Sub-commands honor --define name=value

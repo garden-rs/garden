@@ -362,6 +362,12 @@ would be run without running them.
 # Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via "String to List Promotion".
 # The YAML reader accepts multi-line strings using the "|" pipe syntax.
+#
+# Values in `commands` and `variables` are interpolated.
+# ${variables} are interpolated from garden's variables and environment variables
+# before the shell ever sees them. Plain $shell_variables are not interpolated and
+# can be used just like regular shell variables.
+# Only ${braced_variables} are interpolated.
 
 commands:
   one-line: echo hello "$@"
@@ -375,6 +381,9 @@ commands:
     - |
         echo b $3
         echo c $4
+  plain-shell-variables: |
+    plain_shell_variable=not-interpolated
+    echo $plain_shell_variable
 
 variables:
   debian: $ type apt-get >/dev/null && echo yes || echo no

@@ -264,7 +264,7 @@ pub(crate) fn get_command_values(
 
     let mut commands = Vec::with_capacity(vec_variables.len() * 2);
     for variables in vec_variables.iter_mut() {
-        let values = eval::variables_for_shell(app_context, config, variables, context);
+        let values = eval::variables(app_context, config, variables, context);
         commands.extend(values);
     }
 
