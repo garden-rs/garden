@@ -18,6 +18,8 @@ in their contents.
 
 - `shlex` was upgraded to v2.0.1.
 
+- `yaml-rust2` was upgraded to v0.12.
+
 
 ## v2.6.2
 
