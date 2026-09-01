@@ -16,6 +16,8 @@ in their contents.
 
 - `clap-cargo` was upgraded to v0.19.
 
+- `shlex` was upgraded to v2.0.1.
+
 
 ## v2.6.2
 

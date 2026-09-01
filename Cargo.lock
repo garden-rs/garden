@@ -661,7 +661,7 @@ dependencies = [
  "find-msvc-tools",
  "jobserver",
  "libc",
- "shlex 2.0.1",
+ "shlex",
 ]
 
 [[package]]
@@ -1526,7 +1526,7 @@ dependencies = [
  "rm_rf",
  "shell-words",
  "shellexpand",
- "shlex 1.3.0",
+ "shlex",
  "strum 0.28.0",
  "strum_macros 0.28.0",
  "subprocess",
@@ -3248,12 +3248,6 @@ dependencies = [
  "dirs",
  "os_str_bytes",
 ]
-
-[[package]]
-name = "shlex"
-version = "1.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
 name = "shlex"
