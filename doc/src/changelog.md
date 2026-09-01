@@ -14,6 +14,8 @@ in their contents.
 - `event-listener` and `webbrowser` were updated in `Cargo.lock` to avoid
 `RUSTSEC-2026-0221` and `RUSTSEC-2026-0257`.
 
+- `clap-cargo` was upgraded to v0.19.
+
 
 ## v2.6.2
 
