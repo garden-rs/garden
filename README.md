@@ -67,6 +67,8 @@ you can learn to use `garden` with minimal effort.
 
 * [Garden seeds](https://gitlab.com/garden-rs/garden-seeds) ~ reusable templates for garden.
 
+* [Garden nvim](https://gitlab.com/garden-rs/garden.nvim) ~ neovim syntax highlighting for garden.
+
 * [Legacy Homebrew tap](https://gitlab.com/garden-rs/homebrew-garden) for old versions.
 
 
