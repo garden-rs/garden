@@ -26,6 +26,10 @@ in separate Git repositories.
 
 * [Garden API Documentation](https://docs.rs/garden-tools)
 
+* [Garden Seeds](https://gitlab.com/garden-rs/garden-seeds) - Reusable templates for Garden.
+
+* [Garden Neovim Plugin](https://gitlab.com/garden-rs/garden.nvim) - Syntax highlighting for Neovim.
+
 
 ## How Can Garden Help Me?
 
