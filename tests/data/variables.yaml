@@ -2,4 +2,6 @@
 variables:
   var_0: zero
   var-dashed: ok
+  slash/variable: value
+  slash/cat: cat.${var-dashed}
 ...

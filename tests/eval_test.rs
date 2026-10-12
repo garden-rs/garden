@@ -154,6 +154,20 @@ fn shell_variable_syntax() -> Result<()> {
     Ok(())
 }
 
+#[test]
+fn variables_with_slash_separated_names() -> Result<()> {
+    let app_context =
+        garden::model::ApplicationContext::from_path_string("tests/data/variables.yaml")?;
+    let config = app_context.get_root_config();
+    let value = garden::eval::value(&app_context, config, "_${slash/variable}!");
+    assert_eq!(value, "_value!");
+
+    let value = garden::eval::value(&app_context, config, "_${slash/cat}!");
+    assert_eq!(value, "_cat.ok!");
+
+    Ok(())
+}
+
 /// Ensure that dashed variables are supported.
 #[test]
 fn exec_expression_with_dashed_variables() -> Result<()> {
