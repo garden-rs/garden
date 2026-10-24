@@ -406,7 +406,7 @@ fn get_command_capacity(options: &GuiOptions, queries: &[String]) -> usize {
 
 impl GardenApp<'_> {
     /// Add the query bar.
-    fn display_query_input(&mut self, egui_ctx: &egui::Context, ui: &mut egui::Ui) {
+    fn display_query_input(&mut self, ui: &mut egui::Ui) {
         let focus_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::L);
         ui.horizontal(|ui| {
             ui.label("Query");
@@ -427,7 +427,7 @@ impl GardenApp<'_> {
                     memory.request_focus(query_response.id);
                 });
             }
-            if egui_ctx.input_mut(|input| input.consume_shortcut(&focus_shortcut)) {
+            if ui.input_mut(|input| input.consume_shortcut(&focus_shortcut)) {
                 ui.memory_mut(|memory| {
                     memory.request_focus(query_response.id);
                 });
@@ -591,7 +591,7 @@ impl GardenApp<'_> {
     /// Display details about a custom command when right-clicked.
     fn custom_command_details(
         &mut self,
-        egui_ctx: &egui::Context,
+        ui: &egui::Ui,
         command_name: &str,
         command_vec: &Vec<model::Variable>,
     ) {
@@ -600,24 +600,24 @@ impl GardenApp<'_> {
             value.push_str(cmd.get_expr());
             value.push('\n');
         }
-        self.command_string_window(egui_ctx, command_name, &value);
+        self.command_string_window(ui, command_name, &value);
     }
 
     /// Display details about a "garden grow" command when right-clicked.
-    fn grow_command_details(&mut self, egui_ctx: &egui::Context, command_vec: &[String]) {
+    fn grow_command_details(&mut self, ui: &egui::Ui, command_vec: &[String]) {
         let value = shell_words::join(command_vec);
-        self.command_string_window(egui_ctx, "grow", &value);
+        self.command_string_window(ui, "grow", &value);
     }
 
     /// Display details about a "garden ls" command when right-clicked.
-    fn ls_command_details(&mut self, egui_ctx: &egui::Context, command_vec: &[String]) {
+    fn ls_command_details(&mut self, ui: &egui::Ui, command_vec: &[String]) {
         let value = shell_words::join(command_vec);
-        self.command_string_window(egui_ctx, "ls", &value);
+        self.command_string_window(ui, "ls", &value);
     }
 
     /// Display details about a command when right-clicked
-    fn command_string_window(&mut self, egui_ctx: &egui::Context, command_name: &str, value: &str) {
-        let size = egui_ctx.input(|i: &egui::InputState| i.content_rect());
+    fn command_string_window(&mut self, ui: &egui::Ui, command_name: &str, value: &str) {
+        let size = ui.input(|i: &egui::InputState| i.content_rect());
         // Open a modal window with the contents of the command.
         let mut text = value;
         let modal_window_open = self.modal_window_open;
@@ -632,15 +632,15 @@ impl GardenApp<'_> {
             .collapsible(false)
             .resizable(true)
             .movable(true)
-            .show(egui_ctx, |ui| {
+            .show(ui, |ui| {
                 if modal_window_open {
-                    if egui_ctx.input_mut(|input| input.consume_shortcut(&close_shortcut)) {
+                    if ui.input_mut(|input| input.consume_shortcut(&close_shortcut)) {
                         self.modal_window = ModalWindow::None;
                     }
-                    if egui_ctx.input_mut(|input| input.consume_shortcut(&esc_shortcut)) {
+                    if ui.input_mut(|input| input.consume_shortcut(&esc_shortcut)) {
                         self.modal_window = ModalWindow::None;
                     }
-                    if egui_ctx.input_mut(|input| input.consume_shortcut(&esc_shortcut_alt)) {
+                    if ui.input_mut(|input| input.consume_shortcut(&esc_shortcut_alt)) {
                         self.modal_window = ModalWindow::None;
                     }
                 }
@@ -866,9 +866,9 @@ impl GardenApp<'_> {
 
 impl eframe::App for GardenApp<'_> {
     /// Display the Garden GUI window.
-    fn update(&mut self, egui_ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        egui_ctx.set_pixels_per_point(2.0);
-        egui_ctx.style_mut(|style| style.visuals.window_shadow = egui::Shadow::NONE);
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        ui.set_pixels_per_point(2.0);
+        ui.style_mut().visuals.window_shadow = egui::Shadow::NONE;
 
         if self.modal_window_open {
             match self.modal_window.clone() {
@@ -876,28 +876,28 @@ impl eframe::App for GardenApp<'_> {
                     self.modal_window_open = false;
                 }
                 ModalWindow::Command(command_name, command_vec) => {
-                    self.custom_command_details(egui_ctx, &command_name, &command_vec);
+                    self.custom_command_details(ui, &command_name, &command_vec);
                 }
                 ModalWindow::Grow(command_vec) => {
-                    self.grow_command_details(egui_ctx, &command_vec);
+                    self.grow_command_details(ui, &command_vec);
                 }
                 ModalWindow::List(command_vec) => {
-                    self.ls_command_details(egui_ctx, &command_vec);
+                    self.ls_command_details(ui, &command_vec);
                 }
             }
         }
 
         let quit_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::CTRL, egui::Key::Q);
-        egui::CentralPanel::default().show(egui_ctx, |ui| {
+        egui::CentralPanel::default().show(ui, |ui| {
             // Close the window when the quit_shortcut is triggered.
-            if egui_ctx.input_mut(|input| input.consume_shortcut(&quit_shortcut)) {
+            if ui.input_mut(|input| input.consume_shortcut(&quit_shortcut)) {
                 ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
             }
             if self.modal_window_open {
                 ui.disable();
             }
             ui.vertical(|ui| {
-                self.display_query_input(egui_ctx, ui);
+                self.display_query_input(ui);
                 ui.separator();
                 self.display_commands(ui);
                 self.display_variables(ui);

@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.8.0
+
+**Development**:
+
+- The minimum supported Rust version is now v1.95.0.
+
+- `egui` was upgraded to v0.36.
+
+- `egui_autocomplete` was upgraded to v15.0.
+
+
 ## v2.7.0
 
 *Released 2026-09-01*
