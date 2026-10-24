@@ -86,7 +86,7 @@ longer maintained.
 
 **Development**:
 
-- The minimum supported Rust version is now 1.88.0.
+- The minimum supported Rust version is now v1.88.0.
 
 - `eframe`, `egui` and `egui_autocomplete` were updated to the latest version.
 
@@ -97,7 +97,7 @@ longer maintained.
 
 **Development**:
 
-- The minimum supported Rust version is now 1.86.0.
+- The minimum supported Rust version is now v1.86.0.
 
 - `cargo-clap`, `rayon`, `which` and `yaml-rust2` were updated to the latest versions.
 
