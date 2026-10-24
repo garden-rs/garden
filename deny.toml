@@ -1,7 +1,13 @@
 [advisories]
 ignore = [
-    # ttf-parser is unmainted but is currently used by egui
+    # egui: `ttf-parser` is unmaintained.
     "RUSTSEC-2026-0192",
+    # egui: `zvariant` is no longer maintained as a standalone crate.
+    "RUSTSEC-2026-0370",
+    # egui: `zbus_names` is no longer maintained as a standalone crate.
+    "RUSTSEC-2026-0371",
+    # egui: `zvariant_derive` is no longer maintained as a standalone crate.
+    "RUSTSEC-2026-0372",
 ]
 
 [licenses]
