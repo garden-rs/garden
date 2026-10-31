@@ -4,7 +4,7 @@
 
 **Development**:
 
-- The minimum supported Rust version is now v1.95.0.
+- The minimum supported Rust version for `garden-gui` is now v1.95.0.
 
 - `egui` was upgraded to v0.36.
 
