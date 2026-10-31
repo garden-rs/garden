@@ -134,7 +134,7 @@ jobs:
         echo "TARGET_DIR=${{ env.TARGET_DIR }}"
         echo "TARGET_FLAGS=${{ env.TARGET_FLAGS }}"
     - name: Build all crates
-      run: ${{ env.CARGO }} build --verbose ${{ env.TARGET_FLAGS }}
+      run: ${{ env.CARGO }} build ${{ env.TARGET_FLAGS }}
     - name: Show build.rs stderr
       shell: bash
       run: |
@@ -155,7 +155,7 @@ jobs:
         git config --global user.name Garden
     - name: Run tests with cross
       if: matrix.target != ''
-      run: ${{ env.CARGO }} test --verbose --workspace ${{ env.TARGET_FLAGS }}
+      run: ${{ env.CARGO }} test --workspace ${{ env.TARGET_FLAGS }}
 
   check:
     name: Checks
