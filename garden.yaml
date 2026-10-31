@@ -22,6 +22,9 @@ variables:
   deb-version: $ grep package.version Cargo.toml | awk '{print $3}' | sed -e 's/"//g' -e 's/-/~/g'
   deb-core: garden_${deb-version}-1_amd64.deb
   deb-gui: garden-gui_${deb-version}-1_amd64.deb
+  cross-target: i686-unknown-linux-gnu
+  cross-target-dir: ${TREE_PATH}/target/${cross-target}
+  cross-version: $ grep -e '^ \+CROSS_VERSION' .github/workflows/ci.yml | awk '{print $NF}'
 
 # usage:
 #   garden <cmd> [<tree-query>] [-- [<args>]]
@@ -51,6 +54,11 @@ commands:
   clean: cargo clean "$@"
   commit: git commit "$@"
   coverage: cargo kcov "$@"
+  cross/build: cross build --target ${cross-target}
+  cross/test: cross test --workspace --target ${cross-target}
+  cross/install: |
+    curl -LO "https://github.com/cross-rs/cross/releases/download/${cross-version}/cross-x86_64-unknown-linux-musl.tar.gz"
+    tar -xzf cross-x86_64-unknown-linux-musl.tar.gz --directory=${HOME}/.cargo/bin
   diff: git diff "$@"
   diffs: git diff --staged "$@"
   doc: |
