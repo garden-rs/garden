@@ -1702,10 +1702,7 @@ pub(crate) fn is_valid_context(
         Some(tree) => tree,
         None => return false,
     };
-    // Skip symlink trees.
-    if tree.is_symlink {
-        return false;
-    }
 
-    true
+    // Skip symlink trees.
+    !tree.is_symlink
 }

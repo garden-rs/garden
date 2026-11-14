@@ -701,9 +701,6 @@ fn is_empty_tree(path: &dyn AsRef<std::path::Path>) -> bool {
         return true;
     };
     let num_entries = read_dir.count();
-    if num_entries == 0 {
-        return true;
-    }
 
-    false
+    num_entries == 0
 }
