@@ -1,8 +1,2 @@
 [advisories]
-ignore = [
-    # paste is unmainted but currently used by egui via accesskit_windows
-    "RUSTSEC-2024-0436",
-    # quick-xml will be upgraded later via egui
-    "RUSTSEC-2026-0194",
-    "RUSTSEC-2026-0195",
-]
+ignore = []

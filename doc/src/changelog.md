@@ -1,5 +1,6 @@
 # Changelog
 
+
 ## v2.8.0
 
 **Development**:
@@ -9,6 +10,10 @@
 - `egui` was upgraded to v0.36.
 
 - `egui_autocomplete` was upgraded to v15.0.
+
+- `cargo audit` configuration was updated to remove obsolete entries.
+([#48](https://github.com/garden-rs/garden/issues/48))
+
 
 
 ## v2.7.0
