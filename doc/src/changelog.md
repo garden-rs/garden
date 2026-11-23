@@ -3,6 +3,8 @@
 
 ## v2.8.0
 
+*Released 2026-11-23*
+
 **Features**:
 
 - All of the output from `garden ls` now goes to `stdout`.
