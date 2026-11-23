@@ -16,6 +16,8 @@
 
 - `egui_autocomplete` was upgraded to v15.0.
 
+- `url` was upgraded to v2.5.9.
+
 - `cargo audit` configuration was updated to remove obsolete entries.
 ([#48](https://github.com/garden-rs/garden/issues/48))
 
