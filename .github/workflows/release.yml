@@ -369,7 +369,7 @@ jobs:
     - name: Install mdbook
       shell: bash
       run: |
-        version=v0.5.2
+        version=v0.5.4
         curl -sSL https://github.com/rust-lang/mdBook/releases/download/${version}/mdbook-${version}-x86_64-unknown-linux-gnu.tar.gz |
           tar -xz --directory=${HOME}/.cargo/bin
 
