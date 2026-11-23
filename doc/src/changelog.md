@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v2.8.1
+
+**Development**:
+
+- `async-executor` was upgraded to v1.14.1.
+
+
 ## v2.8.0
 
 *Released 2026-11-23*
