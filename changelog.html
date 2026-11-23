@@ -15,8 +15,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "ayu";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-600034e7.js";
+            window.path_to_searchindex_js = "searchindex-e1bc5952.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-0a559ae1.js"></script>
+        <script src="toc-dd16933e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -183,8 +183,67 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v280"><a class="header" href="#v280">v2.8.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>All of the output from <code>garden ls</code> now goes to <code>stdout</code>.
+The per-tree <code># &lt;tree&gt;</code> header line was previously printed to <code>stderr</code>.</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p>The minimum supported Rust version for <code>garden-gui</code> is now v1.95.0.</p>
+</li>
+<li>
+<p><code>egui</code> was upgraded to v0.36.</p>
+</li>
+<li>
+<p><code>egui_autocomplete</code> was upgraded to v15.0.</p>
+</li>
+<li>
+<p><code>cargo audit</code> configuration was updated to remove obsolete entries.
+(<a href="https://github.com/garden-rs/garden/issues/48">#48</a>)</p>
+</li>
+</ul>
 <h2 id="v270"><a class="header" href="#v270">v2.7.0</a></h2>
-<p><em>Upcoming</em></p>
+<p><em>Released 2026-09-01</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>Plain <code>$shell_variables</code> are now retained in more situations. Notably, <code>variables</code>
+that contained shell scriptlets that were interpolated into commands using
+<code>${variable}</code> syntax will now properly preserve plain brace-less <code>$shell_variables</code>
+in their contents.</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p><code>event-listener</code> and <code>webbrowser</code> were updated in <code>Cargo.lock</code> to avoid
+<code>RUSTSEC-2026-0221</code> and <code>RUSTSEC-2026-0257</code>.</p>
+</li>
+<li>
+<p><code>clap-cargo</code> was upgraded to v0.19.</p>
+</li>
+<li>
+<p><code>shlex</code> was upgraded to v2.0.1.</p>
+</li>
+<li>
+<p><code>yaml-rust2</code> was upgraded to v0.12.</p>
+</li>
+</ul>
+<h2 id="v262"><a class="header" href="#v262">v2.6.2</a></h2>
+<p><em>Released 2026-08-10</em></p>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p><code>Cargo.lock</code> is now being tracked in Git.
+(<a href="https://gitlab.com/garden-rs/garden/-/work_items/22">#22</a>)</p>
+</li>
+<li>
+<p>The nix flake was updated.</p>
+</li>
+</ul>
+<h2 id="v261"><a class="header" href="#v261">v2.6.1</a></h2>
+<p><em>Released 2026-07-12</em></p>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
@@ -230,7 +289,7 @@ longer maintained.</p>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
-<p>The minimum supported Rust version is now 1.88.0.</p>
+<p>The minimum supported Rust version is now v1.88.0.</p>
 </li>
 <li>
 <p><code>eframe</code>, <code>egui</code> and <code>egui_autocomplete</code> were updated to the latest version.</p>
@@ -241,7 +300,7 @@ longer maintained.</p>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
-<p>The minimum supported Rust version is now 1.86.0.</p>
+<p>The minimum supported Rust version is now v1.86.0.</p>
 </li>
 <li>
 <p><code>cargo-clap</code>, <code>rayon</code>, <code>which</code> and <code>yaml-rust2</code> were updated to the latest versions.</p>
@@ -1110,11 +1169,11 @@ runs a command across all trees before continuing on to the next command.
 
         <script src="elasticlunr-ef4e11c1.min.js"></script>
         <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="searcher-09f2665d.js"></script>
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 

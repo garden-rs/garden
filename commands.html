@@ -15,8 +15,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "ayu";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-600034e7.js";
+            window.path_to_searchindex_js = "searchindex-e1bc5952.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-0a559ae1.js"></script>
+        <script src="toc-dd16933e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -431,6 +431,12 @@ would be run without running them.</p>
 <pre><code class="language-yaml"># Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via "String to List Promotion".
 # The YAML reader accepts multi-line strings using the "|" pipe syntax.
+#
+# Values in `commands` and `variables` are interpolated.
+# ${variables} are interpolated from garden's variables and environment variables
+# before the shell ever sees them. Plain $shell_variables are not interpolated and
+# can be used just like regular shell variables.
+# Only ${braced_variables} are interpolated.
 
 commands:
   one-line: echo hello "$@"
@@ -444,6 +450,9 @@ commands:
     - |
         echo b $3
         echo c $4
+  plain-shell-variables: |
+    plain_shell_variable=not-interpolated
+    echo $plain_shell_variable
 
 variables:
   debian: $ type apt-get &gt;/dev/null &amp;&amp; echo yes || echo no
@@ -1042,11 +1051,11 @@ following upstream issues:</p>
 
         <script src="elasticlunr-ef4e11c1.min.js"></script>
         <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="searcher-09f2665d.js"></script>
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 

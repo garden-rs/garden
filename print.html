@@ -16,8 +16,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -38,10 +38,10 @@
             const path_to_root = "";
             const default_light_theme = "ayu";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-600034e7.js";
+            window.path_to_searchindex_js = "searchindex-e1bc5952.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-0a559ae1.js"></script>
+        <script src="toc-dd16933e.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -207,6 +207,12 @@ in separate Git repositories.</p>
 </li>
 <li>
 <p><a href="https://docs.rs/garden-tools">Garden API Documentation</a></p>
+</li>
+<li>
+<p><a href="https://gitlab.com/garden-rs/garden-seeds">Garden Seeds</a> - Reusable templates for Garden.</p>
+</li>
+<li>
+<p><a href="https://gitlab.com/garden-rs/garden.nvim">Garden Neovim Plugin</a> - Syntax highlighting for Neovim.</p>
 </li>
 </ul>
 <h2 id="how-can-garden-help-me"><a class="header" href="#how-can-garden-help-me">How Can Garden Help Me?</a></h2>
@@ -913,6 +919,12 @@ would be run without running them.</p>
 <pre><code class="language-yaml"># Commands can be defined in multiple ways.
 # Strings and lists of strings are both supported via "String to List Promotion".
 # The YAML reader accepts multi-line strings using the "|" pipe syntax.
+#
+# Values in `commands` and `variables` are interpolated.
+# ${variables} are interpolated from garden's variables and environment variables
+# before the shell ever sees them. Plain $shell_variables are not interpolated and
+# can be used just like regular shell variables.
+# Only ${braced_variables} are interpolated.
 
 commands:
   one-line: echo hello "$@"
@@ -926,6 +938,9 @@ commands:
     - |
         echo b $3
         echo c $4
+  plain-shell-variables: |
+    plain_shell_variable=not-interpolated
+    echo $plain_shell_variable
 
 variables:
   debian: $ type apt-get &gt;/dev/null &amp;&amp; echo yes || echo no
@@ -1788,12 +1803,21 @@ variables that are can be referenced by other garden values.</p>
 <p>Variables definitions can reference environment variables and other garden
 variables.</p>
 <p>Variable references use shell <code>${variable}</code> syntax.</p>
-<p>Values that start with dollar-sign+space (<code>$ </code>) are called “exec expressions”.
-Exec expressions are run through a shell after evaluation and replaced with
-the output of the evaluated command.</p>
+<ul>
+<li>
+<p><code>${braced-variables}</code> are interpolated by Garden.</p>
+</li>
+<li>
+<p>Plain <code>$shell_variables</code> are <strong>not interpolated</strong> so that they can be used in your
+command shell scriptlets without needing to escape them.</p>
+</li>
+</ul>
 <p>When resolving values, variables defined in a tree scope override/replace
 variables defined at the global scope.  Variables defined in garden scope
 override/replace variables defined in a tree scope.</p>
+<p>Values that start with dollar-sign + space (<code>$ </code>) are called “exec expressions”.
+Exec expressions are run through a shell after evaluation and replaced with
+the output of the evaluated command.</p>
 <h3 id="required-variables"><a class="header" href="#required-variables">Required Variables</a></h3>
 <p>Required variables prevent empty values from being used at runtime.
 A variable can be defined as required using the YAML syntax below.</p>
@@ -1945,10 +1969,10 @@ and custom commands.</p>
       gitlab: https://gitlab.com/git-scm/git.git
       github: https://github.com/git/git.git
     commands:
-      build: make all -j ${num_procs} "$@"
+      build: make all -j ${num-procs} "$@"
       test: make test "$@"
     variables:
-      num_procs: $ nproc 2&gt;/dev/null || sysctl -n hw.activecpu 2&gt;/dev/null || echo 4
+      num-procs: $ nproc 2&gt;/dev/null || sysctl -n hw.activecpu 2&gt;/dev/null || echo 4
     links:
       - "https://gitgitgadget.github.io/"
       - "https://github.com/gitgitgadget/git/issues"
@@ -2595,8 +2619,67 @@ world
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="v280"><a class="header" href="#v280">v2.8.0</a></h2>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>All of the output from <code>garden ls</code> now goes to <code>stdout</code>.
+The per-tree <code># &lt;tree&gt;</code> header line was previously printed to <code>stderr</code>.</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p>The minimum supported Rust version for <code>garden-gui</code> is now v1.95.0.</p>
+</li>
+<li>
+<p><code>egui</code> was upgraded to v0.36.</p>
+</li>
+<li>
+<p><code>egui_autocomplete</code> was upgraded to v15.0.</p>
+</li>
+<li>
+<p><code>cargo audit</code> configuration was updated to remove obsolete entries.
+(<a href="https://github.com/garden-rs/garden/issues/48">#48</a>)</p>
+</li>
+</ul>
 <h2 id="v270"><a class="header" href="#v270">v2.7.0</a></h2>
-<p><em>Upcoming</em></p>
+<p><em>Released 2026-09-01</em></p>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>Plain <code>$shell_variables</code> are now retained in more situations. Notably, <code>variables</code>
+that contained shell scriptlets that were interpolated into commands using
+<code>${variable}</code> syntax will now properly preserve plain brace-less <code>$shell_variables</code>
+in their contents.</li>
+</ul>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p><code>event-listener</code> and <code>webbrowser</code> were updated in <code>Cargo.lock</code> to avoid
+<code>RUSTSEC-2026-0221</code> and <code>RUSTSEC-2026-0257</code>.</p>
+</li>
+<li>
+<p><code>clap-cargo</code> was upgraded to v0.19.</p>
+</li>
+<li>
+<p><code>shlex</code> was upgraded to v2.0.1.</p>
+</li>
+<li>
+<p><code>yaml-rust2</code> was upgraded to v0.12.</p>
+</li>
+</ul>
+<h2 id="v262"><a class="header" href="#v262">v2.6.2</a></h2>
+<p><em>Released 2026-08-10</em></p>
+<p><strong>Development</strong>:</p>
+<ul>
+<li>
+<p><code>Cargo.lock</code> is now being tracked in Git.
+(<a href="https://gitlab.com/garden-rs/garden/-/work_items/22">#22</a>)</p>
+</li>
+<li>
+<p>The nix flake was updated.</p>
+</li>
+</ul>
+<h2 id="v261"><a class="header" href="#v261">v2.6.1</a></h2>
+<p><em>Released 2026-07-12</em></p>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
@@ -2642,7 +2725,7 @@ longer maintained.</p>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
-<p>The minimum supported Rust version is now 1.88.0.</p>
+<p>The minimum supported Rust version is now v1.88.0.</p>
 </li>
 <li>
 <p><code>eframe</code>, <code>egui</code> and <code>egui_autocomplete</code> were updated to the latest version.</p>
@@ -2653,7 +2736,7 @@ longer maintained.</p>
 <p><strong>Development</strong>:</p>
 <ul>
 <li>
-<p>The minimum supported Rust version is now 1.86.0.</p>
+<p>The minimum supported Rust version is now v1.86.0.</p>
 </li>
 <li>
 <p><code>cargo-clap</code>, <code>rayon</code>, <code>which</code> and <code>yaml-rust2</code> were updated to the latest versions.</p>
@@ -3516,11 +3599,11 @@ runs a command across all trees before continuing on to the next command.
 
         <script src="elasticlunr-ef4e11c1.min.js"></script>
         <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="searcher-09f2665d.js"></script>
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 
