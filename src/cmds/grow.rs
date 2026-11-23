@@ -114,7 +114,13 @@ fn grow_tree_from_context(
         }
     };
 
-    display::print_tree_details(tree, eval_context.config.tree_branches, verbose, quiet);
+    display::print_tree_details(
+        tree,
+        eval_context.config.tree_branches,
+        display::DisplayMode::Error,
+        verbose,
+        quiet,
+    );
     let Some(pathbuf) = tree.pathbuf() else {
         return Err(errors::GardenError::ConfigurationError(format!(
             "invalid path for tree: {tree}",

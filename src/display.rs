@@ -2,6 +2,13 @@ use crate::{eval, git, model};
 use yansi::Paint;
 
 #[derive(Debug, Default, Clone, Copy)]
+pub enum DisplayMode {
+    #[default]
+    Error,
+    Output,
+}
+
+#[derive(Debug, Default, Clone, Copy)]
 pub struct DisplayOptions {
     pub branches: bool,
     pub commands: bool,
@@ -10,6 +17,7 @@ pub struct DisplayOptions {
     pub remotes: bool,
     pub verbose: u8,
     pub worktrees: bool,
+    pub mode: DisplayMode,
 }
 
 pub(crate) fn display_missing_tree(
@@ -94,22 +102,40 @@ pub(crate) fn print_tree(tree: &model::Tree, options: &DisplayOptions) -> bool {
         // Sparse gardens/missing trees are expected. Skip these entries.
         if !std::path::PathBuf::from(&path).exists() {
             if !options.quiet {
-                eprintln!(
-                    "{}",
-                    display_missing_tree(tree, path, options.verbose, options.force)
-                );
+                match options.mode {
+                    DisplayMode::Error => eprintln!(
+                        "{}",
+                        display_missing_tree(tree, path, options.verbose, options.force)
+                    ),
+                    DisplayMode::Output => println!(
+                        "{}",
+                        display_missing_tree(tree, path, options.verbose, options.force)
+                    ),
+                };
             }
             return false;
         }
 
-        print_tree_details(tree, options.branches, options.verbose, options.quiet);
+        print_tree_details(
+            tree,
+            options.branches,
+            options.mode,
+            options.verbose,
+            options.quiet,
+        );
         return true;
     }
     if !options.quiet {
-        eprintln!(
-            "{}",
-            display_missing_tree(tree, "(invalid-path)", options.verbose, options.force)
-        );
+        match options.mode {
+            DisplayMode::Error => eprintln!(
+                "{}",
+                display_missing_tree(tree, "(invalid-path)", options.verbose, options.force)
+            ),
+            DisplayMode::Output => println!(
+                "{}",
+                display_missing_tree(tree, "(invalid-path)", options.verbose, options.force)
+            ),
+        };
     }
 
     false
@@ -119,15 +145,20 @@ pub(crate) fn print_tree(tree: &model::Tree, options: &DisplayOptions) -> bool {
 pub(crate) fn print_tree_details(
     tree: &model::Tree,
     tree_branches: bool,
+    mode: DisplayMode,
     verbose: u8,
     quiet: bool,
 ) {
     if quiet {
         return;
     }
-    if let Ok(path) = tree.path_as_ref() {
-        eprintln!("{}", display_tree(tree, path, tree_branches, verbose));
-    }
+    let Ok(path) = tree.path_as_ref() else {
+        return;
+    };
+    match mode {
+        DisplayMode::Error => eprintln!("{}", display_tree(tree, path, tree_branches, verbose)),
+        DisplayMode::Output => println!("{}", display_tree(tree, path, tree_branches, verbose)),
+    };
 }
 
 /// Print non-grown / missing tree.

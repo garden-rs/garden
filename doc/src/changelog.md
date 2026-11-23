@@ -3,6 +3,11 @@
 
 ## v2.8.0
 
+**Features**:
+
+- All of the output from `garden ls` now goes to `stdout`.
+  The per-tree `# <tree>` header line was previously printed to `stderr`.
+
 **Development**:
 
 - The minimum supported Rust version for `garden-gui` is now v1.95.0.
@@ -13,7 +18,6 @@
 
 - `cargo audit` configuration was updated to remove obsolete entries.
 ([#48](https://github.com/garden-rs/garden/issues/48))
-
 
 
 ## v2.7.0

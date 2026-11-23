@@ -66,20 +66,19 @@ pub fn main(app_context: &model::ApplicationContext, options: &mut ListOptions) 
 fn list(app_context: &model::ApplicationContext, options: &ListOptions) -> Result<()> {
     let config = app_context.get_root_config();
     let display_all = options.all;
-    let worktrees = options.worktrees;
-    let remotes = !options.no_remotes;
     let show_commands = !options.no_commands;
     let only_commands = options.commands > 0;
     let show_gardens = !only_commands && !options.no_gardens;
     let show_groups = !only_commands && !options.no_groups;
     let verbose = app_context.options.verbose + options.verbose;
-    let mut needs_newline = false;
     let mut display_options = display::DisplayOptions {
-        remotes,
         verbose,
-        worktrees,
+        remotes: !options.no_remotes,
+        worktrees: options.worktrees,
+        mode: display::DisplayMode::Output,
         ..std::default::Default::default()
     };
+    let mut needs_newline = false;
 
     if app_context.options.debug_level(constants::DEBUG_LEVEL_LIST) > 0 {
         debug!("queries: {:?}", options.queries);
