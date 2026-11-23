@@ -18,6 +18,8 @@
 
 - `url` was upgraded to v2.5.9.
 
+- `rustix` was upgraded to v1.1.6.
+
 - `cargo audit` configuration was updated to remove obsolete entries.
 ([#48](https://github.com/garden-rs/garden/issues/48))
 
